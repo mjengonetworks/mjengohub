@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "457461415783",
+    "project_id": "mjengohubapp",
+    "storage_bucket": "mjengohubapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:457461415783:android:3c3edc29073d836bcb39c2",
+        "android_client_info": {
+          "package_name": "ke.co.mjengohub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "457461415783-6ip11anoem9fjf0j3kec5316f0pl2nc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfhqr-K_B3Sj2WH2wgMzYv3pS-QPRSBAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "457461415783-6ip11anoem9fjf0j3kec5316f0pl2nc2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
