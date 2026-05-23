@@ -32,6 +32,7 @@ class BreakingNewsCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Thumbnail
             ClipRRect(

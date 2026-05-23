@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// HTTP client that talks to the Mjengo Hub Flask API.
 /// Automatically attaches the saved JWT access token to every request.
 class MjengoService extends GetConnect {
-  static const String _apiBaseUrl = 'https://mjengohub.com/api/v1/';
+  static const String _apiBaseUrl = 'https://mjengohub.co.ke/api/v1/';
 
   static const String _accessTokenKey  = 'mjengo_access_token';
   static const String _refreshTokenKey = 'mjengo_refresh_token';

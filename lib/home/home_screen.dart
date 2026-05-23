@@ -98,7 +98,8 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 _breakingHeader(ctrl),
                 const SizedBox(height: 14),
-                Expanded(child: _breakingList(ctrl)),
+                // Fixed height: image(108) + text area(~100) + padding
+                SizedBox(height: 220, child: _breakingList(ctrl)),
                 const SizedBox(height: 8),
               ],
             ),

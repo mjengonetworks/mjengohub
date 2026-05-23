@@ -1,7 +1,16 @@
 // lib/news/widgets/net_image.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 /// Network image with a shimmer placeholder and graceful error fallback.
+///
+/// On mobile: sends a [Referer] header so cPanel hotlink-protection
+/// doesn't block the request.
+///
+/// On web: custom headers are NOT sent. Browsers enforce CORS and treat
+/// Referer/User-Agent as forbidden headers (silently ignored). The only
+/// real fix on web is an `Access-Control-Allow-Origin` header returned
+/// by the server for static files.
 class NetImage extends StatelessWidget {
   final String? url;
   final double? width;
@@ -9,6 +18,13 @@ class NetImage extends StatelessWidget {
   final BoxFit fit;
   final BorderRadius? borderRadius;
   final Color placeholderColor;
+  final Map<String, String>? extraHeaders;
+
+  // Used only on mobile — cPanel hotlink-protection bypass.
+  static const Map<String, String> _mobileHeaders = {
+    'Referer': 'https://mjengohub.co.ke',
+    'User-Agent': 'Mozilla/5.0 (compatible; MjengoHub/1.0)',
+  };
 
   const NetImage({
     Key? key,
@@ -18,6 +34,7 @@ class NetImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.borderRadius,
     this.placeholderColor = const Color(0xFFE5E7EB),
+    this.extraHeaders,
   }) : super(key: key);
 
   @override
@@ -33,12 +50,27 @@ class NetImage extends StatelessWidget {
     if (url == null || url!.isEmpty) {
       return _placeholder(isError: false);
     }
+
+    // On web: Referer & User-Agent are forbidden headers — browsers ignore
+    // them and the extra CORS preflight they trigger makes things worse.
+    // CORS must be solved on the server (.htaccess Access-Control-Allow-Origin).
+    final Map<String, String>? headers = kIsWeb
+        ? null
+        : {
+            ..._mobileHeaders,
+            if (extraHeaders != null) ...extraHeaders!,
+          };
+
     return Image.network(
       url!,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, __, ___) => _placeholder(isError: true),
+      headers: headers,
+      errorBuilder: (context, error, stack) {
+        debugPrint('NetImage error for $url: $error');
+        return _placeholder(isError: true);
+      },
       loadingBuilder: (_, child, progress) {
         if (progress == null) return child;
         return _shimmer();

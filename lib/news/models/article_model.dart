@@ -1,6 +1,6 @@
 // lib/news/models/article_model.dart
 
-const String _kBaseUrl = 'http://192.168.0.102:8080';
+const String _kBaseUrl = 'https://mjengohub.co.ke';
 
 class ArticleAuthor {
   final int id;
