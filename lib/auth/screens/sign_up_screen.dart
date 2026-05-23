@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import '../controllers/user_controller.dart';
+import '../controllers/mjengo_auth_controller.dart';
 import '../../point/routes/app_routes.dart';
 import '../widgets/responsive_auth_layout.dart';
 
@@ -18,7 +18,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin, ResponsiveAuthMixin {
-  final UserController _userController = Get.find<UserController>();
+  final MjengoAuthController _userController = Get.find<MjengoAuthController>();
 
   // Controllers
   final TextEditingController _fullNameController = TextEditingController();

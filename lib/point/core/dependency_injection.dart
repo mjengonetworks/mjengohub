@@ -2,7 +2,9 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import '../../auth/controllers/user_controller.dart';
+import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../services/base_service.dart';
+import '../../services/mjengo_service.dart';
 import 'firebase_initializer.dart';
 
 
@@ -16,6 +18,22 @@ class DependencyInjection {
       print('✅ BaseService initialized');
     } catch (e) {
       print('❌ BaseService failed: $e');
+    }
+
+    try {
+      print('🌐 Initializing MjengoService...');
+      Get.put(MjengoService(), permanent: true);
+      print('✅ MjengoService initialized');
+    } catch (e) {
+      print('❌ MjengoService failed: $e');
+    }
+
+    try {
+      print('🔐 Initializing MjengoAuthController...');
+      Get.put(MjengoAuthController(), permanent: true);
+      print('✅ MjengoAuthController initialized');
+    } catch (e) {
+      print('❌ MjengoAuthController failed: $e');
     }
 
     try {

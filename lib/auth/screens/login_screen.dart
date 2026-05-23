@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../point/routes/app_routes.dart';
-import '../controllers/user_controller.dart';
+import '../controllers/mjengo_auth_controller.dart';
 
 const Color _primary      = Color(0xFF3B82F6);
 const Color _primaryDeep  = Color(0xFF1D4ED8);
@@ -225,7 +225,7 @@ class _LoginFormState extends State<_LoginForm> {
   final _formKey   = GlobalKey<FormState>();
   bool _obscure    = true;
 
-  UserController get _ctrl => Get.find<UserController>();
+  MjengoAuthController get _ctrl => Get.find<MjengoAuthController>();
 
   @override
   void dispose() {
@@ -349,7 +349,7 @@ class _SignUpFormState extends State<_SignUpForm> {
   bool _acceptTerms    = false;
   String _password     = '';
 
-  UserController get _ctrl => Get.find<UserController>();
+  MjengoAuthController get _ctrl => Get.find<MjengoAuthController>();
 
   @override
   void dispose() {
@@ -600,7 +600,7 @@ class _GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final loading = Get.find<UserController>().isLoading;
+      final loading = Get.find<MjengoAuthController>().isLoading;
       return GestureDetector(
         onTap: loading ? null : onPressed,
         child: Container(
@@ -667,7 +667,7 @@ class _GoogleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final loading = Get.find<UserController>().isLoading;
+      final loading = Get.find<MjengoAuthController>().isLoading;
       return Center(
         child: GestureDetector(
           onTap: loading ? null : onTap,
@@ -709,7 +709,7 @@ class _ErrorBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final msg = Get.find<UserController>().errorMessage;
+      final msg = Get.find<MjengoAuthController>().errorMessage;
       if (msg.isEmpty) return const SizedBox.shrink();
       return Container(
         margin: const EdgeInsets.only(top: 12),

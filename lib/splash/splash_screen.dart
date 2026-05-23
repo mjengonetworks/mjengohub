@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:io' show Platform;
 import '../auth/controllers/user_controller.dart';
+import '../auth/controllers/mjengo_auth_controller.dart';
 import '../point/routes/app_routes.dart';
 
 class ModernSplashScreen extends StatefulWidget {
@@ -66,9 +67,15 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     try {
       await _initializeAppState();
 
-      // Mobile: Wait for UserController to finish initializing (max 5s), with minimum 2.5s for UX
+      // Mobile: Wait for MjengoAuthController + UserController to finish initializing (max 5s)
       if (!kIsWeb) {
         final startTime = DateTime.now();
+        MjengoAuthController? mjengoAuth;
+        try { mjengoAuth = Get.find<MjengoAuthController>(); } catch (_) {}
+        while (mjengoAuth != null && !mjengoAuth.isInitialized) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          if (DateTime.now().difference(startTime).inMilliseconds >= 5000) break;
+        }
         if (_userController != null) {
           while (!_userController!.isInitialized) {
             await Future.delayed(const Duration(milliseconds: 100));
@@ -99,6 +106,15 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     }
   }
 
+  bool _isMjengoUserLoggedIn() {
+    try {
+      final auth = Get.find<MjengoAuthController>();
+      return auth.isAuthenticated;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // Check if running on web or desktop
   bool _isWebOrDesktop() {
     if (kIsWeb) return true;
@@ -113,9 +129,9 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     String targetRoute = AppRoutes.login;
 
     try {
-      if (_isWebOrDesktop()) {
-        targetRoute = AppRoutes.login;
-      } else if (_checkIfUserIsLoggedIn()) {
+      if (_isMjengoUserLoggedIn()) {
+        targetRoute = AppRoutes.home;
+      } else if (_isWebOrDesktop()) {
         targetRoute = AppRoutes.login;
       } else {
         targetRoute = AppRoutes.onboarding;
