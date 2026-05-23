@@ -20,7 +20,7 @@ class MainNavigation extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F4FB),
+        backgroundColor: const Color(0xFFF0F4FF),
         body: Obx(() => IndexedStack(
               index: ctrl.currentIndex.value,
               children: const [
@@ -48,7 +48,7 @@ class _BottomNav extends StatelessWidget {
 
   const _BottomNav({required this.currentIndex, required this.onTap});
 
-  static const Color _active   = Color(0xFF6C63FF);
+  static const Color _active   = Color(0xFF2563EB);
   static const Color _inactive = Color(0xFFAAAAAA);
 
   @override

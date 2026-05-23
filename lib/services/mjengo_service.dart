@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,6 +10,7 @@ class MjengoService extends GetConnect {
 
   static const String _accessTokenKey  = 'mjengo_access_token';
   static const String _refreshTokenKey = 'mjengo_refresh_token';
+  static const String _cachedUserKey   = 'mjengo_cached_user';
 
   bool _ready = false;
 
@@ -60,6 +63,29 @@ class MjengoService extends GetConnect {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_accessTokenKey);
     await prefs.remove(_refreshTokenKey);
+  }
+
+  // ── User cache ─────────────────────────────────────────────────────────────
+
+  Future<void> saveUserCache(Map<String, dynamic> userJson) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cachedUserKey, jsonEncode(userJson));
+  }
+
+  Future<Map<String, dynamic>?> loadUserCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final str = prefs.getString(_cachedUserKey);
+      if (str == null || str.isEmpty) return null;
+      return jsonDecode(str) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> clearUserCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_cachedUserKey);
   }
 
   Future<bool> hasSession() async {
@@ -127,5 +153,8 @@ class MjengoService extends GetConnect {
 
   // ── Session logout ─────────────────────────────────────────────────────────
 
-  Future<void> logout() => _clearTokens();
+  Future<void> logout() async {
+    await _clearTokens();
+    await clearUserCache();
+  }
 }

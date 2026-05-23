@@ -36,12 +36,38 @@ class MjengoAuthController extends GetxController {
     try {
       final hasSession = await _api.hasSession();
       if (hasSession) {
-        await fetchProfile();
+        // Load cached user immediately — no network required
+        final cached = await _api.loadUserCache();
+        if (cached != null) {
+          _user.value = _parseUser(cached);
+          _isAuthenticated.value = true;
+        }
+        // Mark ready so the splash screen can proceed without waiting for network
+        _isInitialized.value = true;
+        // Silently refresh profile in background
+        _refreshProfileSilently();
+        return;
       }
-    } catch (_) {
-    } finally {
-      _isInitialized.value = true;
-    }
+    } catch (_) {}
+    _isInitialized.value = true;
+  }
+
+  /// Refresh user profile from network without blocking the UI.
+  /// Only clears session on a definitive 401 — network errors keep the cached session.
+  Future<void> _refreshProfileSilently() async {
+    try {
+      final response = await _api.apiGet('auth/me');
+      if (response.statusCode == 200) {
+        final body = response.body as Map<String, dynamic>;
+        final userData = body['data'] as Map<String, dynamic>;
+        _user.value = _parseUser(userData);
+        _isAuthenticated.value = true;
+        await _api.saveUserCache(userData);
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await signOut(silent: true);
+      }
+      // 5xx / network errors → keep the cached session
+    } catch (_) {}
   }
 
   // ── Register ──────────────────────────────────────────────────────────────
@@ -84,11 +110,13 @@ class MjengoAuthController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.body as Map<String, dynamic>;
+        final userData = body['data']['user'] as Map<String, dynamic>;
         await _api.saveTokens(
           body['data']['access_token']  as String,
           body['data']['refresh_token'] as String,
         );
-        _user.value = _parseUser(body['data']['user'] as Map<String, dynamic>);
+        await _api.saveUserCache(userData);
+        _user.value = _parseUser(userData);
         _isAuthenticated.value = true;
 
         Get.snackbar(
@@ -142,11 +170,13 @@ class MjengoAuthController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.body as Map<String, dynamic>;
+        final userData = body['data']['user'] as Map<String, dynamic>;
         await _api.saveTokens(
           body['data']['access_token']  as String,
           body['data']['refresh_token'] as String,
         );
-        _user.value = _parseUser(body['data']['user'] as Map<String, dynamic>);
+        await _api.saveUserCache(userData);
+        _user.value = _parseUser(userData);
         _isAuthenticated.value = true;
 
         Get.offAllNamed('/home');
@@ -186,15 +216,16 @@ class MjengoAuthController extends GetxController {
       final response = await _api.apiGet('auth/me');
       if (response.statusCode == 200) {
         final body = response.body as Map<String, dynamic>;
-        _user.value = _parseUser(body['data'] as Map<String, dynamic>);
+        final userData = body['data'] as Map<String, dynamic>;
+        _user.value = _parseUser(userData);
         _isAuthenticated.value = true;
+        await _api.saveUserCache(userData);
         return true;
-      } else {
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
         await signOut(silent: true);
       }
-    } catch (_) {
-      await signOut(silent: true);
-    }
+      // Network/server errors — don't sign out, keep existing auth state
+    } catch (_) {}
     return false;
   }
 

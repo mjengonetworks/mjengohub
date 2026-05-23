@@ -215,7 +215,7 @@ class HomeScreen extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: const BoxDecoration(
-                color: Color(0xFF6C63FF),
+                color: Color(0xFF2563EB),
                 shape: BoxShape.circle,
               ),
               clipBehavior: Clip.antiAlias,

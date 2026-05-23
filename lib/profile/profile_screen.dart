@@ -32,7 +32,7 @@ class _SettingsView extends StatelessWidget {
     required this.onSignOut,
   });
 
-  static const Color _bg            = Color(0xFFF4F4FB);
+  static const Color _bg            = Color(0xFFF0F4FF);
   static const Color _surface       = Colors.white;
   static const Color _textPrimary   = Color(0xFF1A1A2E);
   static const Color _textSecondary = Color(0xFF888888);
@@ -133,7 +133,7 @@ class _SettingsView extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
       duration: const Duration(seconds: 2),
-      backgroundColor: const Color(0xFF6C63FF),
+      backgroundColor: const Color(0xFF2563EB),
       colorText: Colors.white,
     );
   }
@@ -190,7 +190,7 @@ class _ProfileCard extends StatelessWidget {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [Color(0xFF6C63FF), Color(0xFFB06FFF)],
+                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -278,8 +278,8 @@ class _SettingsItem extends StatelessWidget {
         children: [
           InkWell(
             onTap: onTap,
-            splashColor: const Color(0xFF6C63FF).withOpacity(0.06),
-            highlightColor: const Color(0xFF6C63FF).withOpacity(0.04),
+            splashColor: const Color(0xFF2563EB).withOpacity(0.06),
+            highlightColor: const Color(0xFF2563EB).withOpacity(0.04),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(

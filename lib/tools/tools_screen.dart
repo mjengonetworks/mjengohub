@@ -7,8 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 // Theme constants (matches the rest of the app)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const _kPurple    = Color(0xFF6C63FF);
-const _kBg        = Color(0xFFF4F4FB);
+const _kPurple    = Color(0xFF2563EB);
+const _kBg        = Color(0xFFF0F4FF);
 const _kDark      = Color(0xFF1A1A2E);
 const _kSubtext   = Color(0xFF8888AA);
 const _kCard      = Colors.white;
