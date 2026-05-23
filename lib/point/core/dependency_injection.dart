@@ -5,6 +5,8 @@ import '../../auth/controllers/user_controller.dart';
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../services/base_service.dart';
 import '../../services/mjengo_service.dart';
+import '../../news/controllers/home_news_controller.dart';
+import '../../news/controllers/discover_controller.dart';
 import 'firebase_initializer.dart';
 
 
@@ -44,6 +46,22 @@ class DependencyInjection {
       print('❌ UserController failed: $e');
     }
 
+    try {
+      print('📰 Initializing HomeNewsController...');
+      Get.put(HomeNewsController(), permanent: true);
+      print('✅ HomeNewsController initialized');
+    } catch (e) {
+      print('❌ HomeNewsController failed: $e');
+    }
+
+    try {
+      print('🔍 Initializing DiscoverController...');
+      Get.put(DiscoverController(), permanent: true);
+      print('✅ DiscoverController initialized');
+    } catch (e) {
+      print('❌ DiscoverController failed: $e');
+    }
+
     if (!kIsWeb) {
       try {
         print('🔔 Initializing FCM...');
@@ -80,7 +98,9 @@ class DependencyInjection {
   static bool areAllDependenciesReady() {
     try {
       return Get.isRegistered<BaseService>() &&
-          Get.isRegistered<UserController>();
+          Get.isRegistered<UserController>() &&
+          Get.isRegistered<HomeNewsController>() &&
+          Get.isRegistered<DiscoverController>();
     } catch (e) {
       print('❌ Error checking dependencies: $e');
       return false;

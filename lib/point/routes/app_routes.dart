@@ -7,17 +7,19 @@ import '../../auth/screens/verify_otp_screen.dart';
 import '../../auth/screens/two_factor_screen.dart';
 import '../../onboarding/onboarding_screen.dart';
 import '../../splash/splash_screen.dart';
-import '../../home/home_screen.dart';
+import '../../navigation/main_navigation.dart';
+import '../../news/screens/article_detail_screen.dart';
 
 class AppRoutes {
-  static const String splash        = '/splash';
-  static const String onboarding    = '/onboarding';
-  static const String login         = '/login';
-  static const String signup        = '/signup';
-  static const String resetPassword = '/reset-password';
-  static const String verifyOtp     = '/verify-otp';
-  static const String mfaEnroll     = '/mfa-enroll';
-  static const String home          = '/home';
+  static const String splash         = '/splash';
+  static const String onboarding     = '/onboarding';
+  static const String login          = '/login';
+  static const String signup         = '/signup';
+  static const String resetPassword  = '/reset-password';
+  static const String verifyOtp      = '/verify-otp';
+  static const String mfaEnroll      = '/mfa-enroll';
+  static const String home           = '/home';
+  static const String articleDetail  = '/article';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -27,6 +29,7 @@ class AppRoutes {
     GetPage(name: resetPassword, page: () => const ResetPasswordScreen()),
     GetPage(name: verifyOtp,     page: () => const VerifyOtpScreen()),
     GetPage(name: mfaEnroll,     page: () => const MfaEnrollScreen()),
-    GetPage(name: home,          page: () => const HomeScreen()),
+    GetPage(name: home,          page: () => const MainNavigation()),
+    GetPage(name: articleDetail, page: () => const ArticleDetailScreen()),
   ];
 }
