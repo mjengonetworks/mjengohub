@@ -1,4 +1,4 @@
-// lib/news/widgets/breaking_news_card.dart
+﻿// lib/news/widgets/breaking_news_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article_model.dart';
@@ -57,7 +57,7 @@ class BreakingNewsCard extends StatelessWidget {
                     article.title,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.montserrat(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF111827),
@@ -67,7 +67,7 @@ class BreakingNewsCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     article.timeAgo,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.montserrat(
                       fontSize: 11,
                       color: const Color(0xFF9CA3AF),
                     ),
@@ -78,7 +78,7 @@ class BreakingNewsCard extends StatelessWidget {
                       'By ${article.author!.name}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.montserrat(
                         fontSize: 11,
                         color: const Color(0xFF6B7280),
                       ),

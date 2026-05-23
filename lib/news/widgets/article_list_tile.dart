@@ -1,4 +1,4 @@
-// lib/news/widgets/article_list_tile.dart
+﻿// lib/news/widgets/article_list_tile.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article_model.dart';
@@ -41,7 +41,7 @@ class ArticleListTile extends StatelessWidget {
                     article.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.montserrat(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF111827),
@@ -56,7 +56,7 @@ class ArticleListTile extends StatelessWidget {
                       const SizedBox(width: 3),
                       Text(
                         article.timeAgo,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.montserrat(
                           fontSize: 11.5,
                           color: const Color(0xFF9CA3AF),
                         ),
@@ -67,7 +67,7 @@ class ArticleListTile extends StatelessWidget {
                       const SizedBox(width: 3),
                       Text(
                         '${article.formattedViews} views',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.montserrat(
                           fontSize: 11.5,
                           color: const Color(0xFF9CA3AF),
                         ),

@@ -1,4 +1,4 @@
-// screens/mfa_screen.dart
+﻿// screens/mfa_screen.dart
 //
 // Handles two distinct flows:
 //   1. MFA Challenge  – shown during sign-in when Firebase returns
@@ -142,18 +142,18 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
               _ShieldIcon(),
               const SizedBox(height: 24),
               Text('2-Step Verification',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                       fontSize: 26, fontWeight: FontWeight.w700,
                       color: _textDark, height: 1.2)),
               const SizedBox(height: 8),
               RichText(
                 text: TextSpan(
-                  style: GoogleFonts.poppins(fontSize: 14, color: _textGray, height: 1.5),
+                  style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
                   children: [
                     const TextSpan(text: 'Enter the 6-digit code sent to\n'),
                     TextSpan(
                       text: maskedPhone,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.montserrat(
                           fontSize: 14, fontWeight: FontWeight.w600,
                           color: _textDark),
                     ),
@@ -190,7 +190,7 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
                     ? GestureDetector(
                         onTap: _resend,
                         child: Text('Resend code',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.montserrat(
                                 fontSize: 14, fontWeight: FontWeight.w600,
                                 color: _primary,
                                 decoration: TextDecoration.underline,
@@ -198,12 +198,12 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
                       )
                     : RichText(
                         text: TextSpan(
-                          style: GoogleFonts.poppins(fontSize: 13, color: _textGray),
+                          style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                           children: [
                             const TextSpan(text: 'Resend code in '),
                             TextSpan(
                               text: '${_resendSeconds}s',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.montserrat(
                                   fontSize: 13, fontWeight: FontWeight.w600,
                                   color: _primary),
                             ),
@@ -350,14 +350,14 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
         _BackButton(onTap: () => Get.back()),
         const SizedBox(height: 40),
         Text('Enable 2-Step\nVerification',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.montserrat(
                 fontSize: 26, fontWeight: FontWeight.w700,
                 color: _textDark, height: 1.2)),
         const SizedBox(height: 8),
         Text(
           'Add an extra layer of security. We\'ll send an SMS code\n'
           'each time you sign in.',
-          style: GoogleFonts.poppins(fontSize: 14, color: _textGray, height: 1.5),
+          style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
         ),
         const SizedBox(height: 32),
         _SectionLabel('Your phone number'),
@@ -376,7 +376,7 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
                   border: Border(right: BorderSide(color: _inputBorder)),
                 ),
                 child: Text('+254',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                         fontSize: 15, fontWeight: FontWeight.w500,
                         color: _textDark)),
               ),
@@ -384,10 +384,10 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
                 child: TextField(
                   controller: _phoneCtrl,
                   keyboardType: TextInputType.phone,
-                  style: GoogleFonts.poppins(fontSize: 15, color: _textDark),
+                  style: GoogleFonts.montserrat(fontSize: 15, color: _textDark),
                   decoration: InputDecoration(
                     hintText: 'Enter phone number',
-                    hintStyle: GoogleFonts.poppins(fontSize: 15, color: _textGray),
+                    hintStyle: GoogleFonts.montserrat(fontSize: 15, color: _textGray),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
                   ),
@@ -399,7 +399,7 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
         ),
         const SizedBox(height: 8),
         Text('Format: +254712345678',
-            style: GoogleFonts.poppins(fontSize: 11, color: _textGray)),
+            style: GoogleFonts.montserrat(fontSize: 11, color: _textGray)),
         _ErrorBox(ctrl: _ctrl),
         const SizedBox(height: 28),
         Obx(() => _PrimaryButton(
@@ -420,18 +420,18 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
         _BackButton(onTap: () => setState(() { _step = 0; _ctrl.clearError(); })),
         const SizedBox(height: 40),
         Text('Enter the code',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.montserrat(
                 fontSize: 26, fontWeight: FontWeight.w700,
                 color: _textDark, height: 1.2)),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
-            style: GoogleFonts.poppins(fontSize: 14, color: _textGray, height: 1.5),
+            style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
             children: [
               const TextSpan(text: 'We sent a 6-digit code to '),
               TextSpan(
                 text: _maskPhone(_phoneCtrl.text.trim()),
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                     fontSize: 14, fontWeight: FontWeight.w600, color: _textDark),
               ),
             ],
@@ -467,7 +467,7 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
               ? GestureDetector(
                   onTap: _resend,
                   child: Text('Resend code',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.montserrat(
                           fontSize: 14, fontWeight: FontWeight.w600,
                           color: _primary,
                           decoration: TextDecoration.underline,
@@ -475,12 +475,12 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
                 )
               : RichText(
                   text: TextSpan(
-                    style: GoogleFonts.poppins(fontSize: 13, color: _textGray),
+                    style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                     children: [
                       const TextSpan(text: 'Resend code in '),
                       TextSpan(
                         text: '${_resendSeconds}s',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.montserrat(
                             fontSize: 13, fontWeight: FontWeight.w600,
                             color: _primary),
                       ),
@@ -517,12 +517,12 @@ class MfaManageScreen extends StatelessWidget {
               _BackButton(onTap: () => Get.back()),
               const SizedBox(height: 32),
               Text('Security',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                       fontSize: 26, fontWeight: FontWeight.w700,
                       color: _textDark, height: 1.2)),
               const SizedBox(height: 4),
               Text('Manage your account security settings.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: _textGray)),
+                  style: GoogleFonts.montserrat(fontSize: 14, color: _textGray)),
               const SizedBox(height: 32),
 
               // ── 2FA Status Card ──────────────────────────────────────────
@@ -572,7 +572,7 @@ class MfaManageScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   enrolled ? '2FA is Active' : '2FA is Disabled',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.montserrat(
                                       fontSize: 15, fontWeight: FontWeight.w600,
                                       color: _textDark),
                                 ),
@@ -580,7 +580,7 @@ class MfaManageScreen extends StatelessWidget {
                                   enrolled
                                       ? 'Your account is protected with SMS verification.'
                                       : 'Enable 2FA to add an extra layer of security.',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.montserrat(
                                       fontSize: 12, color: _textGray, height: 1.4),
                                 ),
                               ],
@@ -658,17 +658,17 @@ class MfaManageScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Disable 2FA',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
         content: Text(
           'Remove $phone as a verification method? '
           'Your account will no longer require SMS codes on sign-in.',
-          style: GoogleFonts.poppins(fontSize: 14, color: _textGray, height: 1.5),
+          style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text('Cancel',
-                style: GoogleFonts.poppins(color: _textGray, fontWeight: FontWeight.w500)),
+                style: GoogleFonts.montserrat(color: _textGray, fontWeight: FontWeight.w500)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -677,7 +677,7 @@ class MfaManageScreen extends StatelessWidget {
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Remove',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -822,7 +822,7 @@ class _OtpDigitFieldState extends State<_OtpDigitField> {
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.montserrat(
             fontSize: 20, fontWeight: FontWeight.w700, color: _textDark),
         decoration: const InputDecoration(
           border: InputBorder.none,
@@ -867,7 +867,7 @@ class _PrimaryButton extends StatelessWidget {
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation(_primary)))
               : Text(label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                       fontSize: 15, fontWeight: FontWeight.w600, color: _primary)),
         ),
       );
@@ -892,7 +892,7 @@ class _PrimaryButton extends StatelessWidget {
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation(Colors.white)))
             : Text(label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                     fontSize: 15, fontWeight: FontWeight.w600)),
       ),
     );
@@ -922,7 +922,7 @@ class _ErrorBox extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(msg,
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.red.shade700)),
+                  style: GoogleFonts.montserrat(fontSize: 12, color: Colors.red.shade700)),
             ),
           ],
         ),
@@ -952,7 +952,7 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                     fontSize: 12, color: _textDark, height: 1.5)),
           ),
         ],
@@ -968,7 +968,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(label,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.montserrat(
             fontSize: 12, fontWeight: FontWeight.w600,
             color: _textGray, letterSpacing: 0.5));
   }
@@ -1013,11 +1013,11 @@ class _FactorTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(isPhone ? 'Phone' : 'Authenticator',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                         fontSize: 14, fontWeight: FontWeight.w600,
                         color: _textDark)),
                 Text(phone,
-                    style: GoogleFonts.poppins(fontSize: 12, color: _textGray)),
+                    style: GoogleFonts.montserrat(fontSize: 12, color: _textGray)),
               ],
             ),
           ),
@@ -1031,7 +1031,7 @@ class _FactorTile extends StatelessWidget {
                 border: Border.all(color: Colors.red.shade200),
               ),
               child: Text('Remove',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                       fontSize: 12, fontWeight: FontWeight.w600,
                       color: Colors.red.shade600)),
             ),
@@ -1066,10 +1066,10 @@ class _SecurityTip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                         fontSize: 13, fontWeight: FontWeight.w600, color: _textDark)),
                 Text(body,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                         fontSize: 12, color: _textGray, height: 1.4)),
               ],
             ),

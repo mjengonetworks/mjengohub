@@ -1,4 +1,4 @@
-// lib/news/screens/article_detail_screen.dart
+﻿// lib/news/screens/article_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -160,7 +160,7 @@ class _HeroImage extends StatelessWidget {
                   ),
                   child: Text(
                     article.category!.name,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.montserrat(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
@@ -173,7 +173,7 @@ class _HeroImage extends StatelessWidget {
                 article.title,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -215,7 +215,7 @@ class _ContentSection extends StatelessWidget {
           if (article.summary != null && article.summary!.isNotEmpty) ...[
             Text(
               article.summary!,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                 fontSize: 15,
                 color: const Color(0xFF374151),
                 height: 1.6,
@@ -229,7 +229,7 @@ class _ContentSection extends StatelessWidget {
           if (hasContent)
             Text(
               article.plainContent,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                 fontSize: 15,
                 color: const Color(0xFF4B5563),
                 height: 1.7,
@@ -249,7 +249,7 @@ class _ContentSection extends StatelessWidget {
               ),
               child: Text(
                 article.featuredImageCaption!,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.montserrat(
                   fontSize: 12.5,
                   color: const Color(0xFF6B7280),
                   fontStyle: FontStyle.italic,
@@ -294,7 +294,7 @@ class _AuthorRow extends StatelessWidget {
               author.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF111827),
@@ -311,7 +311,7 @@ class _AuthorRow extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             '${article.readTime} min',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.montserrat(
                 fontSize: 12.5, color: const Color(0xFF9CA3AF)),
           ),
           const SizedBox(width: 12),
@@ -323,7 +323,7 @@ class _AuthorRow extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           article.formattedViews,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.montserrat(
               fontSize: 12.5, color: const Color(0xFF9CA3AF)),
         ),
       ],
@@ -351,14 +351,14 @@ class _ErrorView extends StatelessWidget {
             Text(
               message.isEmpty ? 'Article not found.' : message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                   fontSize: 14, color: const Color(0xFF6B7280)),
             ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: Get.back,
               child: Text('Go back',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
             ),
           ],
         ),

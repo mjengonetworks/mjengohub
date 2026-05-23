@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -137,13 +137,13 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
               ),
               const SizedBox(height: 24),
               Text('Check your\nEmail',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                       fontSize: 32, fontWeight: FontWeight.bold,
                       color: _textDark, height: 1.1)),
               const SizedBox(height: 12),
               Text(
                 'We sent a 6-digit verification code to\n$_maskedEmail',
-                style: GoogleFonts.poppins(fontSize: 14, color: _textGray, height: 1.5),
+                style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
               ),
               const SizedBox(height: 40),
               // Error
@@ -162,7 +162,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(_ctrl.errorMessage,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.montserrat(
                                   fontSize: 13, color: Colors.red.shade700)),
                         ),
                       ]),
@@ -195,7 +195,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.white)))
                           : Text('Verify Email',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.montserrat(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white)),
@@ -208,14 +208,14 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                     ? GestureDetector(
                         onTap: _resend,
                         child: Text('Resend Code',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: _primary)),
                       )
                     : Text(
                         'Resend code in ${_resendSeconds}s',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.montserrat(
                             fontSize: 14, color: _textGray),
                       ),
               ),
@@ -238,7 +238,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
         textAlign: TextAlign.center,
         maxLength: 1,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.montserrat(
             fontSize: 22, fontWeight: FontWeight.bold, color: _textDark),
         decoration: InputDecoration(
           counterText: '',

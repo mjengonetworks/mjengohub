@@ -1,4 +1,4 @@
-// lib/profile/profile_screen.dart
+﻿// lib/profile/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
                       child: Center(
                         child: Text(
                           user?.initials ?? '?',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.montserrat(
                             fontSize: 30,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -48,7 +48,7 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       user?.fullName ?? user?.firstName ?? 'User',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.montserrat(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF111827),
@@ -57,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       user?.email ?? '',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.montserrat(
                         fontSize: 13,
                         color: const Color(0xFF9CA3AF),
                       ),
@@ -113,7 +113,7 @@ class ProfileScreen extends StatelessWidget {
                         color: Color(0xFF374151), size: 18),
                     label: Text(
                       'Sign Out',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.montserrat(
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF374151),
                       ),
@@ -179,7 +179,7 @@ class _InfoCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.montserrat(
                     fontSize: 11,
                     color: const Color(0xFF9CA3AF),
                     fontWeight: FontWeight.w500,
@@ -188,7 +188,7 @@ class _InfoCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: valueColor ?? const Color(0xFF111827),

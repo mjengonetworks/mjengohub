@@ -5,9 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 class BaseService extends GetConnect {
 
 
-  static const String _apiBase = 'http://192.168.0.102:8080/api/v1/';
+  static const String _apiBase = 'https://mjengohub.co.ke/api/v1/';
 
-  //static const String _apiBase = 'http://192.168.80.1:5001/api/v1/';
+  //static const String _devBase  = 'http://192.168.80.1:5001/api/v1/';
+  //static const String _testBase = 'https://test.mjengohub.co.ke/api/v1/';
 
   bool _isSetup = false;
   

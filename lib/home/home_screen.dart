@@ -1,4 +1,4 @@
-// lib/home/home_screen.dart
+﻿// lib/home/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -118,7 +118,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Text(
             'Breaking News',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.montserrat(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF111827),
@@ -132,7 +132,7 @@ class HomeScreen extends StatelessWidget {
             },
             child: Text(
               'More',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF6B7280),
@@ -153,7 +153,7 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'No breaking news at the moment.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.montserrat(
                 fontSize: 13, color: const Color(0xFF9CA3AF)),
           ),
         );
@@ -225,14 +225,14 @@ class HomeScreen extends StatelessWidget {
             Text(
               ctrl.errorMessage.value,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                   fontSize: 14, color: const Color(0xFF6B7280)),
             ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: ctrl.fetchHomeData,
               child: Text('Retry',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
             ),
           ],
         ),

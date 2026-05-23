@@ -1,4 +1,4 @@
-// lib/news/widgets/featured_article_card.dart
+﻿// lib/news/widgets/featured_article_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article_model.dart';
@@ -63,7 +63,7 @@ class FeaturedArticleCard extends StatelessWidget {
                   ),
                   child: Text(
                     article.category?.name ?? 'News of the day',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.montserrat(
                       fontSize: 11,
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
@@ -78,7 +78,7 @@ class FeaturedArticleCard extends StatelessWidget {
                   article.title,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.montserrat(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -92,7 +92,7 @@ class FeaturedArticleCard extends StatelessWidget {
                   children: [
                     Text(
                       'Learn More',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,

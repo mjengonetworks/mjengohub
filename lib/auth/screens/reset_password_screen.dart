@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -66,7 +66,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   _emailSent
                       ? 'Check your inbox'
                       : 'No worries! Enter your email and we\'ll send you a reset link.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     color: _textGray,
                     height: 1.55,
@@ -89,12 +89,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     },
                     child: RichText(
                       text: TextSpan(
-                        style: GoogleFonts.poppins(fontSize: 13, color: _textGray),
+                        style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                         children: [
                           const TextSpan(text: 'Remember it? '),
                           TextSpan(
                             text: 'Back to login',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.montserrat(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: _primary,
@@ -147,10 +147,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            style: GoogleFonts.poppins(fontSize: 14, color: _textDark),
+            style: GoogleFonts.montserrat(fontSize: 14, color: _textDark),
             decoration: InputDecoration(
               hintText: 'you@example.com',
-              hintStyle: GoogleFonts.poppins(fontSize: 14, color: _textGray),
+              hintStyle: GoogleFonts.montserrat(fontSize: 14, color: _textGray),
               filled: true,
               fillColor: _inputBg,
               border: OutlineInputBorder(
@@ -203,7 +203,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   Expanded(
                     child: Text(
                       msg,
-                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.red.shade700),
+                      style: GoogleFonts.montserrat(fontSize: 12, color: Colors.red.shade700),
                     ),
                   ),
                 ],
@@ -235,7 +235,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     )
                   : Text(
                       'Send Reset Link',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.montserrat(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -266,7 +266,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const SizedBox(height: 16),
           Text(
             'Email sent!',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.montserrat(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: _textDark,
@@ -275,12 +275,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const SizedBox(height: 8),
           Text(
             'We sent a reset link to:',
-            style: GoogleFonts.poppins(fontSize: 13, color: _textGray),
+            style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
           ),
           const SizedBox(height: 4),
           Text(
             _maskEmail(_emailController.text),
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: _primary,
@@ -290,7 +290,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           Text(
             'Check your inbox and spam folder.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(fontSize: 12, color: _textGray),
+            style: GoogleFonts.montserrat(fontSize: 12, color: _textGray),
           ),
         ],
       ),
@@ -319,7 +319,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               )
             : Text(
                 'Resend Email',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: _primary,
@@ -419,7 +419,7 @@ class _BlobHeader extends StatelessWidget {
             child: Text(
               emailSent ? 'Email Sent' : 'Forgot\nPassword?',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.montserrat(
                 fontSize: 38,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
@@ -465,7 +465,7 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.montserrat(
         fontSize: 13,
         fontWeight: FontWeight.w500,
         color: _textGray,

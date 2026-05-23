@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+﻿import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -153,7 +153,7 @@ class _BlobHeader extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           onSignUp ? 'Sign In' : 'Sign Up',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.montserrat(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -174,7 +174,7 @@ class _BlobHeader extends StatelessWidget {
             child: Text(
               onSignUp ? 'Create\nAccount' : 'Sign In',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.montserrat(
                 fontSize: 42,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
@@ -274,7 +274,7 @@ class _LoginFormState extends State<_LoginForm> {
               onTap: () => Get.toNamed(AppRoutes.resetPassword),
               child: Text(
                 'Forgot Password?',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: _primary,
@@ -296,12 +296,12 @@ class _LoginFormState extends State<_LoginForm> {
           Center(
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.poppins(fontSize: 13, color: _textGray),
+                style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                 children: [
                   const TextSpan(text: "Don't have an account? "),
                   TextSpan(
                     text: 'Sign up',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: _primary,
@@ -463,12 +463,12 @@ class _SignUpFormState extends State<_SignUpForm> {
           Center(
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.poppins(fontSize: 13, color: _textGray),
+                style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                 children: [
                   const TextSpan(text: 'Already have an account? '),
                   TextSpan(
                     text: 'Sign in',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: _primary,
@@ -523,7 +523,7 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.montserrat(
         fontSize: 13,
         fontWeight: FontWeight.w500,
         color: _textGray,
@@ -557,10 +557,10 @@ class _DarkField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      style: GoogleFonts.poppins(fontSize: 14, color: _textDark),
+      style: GoogleFonts.montserrat(fontSize: 14, color: _textDark),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(fontSize: 14, color: _textGray),
+        hintStyle: GoogleFonts.montserrat(fontSize: 14, color: _textGray),
         filled: true,
         fillColor: _inputBg,
         border: OutlineInputBorder(
@@ -627,7 +627,7 @@ class _GradientButton extends StatelessWidget {
                     )
                   : Text(
                       label,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.montserrat(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: _textLight,
@@ -651,7 +651,7 @@ class _Divider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
             'or Sign In with',
-            style: GoogleFonts.poppins(fontSize: 12, color: _textGray),
+            style: GoogleFonts.montserrat(fontSize: 12, color: _textGray),
           ),
         ),
         Expanded(child: Container(height: 1, color: _inputBorder)),
@@ -726,7 +726,7 @@ class _ErrorBox extends StatelessWidget {
             Expanded(
               child: Text(
                 msg,
-                style: GoogleFonts.poppins(fontSize: 12, color: Colors.red.shade700),
+                style: GoogleFonts.montserrat(fontSize: 12, color: Colors.red.shade700),
               ),
             ),
           ],
@@ -765,12 +765,12 @@ class _TermsCheckbox extends StatelessWidget {
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: GoogleFonts.poppins(fontSize: 12, color: _textGray, height: 1.5),
+              style: GoogleFonts.montserrat(fontSize: 12, color: _textGray, height: 1.5),
               children: [
                 const TextSpan(text: 'I agree to the '),
                 TextSpan(
                   text: 'Terms of Service',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 12,
                     color: _primary,
                     fontWeight: FontWeight.w600,
@@ -780,7 +780,7 @@ class _TermsCheckbox extends StatelessWidget {
                 const TextSpan(text: ' and '),
                 TextSpan(
                   text: 'Privacy Policy',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 12,
                     color: _primary,
                     fontWeight: FontWeight.w600,
@@ -839,7 +839,7 @@ class _PasswordStrengthBar extends StatelessWidget {
         const SizedBox(height: 5),
         Text(
           'Strength: $label',
-          style: GoogleFonts.poppins(fontSize: 11, color: color, fontWeight: FontWeight.w500),
+          style: GoogleFonts.montserrat(fontSize: 11, color: color, fontWeight: FontWeight.w500),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'point/core/firebase_initializer.dart';
 import 'point/core/dependency_injection.dart';
@@ -10,7 +11,7 @@ import 'point/routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // Initialize Firebase
     await FirebaseInitializer.initialize();
@@ -33,10 +34,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Apply Montserrat as the app-wide font via the text theme.
+    final base = ThemeData.light();
     return GetMaterialApp(
       title: 'Mjengo Hub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
+      theme: base.copyWith(
+        textTheme: GoogleFonts.montserratTextTheme(base.textTheme),
+      ),
       getPages: AppRoutes.routes,
       initialRoute: AppRoutes.splash,
     );

@@ -1,4 +1,4 @@
-import 'package:country_picker/country_picker.dart';
+﻿import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
@@ -157,7 +157,7 @@ class _SignUpScreenState extends State<SignUpScreen>
       children: [
         Text(
           title1,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.montserrat(
             fontSize: fontSize,
             fontWeight: FontWeight.bold,
             color: textDark,
@@ -166,7 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         ),
         Text(
           title2,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.montserrat(
             fontSize: fontSize,
             fontWeight: FontWeight.bold,
             color: textDark,
@@ -182,7 +182,7 @@ class _SignUpScreenState extends State<SignUpScreen>
       children: [
         Text(
           'Already have an account? / ',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.montserrat(
             fontSize: 14,
             color: textGray,
           ),
@@ -191,7 +191,7 @@ class _SignUpScreenState extends State<SignUpScreen>
           onTap: _goToLogin,
           child: Text(
             'Login',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: primaryGreen,
@@ -235,7 +235,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ? const Icon(Icons.check, color: Colors.white, size: 16)
                   : Text(
                       '${step + 1}',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: isActive ? Colors.white : textGray,
@@ -246,7 +246,7 @@ class _SignUpScreenState extends State<SignUpScreen>
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.montserrat(
               fontSize: 11,
               color: isActive ? primaryGreen : textGray,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
@@ -299,7 +299,7 @@ class _SignUpScreenState extends State<SignUpScreen>
               Expanded(
                 child: Text(
                   'All users can buy and sell on Nefxi. Register as a shop later for verified business features.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 12,
                     color: textDark,
                   ),
@@ -376,7 +376,7 @@ class _SignUpScreenState extends State<SignUpScreen>
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Or sign up with',
-                style: GoogleFonts.poppins(fontSize: 13, color: textGray),
+                style: GoogleFonts.montserrat(fontSize: 13, color: textGray),
               ),
             ),
             Expanded(child: Container(height: 1, color: inputBorder)),
@@ -459,7 +459,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 Expanded(
                   child: Text(
                     _userController.errorMessage,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       fontSize: 13,
                       color: Colors.red.shade700,
                     ),
@@ -482,11 +482,11 @@ class _SignUpScreenState extends State<SignUpScreen>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: IntlPhoneField(
         initialCountryCode: 'KE',
-        style: GoogleFonts.poppins(color: textDark, fontSize: 15),
-        dropdownTextStyle: GoogleFonts.poppins(color: textDark, fontSize: 15),
+        style: GoogleFonts.montserrat(color: textDark, fontSize: 15),
+        dropdownTextStyle: GoogleFonts.montserrat(color: textDark, fontSize: 15),
         decoration: InputDecoration(
           hintText: 'Phone Number',
-          hintStyle: GoogleFonts.poppins(color: textGray, fontSize: 15),
+          hintStyle: GoogleFonts.montserrat(color: textGray, fontSize: 15),
           border: InputBorder.none,
           errorBorder: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -516,14 +516,14 @@ class _SignUpScreenState extends State<SignUpScreen>
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           inputDecoration: InputDecoration(
             hintText: 'Search country',
-            hintStyle: GoogleFonts.poppins(fontSize: 14, color: textGray),
+            hintStyle: GoogleFonts.montserrat(fontSize: 14, color: textGray),
             prefixIcon: const Icon(Icons.search, color: textGray),
             border: OutlineInputBorder(
               borderSide: const BorderSide(color: inputBorder),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          searchTextStyle: GoogleFonts.poppins(fontSize: 14, color: textDark),
+          searchTextStyle: GoogleFonts.montserrat(fontSize: 14, color: textDark),
         ),
         onSelect: (country) => setState(() => _selectedCountry = country),
       ),
@@ -547,7 +547,7 @@ class _SignUpScreenState extends State<SignUpScreen>
             Expanded(
               child: Text(
                 _selectedCountry?.name ?? 'Select Country',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                   fontSize: 15,
                   color: _selectedCountry != null ? textDark : textGray,
                 ),
@@ -579,13 +579,13 @@ class _SignUpScreenState extends State<SignUpScreen>
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.montserrat(
           color: textDark,
           fontSize: 15,
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.poppins(
+          hintStyle: GoogleFonts.montserrat(
             color: textGray,
             fontSize: 15,
           ),
@@ -623,13 +623,13 @@ class _SignUpScreenState extends State<SignUpScreen>
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.montserrat(
           color: textDark,
           fontSize: 15,
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.poppins(
+          hintStyle: GoogleFonts.montserrat(
             color: textGray,
             fontSize: 15,
           ),
@@ -686,7 +686,7 @@ class _SignUpScreenState extends State<SignUpScreen>
             onTap: () => setState(() => _acceptTerms = !_acceptTerms),
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.montserrat(
                   fontSize: 12,
                   color: textGray,
                   height: 1.4,
@@ -695,7 +695,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   const TextSpan(text: 'I agree to the '),
                   TextSpan(
                     text: 'Terms of Service',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       color: primaryGreen,
                       fontWeight: FontWeight.w600,
                     ),
@@ -704,7 +704,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   const TextSpan(text: ' and '),
                   TextSpan(
                     text: 'Privacy Policy',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       color: primaryGreen,
                       fontWeight: FontWeight.w600,
                     ),
@@ -738,7 +738,7 @@ class _SignUpScreenState extends State<SignUpScreen>
           children: [
             Text(
               'Continue',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.montserrat(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: enabled ? Colors.white : textGray,
@@ -784,7 +784,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                     children: [
                       Text(
                         'Create Account',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.montserrat(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -830,7 +830,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 const SizedBox(width: 12),
                 Text(
                   'Continue with Google',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: textDark,
@@ -926,7 +926,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 children: [
                   Text(
                     'Terms of Service',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: textDark,
@@ -944,7 +944,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 padding: const EdgeInsets.all(20),
                 child: Text(
                   'Here would be your Terms of Service content. This is a placeholder for the actual terms and conditions that users need to agree to when creating an account.\n\nYou should replace this with your actual legal terms.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     color: textDark,
                     height: 1.5,
@@ -982,7 +982,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 children: [
                   Text(
                     'Privacy Policy',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.montserrat(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: textDark,
@@ -1000,7 +1000,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 padding: const EdgeInsets.all(20),
                 child: Text(
                   'Here would be your Privacy Policy content. This is a placeholder for the actual privacy policy that explains how user data is collected, used, and protected.\n\nYou should replace this with your actual privacy policy.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     color: textDark,
                     height: 1.5,

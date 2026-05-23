@@ -1,4 +1,4 @@
-// lib/news/screens/discover_screen.dart
+﻿// lib/news/screens/discover_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,7 +39,7 @@ class DiscoverScreen extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   'Discover',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.montserrat(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
                     color: const Color(0xFF111827),
@@ -48,7 +48,7 @@ class DiscoverScreen extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'News from all over the world',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.montserrat(
                     fontSize: 13,
                     color: const Color(0xFF9CA3AF),
                   ),
@@ -99,11 +99,11 @@ class _SearchBar extends StatelessWidget {
               controller: ctrl.searchController,
               onSubmitted: ctrl.onSearchSubmit,
               textInputAction: TextInputAction.search,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.montserrat(
                   fontSize: 14, color: const Color(0xFF111827)),
               decoration: InputDecoration(
                 hintText: 'Search',
-                hintStyle: GoogleFonts.inter(
+                hintStyle: GoogleFonts.montserrat(
                     fontSize: 14, color: const Color(0xFFADB5BD)),
                 border: InputBorder.none,
                 isDense: true,
@@ -209,7 +209,7 @@ class _TabItem extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight:
                 isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -246,7 +246,7 @@ class _ArticleList extends StatelessWidget {
         return Center(
           child: Text(
             'No articles found.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.montserrat(
                 fontSize: 14, color: const Color(0xFF9CA3AF)),
           ),
         );
