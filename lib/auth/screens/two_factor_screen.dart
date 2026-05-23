@@ -1,13 +1,11 @@
-﻿// screens/mfa_screen.dart
+// screens/two_factor_screen.dart
 //
 // Handles two distinct flows:
 //   1. MFA Challenge  – shown during sign-in when Firebase returns
 //      multi-factor-auth-required. Route: /mfa-verify
-//      (no arguments needed; controller already holds the resolver)
 //
 //   2. MFA Enrollment – shown from Security settings to add 2FA.
 //      Route: /mfa-enroll
-//      Arguments: none required (controller manages state)
 //
 // Both screens share the same OTP input widget and design language.
 
@@ -20,14 +18,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../controllers/user_controller.dart';
 
-// ─── Brand colours (matching login_screen.dart) ───────────────────────────────
-const Color _primary   = Color(0xFF22C55E);
-const Color _textDark  = Color(0xFF1A1A1A);
-const Color _textGray  = Color(0xFF6B7280);
-const Color _inputBg   = Color(0xFFFAFAFA);
-const Color _inputBorder = Color(0xFFE5E7EB);
-const Color _success   = Color(0xFF16A34A);
-const Color _errorRed  = Color(0xFFDC2626);
+// ── Palette (matches login_screen.dart) ───────────────────────────────────────
+const Color _primary = Color(0xFF3B82F6);
+const Color _bg = Color(0xFFFFFFFF);
+const Color _inputBg = Color(0xFFF4F4FB);
+const Color _inputBorder = Color(0xFFE8E8F0);
+const Color _textDark = Color(0xFF1A1A2E);
+const Color _textGray = Color(0xFF888888);
+const Color _success = Color(0xFF22C55E);
+const Color _errorRed = Color(0xFFDC2626);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MFA CHALLENGE SCREEN  (sign-in second factor)
@@ -43,8 +42,10 @@ class MfaVerifyScreen extends StatefulWidget {
 class _MfaVerifyScreenState extends State<MfaVerifyScreen>
     with SingleTickerProviderStateMixin {
   final UserController _ctrl = Get.find<UserController>();
-  final List<TextEditingController> _ctrls =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _ctrls = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _foci = List.generate(6, (_) => FocusNode());
 
   late AnimationController _shakeCtrl;
@@ -58,13 +59,17 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
   void initState() {
     super.initState();
     _shakeCtrl = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 500),
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
     );
-    _shakeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticIn),
-    );
+    _shakeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticIn));
     _startResendTimer();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _foci[0].requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _foci[0].requestFocus(),
+    );
   }
 
   @override
@@ -81,10 +86,16 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
     _canResend = false;
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) { t.cancel(); return; }
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       setState(() {
         _resendSeconds--;
-        if (_resendSeconds <= 0) { _canResend = true; t.cancel(); }
+        if (_resendSeconds <= 0) {
+          _canResend = true;
+          t.cancel();
+        }
       });
     });
   }
@@ -111,10 +122,15 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
     final ok = await _ctrl.resendMfaChallengeCode();
     if (ok && mounted) {
       _startResendTimer();
-      Get.snackbar('Code Sent', 'A new verification code has been sent.',
-          backgroundColor: _primary, colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16), borderRadius: 10);
+      Get.snackbar(
+        'Code Sent',
+        'A new verification code has been sent.',
+        backgroundColor: _primary,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+      );
     }
   }
 
@@ -124,104 +140,187 @@ class _MfaVerifyScreenState extends State<MfaVerifyScreen>
         .whereType<PhoneMultiFactorInfo>()
         .firstOrNull;
     final maskedPhone = _maskPhone(hint?.phoneNumber ?? '');
+    final isDesktop = MediaQuery.of(context).size.width >= 1024;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              _BackButton(onTap: () {
-                _ctrl.cancelMfaChallenge();
-                Get.back();
-              }),
-              const SizedBox(height: 40),
-              _ShieldIcon(),
-              const SizedBox(height: 24),
-              Text('2-Step Verification',
-                  style: GoogleFonts.montserrat(
-                      fontSize: 26, fontWeight: FontWeight.w700,
-                      color: _textDark, height: 1.2)),
-              const SizedBox(height: 8),
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
-                  children: [
-                    const TextSpan(text: 'Enter the 6-digit code sent to\n'),
-                    TextSpan(
-                      text: maskedPhone,
-                      style: GoogleFonts.montserrat(
-                          fontSize: 14, fontWeight: FontWeight.w600,
-                          color: _textDark),
+    Widget body = SafeArea(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.only(
+          left: 28,
+          right: 28,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+
+            // ── Top row: logo + back ──────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Image.asset(
+                  'assets/mjengo_hub_logo.png',
+                  height: 42,
+                  fit: BoxFit.contain,
+                ),
+                _BackPill(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _ctrl.cancelMfaChallenge();
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 36),
+
+            // ── Shield icon ───────────────────────────────────────────
+            _ShieldIcon(),
+
+            const SizedBox(height: 24),
+
+            Text(
+              '2-Step\nVerification',
+              style: GoogleFonts.montserrat(
+                fontSize: 36,
+                fontWeight: FontWeight.w800,
+                color: _textDark,
+                height: 1.15,
+              ),
+            ),
+            const SizedBox(height: 8),
+            RichText(
+              text: TextSpan(
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  color: _textGray,
+                  height: 1.55,
+                ),
+                children: [
+                  const TextSpan(text: 'Enter the 6-digit code sent to\n'),
+                  TextSpan(
+                    text: maskedPhone,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _textDark,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 36),
-              AnimatedBuilder(
-                animation: _shakeAnim,
-                builder: (_, child) => Transform.translate(
-                  offset: Offset(
-                    _shakeAnim.value * 8 * ((_shakeAnim.value * 10).toInt().isEven ? 1 : -1),
-                    0,
                   ),
-                  child: child,
-                ),
-                child: _OtpInputRow(
-                  controllers: _ctrls,
-                  focusNodes: _foci,
-                  onCompleted: (_) => _submit(),
-                ),
+                ],
               ),
-              const SizedBox(height: 16),
-              _ErrorBox(ctrl: _ctrl),
-              const SizedBox(height: 28),
-              Obx(() => _PrimaryButton(
+            ),
+
+            const SizedBox(height: 36),
+
+            // ── OTP row (with shake) ──────────────────────────────────
+            AnimatedBuilder(
+              animation: _shakeAnim,
+              builder: (_, child) => Transform.translate(
+                offset: Offset(
+                  _shakeAnim.value *
+                      8 *
+                      ((_shakeAnim.value * 10).toInt().isEven ? 1 : -1),
+                  0,
+                ),
+                child: child,
+              ),
+              child: _OtpInputRow(
+                controllers: _ctrls,
+                focusNodes: _foci,
+                onCompleted: (_) => _submit(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            _ErrorBox(ctrl: _ctrl),
+            const SizedBox(height: 28),
+
+            Obx(
+              () => _PrimaryButton(
                 label: 'Verify',
                 loading: _ctrl.isLoading,
                 onPressed: _submit,
-              )),
-              const SizedBox(height: 20),
-              Center(
-                child: _canResend
-                    ? GestureDetector(
-                        onTap: _resend,
-                        child: Text('Resend code',
-                            style: GoogleFonts.montserrat(
-                                fontSize: 14, fontWeight: FontWeight.w600,
-                                color: _primary,
-                                decoration: TextDecoration.underline,
-                                decorationColor: _primary)),
-                      )
-                    : RichText(
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Resend link ───────────────────────────────────────────
+            Center(
+              child: _canResend
+                  ? GestureDetector(
+                      onTap: _resend,
+                      child: RichText(
                         text: TextSpan(
-                          style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: _textGray,
+                          ),
                           children: [
-                            const TextSpan(text: 'Resend code in '),
+                            const TextSpan(text: "Didn't receive it? "),
                             TextSpan(
-                              text: '${_resendSeconds}s',
+                              text: 'Resend Code',
                               style: GoogleFonts.montserrat(
-                                  fontSize: 13, fontWeight: FontWeight.w600,
-                                  color: _primary),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: _primary,
+                              ),
                             ),
                           ],
                         ),
                       ),
-              ),
-              const SizedBox(height: 32),
-              _InfoCard(
-                text: 'This code expires in 10 minutes. '
-                    "If you didn't request this, please secure your account.",
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
+                    )
+                  : RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: _textGray,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Resend code in '),
+                          TextSpan(
+                            text: '${_resendSeconds}s',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+
+            const SizedBox(height: 28),
+            _InfoCard(
+              text:
+                  'This code expires in 10 minutes. '
+                  "If you didn't request this, please secure your account.",
+            ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
+
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF4F4FB),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Scaffold(backgroundColor: _bg, body: body),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(backgroundColor: _bg, body: body);
   }
 }
 
@@ -240,12 +339,13 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
     with SingleTickerProviderStateMixin {
   final UserController _ctrl = Get.find<UserController>();
 
-  // Step 0 = enter phone, Step 1 = enter OTP
-  int _step = 0;
+  int _step = 0; // 0 = enter phone, 1 = enter OTP
 
   final _phoneCtrl = TextEditingController();
-  final List<TextEditingController> _otpCtrls =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpCtrls = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _otpFoci = List.generate(6, (_) => FocusNode());
 
   late AnimationController _shakeCtrl;
@@ -259,9 +359,13 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
   void initState() {
     super.initState();
     _shakeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500));
-    _shakeAnim = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticIn));
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _shakeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticIn));
     _ctrl.clearError();
   }
 
@@ -280,10 +384,16 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
     _canResend = false;
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) { t.cancel(); return; }
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       setState(() {
         _resendSeconds--;
-        if (_resendSeconds <= 0) { _canResend = true; t.cancel(); }
+        if (_resendSeconds <= 0) {
+          _canResend = true;
+          t.cancel();
+        }
       });
     });
   }
@@ -295,8 +405,9 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
     if (ok && mounted) {
       setState(() => _step = 1);
       _startResendTimer();
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _otpFoci[0].requestFocus());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _otpFoci[0].requestFocus(),
+      );
     }
   }
 
@@ -322,20 +433,30 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
     final ok = await _ctrl.startMfaEnrollment(_phoneCtrl.text.trim());
     if (ok && mounted) {
       _startResendTimer();
-      Get.snackbar('Code Sent', 'A new verification code has been sent.',
-          backgroundColor: _primary, colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16), borderRadius: 10);
+      Get.snackbar(
+        'Code Sent',
+        'A new verification code has been sent.',
+        backgroundColor: _primary,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _bg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.only(
+            left: 28,
+            right: 28,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+          ),
           child: _step == 0 ? _buildPhoneStep() : _buildOtpStep(),
         ),
       ),
@@ -346,22 +467,53 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
-        _BackButton(onTap: () => Get.back()),
+        const SizedBox(height: 16),
+
+        // ── Top row: logo + back ────────────────────────────────────
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              'assets/mjengo_hub_logo.png',
+              height: 42,
+              fit: BoxFit.contain,
+            ),
+            _BackPill(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Get.back();
+              },
+            ),
+          ],
+        ),
+
         const SizedBox(height: 40),
-        Text('Enable 2-Step\nVerification',
-            style: GoogleFonts.montserrat(
-                fontSize: 26, fontWeight: FontWeight.w700,
-                color: _textDark, height: 1.2)),
+
+        Text(
+          'Enable\n2-Step Auth',
+          style: GoogleFonts.montserrat(
+            fontSize: 36,
+            fontWeight: FontWeight.w800,
+            color: _textDark,
+            height: 1.15,
+          ),
+        ),
         const SizedBox(height: 8),
         Text(
-          'Add an extra layer of security. We\'ll send an SMS code\n'
-          'each time you sign in.',
-          style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
+          "Add an extra layer of security. We'll send an SMS code each time you sign in.",
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: _textGray,
+            height: 1.55,
+          ),
         ),
-        const SizedBox(height: 32),
-        _SectionLabel('Your phone number'),
+
+        const SizedBox(height: 36),
+
+        _Label('Your Phone Number'),
         const SizedBox(height: 8),
+
+        // Phone field with country prefix
         Container(
           decoration: BoxDecoration(
             color: _inputBg,
@@ -371,42 +523,65 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 16,
+                ),
+                decoration: const BoxDecoration(
                   border: Border(right: BorderSide(color: _inputBorder)),
                 ),
-                child: Text('+254',
-                    style: GoogleFonts.montserrat(
-                        fontSize: 15, fontWeight: FontWeight.w500,
-                        color: _textDark)),
+                child: Text(
+                  '+254',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: _textDark,
+                  ),
+                ),
               ),
               Expanded(
                 child: TextField(
                   controller: _phoneCtrl,
                   keyboardType: TextInputType.phone,
-                  style: GoogleFonts.montserrat(fontSize: 15, color: _textDark),
+                  style: GoogleFonts.montserrat(fontSize: 14, color: _textDark),
                   decoration: InputDecoration(
                     hintText: 'Enter phone number',
-                    hintStyle: GoogleFonts.montserrat(fontSize: 15, color: _textGray),
+                    hintStyle: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      color: _textGray,
+                    ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 16,
+                    ),
                   ),
-                  onChanged: (_) { if (_ctrl.errorMessage.isNotEmpty) _ctrl.clearError(); },
+                  onChanged: (_) {
+                    if (_ctrl.errorMessage.isNotEmpty) {
+                      _ctrl.clearError();
+                    }
+                  },
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        Text('Format: +254712345678',
-            style: GoogleFonts.montserrat(fontSize: 11, color: _textGray)),
+        const SizedBox(height: 6),
+        Text(
+          'Format: 712 345 678',
+          style: GoogleFonts.montserrat(fontSize: 11, color: _textGray),
+        ),
+
         _ErrorBox(ctrl: _ctrl),
         const SizedBox(height: 28),
-        Obx(() => _PrimaryButton(
-          label: 'Send Verification Code',
-          loading: _ctrl.isLoading,
-          onPressed: _sendCode,
-        )),
+
+        Obx(
+          () => _PrimaryButton(
+            label: 'Send Verification Code',
+            loading: _ctrl.isLoading,
+            onPressed: _sendCode,
+          ),
+        ),
         const SizedBox(height: 24),
       ],
     );
@@ -416,33 +591,71 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
-        _BackButton(onTap: () => setState(() { _step = 0; _ctrl.clearError(); })),
+        const SizedBox(height: 16),
+
+        // ── Top row: logo + back ────────────────────────────────────
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              'assets/mjengo_hub_logo.png',
+              height: 42,
+              fit: BoxFit.contain,
+            ),
+            _BackPill(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _step = 0;
+                  _ctrl.clearError();
+                });
+              },
+            ),
+          ],
+        ),
+
         const SizedBox(height: 40),
-        Text('Enter the code',
-            style: GoogleFonts.montserrat(
-                fontSize: 26, fontWeight: FontWeight.w700,
-                color: _textDark, height: 1.2)),
+
+        Text(
+          'Enter\nthe Code',
+          style: GoogleFonts.montserrat(
+            fontSize: 36,
+            fontWeight: FontWeight.w800,
+            color: _textDark,
+            height: 1.15,
+          ),
+        ),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
-            style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              color: _textGray,
+              height: 1.55,
+            ),
             children: [
-              const TextSpan(text: 'We sent a 6-digit code to '),
+              const TextSpan(text: 'We sent a 6-digit code to\n'),
               TextSpan(
                 text: _maskPhone(_phoneCtrl.text.trim()),
                 style: GoogleFonts.montserrat(
-                    fontSize: 14, fontWeight: FontWeight.w600, color: _textDark),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _textDark,
+                ),
               ),
             ],
           ),
         ),
+
         const SizedBox(height: 36),
+
         AnimatedBuilder(
           animation: _shakeAnim,
           builder: (_, child) => Transform.translate(
             offset: Offset(
-              _shakeAnim.value * 8 * ((_shakeAnim.value * 10).toInt().isEven ? 1 : -1),
+              _shakeAnim.value *
+                  8 *
+                  ((_shakeAnim.value * 10).toInt().isEven ? 1 : -1),
               0,
             ),
             child: child,
@@ -453,36 +666,60 @@ class _MfaEnrollScreenState extends State<MfaEnrollScreen>
             onCompleted: (_) => _verify(),
           ),
         ),
+
         const SizedBox(height: 16),
         _ErrorBox(ctrl: _ctrl),
         const SizedBox(height: 28),
-        Obx(() => _PrimaryButton(
-          label: 'Enable 2FA',
-          loading: _ctrl.isLoading,
-          onPressed: _verify,
-        )),
+
+        Obx(
+          () => _PrimaryButton(
+            label: 'Enable 2FA',
+            loading: _ctrl.isLoading,
+            onPressed: _verify,
+          ),
+        ),
+
         const SizedBox(height: 20),
+
         Center(
           child: _canResend
               ? GestureDetector(
                   onTap: _resend,
-                  child: Text('Resend code',
+                  child: RichText(
+                    text: TextSpan(
                       style: GoogleFonts.montserrat(
-                          fontSize: 14, fontWeight: FontWeight.w600,
-                          color: _primary,
-                          decoration: TextDecoration.underline,
-                          decorationColor: _primary)),
+                        fontSize: 13,
+                        color: _textGray,
+                      ),
+                      children: [
+                        const TextSpan(text: "Didn't receive it? "),
+                        TextSpan(
+                          text: 'Resend Code',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 )
               : RichText(
                   text: TextSpan(
-                    style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      color: _textGray,
+                    ),
                     children: [
                       const TextSpan(text: 'Resend code in '),
                       TextSpan(
                         text: '${_resendSeconds}s',
                         style: GoogleFonts.montserrat(
-                            fontSize: 13, fontWeight: FontWeight.w600,
-                            color: _primary),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _primary,
+                        ),
                       ),
                     ],
                   ),
@@ -506,7 +743,7 @@ class MfaManageScreen extends StatelessWidget {
     final UserController ctrl = Get.find<UserController>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -516,16 +753,23 @@ class MfaManageScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _BackButton(onTap: () => Get.back()),
               const SizedBox(height: 32),
-              Text('Security',
-                  style: GoogleFonts.montserrat(
-                      fontSize: 26, fontWeight: FontWeight.w700,
-                      color: _textDark, height: 1.2)),
+              Text(
+                'Security',
+                style: GoogleFonts.montserrat(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: _textDark,
+                  height: 1.2,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text('Manage your account security settings.',
-                  style: GoogleFonts.montserrat(fontSize: 14, color: _textGray)),
+              Text(
+                'Manage your account security settings.',
+                style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
+              ),
               const SizedBox(height: 32),
 
-              // ── 2FA Status Card ──────────────────────────────────────────
+              // ── 2FA Status Card ──────────────────────────────────────
               Obx(() {
                 final enrolled = ctrl.mfaEnrolled;
                 final factors = ctrl.enrolledMfaFactors;
@@ -538,9 +782,7 @@ class MfaManageScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: enrolled
-                            ? _success.withOpacity(0.06)
-                            : _inputBg,
+                        color: enrolled ? _success.withOpacity(0.06) : _inputBg,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: enrolled
@@ -552,7 +794,8 @@ class MfaManageScreen extends StatelessWidget {
                       child: Row(
                         children: [
                           Container(
-                            width: 44, height: 44,
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
                               color: enrolled
                                   ? _success.withOpacity(0.12)
@@ -560,7 +803,9 @@ class MfaManageScreen extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              enrolled ? Icons.shield_rounded : Icons.shield_outlined,
+                              enrolled
+                                  ? Icons.shield_rounded
+                                  : Icons.shield_outlined,
                               color: enrolled ? _success : _textGray,
                               size: 22,
                             ),
@@ -571,17 +816,24 @@ class MfaManageScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  enrolled ? '2FA is Active' : '2FA is Disabled',
+                                  enrolled
+                                      ? '2FA is Active'
+                                      : '2FA is Disabled',
                                   style: GoogleFonts.montserrat(
-                                      fontSize: 15, fontWeight: FontWeight.w600,
-                                      color: _textDark),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: _textDark,
+                                  ),
                                 ),
                                 Text(
                                   enrolled
                                       ? 'Your account is protected with SMS verification.'
                                       : 'Enable 2FA to add an extra layer of security.',
                                   style: GoogleFonts.montserrat(
-                                      fontSize: 12, color: _textGray, height: 1.4),
+                                    fontSize: 12,
+                                    color: _textGray,
+                                    height: 1.4,
+                                  ),
                                 ),
                               ],
                             ),
@@ -590,39 +842,43 @@ class MfaManageScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // ── Enrolled factors list ──────────────────────────────
+                    // ── Enrolled factors ───────────────────────────────
                     if (enrolled && factors.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       _SectionLabel('Enrolled Factors'),
                       const SizedBox(height: 10),
-                      ...factors.map((factor) => _FactorTile(
-                        factor: factor,
-                        onRemove: () => _confirmRemove(context, ctrl, factor),
-                      )),
+                      ...factors.map(
+                        (factor) => _FactorTile(
+                          factor: factor,
+                          onRemove: () => _confirmRemove(context, ctrl, factor),
+                        ),
+                      ),
                     ],
 
                     const SizedBox(height: 20),
 
-                    // ── Action button ──────────────────────────────────────
-                    Obx(() => _PrimaryButton(
-                      label: enrolled ? 'Add Another Factor' : 'Enable 2FA',
-                      loading: ctrl.isLoading,
-                      onPressed: () => Get.toNamed('/mfa-enroll'),
-                      outlined: enrolled,
-                    )),
+                    Obx(
+                      () => _PrimaryButton(
+                        label: enrolled ? 'Add Another Factor' : 'Enable 2FA',
+                        loading: ctrl.isLoading,
+                        onPressed: () => Get.toNamed('/mfa-enroll'),
+                        outlined: enrolled,
+                      ),
+                    ),
                   ],
                 );
               }),
 
               const SizedBox(height: 36),
 
-              // ── Additional security tips ───────────────────────────────
+              // ── Security tips ─────────────────────────────────────────
               _SectionLabel('Security Tips'),
               const SizedBox(height: 10),
               _SecurityTip(
                 icon: Icons.lock_outline,
                 title: 'Strong Password',
-                body: 'Use a unique password with uppercase, numbers, and symbols.',
+                body:
+                    'Use a unique password with uppercase, numbers, and symbols.',
               ),
               const SizedBox(height: 10),
               _SecurityTip(
@@ -657,27 +913,47 @@ class MfaManageScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Disable 2FA',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
+        title: Text(
+          'Disable 2FA',
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w700,
+            color: _textDark,
+          ),
+        ),
         content: Text(
           'Remove $phone as a verification method? '
           'Your account will no longer require SMS codes on sign-in.',
-          style: GoogleFonts.montserrat(fontSize: 14, color: _textGray, height: 1.5),
+          style: GoogleFonts.montserrat(
+            fontSize: 14,
+            color: _textGray,
+            height: 1.5,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel',
-                style: GoogleFonts.montserrat(color: _textGray, fontWeight: FontWeight.w500)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.montserrat(
+                color: _textGray,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _errorRed, foregroundColor: Colors.white,
-              elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              backgroundColor: _errorRed,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Remove',
-                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Remove',
+              style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -693,6 +969,43 @@ class MfaManageScreen extends StatelessWidget {
 // SHARED PRIVATE WIDGETS
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// Pill-shaped back button — used in auth-flow screens (MfaVerify, MfaEnroll).
+class _BackPill extends StatelessWidget {
+  final VoidCallback onTap;
+  const _BackPill({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: _inputBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _inputBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.arrow_back_rounded, size: 15, color: _textDark),
+            const SizedBox(width: 5),
+            Text(
+              'Back',
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _textDark,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Square back button — used in settings-style screens (MfaManage).
 class _BackButton extends StatelessWidget {
   final VoidCallback onTap;
   const _BackButton({required this.onTap});
@@ -702,13 +1015,18 @@ class _BackButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44, height: 44,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: _inputBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: _inputBorder, width: 1.5),
         ),
-        child: const Icon(Icons.arrow_back_ios_new_rounded, color: _textDark, size: 18),
+        child: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: _textDark,
+          size: 18,
+        ),
       ),
     );
   }
@@ -721,9 +1039,12 @@ class _ShieldIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 64, height: 64,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
-        color: active ? _primary.withOpacity(0.08) : _inputBorder.withOpacity(0.6),
+        color: active
+            ? _primary.withOpacity(0.08)
+            : _inputBorder.withOpacity(0.6),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Icon(
@@ -752,7 +1073,8 @@ class _OtpInputRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(6, (i) {
         return SizedBox(
-          width: 46, height: 56,
+          width: 46,
+          height: 56,
           child: _OtpDigitField(
             controller: controllers[i],
             focusNode: focusNodes[i],
@@ -803,7 +1125,7 @@ class _OtpDigitFieldState extends State<_OtpDigitField> {
   Widget build(BuildContext context) {
     final focused = widget.focusNode.hasFocus;
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
         color: focused ? Colors.white : _inputBg,
         borderRadius: BorderRadius.circular(12),
@@ -812,7 +1134,13 @@ class _OtpDigitFieldState extends State<_OtpDigitField> {
           width: focused ? 2 : 1.5,
         ),
         boxShadow: focused
-            ? [BoxShadow(color: _primary.withOpacity(0.12), blurRadius: 8, offset: const Offset(0, 2))]
+            ? [
+                BoxShadow(
+                  color: _primary.withOpacity(0.12),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : [],
       ),
       child: TextField(
@@ -823,7 +1151,10 @@ class _OtpDigitFieldState extends State<_OtpDigitField> {
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         style: GoogleFonts.montserrat(
-            fontSize: 20, fontWeight: FontWeight.w700, color: _textDark),
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: _textDark,
+        ),
         decoration: const InputDecoration(
           border: InputBorder.none,
           counterText: '',
@@ -853,29 +1184,39 @@ class _PrimaryButton extends StatelessWidget {
     if (outlined) {
       return SizedBox(
         width: double.infinity,
-        height: 52,
+        height: 54,
         child: OutlinedButton(
           onPressed: loading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: _primary, width: 1.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: loading
               ? const SizedBox(
-                  width: 20, height: 20,
+                  width: 20,
+                  height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(_primary)))
-              : Text(label,
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(_primary),
+                  ),
+                )
+              : Text(
+                  label,
                   style: GoogleFonts.montserrat(
-                      fontSize: 15, fontWeight: FontWeight.w600, color: _primary)),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _primary,
+                  ),
+                ),
         ),
       );
     }
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 54,
       child: ElevatedButton(
         onPressed: loading ? null : onPressed,
         style: ElevatedButton.styleFrom(
@@ -883,17 +1224,26 @@ class _PrimaryButton extends StatelessWidget {
           foregroundColor: Colors.white,
           disabledBackgroundColor: _primary.withOpacity(0.5),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: loading
             ? const SizedBox(
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(Colors.white)))
-            : Text(label,
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+              )
+            : Text(
+                label,
                 style: GoogleFonts.montserrat(
-                    fontSize: 15, fontWeight: FontWeight.w600)),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
       ),
     );
   }
@@ -910,19 +1260,25 @@ class _ErrorBox extends StatelessWidget {
       if (msg.isEmpty) return const SizedBox.shrink();
       return Container(
         margin: const EdgeInsets.only(top: 12),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
+          color: const Color(0xFFFEF2F2),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.red.shade200),
+          border: Border.all(color: const Color(0xFFFCA5A5)),
         ),
         child: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.red.shade400, size: 16),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.redAccent,
+              size: 16,
+            ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(msg,
-                  style: GoogleFonts.montserrat(fontSize: 12, color: Colors.red.shade700)),
+              child: Text(
+                msg,
+                style: GoogleFonts.montserrat(fontSize: 12, color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -951,9 +1307,14 @@ class _InfoCard extends StatelessWidget {
           Icon(icon, size: 18, color: _primary),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text,
-                style: GoogleFonts.montserrat(
-                    fontSize: 12, color: _textDark, height: 1.5)),
+            child: Text(
+              text,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                color: _textDark,
+                height: 1.5,
+              ),
+            ),
           ),
         ],
       ),
@@ -961,17 +1322,35 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
+class _Label extends StatelessWidget {
+  final String text;
+  const _Label(this.text);
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: GoogleFonts.montserrat(
+      fontSize: 12.5,
+      fontWeight: FontWeight.w600,
+      color: _textDark,
+    ),
+  );
+}
+
 class _SectionLabel extends StatelessWidget {
   final String label;
   const _SectionLabel(this.label);
 
   @override
-  Widget build(BuildContext context) {
-    return Text(label,
-        style: GoogleFonts.montserrat(
-            fontSize: 12, fontWeight: FontWeight.w600,
-            color: _textGray, letterSpacing: 0.5));
-  }
+  Widget build(BuildContext context) => Text(
+    label,
+    style: GoogleFonts.montserrat(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: _textGray,
+      letterSpacing: 0.5,
+    ),
+  );
 }
 
 class _FactorTile extends StatelessWidget {
@@ -997,14 +1376,16 @@ class _FactorTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 38, height: 38,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: _primary.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isPhone ? Icons.phone_android_rounded : Icons.security_rounded,
-              color: _primary, size: 18,
+              color: _primary,
+              size: 18,
             ),
           ),
           const SizedBox(width: 12),
@@ -1012,12 +1393,18 @@ class _FactorTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(isPhone ? 'Phone' : 'Authenticator',
-                    style: GoogleFonts.montserrat(
-                        fontSize: 14, fontWeight: FontWeight.w600,
-                        color: _textDark)),
-                Text(phone,
-                    style: GoogleFonts.montserrat(fontSize: 12, color: _textGray)),
+                Text(
+                  isPhone ? 'Phone' : 'Authenticator',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _textDark,
+                  ),
+                ),
+                Text(
+                  phone,
+                  style: GoogleFonts.montserrat(fontSize: 12, color: _textGray),
+                ),
               ],
             ),
           ),
@@ -1030,10 +1417,14 @@ class _FactorTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.red.shade200),
               ),
-              child: Text('Remove',
-                  style: GoogleFonts.montserrat(
-                      fontSize: 12, fontWeight: FontWeight.w600,
-                      color: Colors.red.shade600)),
+              child: Text(
+                'Remove',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red.shade600,
+                ),
+              ),
             ),
           ),
         ],
@@ -1046,7 +1437,11 @@ class _SecurityTip extends StatelessWidget {
   final IconData icon;
   final String title;
   final String body;
-  const _SecurityTip({required this.icon, required this.title, required this.body});
+  const _SecurityTip({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1065,12 +1460,22 @@ class _SecurityTip extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: GoogleFonts.montserrat(
-                        fontSize: 13, fontWeight: FontWeight.w600, color: _textDark)),
-                Text(body,
-                    style: GoogleFonts.montserrat(
-                        fontSize: 12, color: _textGray, height: 1.4)),
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _textDark,
+                  ),
+                ),
+                Text(
+                  body,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: _textGray,
+                    height: 1.4,
+                  ),
+                ),
               ],
             ),
           ),

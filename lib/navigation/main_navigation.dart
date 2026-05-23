@@ -1,6 +1,8 @@
 // lib/navigation/main_navigation.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
@@ -11,29 +13,30 @@ class MainNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // MainNavController defined in home_screen.dart — ensure it's available.
     final ctrl = Get.put(MainNavController(), permanent: true);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      // Each tab is kept alive via IndexedStack (no re-renders on tab switch)
-      body: Obx(() => IndexedStack(
-            index: ctrl.currentIndex.value,
-            children: const [
-              HomeScreen(),
-              DiscoverScreen(),
-              ProfileScreen(),
-            ],
-          )),
-
-      // ── Bottom navigation bar ──────────────────────────────────────────
-      bottomNavigationBar: Obx(() => _BottomNav(
-            currentIndex: ctrl.currentIndex.value,
-            onTap: (i) => ctrl.currentIndex.value = i,
-          )),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F4FB),
+        body: Obx(() => IndexedStack(
+              index: ctrl.currentIndex.value,
+              children: const [
+                HomeScreen(),
+                DiscoverScreen(),
+                ProfileScreen(),
+              ],
+            )),
+        bottomNavigationBar: Obx(() => _BottomNav(
+              currentIndex: ctrl.currentIndex.value,
+              onTap: (i) => ctrl.currentIndex.value = i,
+            )),
+      ),
     );
   }
 }
+
+// ── Bottom navigation ─────────────────────────────────────────────────────────
 
 class _BottomNav extends StatelessWidget {
   final int currentIndex;
@@ -41,38 +44,56 @@ class _BottomNav extends StatelessWidget {
 
   const _BottomNav({required this.currentIndex, required this.onTap});
 
+  static const Color _active   = Color(0xFF6C63FF);
+  static const Color _inactive = Color(0xFFAAAAAA);
+
   @override
   Widget build(BuildContext context) {
+    const items = [
+      _NavData(
+        activeIcon: Icons.home_rounded,
+        inactiveIcon: Icons.home_outlined,
+        label: 'Home',
+      ),
+      _NavData(
+        activeIcon: Icons.search_rounded,
+        inactiveIcon: Icons.search_rounded,
+        label: 'Discover',
+      ),
+      _NavData(
+        activeIcon: Icons.settings_rounded,
+        inactiveIcon: Icons.settings_outlined,
+        label: 'Settings',
+      ),
+    ];
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFF3F4F6), width: 1)),
+        border: Border(top: BorderSide(color: Color(0xFFEEEEF5), width: 0.8)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 12,
+            offset: Offset(0, -4),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 56,
+          height: 62,
           child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.home_rounded,
-                outlinedIcon: Icons.home_outlined,
-                isSelected: currentIndex == 0,
-                onTap: () => onTap(0),
+            children: List.generate(
+              items.length,
+              (i) => _NavItem(
+                data: items[i],
+                isSelected: currentIndex == i,
+                activeColor: _active,
+                inactiveColor: _inactive,
+                onTap: () => onTap(i),
               ),
-              _NavItem(
-                icon: Icons.search_rounded,
-                outlinedIcon: Icons.search_rounded,
-                isSelected: currentIndex == 1,
-                onTap: () => onTap(1),
-              ),
-              _NavItem(
-                icon: Icons.person_rounded,
-                outlinedIcon: Icons.person_outline_rounded,
-                isSelected: currentIndex == 2,
-                onTap: () => onTap(2),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -80,35 +101,68 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
+// ── Nav data ──────────────────────────────────────────────────────────────────
+
+class _NavData {
+  final IconData activeIcon;
+  final IconData inactiveIcon;
+  final String label;
+
+  const _NavData({
+    required this.activeIcon,
+    required this.inactiveIcon,
+    required this.label,
+  });
+}
+
+// ── Nav item ──────────────────────────────────────────────────────────────────
+
 class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData outlinedIcon;
+  final _NavData data;
   final bool isSelected;
+  final Color activeColor;
+  final Color inactiveColor;
   final VoidCallback onTap;
 
   const _NavItem({
-    required this.icon,
-    required this.outlinedIcon,
+    required this.data,
     required this.isSelected,
+    required this.activeColor,
+    required this.inactiveColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = isSelected ? activeColor : inactiveColor;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          child: Center(
-            child: Icon(
-              isSelected ? icon : outlinedIcon,
-              color:
-                  isSelected ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
-              size: 26,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isSelected ? data.activeIcon : data.inactiveIcon,
+                key: ValueKey(isSelected),
+                color: color,
+                size: 24,
+              ),
             ),
-          ),
+            const SizedBox(height: 3),
+            Text(
+              data.label,
+              style: GoogleFonts.montserrat(
+                fontSize: 10.5,
+                fontWeight:
+                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
     );
