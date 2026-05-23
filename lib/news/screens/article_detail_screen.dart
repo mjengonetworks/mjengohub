@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../controllers/article_detail_controller.dart';
 import '../models/article_model.dart';
@@ -77,6 +78,7 @@ class _ArticleBody extends StatelessWidget {
           backgroundColor: Colors.black,
           elevation: 0,
           leading: _backButton(),
+          actions: [_shareButton(article)],
           flexibleSpace: FlexibleSpaceBar(
             background: _HeroImage(article: article),
             collapseMode: CollapseMode.parallax,
@@ -108,6 +110,32 @@ class _ArticleBody extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _shareButton(Article article) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: GestureDetector(
+        onTap: () => _shareArticle(article),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+        ),
+      ),
+    );
+  }
+
+  void _shareArticle(Article article) {
+    final url = 'https://mjengohub.co.ke/news/${article.slug}';
+    final text = article.summary != null && article.summary!.isNotEmpty
+        ? '${article.title}\n\n${article.summary}\n\n$url'
+        : '${article.title}\n\n$url';
+    Share.share(text, subject: article.title);
   }
 }
 

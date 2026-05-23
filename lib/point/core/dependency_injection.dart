@@ -7,6 +7,7 @@ import '../../services/base_service.dart';
 import '../../services/mjengo_service.dart';
 import '../../news/controllers/home_news_controller.dart';
 import '../../news/controllers/discover_controller.dart';
+import '../../videos/controllers/videos_controller.dart';
 import 'firebase_initializer.dart';
 
 
@@ -60,6 +61,14 @@ class DependencyInjection {
       print('✅ DiscoverController initialized');
     } catch (e) {
       print('❌ DiscoverController failed: $e');
+    }
+
+    try {
+      print('🎬 Initializing VideosController...');
+      Get.put(VideosController(), permanent: true);
+      print('✅ VideosController initialized');
+    } catch (e) {
+      print('❌ VideosController failed: $e');
     }
 
     if (!kIsWeb) {

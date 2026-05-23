@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dart format *)"
+      "Bash(dart format *)",
+      "Bash(dir /b *.py)",
+      "Bash(flutter build *)"
     ]
   }
 }

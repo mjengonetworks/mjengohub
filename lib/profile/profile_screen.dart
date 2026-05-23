@@ -150,12 +150,6 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: const Icon(Icons.arrow_back_rounded,
-                color: Color(0xFF1A1A2E), size: 24),
-          ),
-          const SizedBox(width: 12),
           Text(
             'Settings',
             style: GoogleFonts.montserrat(

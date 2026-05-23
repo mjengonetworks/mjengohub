@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../point/routes/app_routes.dart';
+import '../../profile/privacy_policy_screen.dart';
+import '../../profile/terms_conditions_screen.dart';
 import '../controllers/mjengo_auth_controller.dart';
 
 // ── Palette ────────────────────────────────────────────────────────────────────
@@ -791,7 +793,11 @@ class _TermsCheckbox extends StatelessWidget {
                       fontSize: 12,
                       color: _accent,
                       fontWeight: FontWeight.w600),
-                  recognizer: TapGestureRecognizer()..onTap = () {},
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      HapticFeedback.lightImpact();
+                      Get.to(() => const TermsConditionsScreen());
+                    },
                 ),
                 const TextSpan(text: ' and '),
                 TextSpan(
@@ -800,7 +806,11 @@ class _TermsCheckbox extends StatelessWidget {
                       fontSize: 12,
                       color: _accent,
                       fontWeight: FontWeight.w600),
-                  recognizer: TapGestureRecognizer()..onTap = () {},
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      HapticFeedback.lightImpact();
+                      Get.to(() => const PrivacyPolicyScreen());
+                    },
                 ),
               ],
             ),

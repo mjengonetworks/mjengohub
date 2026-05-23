@@ -29,14 +29,6 @@ class DiscoverScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Menu icon row
-                Row(
-                  children: [
-                    Icon(Icons.menu_rounded,
-                        size: 26, color: const Color(0xFF111827)),
-                  ],
-                ),
-                const SizedBox(height: 14),
                 Text(
                   'Discover',
                   style: GoogleFonts.montserrat(
@@ -129,13 +121,38 @@ class _SearchBar extends StatelessWidget {
             width: 1,
             color: const Color(0xFFE5E7EB),
           ),
-          IconButton(
-            icon: const Icon(Icons.tune_rounded,
-                size: 18, color: Color(0xFF374151)),
-            onPressed: () {},
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            constraints: const BoxConstraints(),
-          ),
+          Obx(() {
+            final active = ctrl.selectedSlug.value.isNotEmpty;
+            return GestureDetector(
+              onTap: () => _showFilterSheet(context, ctrl),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(Icons.tune_rounded,
+                        size: 18,
+                        color: active
+                            ? const Color(0xFF6C63FF)
+                            : const Color(0xFF374151)),
+                    if (active)
+                      Positioned(
+                        top: -3,
+                        right: -3,
+                        child: Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF6C63FF),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -217,6 +234,235 @@ class _TabItem extends StatelessWidget {
                 ? const Color(0xFF111827)
                 : const Color(0xFF9CA3AF),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Filter bottom sheet ───────────────────────────────────────────────────────
+
+void _showFilterSheet(BuildContext context, DiscoverController ctrl) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (_) => _FilterSheet(ctrl: ctrl),
+  );
+}
+
+class _FilterSheet extends StatelessWidget {
+  final DiscoverController ctrl;
+  const _FilterSheet({required this.ctrl});
+
+  static const _kPurple  = Color(0xFF6C63FF);
+  static const _kDark    = Color(0xFF111827);
+  static const _kSubtext = Color(0xFF9CA3AF);
+  static const _kDivider = Color(0xFFF3F4F6);
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final maxHeight   = MediaQuery.of(context).size.height * 0.75;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Fixed header ───────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title + Clear button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Filter by Category',
+                          style: GoogleFonts.montserrat(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: _kDark)),
+                      Obx(() => ctrl.selectedSlug.value.isNotEmpty
+                          ? GestureDetector(
+                              onTap: () {
+                                ctrl.selectCategory('');
+                                Navigator.pop(context);
+                              },
+                              child: Text('Clear',
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: _kPurple)),
+                            )
+                          : const SizedBox.shrink()),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Choose a topic to filter articles',
+                      style: GoogleFonts.montserrat(
+                          fontSize: 12.5, color: _kSubtext)),
+                  const SizedBox(height: 16),
+                  const Divider(color: _kDivider, height: 1),
+                ],
+              ),
+            ),
+
+            // ── Scrollable options list ─────────────────────────────────────
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(24, 8, 24, bottomInset + 24),
+                child: Obx(() {
+                  final cats = ctrl.categories;
+                  return Column(
+                    children: [
+                      // "All" option
+                      _FilterOption(
+                        label: 'All Categories',
+                        icon: Icons.grid_view_rounded,
+                        isSelected: ctrl.selectedSlug.value.isEmpty,
+                        onTap: () {
+                          ctrl.selectCategory('');
+                          Navigator.pop(context);
+                        },
+                      ),
+
+                      // Category options
+                      if (cats.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: Text('No categories available',
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 13, color: _kSubtext)),
+                          ),
+                        )
+                      else
+                        ...cats.map((cat) => _FilterOption(
+                              label: cat.name,
+                              icon: _categoryIcon(cat.slug),
+                              isSelected:
+                                  ctrl.selectedSlug.value == cat.slug,
+                              onTap: () {
+                                ctrl.selectCategory(cat.slug);
+                                Navigator.pop(context);
+                              },
+                            )),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _categoryIcon(String slug) {
+    final s = slug.toLowerCase();
+    if (s.contains('infrastructure') || s.contains('transport')) {
+      return Icons.account_balance_rounded;
+    }
+    if (s.contains('real') || s.contains('estate') || s.contains('property')) {
+      return Icons.home_work_rounded;
+    }
+    if (s.contains('safety') || s.contains('regulation')) {
+      return Icons.health_and_safety_rounded;
+    }
+    if (s.contains('material') || s.contains('technology')) {
+      return Icons.science_rounded;
+    }
+    if (s.contains('urban') || s.contains('planning')) {
+      return Icons.location_city_rounded;
+    }
+    if (s.contains('road') || s.contains('highway')) {
+      return Icons.add_road_rounded;
+    }
+    if (s.contains('government') || s.contains('policy')) {
+      return Icons.gavel_rounded;
+    }
+    return Icons.article_rounded;
+  }
+}
+
+class _FilterOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterOption({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  static const _kPurple = Color(0xFF6C63FF);
+  static const _kDark   = Color(0xFF111827);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? _kPurple.withValues(alpha: 0.08)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? _kPurple : Colors.transparent,
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 18,
+                color: isSelected ? _kPurple : const Color(0xFF6B7280)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? _kPurple : _kDark,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded,
+                  size: 18, color: _kPurple),
+          ],
         ),
       ),
     );

@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
+import '../videos/screens/videos_screen.dart';
+import '../tools/tools_screen.dart';
 import '../profile/profile_screen.dart';
 
 class MainNavigation extends StatelessWidget {
@@ -24,6 +26,8 @@ class MainNavigation extends StatelessWidget {
               children: const [
                 HomeScreen(),
                 DiscoverScreen(),
+                VideosScreen(),
+                ToolsScreen(),
                 ProfileScreen(),
               ],
             )),
@@ -59,6 +63,16 @@ class _BottomNav extends StatelessWidget {
         activeIcon: Icons.search_rounded,
         inactiveIcon: Icons.search_rounded,
         label: 'Discover',
+      ),
+      _NavData(
+        activeIcon: Icons.play_circle_filled_rounded,
+        inactiveIcon: Icons.play_circle_outline_rounded,
+        label: 'Videos',
+      ),
+      _NavData(
+        activeIcon: Icons.construction_rounded,
+        inactiveIcon: Icons.construction_outlined,
+        label: 'Tools',
       ),
       _NavData(
         activeIcon: Icons.settings_rounded,
