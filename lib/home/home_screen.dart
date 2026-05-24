@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../news/controllers/home_news_controller.dart';
+import '../notifications/controllers/notifications_controller.dart';
+import '../notifications/screens/notifications_screen.dart';
 import '../news/models/article_model.dart';
 import '../news/widgets/featured_article_card.dart';
 import '../news/widgets/breaking_news_card.dart';
@@ -79,32 +81,41 @@ class HomeScreen extends StatelessWidget {
                 child: _greetingWidget(),
               ),
 
-              // Road Safety button (top-right, floating over image)
+              // Top-right action buttons (notification bell + road safety)
               Positioned(
                 top: topPad + 8,
                 right: 16,
-                child: GestureDetector(
-                  onTap: () => Get.toNamed('/share-barabara'),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDC2626),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ── Notification bell with badge ────────────────────
+                    _NotificationBell(topPad: topPad),
+                    const SizedBox(width: 10),
+                    // ── Road Safety ─────────────────────────────────────
+                    GestureDetector(
+                      onTap: () => Get.toNamed('/share-barabara'),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDC2626),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                      ],
+                        child: const Icon(
+                          Icons.report_problem_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.report_problem_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                  ],
                 ),
               ),
 
@@ -798,6 +809,79 @@ class _ExploreIconPill extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  NOTIFICATION BELL  –  floating button with unread badge
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _NotificationBell extends StatelessWidget {
+  final double topPad;
+  const _NotificationBell({required this.topPad});
+
+  @override
+  Widget build(BuildContext context) {
+    NotificationsController? ctrl;
+    try { ctrl = Get.find<NotificationsController>(); } catch (_) {}
+    if (ctrl == null) return const SizedBox.shrink();
+
+    return Obx(() {
+      final count = ctrl!.unreadCount.value;
+
+      return GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Bell button
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.38),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.notifications_outlined,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+            // Badge
+            if (count > 0)
+              Positioned(
+                top: -3,
+                right: -3,
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444),
+                    shape: count > 9 ? BoxShape.rectangle : BoxShape.circle,
+                    borderRadius: count > 9
+                        ? BorderRadius.circular(9)
+                        : null,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      height: 1.6,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 }
 

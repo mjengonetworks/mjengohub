@@ -8,6 +8,7 @@ import '../../services/mjengo_service.dart';
 import '../../news/controllers/home_news_controller.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../videos/controllers/videos_controller.dart';
+import '../../notifications/controllers/notifications_controller.dart';
 import 'firebase_initializer.dart';
 
 
@@ -69,6 +70,14 @@ class DependencyInjection {
       print('✅ VideosController initialized');
     } catch (e) {
       print('❌ VideosController failed: $e');
+    }
+
+    try {
+      print('🔔 Initializing NotificationsController...');
+      Get.put(NotificationsController(), permanent: true);
+      print('✅ NotificationsController initialized');
+    } catch (e) {
+      print('❌ NotificationsController failed: $e');
     }
 
     if (!kIsWeb) {

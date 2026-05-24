@@ -183,7 +183,6 @@ class IncidentDetailScreen extends StatelessWidget {
                     children: [
                       if (incident.casualties != null)
                         _StatChip(
-                          icon: '💔',
                           label:
                               '${incident.casualties} fatalities',
                           color: const Color(0xFFFCA5A5),
@@ -191,7 +190,6 @@ class IncidentDetailScreen extends StatelessWidget {
                       if (incident.injuries != null) ...[
                         const SizedBox(width: 12),
                         _StatChip(
-                          icon: '🏥',
                           label: '${incident.injuries} injured',
                           color: const Color(0xFFFDE68A),
                         ),
@@ -661,28 +659,19 @@ class _SeverityBadge extends StatelessWidget {
 }
 
 class _StatChip extends StatelessWidget {
-  final String icon;
   final String label;
   final Color color;
-  const _StatChip(
-      {required this.icon, required this.label, required this.color});
+  const _StatChip({required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(icon, style: const TextStyle(fontSize: 13)),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
-        ),
-      ],
+    return Text(
+      label,
+      style: GoogleFonts.montserrat(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: color,
+      ),
     );
   }
 }

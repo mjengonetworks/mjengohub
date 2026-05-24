@@ -106,7 +106,8 @@ class IncidentsService {
           'lessons_learned': lessonsLearned,
       });
       if ((res.statusCode == 200 || res.statusCode == 201) && res.body != null) {
-        return res.body['id'] as int?;
+        final data = res.body['data'];
+        if (data is Map<String, dynamic>) return data['id'] as int?;
       }
       return null;
     } catch (e) {

@@ -8,6 +8,8 @@ class UserModel {
   final String? phoneNumber;
   final String? photoURL;
   final String? bio;
+  final String? location;
+  final String? company;
   final String? provider;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -46,6 +48,8 @@ class UserModel {
     this.phoneNumber,
     this.photoURL,
     this.bio,
+    this.location,
+    this.company,
     this.provider,
     this.createdAt,
     this.updatedAt,
@@ -91,6 +95,8 @@ class UserModel {
       phoneNumber: phoneNumber,
       photoURL: json['photoURL'] as String?,
       bio: json['bio'] as String?,
+      location: json['location'] as String?,
+      company: json['company'] as String?,
       provider: json['provider'] as String?,
       createdAt: json['createdAt'] != null ? _parseTimestamp(json['createdAt']) : null,
       updatedAt: json['updatedAt'] != null ? _parseTimestamp(json['updatedAt']) : null,
@@ -124,6 +130,8 @@ class UserModel {
       'phoneNumber': phoneNumber,
       'photoURL': photoURL,
       'bio': bio,
+      'location': location,
+      'company': company,
       'provider': provider,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
@@ -154,6 +162,8 @@ class UserModel {
     String? phoneNumber,
     String? photoURL,
     String? bio,
+    String? location,
+    String? company,
     String? provider,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -181,6 +191,8 @@ class UserModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       photoURL: photoURL ?? this.photoURL,
       bio: bio ?? this.bio,
+      location: location ?? this.location,
+      company: company ?? this.company,
       provider: provider ?? this.provider,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

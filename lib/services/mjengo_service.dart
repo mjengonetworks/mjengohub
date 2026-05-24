@@ -6,9 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// HTTP client that talks to the Mjengo Hub Flask API.
 /// Automatically attaches the saved JWT access token to every request.
 class MjengoService extends GetConnect {
-  //static const String _apiBaseUrl = 'https://mjengohub.co.ke/api/v1/';
+ static const String _apiBaseUrl = 'https://mjengohub.co.ke/api/v1/';
 
-   static const String _apiBaseUrl = 'http://192.168.0.102:8080/api/v1/';
+   //static const String _apiBaseUrl = 'http://192.168.0.102:8080/api/v1/';
 
 
   static const String _accessTokenKey  = 'mjengo_access_token';
@@ -132,6 +132,15 @@ class MjengoService extends GetConnect {
     _configure();
     try {
       return _wrap(await put(path.replaceAll(RegExp(r'^/+'), ''), body));
+    } catch (e) {
+      return _networkError(e);
+    }
+  }
+
+  Future<Response> apiDelete(String path) async {
+    _configure();
+    try {
+      return _wrap(await delete(path.replaceAll(RegExp(r'^/+'), '')));
     } catch (e) {
       return _networkError(e);
     }

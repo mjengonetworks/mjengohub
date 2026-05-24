@@ -7,7 +7,15 @@
       "PowerShell(\\(Get-Content \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\\\\admin.py\" | Measure-Object -Line\\).Lines)",
       "Bash(python -c \"from application import app; from admin import admin_bp; app.register_blueprint\\(admin_bp\\)\")",
       "Bash(python -c \"import admin\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\" -File)",
+      "Bash(Select-Object Name, LastWriteTime)",
+      "Bash(Sort-Object LastWriteTime -Descending)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\\\\templates\" -File -Recurse | Where-Object { $_.LastWriteTime -gt \\(Get-Date\\).AddDays\\(-5\\) } | Select-Object FullName, LastWriteTime | Sort-Object LastWriteTime -Descending | Format-Table -AutoSize)",
+      "Bash(python3 -c \"from werkzeug.security import generate_password_hash; print\\(generate_password_hash\\('Juma@2000'\\)\\)\")",
+      "PowerShell(& \"C:\\\\Python314\\\\python.exe\" -m pip install werkzeug -q)",
+      "PowerShell(& \"C:\\\\Python314\\\\python.exe\" -c \"from werkzeug.security import generate_password_hash; print\\(generate_password_hash\\('Juma@2000'\\)\\)\")",
+      "Bash(dir \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\" /s /b)"
     ]
   }
 }

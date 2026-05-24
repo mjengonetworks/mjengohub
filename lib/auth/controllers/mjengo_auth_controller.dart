@@ -268,6 +268,35 @@ class MjengoAuthController extends GetxController {
     return false;
   }
 
+  // ── Forgot password ───────────────────────────────────────────────────────
+
+  /// Sends a password-reset link to [email] via the Mjengo backend.
+  /// Returns `true` on a successful request (email may or may not exist —
+  /// the backend always responds 200 to prevent enumeration).
+  Future<bool> forgotPassword({required String email}) async {
+    try {
+      _setLoading(true);
+      _setError('');
+
+      final response = await _api.apiPost(
+        'auth/forgot-password',
+        {'email': email.trim().toLowerCase()},
+        auth: false,
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        _setError(_extractError(response.body));
+      }
+    } catch (e) {
+      _setError('Unable to send reset email. Please try again.');
+    } finally {
+      _setLoading(false);
+    }
+    return false;
+  }
+
   // ── Sign out ──────────────────────────────────────────────────────────────
 
   Future<void> signOut({bool silent = false}) async {
@@ -287,13 +316,15 @@ class MjengoAuthController extends GetxController {
 
   UserModel _parseUser(Map<String, dynamic> json) {
     return UserModel(
-      uid:        json['id']?.toString() ?? '',
-      email:      json['email'] as String?,
-      firstName:  json['first_name'] as String?,
-      lastName:   json['last_name'] as String?,
+      uid:         json['id']?.toString() ?? '',
+      email:       json['email'] as String?,
+      firstName:   json['first_name'] as String?,
+      lastName:    json['last_name'] as String?,
       phoneNumber: json['phone'] as String?,
       photoURL:    json['profile_image'] as String?,
       bio:         json['bio'] as String?,
+      location:    json['location'] as String?,
+      company:     json['company'] as String?,
       provider:    'email',
       isActive:    json['is_active'] as bool? ?? true,
       createdAt:   json['created_at'] != null

@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
+import 'account_screen.dart';
+import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
 import 'contact_screen.dart';
@@ -66,25 +68,17 @@ class _SettingsView extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               title: 'Account',
               subtitle: 'Edit profile, change email or password',
-              onTap: () => _showComingSoon('Account'),
-            ),
-            _SettingsItem(
-              icon: Icons.bookmark_border_rounded,
-              title: 'Saved Articles',
-              subtitle: 'Reading list, bookmarks & history',
-              onTap: () => _showComingSoon('Saved Articles'),
+              onTap: () => Navigator.of(Get.context!).push(
+                MaterialPageRoute(builder: (_) => const AccountScreen()),
+              ),
             ),
             _SettingsItem(
               icon: Icons.notifications_none_rounded,
               title: 'Notifications',
               subtitle: 'New posts, comments & newsletters',
-              onTap: () => _showComingSoon('Notifications'),
-            ),
-            _SettingsItem(
-              icon: Icons.tune_rounded,
-              title: 'Reading Preferences',
-              subtitle: 'Font size, categories & language',
-              onTap: () => _showComingSoon('Reading Preferences'),
+              onTap: () => Navigator.of(Get.context!).push(
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              ),
             ),
             _SettingsItem(
               icon: Icons.shield_outlined,
@@ -173,9 +167,15 @@ class _ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = user?.fullName ?? user?.firstName ?? 'User';
-    final bio = (user?.bio != null && user!.bio!.isNotEmpty)
+    final _rawSubtitle = (user?.bio != null && user!.bio!.isNotEmpty)
         ? user!.bio!
-        : (user?.email ?? '');
+        : (user?.company != null && user!.company!.isNotEmpty)
+            ? user!.company!
+            : (user?.email ?? '');
+    // Mask email-looking subtitles for privacy
+    final bio = _rawSubtitle.contains('@')
+        ? _maskEmail(_rawSubtitle)
+        : _rawSubtitle;
     final initials = user?.initials ?? '?';
     final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
 
@@ -238,6 +238,20 @@ class _ProfileCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _maskEmail(String email) {
+    final parts = email.split('@');
+    if (parts.length != 2) return email;
+    final local = parts[0];
+    final domain = parts[1].split('.');
+    final maskedLocal = local.length <= 2
+        ? '*' * local.length
+        : '${local[0]}${'*' * (local.length - 1)}';
+    final d = domain[0];
+    final maskedDomain =
+        d.length <= 2 ? '*' * d.length : '${d[0]}${'*' * (d.length - 1)}';
+    return '$maskedLocal@$maskedDomain.${domain.sublist(1).join('.')}';
   }
 
   Widget _initialsWidget(String initials) => Center(
