@@ -1,0 +1,134 @@
+// lib/projects/controllers/projects_controller.dart
+import 'package:get/get.dart';
+import '../models/project_model.dart';
+import '../services/projects_service.dart';
+
+class ProjectsController extends GetxController {
+  final _service = ProjectsService();
+
+  final projects = <Project>[].obs;
+  final featuredProjects = <Project>[].obs;
+  final clients = <ProjectClient>[].obs;
+  final isLoading = false.obs;
+  final errorMessage = ''.obs;
+
+  final selectedStatus = ''.obs;
+  final selectedClientSlug = ''.obs;
+  final searchQuery = ''.obs;
+
+  int _page = 1;
+  bool _hasMore = true;
+  bool _isFetchingMore = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchAll();
+  }
+
+  Future<void> fetchAll() async {
+    isLoading.value = true;
+    errorMessage.value = '';
+    _page = 1;
+    _hasMore = true;
+
+    final results = await Future.wait([
+      _service.getProjects(featured: true, perPage: 4),
+      _service.getProjects(
+        status: selectedStatus.value,
+        clientSlug: selectedClientSlug.value,
+        q: searchQuery.value,
+        page: 1,
+      ),
+      _service.getClients(),
+    ]);
+
+    featuredProjects.value = results[0] as List<Project>;
+    projects.value = results[1] as List<Project>;
+    clients.value = results[2] as List<ProjectClient>;
+    _hasMore = (results[1] as List).length >= 12;
+
+    isLoading.value = false;
+  }
+
+  Future<void> applyFilters({
+    String? status,
+    String? clientSlug,
+    String? q,
+  }) async {
+    selectedStatus.value = status ?? '';
+    selectedClientSlug.value = clientSlug ?? '';
+    searchQuery.value = q ?? '';
+    await fetchAll();
+  }
+
+  Future<void> loadMore() async {
+    if (!_hasMore || _isFetchingMore) return;
+    _isFetchingMore = true;
+    _page++;
+    final more = await _service.getProjects(
+      status: selectedStatus.value,
+      clientSlug: selectedClientSlug.value,
+      q: searchQuery.value,
+      page: _page,
+    );
+    projects.addAll(more);
+    _hasMore = more.length >= 12;
+    _isFetchingMore = false;
+  }
+}
+
+class ProjectDetailController extends GetxController {
+  final _service = ProjectsService();
+
+  final project = Rxn<Project>();
+  final isLoading = true.obs;
+  final errorMessage = ''.obs;
+  final userRating = 0.obs;
+  final ratingSubmitted = false.obs;
+  final ratingLoading = false.obs;
+
+  final String slug;
+  ProjectDetailController(this.slug);
+
+  @override
+  void onInit() {
+    super.onInit();
+    load();
+  }
+
+  Future<void> load() async {
+    isLoading.value = true;
+    errorMessage.value = '';
+    final p = await _service.getProject(slug);
+    if (p != null) {
+      project.value = p;
+    } else {
+      errorMessage.value = 'Could not load project details.';
+    }
+    isLoading.value = false;
+  }
+
+  Future<void> submitRating(int rating) async {
+    if (project.value == null) return;
+    ratingLoading.value = true;
+    final ok = await _service.rateProject(project.value!.id, rating);
+    if (ok) {
+      userRating.value = rating;
+      ratingSubmitted.value = true;
+      Get.snackbar(
+        'Thanks!',
+        'Your rating has been recorded.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    } else {
+      Get.snackbar(
+        'Error',
+        'Could not submit rating. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+    ratingLoading.value = false;
+  }
+}

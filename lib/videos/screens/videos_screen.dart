@@ -1,16 +1,17 @@
 // lib/videos/screens/videos_screen.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../controllers/videos_controller.dart';
 import '../models/video_model.dart';
+import 'video_player_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens — matches the rest of the app
 // ─────────────────────────────────────────────────────────────────────────────
-const _kPurple  = Color(0xFF6C63FF);
+const _kBlue    = Color(0xFF2563EB);
 const _kDark    = Color(0xFF111827);
 const _kSubtext = Color(0xFF9CA3AF);
 const _kBg      = Color(0xFFF3F4F6);
@@ -149,7 +150,7 @@ class _SearchBar extends StatelessWidget {
                   children: [
                     Icon(Icons.tune_rounded,
                         size: 18,
-                        color: active ? _kPurple : const Color(0xFF374151)),
+                        color: active ? _kBlue : const Color(0xFF374151)),
                     if (active)
                       Positioned(
                         top: -3,
@@ -158,7 +159,7 @@ class _SearchBar extends StatelessWidget {
                           width: 7,
                           height: 7,
                           decoration: const BoxDecoration(
-                            color: _kPurple,
+                            color: _kBlue,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -313,7 +314,7 @@ class _VideoList extends StatelessWidget {
               }
               return VideoListTile(
                 video: ctrl.videos[i],
-                onTap: () => _launchYouTube(ctrl.videos[i].youtubeUrl),
+                onTap: () => _openVideo(ctrl.videos[i]),
               );
             },
           ),
@@ -430,7 +431,7 @@ class VideoListTile extends StatelessWidget {
                       video.category!.name,
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
-                        color: _kPurple,
+                        color: _kBlue,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -603,7 +604,7 @@ class _FilterSheet extends StatelessWidget {
                                   style: GoogleFonts.montserrat(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: _kPurple)),
+                                      color: _kBlue)),
                             )
                           : const SizedBox.shrink()),
                     ],
@@ -704,10 +705,10 @@ class _FilterOption extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 3),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? _kPurple.withValues(alpha: 0.08) : Colors.transparent,
+          color: isSelected ? _kBlue.withValues(alpha: 0.08) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? _kPurple : Colors.transparent,
+            color: isSelected ? _kBlue : Colors.transparent,
             width: 1.2,
           ),
         ),
@@ -715,7 +716,7 @@ class _FilterOption extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 18,
-                color: isSelected ? _kPurple : const Color(0xFF6B7280)),
+                color: isSelected ? _kBlue : const Color(0xFF6B7280)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -723,12 +724,12 @@ class _FilterOption extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? _kPurple : const Color(0xFF111827),
+                  color: isSelected ? _kBlue : const Color(0xFF111827),
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded, size: 18, color: _kPurple),
+              const Icon(Icons.check_circle_rounded, size: 18, color: _kBlue),
           ],
         ),
       ),
@@ -740,16 +741,19 @@ class _FilterOption extends StatelessWidget {
 //  Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
+void _openVideo(video) {
+  if (kIsWeb) {
+    _launchYouTube(video.youtubeUrl);
+  } else {
+    Get.to(
+      () => VideoPlayerScreen(video: video),
+      transition: Transition.cupertino,
+    );
+  }
+}
+
 Future<void> _launchYouTube(String url) async {
   final uri = Uri.parse(url);
-  try {
-    final ytApp =
-        Uri.parse(url.replaceFirst('https://www.youtube.com', 'youtube://'));
-    if (await canLaunchUrl(ytApp)) {
-      await launchUrl(ytApp, mode: LaunchMode.externalApplication);
-      return;
-    }
-  } catch (_) {}
   if (await canLaunchUrl(uri)) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }

@@ -404,7 +404,6 @@ class _ResultDivider extends StatelessWidget {
       const Divider(color: _kDivider, height: 16);
 }
 
-/// Result card with purple left border
 class _ResultCard extends StatelessWidget {
   final String title;
   final List<Widget> rows;
@@ -418,7 +417,6 @@ class _ResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _kCard,
         borderRadius: BorderRadius.circular(16),
-        border: const Border(left: BorderSide(color: _kPurple, width: 4)),
         boxShadow: const [
           BoxShadow(color: Color(0x08000000), blurRadius: 12, offset: Offset(0, 4)),
         ],
@@ -461,7 +459,8 @@ class _BudgetCalculator extends StatefulWidget {
 }
 
 class _BudgetCalculatorState extends State<_BudgetCalculator> {
-  final _areaCtrl = TextEditingController();
+  final _areaCtrl    = TextEditingController();
+  final _scrollCtrl  = ScrollController();
   String _finishType = 'standard';
 
   static const _finishTypes = {
@@ -492,17 +491,28 @@ class _BudgetCalculatorState extends State<_BudgetCalculator> {
         'total_cost':     total,
       };
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
     _areaCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -663,6 +673,7 @@ class _ConcreteCalculatorState extends State<_ConcreteCalculator> {
   final _widthCtrl   = TextEditingController();
   final _depthCtrl   = TextEditingController();
   final _volumeCtrl  = TextEditingController();
+  final _scrollCtrl  = ScrollController();
 
   String _concClass   = 'class_20';
   double _safetyFactor = 1.3;
@@ -731,6 +742,15 @@ class _ConcreteCalculatorState extends State<_ConcreteCalculator> {
         'ballast_m3':       bVol,
       };
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -739,12 +759,14 @@ class _ConcreteCalculatorState extends State<_ConcreteCalculator> {
     _widthCtrl.dispose();
     _depthCtrl.dispose();
     _volumeCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
         children: [
@@ -883,6 +905,7 @@ class _PlasterCalculator extends StatefulWidget {
 class _PlasterCalculatorState extends State<_PlasterCalculator> {
   final _areaCtrl      = TextEditingController();
   final _thicknessCtrl = TextEditingController(text: '15');
+  final _scrollCtrl    = ScrollController();
   String _mixType = 'standard';
 
   static const _mixes = {
@@ -934,18 +957,29 @@ class _PlasterCalculatorState extends State<_PlasterCalculator> {
         'sand_tonnes': sKg / 1000,
       };
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
     _areaCtrl.dispose();
     _thicknessCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
         children: [
@@ -1023,7 +1057,8 @@ class _UnitConverter extends StatefulWidget {
 
 class _UnitConverterState extends State<_UnitConverter> {
   bool _isLength = true;
-  final _valueCtrl = TextEditingController();
+  final _valueCtrl  = TextEditingController();
+  final _scrollCtrl = ScrollController();
 
   // Length units → factor to meters
   static const _lengthUnits = {
@@ -1087,6 +1122,15 @@ class _UnitConverterState extends State<_UnitConverter> {
         'to':   '${_smartFormat(result)} $_toUnit',
       };
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   /// Format result: show up to 8 significant figures, strip trailing zeros
@@ -1101,6 +1145,7 @@ class _UnitConverterState extends State<_UnitConverter> {
   @override
   void dispose() {
     _valueCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -1113,6 +1158,7 @@ class _UnitConverterState extends State<_UnitConverter> {
     if (!unitKeys.contains(_toUnit))   _toUnit   = unitKeys[1];
 
     return SingleChildScrollView(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
         children: [

@@ -8,6 +8,7 @@ import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
 import '../videos/screens/videos_screen.dart';
 import '../tools/tools_screen.dart';
+import '../hub/screens/hub_screen.dart';
 import '../profile/profile_screen.dart';
 
 class MainNavigation extends StatelessWidget {
@@ -24,11 +25,12 @@ class MainNavigation extends StatelessWidget {
         body: Obx(() => IndexedStack(
               index: ctrl.currentIndex.value,
               children: const [
-                HomeScreen(),
-                DiscoverScreen(),
-                VideosScreen(),
-                ToolsScreen(),
-                ProfileScreen(),
+                HomeScreen(),   // 0
+                HubScreen(),    // 1
+                DiscoverScreen(), // 2
+                VideosScreen(), // 3
+                ToolsScreen(),  // 4
+                ProfileScreen(), // 5
               ],
             )),
         bottomNavigationBar: Obx(() => _BottomNav(
@@ -58,6 +60,11 @@ class _BottomNav extends StatelessWidget {
         activeIcon: Icons.home_rounded,
         inactiveIcon: Icons.home_outlined,
         label: 'Home',
+      ),
+      _NavData(
+        activeIcon: Icons.hub_rounded,
+        inactiveIcon: Icons.hub_outlined,
+        label: 'Hub',
       ),
       _NavData(
         activeIcon: Icons.search_rounded,

@@ -1,13 +1,15 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 
 class BaseService extends GetConnect {
 
 
-  static const String _apiBase = 'https://mjengohub.co.ke/api/v1/';
+  //static const String _apiBase = 'https://mjengohub.co.ke/api/v1/';
 
-  //static const String _devBase  = 'http://192.168.80.1:5001/api/v1/';
+  static const String _apiBase  = 'http://192.168.0.102:8080/api/v1/';
+  String get apiBase => _apiBase;
   //static const String _testBase = 'https://test.mjengohub.co.ke/api/v1/';
 
   bool _isSetup = false;
@@ -298,6 +300,34 @@ class BaseService extends GetConnect {
 
     print('✅ Response OK: $code');
     return response;
+  }
+
+  Future<int> uploadFile(
+    String endpoint,
+    List<int> bytes,
+    String filename, {
+    String fieldName = 'file',
+    Map<String, String>? fields,
+  }) async {
+    _setup();
+    try {
+      final token = await _getToken();
+      final uri = Uri.parse('$_apiBase${endpoint.replaceAll(RegExp(r'^/+'), '')}');
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Accept'] = 'application/json';
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      if (fields != null) request.fields.addAll(fields);
+      request.files.add(http.MultipartFile.fromBytes(
+        fieldName,
+        bytes,
+        filename: filename,
+      ));
+      final streamed = await request.send();
+      return streamed.statusCode;
+    } catch (e) {
+      print('uploadFile error: $e');
+      return 500;
+    }
   }
 
   Future<bool> testConnection() async {

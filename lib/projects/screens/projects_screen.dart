@@ -1,0 +1,572 @@
+// lib/projects/screens/projects_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../controllers/projects_controller.dart';
+import '../models/project_model.dart';
+import 'project_detail_screen.dart';
+
+const _kBlue     = Color(0xFF2563EB);
+const _kBg       = Color(0xFFF0F4FF);
+const _kDark     = Color(0xFF1A1A2E);
+const _kSubtext  = Color(0xFF8888AA);
+const _kDivider  = Color(0xFFEEEEF5);
+const _kCard     = Colors.white;
+
+class ProjectsScreen extends StatelessWidget {
+  const ProjectsScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = Get.put(ProjectsController());
+    final topPad = MediaQuery.of(context).padding.top;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: _kBg,
+        body: Obx(() {
+          if (ctrl.isLoading.value) return _buildLoading(topPad);
+          return _buildContent(context, ctrl, topPad);
+        }),
+      ),
+    );
+  }
+
+  Widget _buildLoading(double topPad) {
+    return Column(
+      children: [
+        _buildHeader(null, topPad),
+        const Expanded(
+          child: Center(child: CircularProgressIndicator(color: _kBlue)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent(
+      BuildContext context, ProjectsController ctrl, double topPad) {
+    return Column(
+      children: [
+        _buildHeader(ctrl, topPad),
+        Expanded(
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (n) {
+              if (n is ScrollEndNotification &&
+                  n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
+                ctrl.loadMore();
+              }
+              return false;
+            },
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              children: [
+                // Client filter chips
+                if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
+
+                // Featured projects
+                if (ctrl.featuredProjects.isNotEmpty)
+                  _buildFeaturedSection(ctrl),
+
+                // All projects grid
+                _buildProjectsGrid(ctrl),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(ProjectsController? ctrl, double topPad) {
+    return Container(
+      color: _kCard,
+      padding: EdgeInsets.fromLTRB(20, topPad + 16, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => Get.back(),
+                child: const Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 20, color: _kDark),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Infrastructure Projects',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _kDark,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Kenya\'s construction & infrastructure projects',
+            style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
+          ),
+          if (ctrl != null) ...[
+            const SizedBox(height: 12),
+            // Search bar
+            TextField(
+              onSubmitted: (q) => ctrl.applyFilters(q: q),
+              style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
+              decoration: InputDecoration(
+                hintText: 'Search projects…',
+                hintStyle:
+                    GoogleFonts.montserrat(fontSize: 13, color: _kSubtext),
+                prefixIcon:
+                    const Icon(Icons.search_rounded, color: _kSubtext, size: 20),
+                filled: true,
+                fillColor: _kBg,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _kDivider),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _kDivider),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _kBlue, width: 1.5),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClientChips(ProjectsController ctrl) {
+    return Container(
+      height: 46,
+      color: _kCard,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: ctrl.clients.length + 1,
+        itemBuilder: (_, i) {
+          if (i == 0) {
+            return _FilterChip(
+              label: 'All',
+              selected: ctrl.selectedClientSlug.value.isEmpty,
+              onTap: () => ctrl.applyFilters(clientSlug: ''),
+            );
+          }
+          final client = ctrl.clients[i - 1];
+          return _FilterChip(
+            label: client.name,
+            selected: ctrl.selectedClientSlug.value == client.slug,
+            onTap: () => ctrl.applyFilters(clientSlug: client.slug),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFeaturedSection(ProjectsController ctrl) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Notable Projects',
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _kDark,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: ctrl.featuredProjects.length,
+            itemBuilder: (_, i) =>
+                _FeaturedProjectCard(project: ctrl.featuredProjects[i]),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Divider(height: 1, color: _kDivider),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'All Projects',
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _kDark,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget _buildProjectsGrid(ProjectsController ctrl) {
+    if (ctrl.projects.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(32),
+        child: Center(
+          child: Text(
+            'No projects found.',
+            style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: ctrl.projects
+            .map((p) => _ProjectListTile(project: p))
+            .toList(),
+      ),
+    );
+  }
+}
+
+// ── Featured card (horizontal scroll) ────────────────────────────────────────
+
+class _FeaturedProjectCard extends StatelessWidget {
+  final Project project;
+  const _FeaturedProjectCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _kDivider),
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(14)),
+              child: SizedBox(
+                height: 110,
+                child: project.imageUrl != null
+                    ? Image.network(project.imageUrl!,
+                        fit: BoxFit.cover, width: double.infinity,
+                        errorBuilder: (_, __, ___) => _placeholder())
+                    : _placeholder(),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      project.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _kDark,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (project.county != null || project.location != null)
+                      Text(
+                        '📍 ${project.county ?? project.location}',
+                        style: GoogleFonts.montserrat(
+                            fontSize: 10.5, color: _kSubtext),
+                      ),
+                    const Spacer(),
+                    _ProgressBar(
+                        value: project.progressPercent / 100,
+                        label: '${project.progressPercent}%'),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder() => Container(
+        color: const Color(0xFF1E3A5F),
+        child: const Center(
+          child: Icon(Icons.business_rounded,
+              color: Colors.white38, size: 36),
+        ),
+      );
+}
+
+// ── Project list tile (main list) ─────────────────────────────────────────────
+
+class _ProjectListTile extends StatelessWidget {
+  final Project project;
+  const _ProjectListTile({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _kDivider),
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x05000000), blurRadius: 6, offset: Offset(0, 2))
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(14),
+                bottomLeft: Radius.circular(14),
+              ),
+              child: SizedBox(
+                width: 100,
+                height: 100,
+                child: project.imageUrl != null
+                    ? Image.network(project.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _thumb())
+                    : _thumb(),
+              ),
+            ),
+            // Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Status badge
+                    Row(
+                      children: [
+                        _StatusBadge(status: project.status),
+                        if (project.client != null) ...[
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              project.client!.name,
+                              style: GoogleFonts.montserrat(
+                                  fontSize: 10, color: _kSubtext),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      project.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _kDark,
+                        height: 1.3,
+                      ),
+                    ),
+                    if (project.county != null || project.location != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        '📍 ${project.county ?? project.location}',
+                        style: GoogleFonts.montserrat(
+                            fontSize: 11, color: _kSubtext),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    _ProgressBar(
+                        value: project.progressPercent / 100,
+                        label: '${project.progressPercent}% complete'),
+                    if (project.averageRating != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '⭐ ${project.ratingDisplay} (${project.ratingCount} ratings)',
+                        style: GoogleFonts.montserrat(
+                            fontSize: 10.5, color: _kSubtext),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(right: 12, top: 12),
+              child: Icon(Icons.chevron_right_rounded,
+                  color: _kSubtext, size: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _thumb() => Container(
+        color: const Color(0xFF1E3A5F),
+        child: const Center(
+            child: Icon(Icons.business_rounded,
+                color: Colors.white38, size: 28)),
+      );
+}
+
+// ── Shared widgets ─────────────────────────────────────────────────────────────
+
+class _ProgressBar extends StatelessWidget {
+  final double value;
+  final String label;
+  const _ProgressBar({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Progress',
+                style: GoogleFonts.montserrat(
+                    fontSize: 10, color: _kSubtext)),
+            Text(label,
+                style: GoogleFonts.montserrat(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: _kBlue)),
+          ],
+        ),
+        const SizedBox(height: 3),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: value.clamp(0.0, 1.0),
+            minHeight: 5,
+            backgroundColor: _kDivider,
+            valueColor: const AlwaysStoppedAnimation<Color>(_kBlue),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String status;
+  const _StatusBadge({required this.status});
+
+  Color get _color {
+    switch (status) {
+      case 'completed': return const Color(0xFF16A34A);
+      case 'ongoing': return _kBlue;
+      case 'suspended': return const Color(0xFFDC2626);
+      default: return _kSubtext;
+    }
+  }
+
+  String get _label {
+    switch (status) {
+      case 'completed': return 'Completed';
+      case 'ongoing': return 'Ongoing';
+      case 'suspended': return 'Suspended';
+      case 'planned': return 'Planned';
+      default: return status;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: _color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        _label,
+        style: GoogleFonts.montserrat(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w700,
+          color: _color,
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _FilterChip(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: selected ? _kBlue : _kBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? _kBlue : _kDivider,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : _kSubtext,
+          ),
+        ),
+      ),
+    );
+  }
+}

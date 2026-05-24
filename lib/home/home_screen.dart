@@ -1,4 +1,5 @@
 // lib/home/home_screen.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ import '../news/widgets/breaking_news_card.dart';
 import '../point/routes/app_routes.dart';
 import '../videos/controllers/videos_controller.dart';
 import '../videos/models/video_model.dart';
+import '../videos/screens/video_player_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -77,6 +79,35 @@ class HomeScreen extends StatelessWidget {
                 child: _greetingWidget(),
               ),
 
+              // Road Safety button (top-right, floating over image)
+              Positioned(
+                top: topPad + 8,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () => Get.toNamed('/share-barabara'),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.report_problem_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
+
               // Page dot indicators (bottom-right of hero)
               Positioned(
                 bottom: 30,
@@ -101,8 +132,11 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── Explore Quick Actions ──────────────────────────────
+                  const _ExploreSectionsWidget(),
+
                   // ── Breaking News ──────────────────────────────────────
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 4),
                   _breakingHeader(ctrl),
                   const SizedBox(height: 14),
                   SizedBox(height: 220, child: _breakingList(ctrl)),
@@ -139,7 +173,7 @@ class HomeScreen extends StatelessWidget {
           GestureDetector(
             onTap: () {
               final navCtrl = Get.find<MainNavController>();
-              navCtrl.currentIndex.value = 1;
+              navCtrl.currentIndex.value = 2; // Discover
             },
             child: Text(
               'More',
@@ -373,7 +407,7 @@ class _HomeVideosSection extends StatelessWidget {
                   onTap: () {
                     // Navigate to Videos tab (index 2)
                     final navCtrl = Get.find<MainNavController>();
-                    navCtrl.currentIndex.value = 2;
+                    navCtrl.currentIndex.value = 3; // Videos
                   },
                   child: Text(
                     'See All',
@@ -421,7 +455,16 @@ class _HomeVideoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _launchYouTube(video.youtubeUrl),
+      onTap: () {
+        if (kIsWeb) {
+          _launchYouTube(video.youtubeUrl);
+        } else {
+          Get.to(
+            () => VideoPlayerScreen(video: video),
+            transition: Transition.cupertino,
+          );
+        }
+      },
       child: Container(
         width: 160,
         margin: const EdgeInsets.only(right: 12),
@@ -647,20 +690,8 @@ class _VideosSectionShimmer extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
 Future<void> _launchYouTube(String url) async {
   final uri = Uri.parse(url);
-  try {
-    final ytApp =
-        Uri.parse(url.replaceFirst('https://www.youtube.com', 'youtube://'));
-    if (await canLaunchUrl(ytApp)) {
-      await launchUrl(ytApp, mode: LaunchMode.externalApplication);
-      return;
-    }
-  } catch (_) {}
   if (await canLaunchUrl(uri)) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
@@ -670,6 +701,104 @@ String _formatViews(int views) {
   if (views >= 1000000) return '${(views / 1000000).toStringAsFixed(1)}M';
   if (views >= 1000) return '${(views / 1000).toStringAsFixed(1)}K';
   return '$views';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  EXPLORE SECTIONS WIDGET  –  compact horizontal icon pills
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ExploreSectionsWidget extends StatelessWidget {
+  const _ExploreSectionsWidget();
+
+  static const _sections = [
+    _SectionData(
+      label: 'Projects',
+      icon: Icons.corporate_fare_rounded,
+      route: '/projects',
+    ),
+    _SectionData(
+      label: 'Site Safety',
+      icon: Icons.report_problem_rounded,
+      route: '/site-safety',
+    ),
+    _SectionData(
+      label: 'Mshikamano',
+      icon: Icons.volunteer_activism_rounded,
+      route: '/mshikamano',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: _sections
+            .expand((s) => [
+                  _ExploreIconPill(data: s),
+                  if (s != _sections.last) const SizedBox(width: 24),
+                ])
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _SectionData {
+  final String label;
+  final IconData icon;
+  final String route;
+  const _SectionData({
+    required this.label,
+    required this.icon,
+    required this.route,
+  });
+}
+
+class _ExploreIconPill extends StatelessWidget {
+  final _SectionData data;
+  const _ExploreIconPill({required this.data});
+
+  static const _bubbleBg  = Color(0xFFEFF6FF); // soft blue bubble
+  static const _iconColor  = Color(0xFF2563EB); // blue icon
+  static const _labelColor = Color(0xFF111827);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(data.route),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Rounded icon bubble
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: _bubbleBg,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(data.icon, color: _iconColor, size: 26),
+          ),
+          const SizedBox(height: 6),
+          // Label — wide enough for "Mshikamano" on one line
+          Text(
+            data.label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.visible,
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: _labelColor,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // MainNavController is defined here for convenience (used by HomeScreen)

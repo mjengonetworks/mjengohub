@@ -23,8 +23,7 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
   late Animation<double> _logoScale;
   late Animation<double> _logoOpacity;
 
-  /// Matches home hero / app chrome (see `HomeScreen`).
-  static const Color _brandPrimary = Color(0xFF22C55E);
+  static const Color _brandPrimary = Colors.white;
 
   @override
   void initState() {
@@ -178,15 +177,15 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     // On web, show minimal loading screen while navigating
     if (kIsWeb) {
       return const Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(_brandPrimary),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
           ),
         ),
       );
     }
 
-    // Mobile: Solid green background with centred logo only.
     return Scaffold(
       backgroundColor: _brandPrimary,
       body: Center(
@@ -197,14 +196,10 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
               opacity: _logoOpacity.value,
               child: Transform.scale(
                 scale: _logoScale.value,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: Image.asset(
-                    'assets/icon.jpg',
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.cover,
-                  ),
+                child: Image.asset(
+                  'assets/mjengo_hub_logo.png',
+                  width: 200,
+                  fit: BoxFit.contain,
                 ),
               ),
             );

@@ -3,7 +3,11 @@
     "allow": [
       "Bash(dart format *)",
       "Bash(dir /b *.py)",
-      "Bash(flutter build *)"
+      "Bash(flutter build *)",
+      "PowerShell(\\(Get-Content \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\\\\admin.py\" | Measure-Object -Line\\).Lines)",
+      "Bash(python -c \"from application import app; from admin import admin_bp; app.register_blueprint\\(admin_bp\\)\")",
+      "Bash(python -c \"import admin\")",
+      "Bash(python -c ' *)"
     ]
   }
 }

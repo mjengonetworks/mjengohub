@@ -9,6 +9,11 @@ import '../../onboarding/onboarding_screen.dart';
 import '../../splash/splash_screen.dart';
 import '../../navigation/main_navigation.dart';
 import '../../news/screens/article_detail_screen.dart';
+import '../../projects/screens/projects_screen.dart';
+import '../../projects/screens/project_detail_screen.dart';
+import '../../incidents/screens/incidents_list_screen.dart';
+import '../../incidents/screens/incident_detail_screen.dart';
+import '../../mental_health/screens/mshikamano_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -21,6 +26,14 @@ class AppRoutes {
   static const String home           = '/home';
   static const String articleDetail  = '/article';
 
+  // New sections
+  static const String projects        = '/projects';
+  static const String projectDetail   = '/project';
+  static const String shareBarabara   = '/share-barabara';
+  static const String siteSafety      = '/site-safety';
+  static const String incidentDetail  = '/incident';
+  static const String mshikamano      = '/mshikamano';
+
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
     GetPage(name: onboarding,    page: () => const OnboardingScreen()),
@@ -31,5 +44,35 @@ class AppRoutes {
     GetPage(name: mfaEnroll,     page: () => const MfaEnrollScreen()),
     GetPage(name: home,          page: () => const MainNavigation()),
     GetPage(name: articleDetail, page: () => const ArticleDetailScreen()),
+
+    // Projects
+    GetPage(name: projects,       page: () => const ProjectsScreen()),
+    GetPage(
+      name: projectDetail,
+      page: () {
+        final slug = Get.arguments as String? ?? '';
+        return ProjectDetailScreen(slug: slug);
+      },
+    ),
+
+    // Incidents
+    GetPage(
+      name: shareBarabara,
+      page: () => const IncidentsListScreen(incidentType: 'road_safety'),
+    ),
+    GetPage(
+      name: siteSafety,
+      page: () => const IncidentsListScreen(incidentType: 'site_safety'),
+    ),
+    GetPage(
+      name: incidentDetail,
+      page: () {
+        final slug = Get.arguments as String? ?? '';
+        return IncidentDetailScreen(slug: slug);
+      },
+    ),
+
+    // Mental Health
+    GetPage(name: mshikamano, page: () => const MshikamanoScreen()),
   ];
 }
