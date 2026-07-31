@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MjengoService extends GetConnect {
  static const String _apiBaseUrl = 'https://mjengohub.co.ke/api/v1/';
 
-   //static const String _apiBaseUrl = 'http://192.168.0.102:8080/api/v1/';
+  //static const String _apiBaseUrl = 'http://192.168.0.102:8080/api/v1/';
 
 
   static const String _accessTokenKey  = 'mjengo_access_token';
@@ -31,8 +31,14 @@ class MjengoService extends GetConnect {
     httpClient.timeout = const Duration(seconds: 30);
 
     httpClient.addRequestModifier<dynamic>((req) async {
-      req.headers['Accept']       = 'application/json';
-      req.headers['Content-Type'] = 'application/json';
+      req.headers['Accept'] = 'application/json';
+      // Only set Content-Type on requests that have a body (POST / PUT / PATCH).
+      // Setting it on GET triggers the browser to also set content-length,
+      // which is a forbidden header on web and causes request failures.
+      final method = req.method?.toUpperCase() ?? '';
+      if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
+        req.headers['Content-Type'] = 'application/json';
+      }
       final token = await getAccessToken();
       if (token != null) req.headers['Authorization'] = 'Bearer $token';
       return req;

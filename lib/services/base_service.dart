@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class BaseService extends GetConnect {
 
 
-  static const String _apiBase = 'https://mjengohub.co.ke/api/v1/';
+ static const String _apiBase = 'https://mjengohub.co.ke/api/v1/';
 
   //static const String _apiBase  = 'http://192.168.0.102:8080/api/v1/';
   String get apiBase => _apiBase;

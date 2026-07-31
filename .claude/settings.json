@@ -15,7 +15,8 @@
       "Bash(python3 -c \"from werkzeug.security import generate_password_hash; print\\(generate_password_hash\\('Juma@2000'\\)\\)\")",
       "PowerShell(& \"C:\\\\Python314\\\\python.exe\" -m pip install werkzeug -q)",
       "PowerShell(& \"C:\\\\Python314\\\\python.exe\" -c \"from werkzeug.security import generate_password_hash; print\\(generate_password_hash\\('Juma@2000'\\)\\)\")",
-      "Bash(dir \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\" /s /b)"
+      "Bash(dir \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\" /s /b)",
+      "Bash(del \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Desktop\\\\Mjengo\\\\Mjengo\\\\run_migration.py\")"
     ]
   }
 }
