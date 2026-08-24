@@ -1,14 +1,12 @@
-name: Flutter Web CI/CD Pipeline
+name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   build-and-deploy:
@@ -26,21 +24,11 @@ jobs:
         run: flutter pub get
 
       - name: Build Web
-        run: flutter build web --release --base-href "/mjengohub/"
+        run: flutter build web --release
 
-      # Deploy to Production only on push to main
-      - name: Deploy to Live Site (mjengohub.co.ke)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Deploy to gh-pages
         uses: PeaceIris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
           publish_branch: gh-pages
-
-      # Deploy Preview for Pull Requests
-      - name: Deploy Staging Preview
-        if: github.event_name == 'pull_request'
-        uses: RossAsciuto/surge-preview-action@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dir: ./build/web
