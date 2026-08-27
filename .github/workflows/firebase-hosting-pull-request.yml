@@ -1,0 +1,39 @@
+name: Deploy to Firebase Hosting Preview & Staging
+on:
+  pull_request:
+  push:
+    branches:
+      - staging
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  build_and_preview:
+    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release
+
+      - name: Deploy to Firebase Hosting Preview Channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MJENGOHUB_STAGING_176D6 }}
+          projectId: mjengohub-staging-176d6
+          channelId: staging
