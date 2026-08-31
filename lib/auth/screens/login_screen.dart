@@ -96,6 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? _SignUpForm(key: const ValueKey('signup'))
                   : _LoginForm(key: const ValueKey('login')),
             ),
+
+            const SizedBox(height: 20),
+            _GuestButton(),
           ],
         ),
       ),
@@ -713,6 +716,33 @@ class _GoogleButton extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+class _GuestButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: TextButton(
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          Get.find<MjengoAuthController>().continueAsGuest();
+        },
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        child: Text(
+          'Continue as Guest',
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: _textGray,
+            decoration: TextDecoration.underline,
+            decorationColor: _textGray,
+          ),
+        ),
+      ),
+    );
   }
 }
 

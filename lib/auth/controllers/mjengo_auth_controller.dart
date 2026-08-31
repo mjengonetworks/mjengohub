@@ -1,5 +1,9 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../services/mjengo_service.dart';
 import '../models/user_model.dart';
@@ -15,6 +19,14 @@ class MjengoAuthController extends GetxController {
   final RxString        _errorMessage     = ''.obs;
   final RxBool          _isInitialized    = false.obs;
 
+  // Web OAuth client registered on the Mjengo Hub backend — used to obtain a
+  // Google ID token whose audience the server can verify.
+  static const String _googleClientId =
+      '729219361762-7pcsonpov16fit17ettakrj1cufsjel2.apps.googleusercontent.com';
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  Future<void>? _googleSignInInit;
+
   // ── Getters ───────────────────────────────────────────────────────────────
 
   UserModel? get currentUser      => _user.value;
@@ -29,6 +41,24 @@ class MjengoAuthController extends GetxController {
   void onInit() {
     super.onInit();
     _restoreSession();
+    // Kick off Google Sign-In initialization eagerly (and only once) so the
+    // later call to authenticate() from the button's onTap is the *first*
+    // await in that gesture — required for the popup/GIS flow to be treated
+    // as user-initiated on web.
+    if (_isGoogleSignInSupported) {
+      _googleSignInInit = _googleSignIn
+          .initialize(serverClientId: _googleClientId)
+          .catchError((_) {});
+    }
+  }
+
+  bool get _isGoogleSignInSupported {
+    if (kIsWeb) return true;
+    try {
+      return Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Restore session from saved JWT on app start.
@@ -196,17 +226,68 @@ class MjengoAuthController extends GetxController {
     return false;
   }
 
-  // ── Google sign-in (placeholder) ──────────────────────────────────────────
+  // ── Google sign-in ────────────────────────────────────────────────────────
 
   Future<void> signInWithGoogle() async {
-    Get.snackbar(
-      'Coming Soon',
-      'Google sign-in will be available soon.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 10,
-      duration: const Duration(seconds: 3),
-    );
+    if (!_isGoogleSignInSupported) {
+      _setError('Google sign-in is not available on this platform.');
+      return;
+    }
+
+    try {
+      _setLoading(true);
+      _setError('');
+
+      await (_googleSignInInit ??=
+          _googleSignIn.initialize(serverClientId: _googleClientId));
+
+      final GoogleSignInAccount account = await _googleSignIn.authenticate();
+      final GoogleSignInAuthentication auth = await account.authentication;
+      final String? idToken = auth.idToken;
+
+      if (idToken == null) {
+        _setError('Google sign-in failed. Please try again.');
+        return;
+      }
+
+      final response = await _api.apiPost(
+        'auth/google',
+        {'id_token': idToken},
+        auth: false,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final body = response.body as Map<String, dynamic>;
+        final userData = body['data']['user'] as Map<String, dynamic>;
+        await _api.saveTokens(
+          body['data']['access_token']  as String,
+          body['data']['refresh_token'] as String,
+        );
+        await _api.saveUserCache(userData);
+        _user.value = _parseUser(userData);
+        _isAuthenticated.value = true;
+        Get.offAllNamed('/home');
+      } else if (response.statusCode == 403) {
+        _setError('Your account has been deactivated');
+      } else {
+        _setError(_extractError(response.body));
+      }
+    } on GoogleSignInException catch (e) {
+      if (e.code != GoogleSignInExceptionCode.canceled) {
+        _setError('Google sign-in failed. Please try again.');
+      }
+    } catch (e) {
+      _setError('An unexpected error occurred. Please try again.');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Signs the user out of any active Google session as well as the app.
+  Future<void> _signOutGoogle() async {
+    try {
+      if (_isGoogleSignInSupported) await _googleSignIn.signOut();
+    } catch (_) {}
   }
 
   // ── Profile ───────────────────────────────────────────────────────────────
@@ -301,10 +382,19 @@ class MjengoAuthController extends GetxController {
 
   Future<void> signOut({bool silent = false}) async {
     await _api.logout();
+    await _signOutGoogle();
     _user.value = null;
     _isAuthenticated.value = false;
     _setError('');
     if (!silent) Get.offAllNamed('/login');
+  }
+
+  // ── Guest access ──────────────────────────────────────────────────────────
+
+  /// Lets the user browse the app without an account. No session is created;
+  /// features that require an account should check [isAuthenticated].
+  void continueAsGuest() {
+    Get.offAllNamed('/home');
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
