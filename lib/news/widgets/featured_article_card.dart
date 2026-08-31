@@ -112,7 +112,10 @@ class FeaturedArticleCard extends StatelessWidget {
   }
 }
 
-/// Dot indicators for the featured PageView.
+/// Minimalist line/underscore-dash indicators for the featured PageView —
+/// mirrors the website's `.mj-hero-dot` (thin flat segments, not circular
+/// dots), sized so they never overlap the hero's search bar or action
+/// buttons above/below.
 class PageDotIndicator extends StatelessWidget {
   final int count;
   final int current;
@@ -129,12 +132,12 @@ class PageDotIndicator extends StatelessWidget {
         final active = i == current;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.only(right: 5),
-          width: active ? 18 : 6,
-          height: 6,
+          margin: const EdgeInsets.only(right: 6),
+          width: active ? 36 : 28,
+          height: 3,
           decoration: BoxDecoration(
-            color: active ? Colors.white : Colors.white38,
-            borderRadius: BorderRadius.circular(3),
+            color: active ? Colors.white : Colors.white.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(2),
           ),
         );
       }),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// HTTP client that talks to the Mjengo Hub Flask API.
@@ -161,6 +162,47 @@ class MjengoService extends GetConnect {
       );
     }
     return r;
+  }
+
+  /// Multipart upload (avatars, cover photos, project renders, copyright
+  /// claim proof) using the same JWT session as every other request.
+  /// Returns the decoded JSON body, or `{'error': ...}` on failure.
+  Future<Map<String, dynamic>> uploadMultipart(
+    String path,
+    List<int> bytes,
+    String filename, {
+    String fieldName = 'file',
+    Map<String, String>? fields,
+  }) async {
+    try {
+      final token = await getAccessToken();
+      final uri = Uri.parse('$_apiBaseUrl${path.replaceAll(RegExp(r'^/+'), '')}');
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Accept'] = 'application/json';
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      if (fields != null) request.fields.addAll(fields);
+      request.files.add(http.MultipartFile.fromBytes(
+        fieldName,
+        bytes,
+        filename: filename,
+      ));
+      final streamed = await request.send();
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode == 401) await _clearTokens();
+      try {
+        final decoded = jsonDecode(body);
+        if (decoded is Map<String, dynamic>) {
+          return {...decoded, '_statusCode': streamed.statusCode};
+        }
+      } catch (_) {}
+      return {
+        '_statusCode': streamed.statusCode,
+        if (streamed.statusCode >= 200 && streamed.statusCode < 300) 'success': true
+        else 'error': 'Upload failed (${streamed.statusCode})',
+      };
+    } catch (e) {
+      return {'error': e.toString(), '_statusCode': 500};
+    }
   }
 
   Response _networkError(Object e) => Response(

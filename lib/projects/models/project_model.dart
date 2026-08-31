@@ -67,6 +67,13 @@ class ProjectMedia {
   final String? monthYear;
   final bool isFeatured;
 
+  /// 'progress' (real on-site photos) or 'render' (architectural renders /
+  /// artistic impressions), mirroring the website's `media_kind` column.
+  /// NOTE: the JSON API doesn't expose this field yet (audit gap) — it
+  /// defaults to 'progress' until the backend adds it, so the render
+  /// gallery may be empty even when renders exist server-side.
+  final String mediaKind;
+
   const ProjectMedia({
     required this.id,
     required this.filePath,
@@ -75,6 +82,7 @@ class ProjectMedia {
     this.credit,
     this.monthYear,
     required this.isFeatured,
+    this.mediaKind = 'progress',
   });
 
   factory ProjectMedia.fromJson(Map<String, dynamic> j) => ProjectMedia(
@@ -85,7 +93,10 @@ class ProjectMedia {
         credit: j['credit'] as String?,
         monthYear: j['month_year'] as String?,
         isFeatured: (j['is_featured'] as bool?) ?? false,
+        mediaKind: (j['media_kind'] as String?) ?? 'progress',
       );
+
+  bool get isRender => mediaKind == 'render';
 
   String get url {
     if (filePath.startsWith('http')) return filePath;
@@ -117,6 +128,11 @@ class Project {
   final List<ProjectMilestone> milestones;
   final List<ProjectMedia> media;
 
+  /// 'infrastructure' (public tracker) or 'private_development' (Private
+  /// Projects). The backend uses ONE `Project` table discriminated by this
+  /// column — there is no separate private-project model/table.
+  final String projectType;
+
   const Project({
     required this.id,
     required this.title,
@@ -139,6 +155,7 @@ class Project {
     this.expectedEndDate,
     this.milestones = const [],
     this.media = const [],
+    this.projectType = 'infrastructure',
   });
 
   factory Project.fromJson(Map<String, dynamic> j) => Project(
@@ -173,7 +190,13 @@ class Project {
                 .map(ProjectMedia.fromJson)
                 .toList() ??
             [],
+        projectType: (j['project_type'] as String?) ?? 'infrastructure',
       );
+
+  bool get isPrivateProject => projectType == 'private_development';
+
+  List<ProjectMedia> get renderGallery => media.where((m) => m.isRender).toList();
+  List<ProjectMedia> get progressGallery => media.where((m) => !m.isRender).toList();
 
   String? get imageUrl {
     if (featuredImage == null || featuredImage!.isEmpty) return null;

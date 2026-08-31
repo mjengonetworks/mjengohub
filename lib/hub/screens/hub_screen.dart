@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../point/routes/app_routes.dart';
 
@@ -21,11 +22,18 @@ const _kDivider = Color(0xFFF3F4F6);
 class HubScreen extends StatelessWidget {
   const HubScreen({Key? key}) : super(key: key);
 
+  static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
+
   static const _items = [
     _HubItem(
       label: 'Projects Database',
       sub: 'Kenya\'s roads, bridges & buildings',
       route: AppRoutes.projects,
+    ),
+    _HubItem(
+      label: 'Private Projects',
+      sub: 'Commercial & residential developments',
+      route: AppRoutes.privateProjects,
     ),
     _HubItem(
       label: 'Share Barabara',
@@ -41,6 +49,12 @@ class HubScreen extends StatelessWidget {
       label: 'Mshikamano',
       sub: 'Mental health & encouragement',
       route: AppRoutes.mshikamano,
+    ),
+    _HubItem(
+      label: 'Mjengo Networks',
+      sub: 'Our wider media & social network',
+      route: null,
+      externalUrl: _mjengoNetworksUrl,
     ),
   ];
 
@@ -110,11 +124,13 @@ class HubScreen extends StatelessWidget {
 class _HubItem {
   final String label;
   final String sub;
-  final String route;
+  final String? route;
+  final String? externalUrl;
   const _HubItem({
     required this.label,
     required this.sub,
-    required this.route,
+    this.route,
+    this.externalUrl,
   });
 }
 
@@ -126,10 +142,21 @@ class _HubRow extends StatelessWidget {
   final _HubItem item;
   const _HubRow({required this.item});
 
+  Future<void> _open() async {
+    if (item.externalUrl != null) {
+      final uri = Uri.parse(item.externalUrl!);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+      return;
+    }
+    if (item.route != null) Get.toNamed(item.route!);
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(item.route),
+      onTap: _open,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -158,9 +185,14 @@ class _HubRow extends StatelessWidget {
               ),
             ),
 
-            // Chevron
-            const Icon(Icons.chevron_right_rounded,
-                color: _kSubtext, size: 22),
+            // Chevron / external-link indicator
+            Icon(
+              item.externalUrl != null
+                  ? Icons.open_in_new_rounded
+                  : Icons.chevron_right_rounded,
+              color: _kSubtext,
+              size: item.externalUrl != null ? 18 : 22,
+            ),
           ],
         ),
       ),

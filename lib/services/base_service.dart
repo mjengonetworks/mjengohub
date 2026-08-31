@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseService extends GetConnect {
 
@@ -71,13 +71,18 @@ class BaseService extends GetConnect {
     _setup();
   }
 
-  // Method to get Firebase token
+  // The live login flow (MjengoAuthController) issues a custom JWT stored
+  // under this key — NOT a Firebase ID token. Reading the same key here
+  // keeps every service (projects/incidents/news/video/mental-health)
+  // authenticated as the same signed-in session.
+  static const String _accessTokenKey = 'mjengo_access_token';
+
   Future<String?> _getToken() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      return await user?.getIdToken();
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_accessTokenKey);
     } catch (e) {
-      print('Error getting Firebase token: $e');
+      print('Error getting session token: $e');
       return null;
     }
   }

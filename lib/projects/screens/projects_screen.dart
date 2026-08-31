@@ -16,11 +16,24 @@ const _kDivider  = Color(0xFFEEEEF5);
 const _kCard     = Colors.white;
 
 class ProjectsScreen extends StatelessWidget {
-  const ProjectsScreen({Key? key}) : super(key: key);
+  /// 'infrastructure' (default, public tracker) or 'private_development'.
+  final String projectType;
+  final String title;
+  final String subtitle;
+
+  const ProjectsScreen({
+    Key? key,
+    this.projectType = 'infrastructure',
+    this.title = 'Infrastructure Projects',
+    this.subtitle = 'Kenya\'s construction & infrastructure projects',
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(ProjectsController());
+    final ctrl = Get.put(
+      ProjectsController(projectType: projectType),
+      tag: projectType,
+    );
     final topPad = MediaQuery.of(context).padding.top;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -97,7 +110,7 @@ class ProjectsScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Infrastructure Projects',
+                  title,
                   style: GoogleFonts.montserrat(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -109,7 +122,7 @@ class ProjectsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Kenya\'s construction & infrastructure projects',
+            subtitle,
             style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
           ),
           if (ctrl != null) ...[

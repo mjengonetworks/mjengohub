@@ -6,6 +6,12 @@ import '../services/projects_service.dart';
 class ProjectsController extends GetxController {
   final _service = ProjectsService();
 
+  /// 'infrastructure' (public tracker) or 'private_development' (Private
+  /// Projects) — lets ProjectsScreen serve both trackers off one controller,
+  /// matching the single-table `Project.project_type` design on the backend.
+  final String projectType;
+  ProjectsController({this.projectType = 'infrastructure'});
+
   final projects = <Project>[].obs;
   final featuredProjects = <Project>[].obs;
   final clients = <ProjectClient>[].obs;
@@ -33,12 +39,13 @@ class ProjectsController extends GetxController {
     _hasMore = true;
 
     final results = await Future.wait([
-      _service.getProjects(featured: true, perPage: 4),
+      _service.getProjects(featured: true, perPage: 4, projectType: projectType),
       _service.getProjects(
         status: selectedStatus.value,
         clientSlug: selectedClientSlug.value,
         q: searchQuery.value,
         page: 1,
+        projectType: projectType,
       ),
       _service.getClients(),
     ]);
@@ -71,6 +78,7 @@ class ProjectsController extends GetxController {
       clientSlug: selectedClientSlug.value,
       q: searchQuery.value,
       page: _page,
+      projectType: projectType,
     );
     projects.addAll(more);
     _hasMore = more.length >= 12;

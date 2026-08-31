@@ -322,15 +322,85 @@ class MjengoAuthController extends GetxController {
       lastName:    json['last_name'] as String?,
       phoneNumber: json['phone'] as String?,
       photoURL:    json['profile_image'] as String?,
+      coverImageUrl: json['cover_image'] as String?,
       bio:         json['bio'] as String?,
       location:    json['location'] as String?,
       company:     json['company'] as String?,
       provider:    'email',
       isActive:    json['is_active'] as bool? ?? true,
+      points:      (json['points'] as num?)?.toInt() ?? 0,
+      referralCode: json['referral_code'] as String?,
+      referredById: json['referred_by_id']?.toString(),
+      isVerified:  json['is_verified'] as bool? ?? false,
+      verificationExpiresAt: json['verification_expires_at'] != null
+          ? DateTime.tryParse(json['verification_expires_at'].toString())
+          : null,
       createdAt:   json['created_at'] != null
                        ? DateTime.tryParse(json['created_at'] as String)
                        : null,
     );
+  }
+
+  // ── Avatar / cover photo upload (Cloudflare R2-backed on the server) ────────
+
+  Future<bool> uploadAvatar(List<int> bytes, String filename) async {
+    try {
+      _setLoading(true);
+      final result = await _api.uploadMultipart(
+        'auth/me/avatar',
+        bytes,
+        filename,
+        fieldName: 'profile_image',
+      );
+      final code = result['_statusCode'] as int? ?? 500;
+      if (code >= 200 && code < 300) {
+        final data = (result['data'] as Map?)?.cast<String, dynamic>();
+        if (data != null) {
+          _user.value = _parseUser(data);
+          await _api.saveUserCache(data);
+        } else if (result['profile_image'] != null && _user.value != null) {
+          _user.value = _user.value!.copyWith(photoURL: result['profile_image'] as String);
+        }
+        return true;
+      }
+      _setError(_extractError(result));
+      return false;
+    } catch (e) {
+      _setError('Failed to upload photo. Please try again.');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> uploadCoverImage(List<int> bytes, String filename) async {
+    try {
+      _setLoading(true);
+      final result = await _api.uploadMultipart(
+        'auth/me/cover',
+        bytes,
+        filename,
+        fieldName: 'cover_image',
+      );
+      final code = result['_statusCode'] as int? ?? 500;
+      if (code >= 200 && code < 300) {
+        final data = (result['data'] as Map?)?.cast<String, dynamic>();
+        if (data != null) {
+          _user.value = _parseUser(data);
+          await _api.saveUserCache(data);
+        } else if (result['cover_image'] != null && _user.value != null) {
+          _user.value = _user.value!.copyWith(coverImageUrl: result['cover_image'] as String);
+        }
+        return true;
+      }
+      _setError(_extractError(result));
+      return false;
+    } catch (e) {
+      _setError('Failed to upload cover photo. Please try again.');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
   }
 
   String _extractError(dynamic body) {

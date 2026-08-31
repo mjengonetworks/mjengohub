@@ -1,3 +1,5 @@
+import '../../point/models/points_models.dart';
+
 /// User model class with phone authentication support + 2FA fields
 class UserModel {
   final String uid;
@@ -7,6 +9,7 @@ class UserModel {
   final String? lastName;
   final String? phoneNumber;
   final String? photoURL;
+  final String? coverImageUrl;
   final String? bio;
   final String? location;
   final String? company;
@@ -16,6 +19,17 @@ class UserModel {
   final bool isActive;
   final bool? emailVerified;
   final Map<String, dynamic>? additionalData;
+
+  // ── Gamification / Mjengo Hub Prime ─────────────────────────────────────
+  /// Cumulative reputation points (source of truth is the backend PointsLog).
+  final int points;
+  final String? referralCode;
+  final String? referredById;
+
+  /// Admin-granted "verified" flag — the underlying field for Mjengo Hub
+  /// Prime. Paired with [verificationExpiresAt] for paid subscriptions.
+  final bool isVerified;
+  final DateTime? verificationExpiresAt;
 
   // Marketplace specific fields
   final String userType; // 'individual' or 'shop'
@@ -47,6 +61,7 @@ class UserModel {
     this.lastName,
     this.phoneNumber,
     this.photoURL,
+    this.coverImageUrl,
     this.bio,
     this.location,
     this.company,
@@ -56,6 +71,11 @@ class UserModel {
     this.isActive = true,
     this.emailVerified,
     this.additionalData,
+    this.points = 0,
+    this.referralCode,
+    this.referredById,
+    this.isVerified = false,
+    this.verificationExpiresAt,
     this.userType = 'individual',
     this.rating = 0.0,
     this.totalReviews = 0,
@@ -94,6 +114,7 @@ class UserModel {
       lastName: json['lastName'] as String?,
       phoneNumber: phoneNumber,
       photoURL: json['photoURL'] as String?,
+      coverImageUrl: json['coverImageUrl'] as String? ?? json['cover_image'] as String?,
       bio: json['bio'] as String?,
       location: json['location'] as String?,
       company: json['company'] as String?,
@@ -103,6 +124,13 @@ class UserModel {
       isActive: json['isActive'] as bool? ?? true,
       emailVerified: emailVerified,
       additionalData: json['additionalData'] as Map<String, dynamic>?,
+      points: (json['points'] as num?)?.toInt() ?? 0,
+      referralCode: json['referral_code'] as String? ?? json['referralCode'] as String?,
+      referredById: json['referred_by_id']?.toString(),
+      isVerified: json['is_verified'] as bool? ?? json['isVerified'] as bool? ?? false,
+      verificationExpiresAt: json['verification_expires_at'] != null
+          ? DateTime.tryParse(json['verification_expires_at'].toString())
+          : null,
       userType: json['userType'] as String? ?? 'individual',
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       totalReviews: json['totalReviews'] as int? ?? 0,
@@ -129,6 +157,7 @@ class UserModel {
       'lastName': lastName,
       'phoneNumber': phoneNumber,
       'photoURL': photoURL,
+      'coverImageUrl': coverImageUrl,
       'bio': bio,
       'location': location,
       'company': company,
@@ -138,6 +167,11 @@ class UserModel {
       'isActive': isActive,
       'emailVerified': emailVerified,
       'additionalData': additionalData,
+      'points': points,
+      'referral_code': referralCode,
+      'referred_by_id': referredById,
+      'is_verified': isVerified,
+      'verification_expires_at': verificationExpiresAt?.toIso8601String(),
       'userType': userType,
       'rating': rating,
       'totalReviews': totalReviews,
@@ -161,6 +195,7 @@ class UserModel {
     String? lastName,
     String? phoneNumber,
     String? photoURL,
+    String? coverImageUrl,
     String? bio,
     String? location,
     String? company,
@@ -170,6 +205,11 @@ class UserModel {
     bool? isActive,
     bool? emailVerified,
     Map<String, dynamic>? additionalData,
+    int? points,
+    String? referralCode,
+    String? referredById,
+    bool? isVerified,
+    DateTime? verificationExpiresAt,
     String? userType,
     double? rating,
     int? totalReviews,
@@ -190,6 +230,7 @@ class UserModel {
       lastName: lastName ?? this.lastName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       photoURL: photoURL ?? this.photoURL,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
       bio: bio ?? this.bio,
       location: location ?? this.location,
       company: company ?? this.company,
@@ -199,6 +240,11 @@ class UserModel {
       isActive: isActive ?? this.isActive,
       emailVerified: emailVerified ?? this.emailVerified,
       additionalData: additionalData ?? this.additionalData,
+      points: points ?? this.points,
+      referralCode: referralCode ?? this.referralCode,
+      referredById: referredById ?? this.referredById,
+      isVerified: isVerified ?? this.isVerified,
+      verificationExpiresAt: verificationExpiresAt ?? this.verificationExpiresAt,
       userType: userType ?? this.userType,
       rating: rating ?? this.rating,
       totalReviews: totalReviews ?? this.totalReviews,
@@ -251,6 +297,18 @@ class UserModel {
   bool get hasIdVerified => trustBadges.contains('id_verified');
   bool get isTrustedSeller => trustBadges.contains('trusted_seller');
   bool get isPhoneVerifiedBadge => trustBadges.contains('phone_verified');
+
+  /// Mjengo Hub Prime status — verified AND (no expiry, or not yet expired).
+  /// Mirrors `User.is_currently_verified` on the Flask backend.
+  bool get isPrime {
+    if (!isVerified) return false;
+    if (verificationExpiresAt == null) return true;
+    return verificationExpiresAt!.isAfter(DateTime.now());
+  }
+
+  /// Reviewer level (Google Local Guides-style badge), derived live from
+  /// [points] exactly like the website's `points_level_info` property.
+  ReviewerLevel get reviewerLevel => ReviewerLevel.forPoints(points);
 
   /// Whether 2FA is active on this account.
   bool get has2FA => twoFAEnabled;

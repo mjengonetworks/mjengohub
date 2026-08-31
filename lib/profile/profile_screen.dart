@@ -2,8 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
+import '../point/routes/app_routes.dart';
+import '../point/services/gamification_service.dart';
+import '../point/models/points_models.dart';
+import '../shared/services/site_service.dart';
+import '../shared/theme/app_theme.dart';
+import '../shared/widgets/badges.dart';
 import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -18,6 +26,7 @@ class ProfileScreen extends StatelessWidget {
     final auth = Get.find<MjengoAuthController>();
     return Obx(() => _SettingsView(
           user: auth.currentUser,
+          auth: auth,
           onSignOut: auth.signOut,
         ));
   }
@@ -27,18 +36,17 @@ class ProfileScreen extends StatelessWidget {
 
 class _SettingsView extends StatelessWidget {
   final UserModel? user;
+  final MjengoAuthController auth;
   final VoidCallback onSignOut;
 
   const _SettingsView({
     required this.user,
+    required this.auth,
     required this.onSignOut,
   });
 
-  static const Color _bg            = Color(0xFFF0F4FF);
-  static const Color _surface       = Colors.white;
-  static const Color _textPrimary   = Color(0xFF1A1A2E);
-  static const Color _textSecondary = Color(0xFF888888);
-  static const Color _divider       = Color(0xFFEEEEF5);
+  static const Color _bg      = Color(0xFFF0F4FF);
+  static const Color _divider = Color(0xFFEEEEF5);
 
   @override
   Widget build(BuildContext context) {
@@ -51,17 +59,18 @@ class _SettingsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: topPad),
+            // ── Cover banner + overlapping avatar ─────────────────────────
+            _ProfileHeader(user: user, auth: auth, topPad: topPad),
 
-            // ── Header bar ──────────────────────────────────────────────
-            _Header(),
+            const SizedBox(height: 14),
 
-            const SizedBox(height: 20),
+            // ── Points summary card ───────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _PointsSummaryCard(user: user),
+            ),
 
-            // ── Profile card ─────────────────────────────────────────────
-            _ProfileCard(user: user),
-
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             // ── Settings items ───────────────────────────────────────────
             _SettingsItem(
@@ -71,6 +80,12 @@ class _SettingsView extends StatelessWidget {
               onTap: () => Navigator.of(Get.context!).push(
                 MaterialPageRoute(builder: (_) => const AccountScreen()),
               ),
+            ),
+            _SettingsItem(
+              icon: Icons.card_giftcard_rounded,
+              title: 'Referrals & Rewards',
+              subtitle: 'Invite friends, earn points',
+              onTap: () => Get.toNamed(AppRoutes.referral),
             ),
             _SettingsItem(
               icon: Icons.notifications_none_rounded,
@@ -112,118 +127,245 @@ class _SettingsView extends StatelessWidget {
             // ── Sign out ─────────────────────────────────────────────────
             _SignOutButton(onTap: onSignOut),
 
+            const SizedBox(height: 28),
+
+            // ── Get the app (store buttons, section 8 parity) ─────────────
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: _GetTheAppSection(),
+            ),
+
             const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
-
-  void _showComingSoon(String feature) {
-    Get.snackbar(
-      feature,
-      'Coming soon!',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      duration: const Duration(seconds: 2),
-      backgroundColor: const Color(0xFF2563EB),
-      colorText: Colors.white,
-    );
-  }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
+// ── Get the app (fetches admin-configured store URLs) ───────────────────────
 
-class _Header extends StatelessWidget {
-  const _Header();
+class _GetTheAppSection extends StatefulWidget {
+  const _GetTheAppSection();
+
+  @override
+  State<_GetTheAppSection> createState() => _GetTheAppSectionState();
+}
+
+class _GetTheAppSectionState extends State<_GetTheAppSection> {
+  final _service = SiteService();
+  SiteSettings? _settings;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getSiteSettings().then((s) {
+      if (mounted) setState(() => _settings = s);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Text(
-            'Settings',
-            style: GoogleFonts.montserrat(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Get the Mjengo Hub App',
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF888888),
+            letterSpacing: 0.3,
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        StoreButtonsRow(
+          playStoreUrl: _settings?.playStoreUrl,
+          appStoreUrl: _settings?.appStoreUrl,
+        ),
+      ],
     );
   }
 }
 
-// ── Profile card ──────────────────────────────────────────────────────────────
+// ── Profile header: cover banner + overlapping avatar ──────────────────────────
 
-class _ProfileCard extends StatelessWidget {
+class _ProfileHeader extends StatelessWidget {
   final UserModel? user;
-  const _ProfileCard({required this.user});
+  final MjengoAuthController auth;
+  final double topPad;
+  const _ProfileHeader({required this.user, required this.auth, required this.topPad});
+
+  static const double _coverHeight = 150;
+  static const double _avatarSize = 84;
+  static const double _ringWidth = 3;
+  static const double _ringGap = 3;
+
+  Future<void> _pickAndUpload({required bool isCover}) async {
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      final ok = isCover
+          ? await auth.uploadCoverImage(bytes, file.name)
+          : await auth.uploadAvatar(bytes, file.name);
+      Get.snackbar(
+        ok ? 'Updated' : 'Upload failed',
+        ok
+            ? (isCover ? 'Cover photo updated' : 'Profile photo updated')
+            : 'Please try again in a moment.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+        backgroundColor: ok ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+        colorText: Colors.white,
+      );
+    } catch (_) {
+      Get.snackbar('Upload failed', 'Please try again in a moment.',
+          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final name = user?.fullName ?? user?.firstName ?? 'User';
-    final _rawSubtitle = (user?.bio != null && user!.bio!.isNotEmpty)
+    final rawSubtitle = (user?.bio != null && user!.bio!.isNotEmpty)
         ? user!.bio!
         : (user?.company != null && user!.company!.isNotEmpty)
             ? user!.company!
             : (user?.email ?? '');
-    // Mask email-looking subtitles for privacy
-    final bio = _rawSubtitle.contains('@')
-        ? _maskEmail(_rawSubtitle)
-        : _rawSubtitle;
+    final subtitle = rawSubtitle.contains('@') ? _maskEmail(rawSubtitle) : rawSubtitle;
     final initials = user?.initials ?? '?';
     final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
+    final hasCover = user?.coverImageUrl != null && user!.coverImageUrl!.isNotEmpty;
+    final points = user?.points ?? 0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          // Avatar
-          Container(
-            width: 62,
-            height: 62,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: hasPhoto
-                ? ClipOval(
-                    child: Image.network(
-                      user!.photoURL!,
-                      width: 62,
-                      height: 62,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _initialsWidget(initials),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Back-of-stack: cover + avatar overlap
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Cover banner
+            GestureDetector(
+              onTap: () => _pickAndUpload(isCover: true),
+              child: Container(
+                width: double.infinity,
+                height: _coverHeight,
+                decoration: BoxDecoration(
+                  gradient: hasCover ? null : AppColors.verifiedPillGradient,
+                  image: hasCover
+                      ? DecorationImage(image: NetworkImage(user!.coverImageUrl!), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: topPad + 10, right: 14),
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 15),
                     ),
-                  )
-                : _initialsWidget(initials),
-          ),
-          const SizedBox(width: 14),
-          // Name + bio
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A2E),
                   ),
                 ),
-                const SizedBox(height: 3),
+              ),
+            ),
+
+            // Avatar — left-aligned, overlapping the cover's lower boundary
+            Positioned(
+              left: 20,
+              top: _coverHeight - (_avatarSize / 2),
+              child: GestureDetector(
+                onTap: () => _pickAndUpload(isCover: false),
+                child: Container(
+                  width: _avatarSize + (_ringWidth + _ringGap) * 2,
+                  height: _avatarSize + (_ringWidth + _ringGap) * 2,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _SettingsView._bg,
+                    border: Border.all(color: AppColors.textDark, width: _ringWidth),
+                  ),
+                  padding: EdgeInsets.all(_ringGap),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        ClipOval(
+                          child: hasPhoto
+                              ? Image.network(
+                                  user!.photoURL!,
+                                  width: _avatarSize,
+                                  height: _avatarSize,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => _initialsWidget(initials),
+                                )
+                              : _initialsWidget(initials),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.textDark,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
+                            ),
+                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 11),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        SizedBox(height: (_avatarSize / 2) + 14),
+
+        // Name + badges + subtitle
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  if (user?.isPrime == true) const PrimeBadge(),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ReviewerLevelBadge(points: points),
+              if (subtitle.isNotEmpty) ...[
+                const SizedBox(height: 6),
                 Text(
-                  bio,
+                  subtitle,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     color: const Color(0xFF888888),
@@ -233,10 +375,10 @@ class _ProfileCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -258,12 +400,93 @@ class _ProfileCard extends StatelessWidget {
         child: Text(
           initials,
           style: GoogleFonts.montserrat(
-            fontSize: 22,
+            fontSize: 26,
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
         ),
       );
+}
+
+// ── Points summary card ─────────────────────────────────────────────────────
+
+class _PointsSummaryCard extends StatefulWidget {
+  final UserModel? user;
+  const _PointsSummaryCard({required this.user});
+
+  @override
+  State<_PointsSummaryCard> createState() => _PointsSummaryCardState();
+}
+
+class _PointsSummaryCardState extends State<_PointsSummaryCard> {
+  final _service = GamificationService();
+  PointsSummary? _summary;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final fetched = await _service.getPointsSummary();
+    if (!mounted) return;
+    setState(() {
+      _summary = fetched ?? PointsSummary(totalPoints: widget.user?.points ?? 0);
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = _summary?.totalPoints ?? widget.user?.points ?? 0;
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.pointsBreakdown),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: AppColors.accentBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.emoji_events_rounded, color: AppColors.accentBlue, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$total points', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                  const SizedBox(height: 2),
+                  _loading
+                      ? Text('Loading breakdown…', style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle))
+                      : Text(
+                          'Reviews +${_summary?.fromReviews ?? 0} · Upvotes +${_summary?.fromUpvotes ?? 0} · Referrals +${_summary?.referralPoints ?? 0}',
+                          style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textSubtle, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ── Settings item ─────────────────────────────────────────────────────────────

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
+import '../point/services/gamification_service.dart';
 
 // ─── Email masking helper ─────────────────────────────────────────────────────
 String _maskEmailStatic(String email) {
@@ -163,6 +165,21 @@ class _AccountScreenState extends State<AccountScreen>
     }
   }
 
+  // ── Avatar upload ──────────────────────────────────────────────────────────
+  Future<void> _pickAndUploadAvatar() async {
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      final ok = await _auth.uploadAvatar(bytes, file.name);
+      if (!mounted) return;
+      _showSnack(ok ? 'Profile photo updated' : 'Failed to upload photo', success: ok);
+    } catch (_) {
+      if (mounted) _showSnack('Failed to upload photo');
+    }
+  }
+
   void _showSnack(String msg, {bool success = false}) {
     Get.snackbar(
       success ? 'Success' : 'Error',
@@ -198,6 +215,7 @@ class _AccountScreenState extends State<AccountScreen>
                 user: user,
                 topPad: topPad,
                 onBack: () => Get.back(),
+                onTapAvatar: _pickAndUploadAvatar,
               ),
 
               // ── Tab bar ──────────────────────────────────────────────────
@@ -252,11 +270,13 @@ class _Hero extends StatelessWidget {
   final UserModel? user;
   final double topPad;
   final VoidCallback onBack;
+  final VoidCallback onTapAvatar;
 
   const _Hero({
     required this.user,
     required this.topPad,
     required this.onBack,
+    required this.onTapAvatar,
   });
 
   @override
@@ -307,25 +327,45 @@ class _Hero extends StatelessWidget {
               const SizedBox(height: 20),
 
               // avatar
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.2),
-                  border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
-                ),
-                child: hasPhoto
-                    ? ClipOval(
-                        child: Image.network(
-                          user!.photoURL!,
-                          width: 76,
-                          height: 76,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _initialsW(initials),
+              GestureDetector(
+                onTap: onTapAvatar,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 76,
+                      height: 76,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.2),
+                        border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
+                      ),
+                      child: hasPhoto
+                          ? ClipOval(
+                              child: Image.network(
+                                user!.photoURL!,
+                                width: 76,
+                                height: 76,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _initialsW(initials),
+                              ),
+                            )
+                          : _initialsW(initials),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: _blueDark,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
                         ),
-                      )
-                    : _initialsW(initials),
+                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 12),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 12),
 
@@ -555,6 +595,31 @@ class _ProfileTab extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
+
+            // ── Referral redemption (Google-OAuth / existing users) ─────────
+            if (user?.referredById == null) ...[
+              _SectionLabel('Referral Code'),
+              const SizedBox(height: 10),
+              const _ReferralRedeemCard(),
+              const SizedBox(height: 20),
+            ] else ...[
+              _SectionLabel('Referral Code'),
+              const SizedBox(height: 10),
+              _Card(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF16A34A)),
+                      const SizedBox(width: 10),
+                      Text('Referred by a friend',
+                          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: _textPri)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // ── Read-only email row ────────────────────────────────────────
             _SectionLabel('Account Info'),
@@ -809,6 +874,75 @@ class _StrengthHintState extends State<_StrengthHint> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Referral code redemption (manual, for Google-OAuth / existing users) ─────
+
+class _ReferralRedeemCard extends StatefulWidget {
+  const _ReferralRedeemCard();
+
+  @override
+  State<_ReferralRedeemCard> createState() => _ReferralRedeemCardState();
+}
+
+class _ReferralRedeemCardState extends State<_ReferralRedeemCard> {
+  final _service = GamificationService();
+  final _codeCtrl = TextEditingController();
+  bool _redeeming = false;
+
+  @override
+  void dispose() {
+    _codeCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _redeem() async {
+    final code = _codeCtrl.text.trim();
+    if (code.isEmpty) return;
+    setState(() => _redeeming = true);
+    final error = await _service.redeemReferralCode(code);
+    if (!mounted) return;
+    setState(() => _redeeming = false);
+    final state = context.findAncestorStateOfType<_AccountScreenState>();
+    if (error == null) {
+      _codeCtrl.clear();
+      state?._showSnack('Referral code applied — thanks for joining!', success: true);
+    } else {
+      state?._showSnack(error);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _codeCtrl,
+                textCapitalization: TextCapitalization.characters,
+                style: GoogleFonts.montserrat(fontSize: 13.5, color: _textPri),
+                decoration: InputDecoration(
+                  hintText: 'Have a referral code?',
+                  hintStyle: GoogleFonts.montserrat(fontSize: 12.5, color: _textSec),
+                  border: InputBorder.none,
+                  isDense: true,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: _redeeming ? null : _redeem,
+              child: _redeeming
+                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: _blue))
+                  : Text('Apply', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: _blue)),
+            ),
+          ],
+        ),
       ),
     );
   }

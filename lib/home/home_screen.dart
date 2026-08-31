@@ -14,9 +14,16 @@ import '../news/models/article_model.dart';
 import '../news/widgets/featured_article_card.dart';
 import '../news/widgets/breaking_news_card.dart';
 import '../point/routes/app_routes.dart';
+import '../shared/widgets/badges.dart';
 import '../videos/controllers/videos_controller.dart';
 import '../videos/models/video_model.dart';
 import '../videos/screens/video_player_screen.dart';
+import 'widgets/home_extra_sections.dart';
+
+Future<void> _launchExternalUrl(String url) async {
+  final uri = Uri.parse(url);
+  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+}
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -81,13 +88,34 @@ class HomeScreen extends StatelessWidget {
                 child: _greetingWidget(),
               ),
 
-              // Top-right action buttons (notification bell + road safety)
+              // Top-right action buttons (get verified, search, notifications, road safety)
               Positioned(
                 top: topPad + 8,
                 right: 16,
+                left: 16,
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    // ── Get Verified pill (Mjengo Hub Prime) ─────────────
+                    GetVerifiedButton(
+                      compact: true,
+                      onTap: () => _launchExternalUrl('https://mjengohub.co.ke/verify'),
+                    ),
+                    const SizedBox(width: 10),
+                    // ── Search ────────────────────────────────────────────
+                    GestureDetector(
+                      onTap: () => Get.toNamed(AppRoutes.search),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.38),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.search_rounded, color: Colors.white, size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     // ── Notification bell with badge ────────────────────
                     _NotificationBell(topPad: topPad),
                     const SizedBox(width: 10),
@@ -119,7 +147,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Page dot indicators (bottom-right of hero)
+              // Page dot indicators (bottom-right of hero) — flat line
+              // dashes with clear vertical space above the greeting/search
+              // row and below the hero edge, per the minimalist-indicator spec.
               Positioned(
                 bottom: 30,
                 right: 20,
@@ -129,6 +159,15 @@ class HomeScreen extends StatelessWidget {
                         current: ctrl.featuredIndex.value,
                       )
                     : const SizedBox.shrink()),
+              ),
+
+              // Submit a Project CTA (bottom-left of hero, high-contrast)
+              Positioned(
+                bottom: 30,
+                left: 16,
+                child: SubmitProjectButton(
+                  onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
+                ),
               ),
             ],
           ),
@@ -146,11 +185,25 @@ class HomeScreen extends StatelessWidget {
                   // ── Explore Quick Actions ──────────────────────────────
                   const _ExploreSectionsWidget(),
 
-                  // ── Breaking News ──────────────────────────────────────
+                  // ── Breaking News (More News) ───────────────────────────
                   const SizedBox(height: 4),
                   _breakingHeader(ctrl),
                   const SizedBox(height: 14),
                   SizedBox(height: 220, child: _breakingList(ctrl)),
+
+                  // Gap to "Follow Mjengo Hub" reduced ~70% (32px -> 10px)
+                  const SizedBox(height: 10),
+                  const FollowMjengoHubSection(),
+
+                  const SizedBox(height: 24),
+                  Obx(() => FeaturedArticlesAnalysisSection(
+                        articles: ctrl.featuredArticles,
+                        onOpen: _openArticle,
+                        onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+                      )),
+
+                  const SizedBox(height: 24),
+                  const BrowseProjectsByCategorySection(),
 
                   // ── Latest Videos ──────────────────────────────────────
                   const _HomeVideosSection(),

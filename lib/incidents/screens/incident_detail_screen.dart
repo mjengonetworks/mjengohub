@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
+import '../../comments/services/comments_service.dart';
+import '../../comments/widgets/comments_section.dart';
 
 const _kDark    = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
@@ -351,8 +353,16 @@ class IncidentDetailScreen extends StatelessWidget {
                   ),
                 ),
 
-              // ── Comments ─────────────────────────────────────────────────
-              _buildCommentsSection(ctrl),
+              // ── Discussion (Reddit-style threaded comments, auth-gated) ───
+              Container(
+                color: _kCard,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(20),
+                child: CommentsSection(
+                  resource: CommentResource.incident,
+                  resourceId: incident.id,
+                ),
+              ),
 
               const SizedBox(height: 32),
             ],
@@ -383,46 +393,6 @@ class IncidentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCommentsSection(IncidentDetailController ctrl) {
-    return Container(
-      color: _kCard,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Discussion',
-              style: GoogleFonts.montserrat(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: _kDark,
-              )),
-          const SizedBox(height: 12),
-
-          // Existing comments
-          Obx(() {
-            final comments = ctrl.incident.value?.comments ?? [];
-            if (comments.isEmpty) {
-              return Text('No comments yet. Be the first to comment.',
-                  style: GoogleFonts.montserrat(
-                      fontSize: 13, color: _kSubtext));
-            }
-            return Column(
-              children: comments.map((c) => _CommentTile(comment: c)).toList(),
-            );
-          }),
-
-          const SizedBox(height: 16),
-          const Divider(color: _kDivider),
-          const SizedBox(height: 12),
-
-          // Add comment form
-          _CommentForm(ctrl: ctrl),
-        ],
-      ),
-    );
-  }
-
   Color _severityColor(String s) {
     switch (s) {
       case 'fatal': return const Color(0xFF7F1D1D);
@@ -431,194 +401,6 @@ class IncidentDetailScreen extends StatelessWidget {
       default: return const Color(0xFF22C55E);
     }
   }
-}
-
-// ── Comment tile ──────────────────────────────────────────────────────────────
-
-class _CommentTile extends StatelessWidget {
-  final IncidentComment comment;
-  const _CommentTile({required this.comment});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _kBg,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(comment.commenterName,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: _kDark,
-                  )),
-              const Spacer(),
-              Text(comment.formattedDate,
-                  style: GoogleFonts.montserrat(
-                      fontSize: 10.5, color: _kSubtext)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(comment.content,
-              style:
-                  GoogleFonts.montserrat(fontSize: 13, color: _kDark)),
-          if (comment.replies.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            ...comment.replies.map(
-              (r) => Container(
-                margin: const EdgeInsets.only(left: 16, top: 4),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _kDivider),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(r.commenterName,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: _kDark,
-                        )),
-                    const SizedBox(height: 3),
-                    Text(r.content,
-                        style: GoogleFonts.montserrat(
-                            fontSize: 12, color: _kDark)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ── Comment form ──────────────────────────────────────────────────────────────
-
-class _CommentForm extends StatefulWidget {
-  final IncidentDetailController ctrl;
-  const _CommentForm({required this.ctrl});
-
-  @override
-  State<_CommentForm> createState() => _CommentFormState();
-}
-
-class _CommentFormState extends State<_CommentForm> {
-  final _nameCtrl = TextEditingController();
-  final _contentCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    _contentCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Leave a Comment',
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: _kDark,
-            )),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _nameCtrl,
-          style: GoogleFonts.montserrat(fontSize: 13, color: _kDark),
-          decoration: _inputDecoration('Your name *'),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _contentCtrl,
-          maxLines: 3,
-          style: GoogleFonts.montserrat(fontSize: 13, color: _kDark),
-          decoration: _inputDecoration('Your comment…'),
-        ),
-        const SizedBox(height: 10),
-        Obx(() => SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: ElevatedButton(
-                onPressed: widget.ctrl.commentSubmitting.value
-                    ? null
-                    : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  elevation: 0,
-                ),
-                child: widget.ctrl.commentSubmitting.value
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text('Submit Comment',
-                        style: GoogleFonts.montserrat(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700)),
-              ),
-            )),
-        const SizedBox(height: 4),
-        Text('Comments are reviewed before appearing.',
-            style: GoogleFonts.montserrat(
-                fontSize: 10.5, color: _kSubtext)),
-      ],
-    );
-  }
-
-  void _submit() {
-    final name = _nameCtrl.text.trim();
-    final content = _contentCtrl.text.trim();
-    if (name.isEmpty || content.isEmpty) {
-      Get.snackbar('Required', 'Please fill in your name and comment.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    widget.ctrl.submitComment(name: name, content: content);
-    _nameCtrl.clear();
-    _contentCtrl.clear();
-  }
-
-  InputDecoration _inputDecoration(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.montserrat(fontSize: 13, color: _kSubtext),
-        filled: true,
-        fillColor: _kBg,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _kDivider),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _kDivider),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFDC2626), width: 1.5),
-        ),
-      );
 }
 
 // ── Shared widgets ─────────────────────────────────────────────────────────────

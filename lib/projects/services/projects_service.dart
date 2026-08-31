@@ -14,6 +14,10 @@ class ProjectsService {
     bool featured = false,
     int page = 1,
     int perPage = 12,
+    /// 'infrastructure' (public tracker) or 'private_development' (Private
+    /// Projects). The live API doesn't filter by this yet (audit gap), so
+    /// results are also filtered client-side as a safety net.
+    String? projectType,
   }) async {
     try {
       final query = <String, dynamic>{
@@ -25,15 +29,20 @@ class ProjectsService {
       if (clientSlug != null && clientSlug.isNotEmpty) query['client'] = clientSlug;
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
+      if (projectType != null && projectType.isNotEmpty) query['project_type'] = projectType;
 
       final res = await _api.getRequest('projects', query: query);
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
         if (data is List) {
-          return data
+          final projects = data
               .whereType<Map<String, dynamic>>()
               .map(Project.fromJson)
               .toList();
+          if (projectType != null && projectType.isNotEmpty) {
+            return projects.where((p) => p.projectType == projectType).toList();
+          }
+          return projects;
         }
       }
       return [];
@@ -42,6 +51,44 @@ class ProjectsService {
       return [];
     }
   }
+
+  /// Public infrastructure tracker only.
+  Future<List<Project>> getPublicProjects({
+    String? status,
+    String? county,
+    String? q,
+    bool featured = false,
+    int page = 1,
+    int perPage = 12,
+  }) =>
+      getProjects(
+        status: status,
+        county: county,
+        q: q,
+        featured: featured,
+        page: page,
+        perPage: perPage,
+        projectType: 'infrastructure',
+      );
+
+  /// "Private Projects" tracker (renamed from "Private Developments").
+  Future<List<Project>> getPrivateProjects({
+    String? status,
+    String? county,
+    String? q,
+    bool featured = false,
+    int page = 1,
+    int perPage = 12,
+  }) =>
+      getProjects(
+        status: status,
+        county: county,
+        q: q,
+        featured: featured,
+        page: page,
+        perPage: perPage,
+        projectType: 'private_development',
+      );
 
   Future<Project?> getProject(String slug) async {
     try {
@@ -109,6 +156,27 @@ class ProjectsService {
     } catch (e) {
       print('ProjectsService.suggestEdit error: $e');
       return {'error': e.toString()};
+    }
+  }
+
+  Future<bool> suggestProgress({
+    required int projectId,
+    required int proposedPercent,
+    String? name,
+    String? email,
+    String? reason,
+  }) async {
+    try {
+      final res = await _api.postRequest('projects/$projectId/suggest-progress', {
+        'proposed_percent': proposedPercent,
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (reason != null) 'reason': reason,
+      });
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      print('ProjectsService.suggestProgress error: $e');
+      return false;
     }
   }
 }

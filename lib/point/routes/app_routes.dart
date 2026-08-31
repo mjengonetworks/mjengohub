@@ -14,6 +14,10 @@ import '../../projects/screens/project_detail_screen.dart';
 import '../../incidents/screens/incidents_list_screen.dart';
 import '../../incidents/screens/incident_detail_screen.dart';
 import '../../mental_health/screens/mshikamano_screen.dart';
+import '../../projects/screens/private_projects_screen.dart';
+import '../../search/screens/search_screen.dart';
+import '../../profile/screens/referral_screen.dart';
+import '../../profile/screens/points_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -33,6 +37,10 @@ class AppRoutes {
   static const String siteSafety      = '/site-safety';
   static const String incidentDetail  = '/incident';
   static const String mshikamano      = '/mshikamano';
+  static const String privateProjects = '/private-projects';
+  static const String search          = '/search';
+  static const String referral        = '/referral';
+  static const String pointsBreakdown = '/points';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -74,5 +82,15 @@ class AppRoutes {
 
     // Mental Health
     GetPage(name: mshikamano, page: () => const MshikamanoScreen()),
+
+    // Private Projects (renamed from "Private Developments")
+    GetPage(name: privateProjects, page: () => const PrivateProjectsScreen()),
+
+    // Global search
+    GetPage(name: search, page: () => const SearchScreen()),
+
+    // Gamification / referrals
+    GetPage(name: referral, page: () => const ReferralScreen()),
+    GetPage(name: pointsBreakdown, page: () => const PointsScreen()),
   ];
 }
