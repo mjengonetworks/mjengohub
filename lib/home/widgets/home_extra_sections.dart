@@ -165,20 +165,18 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
-              ? SizedBox(
-                  height: 160,
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: crossAxisCount * (crossAxisCount == 2 ? 2 : 1),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
-                      childAspectRatio: 0.95,
-                    ),
-                    itemBuilder: (_, __) => Container(
-                      decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(14)),
-                    ),
+              ? GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: crossAxisCount * (crossAxisCount == 2 ? 2 : 1),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.95,
+                  ),
+                  itemBuilder: (_, __) => Container(
+                    decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(14)),
                   ),
                 )
               : GridView.builder(

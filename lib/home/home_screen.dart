@@ -81,50 +81,46 @@ class HomeScreen extends StatelessWidget {
                     },
                   )),
 
-              // User greeting (top-left, floating over image)
+              // Header row: greeting (flexible, shrinks/ellipsizes first)
+              // + action icons (fixed, pinned right) sharing one Row so
+              // they can never overlap on narrow screens.
               Positioned(
                 top: topPad + 8,
                 left: 16,
-                child: _greetingWidget(),
-              ),
-
-              // Top-right action buttons (get verified, search, notifications, road safety)
-              Positioned(
-                top: topPad + 8,
                 right: 16,
-                left: 16,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    Flexible(child: _greetingWidget()),
+                    const Spacer(),
                     // ── Get Verified pill (Mjengo Hub Prime) ─────────────
                     GetVerifiedButton(
                       compact: true,
                       onTap: () => _launchExternalUrl('https://mjengohub.co.ke/verify'),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     // ── Search ────────────────────────────────────────────
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.search),
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.38),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.search_rounded, color: Colors.white, size: 22),
+                        child: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     // ── Notification bell with badge ────────────────────
                     _NotificationBell(topPad: topPad),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     // ── Road Safety ─────────────────────────────────────
                     GestureDetector(
                       onTap: () => Get.toNamed('/share-barabara'),
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: const Color(0xFFDC2626),
                           shape: BoxShape.circle,
@@ -139,7 +135,7 @@ class HomeScreen extends StatelessWidget {
                         child: const Icon(
                           Icons.report_problem_rounded,
                           color: Colors.white,
-                          size: 22,
+                          size: 20,
                         ),
                       ),
                     ),
@@ -335,12 +331,16 @@ class HomeScreen extends StatelessWidget {
                     ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'Hello, ${firstName.isNotEmpty ? firstName : 'there'}',
-              style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700),
+            Flexible(
+              child: Text(
+                'Hello, ${firstName.isNotEmpty ? firstName : 'there'}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),
@@ -891,8 +891,8 @@ class _NotificationBell extends StatelessWidget {
           children: [
             // Bell button
             Container(
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.38),
                 shape: BoxShape.circle,
@@ -900,7 +900,7 @@ class _NotificationBell extends StatelessWidget {
               child: const Icon(
                 Icons.notifications_outlined,
                 color: Colors.white,
-                size: 22,
+                size: 20,
               ),
             ),
             // Badge
