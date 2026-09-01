@@ -6,6 +6,11 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Compatibility aliases
+  static const Color primary = Color(0xFF2563EB);
+  static const Color accent = Color(0xFF2563EB);
+  static const Color textLight = Color(0xFF8888AA);
+
   AppColors._();
 
   // Brand blue — matches --primary-blue / --secondary-blue in main.css
@@ -49,3 +54,4 @@ class AppRadius {
   static const double card = 14;
   static const double chip = 8;
 }
+

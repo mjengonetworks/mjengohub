@@ -194,3 +194,9 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
+
+
+class MainNavController extends GetxController {
+  final RxInt currentIndex = 0.obs;
+}
+

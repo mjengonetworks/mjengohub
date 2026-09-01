@@ -79,7 +79,7 @@ class SocialShareModal {
                   _ShareOption(
                     label: 'Copy Link',
                     icon: Icons.link_rounded,
-                    color: AppColors.primary,
+                    color: const Color(0xFF2563EB),
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: url));
                       Navigator.pop(ctx);
@@ -145,3 +145,4 @@ class _ShareOption extends StatelessWidget {
     );
   }
 }
+

@@ -1,3 +1,4 @@
+import '../navigation/main_navigation.dart';
 import '../shared/widgets/ad_banner_slot.dart';
 // lib/home/home_screen.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -897,3 +898,25 @@ class _ExploreIconPill extends StatelessWidget {
 }
 
 
+
+
+class _NotificationBell extends StatelessWidget {
+  final double topPad;
+  const _NotificationBell({this.topPad = 0});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed('/notifications'),
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 20),
+      ),
+    );
+  }
+}

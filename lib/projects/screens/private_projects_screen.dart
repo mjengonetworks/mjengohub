@@ -145,7 +145,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: const Color(0xFF2563EB),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -207,7 +207,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline_rounded,
-                      color: AppColors.primary, size: 26),
+                      color: const Color(0xFF2563EB), size: 26),
                   onPressed: _showAddProjectDialog,
                 ),
               ],
@@ -224,7 +224,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.apartment_rounded,
-                                  size: 64, color: AppColors.textLight),
+                                  size: 64, color: const Color(0xFF8888AA)),
                               const SizedBox(height: 16),
                               Text(
                                 'No Private Projects Yet',
@@ -239,14 +239,14 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.montserrat(
                                     fontSize: 13,
-                                    color: AppColors.textLight),
+                                    color: const Color(0xFF8888AA)),
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton.icon(
                                 icon: const Icon(Icons.add, size: 18),
                                 label: const Text('Add Your First Project'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: const Color(0xFF2563EB),
                                   foregroundColor: Colors.white,
                                 ),
                                 onPressed: _showAddProjectDialog,
@@ -308,13 +308,13 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                       children: [
                                         const Icon(Icons.location_on_outlined,
                                             size: 14,
-                                            color: AppColors.textLight),
+                                            color: const Color(0xFF8888AA)),
                                         const SizedBox(width: 4),
                                         Text(
                                           p.location,
                                           style: GoogleFonts.montserrat(
                                               fontSize: 12,
-                                              color: AppColors.textLight),
+                                              color: const Color(0xFF8888AA)),
                                         ),
                                       ],
                                     ),
@@ -326,7 +326,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                         style: GoogleFonts.montserrat(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.primary,
+                                          color: const Color(0xFF2563EB),
                                         ),
                                       ),
                                     ),
@@ -338,7 +338,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                       backgroundColor: Colors.grey.shade200,
                                       valueColor:
                                           const AlwaysStoppedAnimation<Color>(
-                                              AppColors.accent),
+                                              const Color(0xFF2563EB)),
                                       minHeight: 6,
                                     ),
                                   ),
@@ -348,7 +348,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                     style: GoogleFonts.montserrat(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w500,
-                                        color: AppColors.textLight),
+                                        color: const Color(0xFF8888AA)),
                                   ),
                                   const Divider(height: 20),
                                   ..._standardPhases.map((phase) {
@@ -375,7 +375,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                                       .radio_button_unchecked_rounded,
                                               size: 18,
                                               color: done
-                                                  ? AppColors.accent
+                                                  ? const Color(0xFF2563EB)
                                                   : Colors.grey.shade400,
                                             ),
                                             const SizedBox(width: 8),
@@ -386,7 +386,7 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
                                                   fontSize: 12,
                                                   color: done
                                                       ? AppColors.textDark
-                                                      : AppColors.textLight,
+                                                      : const Color(0xFF8888AA),
                                                   decoration: done
                                                       ? TextDecoration
                                                           .lineThrough
@@ -411,3 +411,4 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
     );
   }
 }
+
