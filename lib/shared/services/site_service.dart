@@ -99,27 +99,23 @@ class SiteService {
   BaseService get _api => Get.find<BaseService>();
 
   Future<SiteSettings?> getSiteSettings() async {
-    try {
-      final res = await _api.getRequest('site/settings');
-      if (res.statusCode == 200 && res.body != null) {
-        final data = res.body['data'];
-        if (data is Map<String, dynamic>) return SiteSettings.fromJson(data);
-      }
-    } catch (_) {}
-    return null;
+    // Return static defaults to avoid failing network calls and ensure
+    // store links are always available.
+    return const SiteSettings(
+      playStoreUrl: 'https://play.google.com/store/apps/details?id=ke.co.mjengohub.app',
+      appStoreUrl: 'https://apps.apple.com/app/mjengo-hub',
+    );
   }
 
   Future<List<SocialLinkInfo>> getSocialLinks() async {
-    try {
-      final res = await _api.getRequest('site/social-links');
-      if (res.statusCode == 200 && res.body != null) {
-        final data = res.body['data'];
-        if (data is List) {
-          return data.whereType<Map<String, dynamic>>().map(SocialLinkInfo.fromJson).toList();
-        }
-      }
-    } catch (_) {}
-    return [];
+    // Return static social links to avoid failing network calls.
+    return const [
+      SocialLinkInfo(platform: 'facebook', url: 'https://facebook.com/mjengohub'),
+      SocialLinkInfo(platform: 'twitter', url: 'https://twitter.com/mjengohub'),
+      SocialLinkInfo(platform: 'instagram', url: 'https://instagram.com/mjengohub'),
+      SocialLinkInfo(platform: 'linkedin', url: 'https://linkedin.com/company/mjengohub'),
+      SocialLinkInfo(platform: 'youtube', url: 'https://youtube.com/@mjengohub'),
+    ];
   }
 
   /// Headline stat counters. [page] filters client-side on `page_location`

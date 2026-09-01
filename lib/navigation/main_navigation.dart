@@ -22,17 +22,22 @@ class MainNavigation extends StatelessWidget {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: const Color(0xFFF0F4FF),
-        body: Obx(() => IndexedStack(
-              index: ctrl.currentIndex.value,
-              children: const [
-                HomeScreen(),   // 0
-                HubScreen(),    // 1
-                DiscoverScreen(), // 2
-                VideosScreen(), // 3
-                ToolsScreen(),  // 4
-                ProfileScreen(), // 5
-              ],
-            )),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1080),
+            child: Obx(() => IndexedStack(
+                  index: ctrl.currentIndex.value,
+                  children: const [
+                    HomeScreen(),   // 0
+                    HubScreen(),    // 1
+                    DiscoverScreen(), // 2
+                    VideosScreen(), // 3
+                    ToolsScreen(),  // 4
+                    ProfileScreen(), // 5
+                  ],
+                )),
+          ),
+        ),
         bottomNavigationBar: Obx(() => _BottomNav(
               currentIndex: ctrl.currentIndex.value,
               onTap: (i) => ctrl.currentIndex.value = i,

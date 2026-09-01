@@ -76,6 +76,7 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
         uid: json['id']?.toString() ?? '',
         email: json['email'] as String?,
+        displayName: (json['display_name'] as String?) ?? (json['name'] as String?),
         firstName: json['first_name'] as String?,
         lastName: json['last_name'] as String?,
         phoneNumber: json['phone'] as String?,
@@ -93,7 +94,7 @@ class UserModel {
         referredById: json['referred_by_id']?.toString(),
         isVerified: json['is_verified'] as bool? ?? false,
         verificationExpiresAt: _parseDate(json['verification_expires_at']),
-        createdAt: _parseDate(json['created_at']),
+        createdAt: _parseDate(json['created_at']) ?? _parseDate(json['joined_at']),
       );
 
   /// Serialises back to the API's snake_case shape.
