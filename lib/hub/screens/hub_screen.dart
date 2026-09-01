@@ -66,6 +66,11 @@ class HubScreen extends StatelessWidget {
       route: AppRoutes.reviews,
     ),
     _HubItem(
+      label: 'Advertise with Us',
+      sub: 'Reach construction professionals across Kenya',
+      route: AppRoutes.advertise,
+    ),
+    _HubItem(
       label: 'Mjengo Networks',
       sub: 'Our wider media & social network',
       route: null,

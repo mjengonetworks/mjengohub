@@ -20,6 +20,7 @@ import '../../reports/screens/report_detail_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../reports/screens/submit_report_screen.dart';
 import '../../reviews/screens/reviews_screen.dart';
+import '../../shared/screens/advertise_screen.dart';
 import '../../service_catalog/screens/service_detail_screen.dart';
 import '../../service_catalog/screens/services_screen.dart';
 
@@ -52,6 +53,7 @@ class AppRoutes {
   static const String reportDetail    = '/report';
   static const String submitReport    = '/submit-report';
   static const String reviews         = '/reviews';
+  static const String advertise       = '/advertise';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -125,5 +127,8 @@ class AppRoutes {
 
     // Client reviews (GET/POST reviews)
     GetPage(name: reviews, page: () => const ReviewsScreen()),
+
+    // Advertising enquiry (POST advertise)
+    GetPage(name: advertise, page: () => const AdvertiseScreen()),
   ];
 }

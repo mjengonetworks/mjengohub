@@ -13,6 +13,7 @@ import '../point/models/points_models.dart';
 import '../shared/services/site_service.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
+import '../shared/widgets/form_fields.dart';
 import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -94,6 +95,20 @@ class _SettingsView extends StatelessWidget {
               subtitle: 'New posts, comments & newsletters',
               onTap: () => Navigator.of(Get.context!).push(
                 MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              ),
+            ),
+            _SettingsItem(
+              icon: Icons.mail_outline_rounded,
+              title: 'Email Newsletter',
+              subtitle: 'Industry news & updates in your inbox',
+              onTap: () => showModalBottomSheet<void>(
+                context: Get.context!,
+                isScrollControlled: true,
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                ),
+                builder: (_) => const _NewsletterSheet(),
               ),
             ),
             _SettingsItem(
@@ -605,6 +620,111 @@ class _SignOutButton extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Email Newsletter subscribe sheet ────────────────────────────────────────
+
+class _NewsletterSheet extends StatefulWidget {
+  const _NewsletterSheet();
+
+  @override
+  State<_NewsletterSheet> createState() => _NewsletterSheetState();
+}
+
+class _NewsletterSheetState extends State<_NewsletterSheet> {
+  final _api = SiteService();
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _submitting = true);
+
+    final res = await _api.subscribeNewsletter(
+      email: _email.text.trim(),
+      name: _name.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _submitting = false);
+
+    final ok = res['success'] == true;
+    Navigator.of(context).pop();
+    Get.snackbar(
+      ok ? 'Subscribed' : 'Could not subscribe',
+      res['message'] as String? ?? (ok ? 'You are on the list.' : 'Please try again.'),
+      backgroundColor: ok ? AppColors.success : AppColors.danger,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(12),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Subscribe to the newsletter',
+                style: GoogleFonts.montserrat(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Construction news, safety alerts and product updates in your inbox.',
+                style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+              ),
+              const SizedBox(height: 18),
+
+              const FieldLabel('Name'),
+              AppTextField(controller: _name, hint: 'Optional'),
+              const SizedBox(height: 14),
+
+              const FieldLabel('Email', required: true),
+              AppTextField(
+                controller: _email,
+                hint: 'you@example.com',
+                keyboard: TextInputType.emailAddress,
+                textCapitalization: TextCapitalization.none,
+                validator: emailField,
+              ),
+              const SizedBox(height: 22),
+
+              AppSubmitButton(
+                label: 'Subscribe',
+                busy: _submitting,
+                onPressed: _submit,
+              ),
+            ],
+          ),
         ),
       ),
     );
