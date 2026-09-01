@@ -44,9 +44,7 @@ class HomeScreen extends StatelessWidget {
         if (ctrl.isLoading.value) {
           return _loadingState(heroH, topPad);
         }
-        if (ctrl.errorMessage.isNotEmpty &&
-            ctrl.featuredArticles.isEmpty &&
-            ctrl.breakingNews.isEmpty) {
+        if (ctrl.featuredArticles.isEmpty && ctrl.breakingNews.isEmpty) {
           return _errorState(ctrl);
         }
         return _content(context, ctrl, heroH, topPad);
@@ -204,11 +202,14 @@ class HomeScreen extends StatelessWidget {
                   const SafetyIncidentsSection(),
 
                   const SizedBox(height: 24),
-                  Obx(() => FeaturedArticlesAnalysisSection(
-                        articles: ctrl.featuredArticles,
-                        onOpen: _openArticle,
-                        onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
-                      )),
+                  Obx(() {
+                    final articles = ctrl.featuredArticles.toList();
+                    return FeaturedArticlesAnalysisSection(
+                      articles: articles,
+                      onOpen: _openArticle,
+                      onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+                    );
+                  }),
 
                   const SizedBox(height: 24),
                   const BrowseProjectsByCategorySection(),
@@ -389,7 +390,9 @@ class HomeScreen extends StatelessWidget {
                 size: 52, color: Color(0xFFD1D5DB)),
             const SizedBox(height: 16),
             Text(
-              ctrl.errorMessage.value,
+              ctrl.errorMessage.value.isNotEmpty
+                  ? ctrl.errorMessage.value
+                  : 'No content available right now. Pull to refresh.',
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                   fontSize: 14, color: const Color(0xFF6B7280)),
