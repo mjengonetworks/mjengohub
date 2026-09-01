@@ -214,8 +214,13 @@ class _ProjectCategoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -229,6 +234,7 @@ class _ProjectCategoryCard extends StatelessWidget {
                     url: project.imageUrl,
                     fit: BoxFit.cover,
                     placeholderColor: const Color(0xFF1E3A5F),
+                    placeholderIcon: Icons.corporate_fare_rounded,
                   ),
                   Positioned(
                     top: 6,
@@ -798,8 +804,13 @@ class _SafetyIncidentCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -815,6 +826,7 @@ class _SafetyIncidentCard extends StatelessWidget {
                     url: incident.imageUrl,
                     fit: BoxFit.cover,
                     placeholderColor: isRoad ? const Color(0xFF7F1D1D) : const Color(0xFF78350F),
+                    placeholderIcon: Icons.report_problem_rounded,
                   ),
                   Positioned(
                     top: 7,
