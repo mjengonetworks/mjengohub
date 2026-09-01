@@ -636,7 +636,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                       value: (project.progressPercent.clamp(0, 100)) / 100,
                       minHeight: 5,
                       backgroundColor: AppColors.divider,
-                      color: isPrivate ? AppColors.primeBadge : AppColors.accentBlue,
+                      color: false ? AppColors.primeBadge : AppColors.accentBlue,
                     ),
                   ),
                   const SizedBox(height: 3),
