@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/mental_health_controller.dart';
 import '../models/mental_health_model.dart';
+import '../../news/widgets/net_image.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens — mirrors Videos / Discover screens exactly
@@ -291,11 +292,13 @@ class _VideoCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    video.thumbnailUrl != null
-                        ? Image.network(video.thumbnailUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder())
-                        : _placeholder(),
+                    NetImage(
+                      url: video.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      placeholderColor: _kBg,
+                      placeholderIcon: Icons.videocam_rounded,
+                      placeholderIconColor: const Color(0xFFCCCCDD),
+                    ),
                     Center(
                       child: Container(
                         width: 30,
@@ -334,13 +337,6 @@ class _VideoCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(
-        color: _kBg,
-        child: const Center(
-          child: Icon(Icons.videocam_rounded,
-              color: Color(0xFFCCCCDD), size: 28),
-        ),
-      );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

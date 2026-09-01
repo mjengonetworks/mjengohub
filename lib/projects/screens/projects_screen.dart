@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../news/widgets/net_image.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import 'project_detail_screen.dart';
@@ -290,11 +291,15 @@ class _FeaturedProjectCard extends StatelessWidget {
                   const BorderRadius.vertical(top: Radius.circular(14)),
               child: SizedBox(
                 height: 110,
-                child: project.imageUrl != null
-                    ? Image.network(project.imageUrl!,
-                        fit: BoxFit.cover, width: double.infinity,
-                        errorBuilder: (_, __, ___) => _placeholder())
-                    : _placeholder(),
+                child: NetImage(
+                  url: project.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                  placeholderIcon: Icons.business_rounded,
+                  placeholderIconColor: Colors.white38,
+                  placeholderIconSize: 36,
+                ),
               ),
             ),
             Expanded(
@@ -335,13 +340,6 @@ class _FeaturedProjectCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(
-        color: const Color(0xFF1E3A5F),
-        child: const Center(
-          child: Icon(Icons.business_rounded,
-              color: Colors.white38, size: 36),
-        ),
-      );
 }
 
 // ── Project list tile (main list) ─────────────────────────────────────────────
@@ -380,11 +378,13 @@ class _ProjectListTile extends StatelessWidget {
               child: SizedBox(
                 width: 100,
                 height: 100,
-                child: project.imageUrl != null
-                    ? Image.network(project.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _thumb())
-                    : _thumb(),
+                child: NetImage(
+                  url: project.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                  placeholderIcon: Icons.business_rounded,
+                  placeholderIconColor: Colors.white38,
+                ),
               ),
             ),
             // Info
@@ -458,12 +458,6 @@ class _ProjectListTile extends StatelessWidget {
     );
   }
 
-  Widget _thumb() => Container(
-        color: const Color(0xFF1E3A5F),
-        child: const Center(
-            child: Icon(Icons.business_rounded,
-                color: Colors.white38, size: 28)),
-      );
 }
 
 // ── Shared widgets ─────────────────────────────────────────────────────────────

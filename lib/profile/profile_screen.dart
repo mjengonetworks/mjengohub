@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
+import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
 import '../point/services/gamification_service.dart';
 import '../point/models/points_models.dart';
@@ -304,15 +305,13 @@ class _ProfileHeader extends StatelessWidget {
                     child: Stack(
                       children: [
                         ClipOval(
-                          child: hasPhoto
-                              ? Image.network(
-                                  user!.photoURL!,
-                                  width: _avatarSize,
-                                  height: _avatarSize,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _initialsWidget(initials),
-                                )
-                              : _initialsWidget(initials),
+                          child: NetImage(
+                            url: hasPhoto ? user!.photoURL : null,
+                            width: _avatarSize,
+                            height: _avatarSize,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_) => _initialsWidget(initials),
+                          ),
                         ),
                         Positioned(
                           bottom: 0,

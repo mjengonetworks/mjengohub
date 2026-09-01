@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../news/widgets/net_image.dart';
 import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
 import 'incident_detail_screen.dart';
@@ -502,12 +503,16 @@ class _FeaturedCard extends StatelessWidget {
               child: SizedBox(
                 height: 100,
                 width: double.infinity,
-                child: incident.imageUrl != null
-                    ? Image.network(incident.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _placeholder())
-                    : _placeholder(),
+                child: NetImage(
+                  url: incident.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: _kBg,
+                  placeholderIcon: incident.isRoadSafety
+                      ? Icons.report_problem_rounded
+                      : Icons.engineering_rounded,
+                  placeholderIconColor: const Color(0xFFCCCCDD),
+                  placeholderIconSize: 32,
+                ),
               ),
             ),
             Expanded(
@@ -545,18 +550,6 @@ class _FeaturedCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(
-        color: _kBg,
-        child: Center(
-          child: Icon(
-            incident.isRoadSafety
-                ? Icons.report_problem_rounded
-                : Icons.engineering_rounded,
-            color: const Color(0xFFCCCCDD),
-            size: 32,
-          ),
-        ),
-      );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -621,12 +614,16 @@ class _IncidentTile extends StatelessWidget {
               child: SizedBox(
                 width: 72,
                 height: 72,
-                child: incident.imageUrl != null
-                    ? Image.network(incident.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _thumbPlaceholder())
-                    : _thumbPlaceholder(),
+                child: NetImage(
+                  url: incident.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: _kBg,
+                  placeholderIcon: incident.isRoadSafety
+                      ? Icons.report_problem_rounded
+                      : Icons.engineering_rounded,
+                  placeholderIconColor: const Color(0xFFCCCCDD),
+                  placeholderIconSize: 26,
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -705,18 +702,6 @@ class _IncidentTile extends StatelessWidget {
     );
   }
 
-  Widget _thumbPlaceholder() => Container(
-        color: _kBg,
-        child: Center(
-          child: Icon(
-            incident.isRoadSafety
-                ? Icons.report_problem_rounded
-                : Icons.engineering_rounded,
-            color: const Color(0xFFCCCCDD),
-            size: 26,
-          ),
-        ),
-      );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

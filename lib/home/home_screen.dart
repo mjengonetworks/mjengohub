@@ -13,6 +13,7 @@ import '../notifications/screens/notifications_screen.dart';
 import '../news/models/article_model.dart';
 import '../news/widgets/featured_article_card.dart';
 import '../news/widgets/breaking_news_card.dart';
+import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
 import '../shared/widgets/badges.dart';
 import '../videos/controllers/videos_controller.dart';
@@ -324,22 +325,19 @@ class HomeScreen extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               clipBehavior: Clip.antiAlias,
-              child: photoUrl != null && photoUrl.isNotEmpty
-                  ? Image.network(photoUrl, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Center(
-                        child: Text(initial,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700)),
-                      ))
-                  : Center(
-                      child: Text(initial,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700)),
-                    ),
+              child: NetImage(
+                url: photoUrl,
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
+                errorBuilder: (_) => Center(
+                  child: Text(initial,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             Flexible(
@@ -682,25 +680,12 @@ class _VideoThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (url == null || url!.isEmpty) {
-      return Container(
-        color: const Color(0xFFEEEEF5),
-        child: const Center(
-          child: Icon(Icons.videocam_rounded,
-              color: Color(0xFFCCCCDD), size: 28),
-        ),
-      );
-    }
-    return Image.network(
-      url!,
+    return NetImage(
+      url: url,
       fit: BoxFit.cover,
-      errorBuilder: (ctx, err, st) => Container(
-        color: const Color(0xFFEEEEF5),
-        child: const Center(
-          child: Icon(Icons.videocam_rounded,
-              color: Color(0xFFCCCCDD), size: 28),
-        ),
-      ),
+      placeholderColor: const Color(0xFFEEEEF5),
+      placeholderIcon: Icons.videocam_rounded,
+      placeholderIconColor: const Color(0xFFCCCCDD),
     );
   }
 }

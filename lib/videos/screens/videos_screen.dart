@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../news/widgets/net_image.dart';
 import '../controllers/videos_controller.dart';
 import '../models/video_model.dart';
 import 'video_player_screen.dart';
@@ -512,22 +513,12 @@ class _Thumbnail extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    final url = video.thumbnailUrl;
-    if (url == null || url.isEmpty) {
-      return Container(
-        color: const Color(0xFFEEEEF5),
-        child: const Icon(Icons.videocam_rounded,
-            color: Color(0xFFCCCCDD), size: 28),
-      );
-    }
-    return Image.network(
-      url,
+    return NetImage(
+      url: video.thumbnailUrl,
       fit: BoxFit.cover,
-      errorBuilder: (ctx, err, st) => Container(
-        color: const Color(0xFFEEEEF5),
-        child: const Icon(Icons.videocam_rounded,
-            color: Color(0xFFCCCCDD), size: 28),
-      ),
+      placeholderColor: const Color(0xFFEEEEF5),
+      placeholderIcon: Icons.videocam_rounded,
+      placeholderIconColor: const Color(0xFFCCCCDD),
     );
   }
 }

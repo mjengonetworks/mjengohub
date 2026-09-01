@@ -20,6 +20,19 @@ class NetImage extends StatelessWidget {
   final Color placeholderColor;
   final Map<String, String>? extraHeaders;
 
+  /// Overrides the default image/broken-image icon shown when there's no
+  /// URL or the load fails. Useful for context-specific fallbacks (a video
+  /// camera icon for video thumbnails, a building icon for projects, …)
+  /// without every screen re-implementing its own placeholder Container.
+  final IconData? placeholderIcon;
+  final Color placeholderIconColor;
+  final double placeholderIconSize;
+
+  /// Full custom fallback, used for both the no-URL and load-failure cases
+  /// instead of [placeholderIcon]. For things a generic icon can't express —
+  /// e.g. a user's initials on an avatar.
+  final Widget Function(BuildContext context)? errorBuilder;
+
   // Used only on mobile — cPanel hotlink-protection bypass.
   static const Map<String, String> _mobileHeaders = {
     'Referer': 'https://mjengohub.co.ke',
@@ -35,20 +48,24 @@ class NetImage extends StatelessWidget {
     this.borderRadius,
     this.placeholderColor = const Color(0xFFE5E7EB),
     this.extraHeaders,
+    this.placeholderIcon,
+    this.placeholderIconColor = const Color(0xFF9CA3AF),
+    this.placeholderIconSize = 28,
+    this.errorBuilder,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Widget child = _buildImage();
+    Widget child = _buildImage(context);
     if (borderRadius != null) {
       child = ClipRRect(borderRadius: borderRadius!, child: child);
     }
     return child;
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
     if (url == null || url!.isEmpty) {
-      return _placeholder(isError: false);
+      return errorBuilder?.call(context) ?? _placeholder(isError: false);
     }
 
     // On web: Referer & User-Agent are forbidden headers — browsers ignore
@@ -69,7 +86,7 @@ class NetImage extends StatelessWidget {
       headers: headers,
       errorBuilder: (context, error, stack) {
         debugPrint('NetImage error for $url: $error');
-        return _placeholder(isError: true);
+        return errorBuilder?.call(context) ?? _placeholder(isError: true);
       },
       loadingBuilder: (_, child, progress) {
         if (progress == null) return child;
@@ -84,9 +101,10 @@ class NetImage extends StatelessWidget {
         color: placeholderColor,
         child: Center(
           child: Icon(
-            isError ? Icons.broken_image_outlined : Icons.image_outlined,
-            color: const Color(0xFF9CA3AF),
-            size: 28,
+            placeholderIcon ??
+                (isError ? Icons.broken_image_outlined : Icons.image_outlined),
+            color: placeholderIconColor,
+            size: placeholderIconSize,
           ),
         ),
       );

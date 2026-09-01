@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
+import '../news/widgets/net_image.dart';
 import '../point/services/gamification_service.dart';
 
 // ─── Email masking helper ─────────────────────────────────────────────────────
@@ -339,17 +340,15 @@ class _Hero extends StatelessWidget {
                         color: Colors.white.withOpacity(0.2),
                         border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
                       ),
-                      child: hasPhoto
-                          ? ClipOval(
-                              child: Image.network(
-                                user!.photoURL!,
-                                width: 76,
-                                height: 76,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _initialsW(initials),
-                              ),
-                            )
-                          : _initialsW(initials),
+                      child: ClipOval(
+                        child: NetImage(
+                          url: hasPhoto ? user!.photoURL : null,
+                          width: 76,
+                          height: 76,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_) => _initialsW(initials),
+                        ),
+                      ),
                     ),
                     Positioned(
                       bottom: 0,

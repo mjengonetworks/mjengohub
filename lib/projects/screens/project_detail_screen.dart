@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../news/widgets/net_image.dart';
 import '../../point/services/gamification_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/badges.dart';
@@ -103,11 +104,14 @@ class ProjectDetailScreen extends StatelessWidget {
             background: Stack(
               fit: StackFit.expand,
               children: [
-                project.imageUrl != null
-                    ? Image.network(project.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _heroPlaceholder())
-                    : _heroPlaceholder(),
+                NetImage(
+                  url: project.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                  placeholderIcon: Icons.business_rounded,
+                  placeholderIconColor: Colors.white30,
+                  placeholderIconSize: 64,
+                ),
                 // ── Project Status elevated to the very top of the hierarchy ──
                 Positioned(
                   left: 16,
@@ -317,13 +321,6 @@ class ProjectDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _heroPlaceholder() => Container(
-        color: const Color(0xFF1E3A5F),
-        child: const Center(
-          child: Icon(Icons.business_rounded,
-              color: Colors.white30, size: 64),
-        ),
-      );
 
   Future<void> _openGoogleMaps(Project project) async {
     final query = Uri.encodeComponent(
@@ -447,13 +444,14 @@ class ProjectDetailScreen extends StatelessWidget {
           return ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: m.mediaType == 'image'
-                ? Image.network(m.url,
+                ? NetImage(
+                    url: m.url,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                          color: _kDivider,
-                          child: const Icon(Icons.image_not_supported_rounded,
-                              color: _kSubtext, size: 20),
-                        ))
+                    placeholderColor: _kDivider,
+                    placeholderIcon: Icons.image_not_supported_rounded,
+                    placeholderIconColor: _kSubtext,
+                    placeholderIconSize: 20,
+                  )
                 : Container(
                     color: _kDark,
                     child: const Icon(Icons.play_circle_fill_rounded,

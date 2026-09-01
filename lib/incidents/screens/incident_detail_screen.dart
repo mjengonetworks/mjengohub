@@ -8,6 +8,7 @@ import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../news/widgets/net_image.dart';
 
 const _kDark    = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
@@ -113,10 +114,11 @@ class IncidentDetailScreen extends StatelessWidget {
                 ? Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(incident.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              Container(color: heroColor)),
+                      NetImage(
+                        url: incident.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_) => Container(color: heroColor),
+                      ),
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -237,17 +239,14 @@ class IncidentDetailScreen extends StatelessWidget {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: m.mediaType == 'image'
-                            ? Image.network(m.url,
+                            ? NetImage(
+                                url: m.url,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    Container(
-                                  color: _kDivider,
-                                  child: const Icon(
-                                      Icons
-                                          .image_not_supported_rounded,
-                                      color: _kSubtext,
-                                      size: 20),
-                                ))
+                                placeholderColor: _kDivider,
+                                placeholderIcon: Icons.image_not_supported_rounded,
+                                placeholderIconColor: _kSubtext,
+                                placeholderIconSize: 20,
+                              )
                             : Container(
                                 color: _kDark,
                                 child: const Icon(
