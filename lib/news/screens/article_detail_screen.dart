@@ -1,4 +1,6 @@
-﻿// lib/news/screens/article_detail_screen.dart
+import '../../shared/widgets/social_share_modal.dart';
+import '../../shared/services/bookmarks_service.dart';
+// lib/news/screens/article_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -18,6 +20,12 @@ class ArticleDetailScreen extends StatefulWidget {
 
 class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   late final ArticleDetailController _ctrl;
+  bool _isSaved = false;
+
+  void _checkSaved(String slug) async {
+    final saved = await BookmarksService.isBookmarked(slug);
+    if (mounted) setState(() => _isSaved = saved);
+  }
 
   @override
   void initState() {
@@ -25,6 +33,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     _ctrl = Get.put(ArticleDetailController());
     final slug = Get.arguments as String? ?? '';
     _ctrl.loadArticle(slug);
+    _checkSaved(slug);
   }
 
   @override
@@ -59,7 +68,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   }
 }
 
-// ── Article body (collapsing hero + content) ──────────────────────────────────
+// -- Article body (collapsing hero + content) ----------------------------------
 
 class _ArticleBody extends StatelessWidget {
   final Article article;
@@ -71,21 +80,21 @@ class _ArticleBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        // ── Collapsing hero ──────────────────────────────────────────────
+        // -- Collapsing hero ----------------------------------------------
         SliverAppBar(
           expandedHeight: _heroHeight,
           pinned: true,
           backgroundColor: Colors.black,
           elevation: 0,
           leading: _backButton(),
-          actions: [_shareButton(article)],
+          actions: [_bookmarkButton(article), _shareButton(article)],
           flexibleSpace: FlexibleSpaceBar(
             background: _HeroImage(article: article),
             collapseMode: CollapseMode.parallax,
           ),
         ),
 
-        // ── Content ──────────────────────────────────────────────────────
+        // -- Content ------------------------------------------------------
         SliverToBoxAdapter(
           child: _ContentSection(article: article),
         ),
@@ -112,9 +121,52 @@ class _ArticleBody extends StatelessWidget {
     );
   }
 
+  Widget _bookmarkButton(Article article) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8, right: 4),
+      child: GestureDetector(
+        onTap: () async {
+          final nowSaved = await BookmarksService.toggleBookmark(
+            BookmarkedItem(
+              id: article.id.toString(),
+              title: article.title,
+              slug: article.slug,
+              imageUrl: article.imageUrl,
+              category: article.category?.name,
+              type: 'article',
+              savedAt: DateTime.now(),
+            ),
+          );
+          if (mounted) {
+            setState(() => _isSaved = nowSaved);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(nowSaved ? 'Article saved to bookmarks' : 'Article removed from bookmarks'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        },
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            color: _isSaved ? const Color(0xFFF59E0B) : Colors.white,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _shareButton(Article article) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(4, 8, 12, 8),
       child: GestureDetector(
         onTap: () => _shareArticle(article),
         child: Container(
@@ -132,14 +184,15 @@ class _ArticleBody extends StatelessWidget {
 
   void _shareArticle(Article article) {
     final url = 'https://mjengohub.co.ke/news/${article.slug}';
-    final text = article.summary != null && article.summary!.isNotEmpty
-        ? '${article.title}\n\n${article.summary}\n\n$url'
-        : '${article.title}\n\n$url';
-    Share.share(text, subject: article.title);
+    SocialShareModal.show(
+      context,
+      title: 'Read this on Mjengo Hub: "${article.title}"',
+      url: url,
+    );
   }
 }
 
-// ── Hero image with gradient & overlay text ───────────────────────────────────
+// -- Hero image with gradient & overlay text -----------------------------------
 
 class _HeroImage extends StatelessWidget {
   final Article article;
@@ -216,7 +269,7 @@ class _HeroImage extends StatelessWidget {
   }
 }
 
-// ── Content below hero ────────────────────────────────────────────────────────
+// -- Content below hero --------------------------------------------------------
 
 class _ContentSection extends StatelessWidget {
   final Article article;
@@ -231,15 +284,15 @@ class _ContentSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Author + meta row ──────────────────────────────────────────
+          // -- Author + meta row ------------------------------------------
           _AuthorRow(article: article),
           const SizedBox(height: 20),
 
-          // ── Divider ────────────────────────────────────────────────────
+          // -- Divider ----------------------------------------------------
           const Divider(color: Color(0xFFF3F4F6), height: 1),
           const SizedBox(height: 20),
 
-          // ── Summary ────────────────────────────────────────────────────
+          // -- Summary ----------------------------------------------------
           if (article.summary != null && article.summary!.isNotEmpty) ...[
             Text(
               article.summary!,
@@ -253,7 +306,7 @@ class _ContentSection extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
-          // ── Body text ──────────────────────────────────────────────────
+          // -- Body text --------------------------------------------------
           if (hasContent)
             Text(
               article.plainContent,
@@ -264,7 +317,7 @@ class _ContentSection extends StatelessWidget {
               ),
             ),
 
-          // ── Image caption ──────────────────────────────────────────────
+          // -- Image caption ----------------------------------------------
           if (article.featuredImageCaption != null &&
               article.featuredImageCaption!.isNotEmpty) ...[
             const SizedBox(height: 24),
@@ -293,7 +346,7 @@ class _ContentSection extends StatelessWidget {
   }
 }
 
-// ── Author row ────────────────────────────────────────────────────────────────
+// -- Author row ----------------------------------------------------------------
 
 class _AuthorRow extends StatelessWidget {
   final Article article;
@@ -359,7 +412,7 @@ class _AuthorRow extends StatelessWidget {
   }
 }
 
-// ── Error view ────────────────────────────────────────────────────────────────
+// -- Error view ----------------------------------------------------------------
 
 class _ErrorView extends StatelessWidget {
   final String message;
@@ -394,3 +447,4 @@ class _ErrorView extends StatelessWidget {
     );
   }
 }
+
