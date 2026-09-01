@@ -136,21 +136,26 @@ class ProjectsService {
     }
   }
 
+  /// [name] is required — api.py's `suggest_project_edit` 400s without it,
+  /// and reads it (and [email]) under the keys `name`/`email`. This method
+  /// previously sent `submitter_name`/`submitter_email`, which the backend
+  /// never reads, and treated `name` as optional — every suggestion silently
+  /// 400'd. Fixed to match the real contract.
   Future<Map<String, dynamic>> suggestEdit({
     required int projectId,
     required String fieldName,
     required String proposedValue,
-    String? submitterName,
-    String? submitterEmail,
+    required String name,
+    String? email,
     String? reason,
   }) async {
     try {
       final res = await _api.postRequest('projects/$projectId/suggest-edit', {
         'field_name': fieldName,
         'proposed_value': proposedValue,
-        if (submitterName != null) 'submitter_name': submitterName,
-        if (submitterEmail != null) 'submitter_email': submitterEmail,
-        if (reason != null) 'reason': reason,
+        'name': name,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
       });
       return res.body as Map<String, dynamic>? ?? {};
     } catch (e) {

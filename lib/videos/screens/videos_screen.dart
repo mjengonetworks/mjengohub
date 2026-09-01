@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../news/widgets/net_image.dart';
+import '../../shared/services/site_service.dart';
 import '../controllers/videos_controller.dart';
 import '../models/video_model.dart';
 import 'video_player_screen.dart';
@@ -60,7 +61,12 @@ class VideosScreen extends StatelessWidget {
                     color: _kSubtext,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
+
+                // ── Channel stats (mirrors templates/youtube.html's
+                // videos/subscribers/views tiles, via GET site/figures) ──
+                const _YoutubeStatsRow(),
+                const SizedBox(height: 14),
 
                 // ── Search bar ─────────────────────────────────────────
                 _SearchBar(ctrl: ctrl),
@@ -75,6 +81,93 @@ class VideosScreen extends StatelessWidget {
 
           // ── Video list ────────────────────────────────────────────────
           Expanded(child: _VideoList(ctrl: ctrl)),
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  CHANNEL STATS  (videos / subscribers / views, from GET site/figures)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _YoutubeStatsRow extends StatefulWidget {
+  const _YoutubeStatsRow();
+
+  @override
+  State<_YoutubeStatsRow> createState() => _YoutubeStatsRowState();
+}
+
+class _YoutubeStatsRowState extends State<_YoutubeStatsRow> {
+  final _service = SiteService();
+  List<SiteFigure> _figures = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getSiteFigures().then((figures) {
+      if (mounted) setState(() => _figures = figures);
+    });
+  }
+
+  SiteFigure? _byKey(String key) {
+    for (final f in _figures) {
+      if (f.key == key) return f;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tiles = [
+      _byKey('youtube_videos'),
+      _byKey('youtube_subscribers'),
+      _byKey('youtube_views'),
+    ].whereType<SiteFigure>().toList();
+
+    if (tiles.isEmpty) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        for (int i = 0; i < tiles.length; i++) ...[
+          Expanded(child: _StatTile(figure: tiles[i])),
+          if (i != tiles.length - 1) const SizedBox(width: 10),
+        ],
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final SiteFigure figure;
+  const _StatTile({required this.figure});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: _kBg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            figure.display,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: _kYT,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            figure.name ?? '',
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(fontSize: 10, color: _kSubtext),
+          ),
         ],
       ),
     );

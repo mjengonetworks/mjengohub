@@ -679,6 +679,19 @@ class _ActionsCard extends StatelessWidget {
         children: [
           Expanded(
             child: _ActionChip(
+              icon: Icons.percent_rounded,
+              label: 'Suggest %',
+              onTap: () => _requireAuth(context, () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => _SuggestProgressSheet(project: project),
+                  )),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _ActionChip(
               icon: Icons.edit_note_rounded,
               label: 'Suggest Edit',
               onTap: () => _requireAuth(context, () => showModalBottomSheet(
@@ -785,6 +798,123 @@ InputDecoration _sheetFieldDecoration(String label) => InputDecoration(
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
     );
 
+/// Mirrors templates/project_detail.html's "Suggest Completion %" card —
+/// a lighter-weight sibling to [_SuggestEditSheet] that hits the dedicated
+/// `POST projects/{id}/suggest-progress` endpoint instead of the general
+/// suggest-edit one, so admins can review progress corrections separately.
+class _SuggestProgressSheet extends StatefulWidget {
+  final Project project;
+  const _SuggestProgressSheet({required this.project});
+
+  @override
+  State<_SuggestProgressSheet> createState() => _SuggestProgressSheetState();
+}
+
+class _SuggestProgressSheetState extends State<_SuggestProgressSheet> {
+  final _percentCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _reasonCtrl = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _percentCtrl.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _reasonCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final percent = int.tryParse(_percentCtrl.text.trim());
+    if (percent == null || percent < 0 || percent > 100) {
+      Get.snackbar('Invalid value', 'Enter a completion percentage between 0 and 100.',
+          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      return;
+    }
+    if (_nameCtrl.text.trim().isEmpty) {
+      Get.snackbar('Name required', 'Please enter your name.',
+          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      return;
+    }
+    setState(() => _submitting = true);
+    final ok = await ProjectsService().suggestProgress(
+      projectId: widget.project.id,
+      proposedPercent: percent,
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
+      reason: _reasonCtrl.text.trim().isNotEmpty ? _reasonCtrl.text.trim() : null,
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    Navigator.of(context).pop();
+    Get.snackbar(
+      ok ? 'Thanks!' : 'Couldn\'t submit',
+      ok ? 'Your progress suggestion has been sent for review.' : 'Please try again.',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _SheetShell(
+      title: 'Suggest Completion %',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Do you have better information on the actual completion? '
+            'Submit for admin review.',
+            style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _nameCtrl,
+            decoration: _sheetFieldDecoration('Your name'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _percentCtrl,
+            keyboardType: TextInputType.number,
+            decoration: _sheetFieldDecoration('Completion %').copyWith(suffixText: '%'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _emailCtrl,
+            decoration: _sheetFieldDecoration('Your email (optional)'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _reasonCtrl,
+            decoration: _sheetFieldDecoration('Reason / source (optional)'),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _submitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kBlue,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18, height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text('Submit Suggestion',
+                      style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SuggestEditSheet extends StatefulWidget {
   final Project project;
   const _SuggestEditSheet({required this.project});
@@ -807,13 +937,18 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
 
   Future<void> _submit() async {
     if (_valueCtrl.text.trim().isEmpty) return;
+    if (_nameCtrl.text.trim().isEmpty) {
+      Get.snackbar('Name required', 'Please enter your name.',
+          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      return;
+    }
     setState(() => _submitting = true);
     final result = await ProjectsService().suggestEdit(
       projectId: widget.project.id,
       fieldName: _field,
       proposedValue: _valueCtrl.text.trim(),
-      submitterName: _nameCtrl.text.trim().isNotEmpty ? _nameCtrl.text.trim() : null,
-      submitterEmail: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
       reason: _reasonCtrl.text.trim().isNotEmpty ? _reasonCtrl.text.trim() : null,
     );
     if (!mounted) return;
@@ -840,7 +975,7 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
           const SizedBox(height: 12),
           TextField(controller: _valueCtrl, decoration: _sheetFieldDecoration('Proposed value'), maxLines: 2),
           const SizedBox(height: 12),
-          TextField(controller: _nameCtrl, decoration: _sheetFieldDecoration('Your name (optional)')),
+          TextField(controller: _nameCtrl, decoration: _sheetFieldDecoration('Your name')),
           const SizedBox(height: 12),
           TextField(controller: _emailCtrl, decoration: _sheetFieldDecoration('Your email (optional)')),
           const SizedBox(height: 12),

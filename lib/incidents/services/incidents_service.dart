@@ -135,21 +135,27 @@ class IncidentsService {
     }
   }
 
+  /// [fieldName] must be one of [kIncidentSuggestEditFields] — api.py rejects
+  /// anything else with a 400. Unlike `ProjectsService.suggestEdit`, [name]
+  /// is required here: api.py's `suggest_incident_edit` 400s without it,
+  /// and the JSON keys are `name`/`email`, not `submitter_name`/
+  /// `submitter_email` (the previous version of this method sent the wrong
+  /// keys and always 400'd — it had no caller, so nothing surfaced it).
   Future<bool> suggestEdit({
     required int incidentId,
     required String fieldName,
     required String proposedValue,
-    String? submitterName,
-    String? submitterEmail,
+    required String name,
+    String? email,
     String? reason,
   }) async {
     try {
       final res = await _api.postRequest('incidents/$incidentId/suggest-edit', {
         'field_name': fieldName,
         'proposed_value': proposedValue,
-        if (submitterName != null) 'submitter_name': submitterName,
-        if (submitterEmail != null) 'submitter_email': submitterEmail,
-        if (reason != null) 'reason': reason,
+        'name': name,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
       });
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
@@ -158,3 +164,15 @@ class IncidentsService {
     }
   }
 }
+
+/// Fields api.py's `suggest_incident_edit` accepts for `field_name`.
+const List<String> kIncidentSuggestEditFields = [
+  'title',
+  'description',
+  'location',
+  'lessons_learned',
+  'recommendations',
+  'casualties',
+  'injuries',
+  'severity',
+];

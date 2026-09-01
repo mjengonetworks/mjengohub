@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
+import '../services/incidents_service.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
 import '../../news/widgets/net_image.dart';
+import '../../point/services/gamification_service.dart';
+import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/form_fields.dart';
 
 const _kDark    = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
@@ -352,6 +357,43 @@ class IncidentDetailScreen extends StatelessWidget {
                   ),
                 ),
 
+              // ── Suggest a correction / claim copyright (parity with
+              // templates/incident_detail.html's two sidebar cards) ────────
+              Container(
+                color: _kCard,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _ActionChip(
+                        icon: Icons.edit_note_rounded,
+                        label: 'Suggest Edit',
+                        onTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => _IncidentSuggestEditSheet(incident: incident),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _ActionChip(
+                        icon: Icons.copyright_rounded,
+                        label: 'Claim Copyright',
+                        onTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => _IncidentCopyrightClaimSheet(incident: incident),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               // ── Discussion (Reddit-style threaded comments, auth-gated) ───
               Container(
                 color: _kCard,
@@ -452,6 +494,319 @@ class _StatChip extends StatelessWidget {
         fontSize: 12,
         fontWeight: FontWeight.w700,
         color: color,
+      ),
+    );
+  }
+}
+
+// ── Suggest a Correction / Claim Copyright action row ───────────────────────
+
+class _ActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _ActionChip({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: _kBg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _kDivider),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: AppColors.primaryBlue),
+            const SizedBox(width: 6),
+            Text(label,
+                style: GoogleFonts.montserrat(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryBlue)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet shell shared by both forms below — matches the rounded
+/// white-card look already used across the app's other submission sheets.
+class _IncidentSheetShell extends StatelessWidget {
+  final String title;
+  final Widget child;
+  const _IncidentSheetShell({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: _kDivider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                title,
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: _kDark,
+                ),
+              ),
+              const SizedBox(height: 16),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Mirrors templates/incident_detail.html's "Suggest a Correction" card,
+/// via `POST incidents/{id}/suggest-edit`.
+class _IncidentSuggestEditSheet extends StatefulWidget {
+  final Incident incident;
+  const _IncidentSuggestEditSheet({required this.incident});
+
+  @override
+  State<_IncidentSuggestEditSheet> createState() => _IncidentSuggestEditSheetState();
+}
+
+class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
+  String _field = kIncidentSuggestEditFields.first;
+  final _valueCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _reasonCtrl = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _valueCtrl.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _reasonCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_nameCtrl.text.trim().isEmpty || _valueCtrl.text.trim().isEmpty) {
+      Get.snackbar('Missing info', 'Please enter your name and the corrected value.',
+          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      return;
+    }
+    setState(() => _submitting = true);
+    final ok = await IncidentsService().suggestEdit(
+      incidentId: widget.incident.id,
+      fieldName: _field,
+      proposedValue: _valueCtrl.text.trim(),
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
+      reason: _reasonCtrl.text.trim().isNotEmpty ? _reasonCtrl.text.trim() : null,
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    Navigator.of(context).pop();
+    Get.snackbar(
+      ok ? 'Thanks!' : 'Couldn\'t submit',
+      ok ? 'Your correction has been sent for review.' : 'Please try again.',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _IncidentSheetShell(
+      title: 'Suggest a Correction',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Have better information? Submit an edit for admin review.',
+            style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
+          ),
+          const SizedBox(height: 14),
+          const FieldLabel('Field to correct', required: true),
+          AppDropdown<String>(
+            value: _field,
+            items: kIncidentSuggestEditFields,
+            labelOf: (f) => f.replaceAll('_', ' '),
+            hint: 'Select field',
+            onChanged: (v) => setState(() => _field = v ?? _field),
+          ),
+          const SizedBox(height: 12),
+          const FieldLabel('Your name', required: true),
+          AppTextField(controller: _nameCtrl, hint: 'Your name'),
+          const SizedBox(height: 12),
+          const FieldLabel('Email'),
+          AppTextField(
+            controller: _emailCtrl,
+            hint: 'Optional',
+            keyboard: TextInputType.emailAddress,
+            textCapitalization: TextCapitalization.none,
+          ),
+          const SizedBox(height: 12),
+          const FieldLabel('Corrected value', required: true),
+          AppTextField(controller: _valueCtrl, hint: 'Proposed value', maxLines: 2),
+          const SizedBox(height: 12),
+          const FieldLabel('Reason / source'),
+          AppTextField(controller: _reasonCtrl, hint: 'Optional', maxLines: 2),
+          const SizedBox(height: 16),
+          AppSubmitButton(label: 'Submit Correction', busy: _submitting, onPressed: _submit),
+        ],
+      ),
+    );
+  }
+}
+
+/// Mirrors templates/incident_detail.html's "Claim Copyright" card, via
+/// `POST copyright-claim` with `content_type: 'incident'`
+/// (GamificationService already supports this generically).
+class _IncidentCopyrightClaimSheet extends StatefulWidget {
+  final Incident incident;
+  const _IncidentCopyrightClaimSheet({required this.incident});
+
+  @override
+  State<_IncidentCopyrightClaimSheet> createState() => _IncidentCopyrightClaimSheetState();
+}
+
+class _IncidentCopyrightClaimSheetState extends State<_IncidentCopyrightClaimSheet> {
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  XFile? _proof;
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickProof() async {
+    final file = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (file != null) setState(() => _proof = file);
+  }
+
+  Future<void> _submit() async {
+    if (_nameCtrl.text.trim().isEmpty ||
+        _emailCtrl.text.trim().isEmpty ||
+        _descCtrl.text.trim().isEmpty) {
+      Get.snackbar('Missing info', 'Please fill in your name, email, and description.',
+          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      return;
+    }
+    setState(() => _submitting = true);
+    final bytes = _proof != null ? await _proof!.readAsBytes() : null;
+    final ok = await GamificationService().submitCopyrightClaim(
+      contentType: 'incident',
+      contentId: widget.incident.id,
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      description: _descCtrl.text.trim(),
+      proofBytes: bytes,
+      proofFilename: _proof?.name,
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    Navigator.of(context).pop();
+    Get.snackbar(
+      ok ? 'Claim submitted' : 'Couldn\'t submit',
+      ok ? 'Our team will review your claim shortly.' : 'Please try again later.',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _IncidentSheetShell(
+      title: 'Claim Copyright',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Is a photo or piece of information here yours? Ask for credit, '
+            'removal, or replacement.',
+            style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
+          ),
+          const SizedBox(height: 14),
+          const FieldLabel('Your name', required: true),
+          AppTextField(controller: _nameCtrl, hint: 'Your name'),
+          const SizedBox(height: 12),
+          const FieldLabel('Your email', required: true),
+          AppTextField(
+            controller: _emailCtrl,
+            hint: 'you@example.com',
+            keyboard: TextInputType.emailAddress,
+            textCapitalization: TextCapitalization.none,
+          ),
+          const SizedBox(height: 12),
+          const FieldLabel('Describe the issue', required: true),
+          AppTextField(controller: _descCtrl, hint: 'What is the issue?', maxLines: 3),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: _pickProof,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(color: _kBg, borderRadius: BorderRadius.circular(10)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.attach_file_rounded, size: 16, color: _kSubtext),
+                  const SizedBox(width: 6),
+                  Text(
+                    _proof == null ? 'Attach proof (optional)' : _proof!.name,
+                    style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _submitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18, height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text('Submit Claim',
+                      style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
       ),
     );
   }
