@@ -1,3 +1,4 @@
+import '../../shared/widgets/social_share_modal.dart';
 // lib/projects/screens/project_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -98,6 +99,29 @@ class ProjectDetailScreen extends StatelessWidget {
                   color: Colors.white, size: 18),
             ),
           ),
+          actions: [
+            GestureDetector(
+              onTap: () {
+                final projectUrl = 'https://mjengohub.co.ke/projects/${project.slug}';
+                SocialShareModal.show(
+                  context,
+                  title: 'Check out ${project.title} on Mjengo Hub:',
+                  url: projectUrl,
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 12),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.black38,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.share_rounded,
+                    color: Colors.white, size: 18),
+              ),
+            ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             background: Stack(
               fit: StackFit.expand,
@@ -1052,3 +1076,4 @@ class _DetailRow extends StatelessWidget {
     );
   }
 }
+
