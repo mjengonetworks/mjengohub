@@ -110,7 +110,13 @@ class MjengoService extends GetConnect {
 
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
-        final token = decoded is Map ? decoded['data']?['access_token'] : null;
+        // Unpacked step by step rather than with a null-aware index inside a
+        // ternary: Dart can't disambiguate `cond ? a?[b] : c` and fails to parse.
+        Object? token;
+        if (decoded is Map) {
+          final data = decoded['data'];
+          if (data is Map) token = data['access_token'];
+        }
         if (token is String && token.isNotEmpty) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_accessTokenKey, token);
