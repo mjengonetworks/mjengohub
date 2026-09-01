@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
 import '../news/widgets/net_image.dart';
-import '../point/services/gamification_service.dart';
+import '../shared/widgets/coming_soon.dart';
 
 // ─── Email masking helper ─────────────────────────────────────────────────────
 String _maskEmailStatic(String email) {
@@ -167,18 +166,11 @@ class _AccountScreenState extends State<AccountScreen>
   }
 
   // ── Avatar upload ──────────────────────────────────────────────────────────
-  Future<void> _pickAndUploadAvatar() async {
-    try {
-      final picker = ImagePicker();
-      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-      if (file == null) return;
-      final bytes = await file.readAsBytes();
-      final ok = await _auth.uploadAvatar(bytes, file.name);
-      if (!mounted) return;
-      _showSnack(ok ? 'Profile photo updated' : 'Failed to upload photo', success: ok);
-    } catch (_) {
-      if (mounted) _showSnack('Failed to upload photo');
-    }
+  // `auth/me/avatar` doesn't exist on the backend yet (see
+  // MjengoAuthController.uploadAvatar), so this shows a "coming soon" message
+  // instead of picking an image and firing a request that's guaranteed to 404.
+  void _pickAndUploadAvatar() {
+    showComingSoonSnack('Profile photo upload isn\'t available in the app yet.');
   }
 
   void _showSnack(String msg, {bool success = false}) {
@@ -595,31 +587,6 @@ class _ProfileTab extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ── Referral redemption (Google-OAuth / existing users) ─────────
-            if (user?.referredById == null) ...[
-              _SectionLabel('Referral Code'),
-              const SizedBox(height: 10),
-              const _ReferralRedeemCard(),
-              const SizedBox(height: 20),
-            ] else ...[
-              _SectionLabel('Referral Code'),
-              const SizedBox(height: 10),
-              _Card(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF16A34A)),
-                      const SizedBox(width: 10),
-                      Text('Referred by a friend',
-                          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: _textPri)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-
             // ── Read-only email row ────────────────────────────────────────
             _SectionLabel('Account Info'),
             const SizedBox(height: 10),
@@ -873,75 +840,6 @@ class _StrengthHintState extends State<_StrengthHint> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ─── Referral code redemption (manual, for Google-OAuth / existing users) ─────
-
-class _ReferralRedeemCard extends StatefulWidget {
-  const _ReferralRedeemCard();
-
-  @override
-  State<_ReferralRedeemCard> createState() => _ReferralRedeemCardState();
-}
-
-class _ReferralRedeemCardState extends State<_ReferralRedeemCard> {
-  final _service = GamificationService();
-  final _codeCtrl = TextEditingController();
-  bool _redeeming = false;
-
-  @override
-  void dispose() {
-    _codeCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _redeem() async {
-    final code = _codeCtrl.text.trim();
-    if (code.isEmpty) return;
-    setState(() => _redeeming = true);
-    final error = await _service.redeemReferralCode(code);
-    if (!mounted) return;
-    setState(() => _redeeming = false);
-    final state = context.findAncestorStateOfType<_AccountScreenState>();
-    if (error == null) {
-      _codeCtrl.clear();
-      state?._showSnack('Referral code applied — thanks for joining!', success: true);
-    } else {
-      state?._showSnack(error);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _codeCtrl,
-                textCapitalization: TextCapitalization.characters,
-                style: GoogleFonts.montserrat(fontSize: 13.5, color: _textPri),
-                decoration: InputDecoration(
-                  hintText: 'Have a referral code?',
-                  hintStyle: GoogleFonts.montserrat(fontSize: 12.5, color: _textSec),
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: _redeeming ? null : _redeem,
-              child: _redeeming
-                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: _blue))
-                  : Text('Apply', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: _blue)),
-            ),
-          ],
-        ),
       ),
     );
   }

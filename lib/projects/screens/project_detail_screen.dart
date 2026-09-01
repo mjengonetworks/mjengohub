@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
 import '../../news/widgets/net_image.dart';
-import '../../point/services/gamification_service.dart';
-import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/badges.dart';
+import '../../shared/widgets/coming_soon.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
@@ -707,12 +705,8 @@ class _ActionsCard extends StatelessWidget {
             child: _ActionChip(
               icon: Icons.flag_outlined,
               label: 'Report Content',
-              onTap: () => _requireAuth(context, () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => _CopyrightClaimSheet(project: project),
-                  )),
+              onTap: () => showComingSoonSnack(
+                  'Copyright/content claims aren\'t available in the app yet.'),
             ),
           ),
         ],
@@ -989,96 +983,6 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
               child: _submitting
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : Text('Submit', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CopyrightClaimSheet extends StatefulWidget {
-  final Project project;
-  const _CopyrightClaimSheet({required this.project});
-
-  @override
-  State<_CopyrightClaimSheet> createState() => _CopyrightClaimSheetState();
-}
-
-class _CopyrightClaimSheetState extends State<_CopyrightClaimSheet> {
-  final _nameCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-  XFile? _proof;
-  bool _submitting = false;
-
-  Future<void> _pickProof() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (file != null) setState(() => _proof = file);
-  }
-
-  Future<void> _submit() async {
-    if (_descCtrl.text.trim().isEmpty || _nameCtrl.text.trim().isEmpty || _emailCtrl.text.trim().isEmpty) {
-      Get.snackbar('Missing info', 'Please fill in your name, email, and description.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
-      return;
-    }
-    setState(() => _submitting = true);
-    final bytes = _proof != null ? await _proof!.readAsBytes() : null;
-    final ok = await GamificationService().submitCopyrightClaim(
-      contentType: 'project',
-      contentId: widget.project.id,
-      name: _nameCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
-      description: _descCtrl.text.trim(),
-      proofBytes: bytes,
-      proofFilename: _proof?.name,
-    );
-    if (!mounted) return;
-    setState(() => _submitting = false);
-    Navigator.of(context).pop();
-    Get.snackbar(ok ? 'Claim submitted' : 'Couldn\'t submit', ok ? 'Our team will review your claim shortly.' : 'Please try again later.',
-        snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _SheetShell(
-      title: 'Claim Copyright / Report Content',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(controller: _nameCtrl, decoration: _sheetFieldDecoration('Your name')),
-          const SizedBox(height: 12),
-          TextField(controller: _emailCtrl, decoration: _sheetFieldDecoration('Your email')),
-          const SizedBox(height: 12),
-          TextField(controller: _descCtrl, decoration: _sheetFieldDecoration('Describe the issue'), maxLines: 3),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: _pickProof,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(color: _kBg, borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.attach_file_rounded, size: 16, color: _kSubtext),
-                  const SizedBox(width: 6),
-                  Text(_proof == null ? 'Attach proof (optional)' : _proof!.name,
-                      style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext)),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _submitting ? null : _submit,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-              child: _submitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Submit Claim', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ),
         ],

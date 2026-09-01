@@ -160,11 +160,6 @@ class Project {
   final List<ProjectMilestone> milestones;
   final List<ProjectMedia> media;
 
-  /// 'infrastructure' (public tracker) or 'private_development' (Private
-  /// Projects). The backend uses ONE `Project` table discriminated by this
-  /// column — there is no separate private-project model/table.
-  final String projectType;
-
   const Project({
     required this.id,
     required this.title,
@@ -187,7 +182,6 @@ class Project {
     this.expectedEndDate,
     this.milestones = const [],
     this.media = const [],
-    this.projectType = 'infrastructure',
   });
 
   factory Project.fromJson(Map<String, dynamic> j) => Project(
@@ -222,10 +216,7 @@ class Project {
                 .map(ProjectMedia.fromJson)
                 .toList() ??
             [],
-        projectType: (j['project_type'] as String?) ?? 'infrastructure',
       );
-
-  bool get isPrivateProject => projectType == 'private_development';
 
   List<ProjectMedia> get renderGallery => media.where((m) => m.isRender).toList();
   List<ProjectMedia> get progressGallery => media.where((m) => !m.isRender).toList();

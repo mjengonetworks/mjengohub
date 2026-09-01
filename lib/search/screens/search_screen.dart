@@ -33,8 +33,7 @@ import '../services/search_service.dart';
 enum _SearchCategory {
   articles,
   news,
-  publicProjects,
-  privateProjects,
+  projects,
   safetyIncidents,
   services,
   reports,
@@ -45,8 +44,7 @@ extension on _SearchCategory {
     switch (this) {
       case _SearchCategory.articles: return 'Articles';
       case _SearchCategory.news: return 'News';
-      case _SearchCategory.publicProjects: return 'Public Projects';
-      case _SearchCategory.privateProjects: return 'Private Projects';
+      case _SearchCategory.projects: return 'Projects';
       case _SearchCategory.safetyIncidents: return 'Safety Incidents';
       case _SearchCategory.services: return 'Services';
       case _SearchCategory.reports: return 'Reports';
@@ -73,8 +71,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final Set<_SearchCategory> _activeFilters = {
     _SearchCategory.articles,
     _SearchCategory.news,
-    _SearchCategory.publicProjects,
-    _SearchCategory.privateProjects,
+    _SearchCategory.projects,
     _SearchCategory.safetyIncidents,
     _SearchCategory.services,
     _SearchCategory.reports,
@@ -84,8 +81,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String _query = '';
   List<Article> _articles = [];
   List<Article> _news = [];
-  List<Project> _publicProjects = [];
-  List<Project> _privateProjects = [];
+  List<Project> _projects = [];
   List<Incident> _incidents = [];
   List<ServiceOffering> _services = [];
   List<InfrastructureReport> _reports = [];
@@ -109,8 +105,7 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _articles = [];
         _news = [];
-        _publicProjects = [];
-        _privateProjects = [];
+        _projects = [];
         _incidents = [];
         _services = [];
         _reports = [];
@@ -122,8 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final futures = <Future>[];
     Future<List<Article>> articlesFuture = Future.value([]);
-    Future<List<Project>> publicFuture = Future.value([]);
-    Future<List<Project>> privateFuture = Future.value([]);
+    Future<List<Project>> projectsFuture = Future.value([]);
     Future<List<Incident>> incidentsRoadFuture = Future.value([]);
     Future<List<Incident>> incidentsSiteFuture = Future.value([]);
     Future<UnifiedSearchResults> unifiedFuture =
@@ -139,13 +133,9 @@ class _SearchScreenState extends State<SearchScreen> {
       unifiedFuture = _searchApi.search(trimmed);
       futures.add(unifiedFuture);
     }
-    if (_activeFilters.contains(_SearchCategory.publicProjects)) {
-      publicFuture = _projectsApi.getPublicProjects(q: trimmed, perPage: 20);
-      futures.add(publicFuture);
-    }
-    if (_activeFilters.contains(_SearchCategory.privateProjects)) {
-      privateFuture = _projectsApi.getPrivateProjects(q: trimmed, perPage: 20);
-      futures.add(privateFuture);
+    if (_activeFilters.contains(_SearchCategory.projects)) {
+      projectsFuture = _projectsApi.getProjects(q: trimmed, perPage: 20);
+      futures.add(projectsFuture);
     }
     if (_activeFilters.contains(_SearchCategory.safetyIncidents)) {
       incidentsRoadFuture = _incidentsApi.getIncidents(type: 'road_safety', q: trimmed, perPage: 15);
@@ -157,8 +147,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (!mounted) return;
 
     final allArticles = await articlesFuture;
-    final publicResults = await publicFuture;
-    final privateResults = await privateFuture;
+    final projectResults = await projectsFuture;
     final roadIncidents = await incidentsRoadFuture;
     final siteIncidents = await incidentsSiteFuture;
     final unified = await unifiedFuture;
@@ -168,8 +157,7 @@ class _SearchScreenState extends State<SearchScreen> {
       _news = _activeFilters.contains(_SearchCategory.news)
           ? allArticles.where((a) => a.isBreaking).toList()
           : [];
-      _publicProjects = publicResults;
-      _privateProjects = privateResults;
+      _projects = projectResults;
       _incidents = [...roadIncidents, ...siteIncidents];
       _services =
           _activeFilters.contains(_SearchCategory.services) ? unified.services : [];
@@ -193,8 +181,7 @@ class _SearchScreenState extends State<SearchScreen> {
   int get _totalResults =>
       _articles.length +
       _news.length +
-      _publicProjects.length +
-      _privateProjects.length +
+      _projects.length +
       _incidents.length +
       _services.length +
       _reports.length;
@@ -289,8 +276,7 @@ class _SearchScreenState extends State<SearchScreen> {
       children: [
         if (_articles.isNotEmpty) _section('Articles', _articles.map((a) => _ArticleRow(a)).toList()),
         if (_news.isNotEmpty) _section('News', _news.map((a) => _ArticleRow(a)).toList()),
-        if (_publicProjects.isNotEmpty) _section('Public Projects', _publicProjects.map((p) => _ProjectRow(p)).toList()),
-        if (_privateProjects.isNotEmpty) _section('Private Projects', _privateProjects.map((p) => _ProjectRow(p)).toList()),
+        if (_projects.isNotEmpty) _section('Projects', _projects.map((p) => _ProjectRow(p)).toList()),
         if (_incidents.isNotEmpty) _section('Safety Incidents', _incidents.map((i) => _IncidentRow(i)).toList()),
         if (_services.isNotEmpty) _section('Services', _services.map((s) => _ServiceRow(s)).toList()),
         if (_reports.isNotEmpty) _section('Reports', _reports.map((r) => _ReportRow(r)).toList()),
@@ -364,7 +350,7 @@ class _ProjectRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(project.isPrivateProject ? Icons.apartment_rounded : Icons.corporate_fare_rounded, color: AppColors.accentBlue),
+      leading: const Icon(Icons.corporate_fare_rounded, color: AppColors.accentBlue),
       title: Text(project.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
       subtitle: Text(project.county ?? project.location ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
       onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),

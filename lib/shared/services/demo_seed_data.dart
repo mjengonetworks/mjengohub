@@ -86,7 +86,6 @@ List<Project> demoProjects() => const [
         isFeatured: true,
         ratingCount: 0,
         viewCount: 0,
-        projectType: 'infrastructure',
       ),
       Project(
         id: -2,
@@ -98,7 +97,6 @@ List<Project> demoProjects() => const [
         isFeatured: true,
         ratingCount: 0,
         viewCount: 0,
-        projectType: 'private_development',
       ),
       Project(
         id: -3,
@@ -110,7 +108,6 @@ List<Project> demoProjects() => const [
         isFeatured: true,
         ratingCount: 0,
         viewCount: 0,
-        projectType: 'infrastructure',
       ),
       Project(
         id: -4,
@@ -122,7 +119,6 @@ List<Project> demoProjects() => const [
         isFeatured: true,
         ratingCount: 0,
         viewCount: 0,
-        projectType: 'private_development',
       ),
     ];
 

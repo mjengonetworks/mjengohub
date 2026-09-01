@@ -442,7 +442,13 @@ class MjengoAuthController extends GetxController {
   /// lives in [UserModel.fromJson] rather than being duplicated here.
   UserModel _parseUser(Map<String, dynamic> json) => UserModel.fromJson(json);
 
-  // ── Avatar / cover photo upload (Cloudflare R2-backed on the server) ────────
+  // ── Avatar / cover photo upload ─────────────────────────────────────────────
+  //
+  // WARNING: verified against the live backend — `POST auth/me/avatar` and
+  // `auth/me/cover` don't exist in api.py, and the `User` model has no
+  // `cover_image` column at all. Both calls 404 today. Kept ready for when
+  // the backend ships them; the UI (AccountScreen/ProfileScreen) doesn't
+  // call these yet — it shows a "coming soon" message instead.
 
   Future<bool> uploadAvatar(List<int> bytes, String filename) async {
     try {

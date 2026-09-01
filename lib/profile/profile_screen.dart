@@ -2,17 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
 import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
-import '../point/services/gamification_service.dart';
-import '../point/models/points_models.dart';
 import '../shared/services/site_service.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
+import '../shared/widgets/coming_soon.dart';
 import '../shared/widgets/form_fields.dart';
 import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
@@ -217,30 +215,14 @@ class _ProfileHeader extends StatelessWidget {
   static const double _ringWidth = 3;
   static const double _ringGap = 3;
 
-  Future<void> _pickAndUpload({required bool isCover}) async {
-    try {
-      final picker = ImagePicker();
-      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-      if (file == null) return;
-      final bytes = await file.readAsBytes();
-      final ok = isCover
-          ? await auth.uploadCoverImage(bytes, file.name)
-          : await auth.uploadAvatar(bytes, file.name);
-      Get.snackbar(
-        ok ? 'Updated' : 'Upload failed',
-        ok
-            ? (isCover ? 'Cover photo updated' : 'Profile photo updated')
-            : 'Please try again in a moment.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 10,
-        backgroundColor: ok ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-    } catch (_) {
-      Get.snackbar('Upload failed', 'Please try again in a moment.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
-    }
+  void _pickAndUpload({required bool isCover}) {
+    // `auth/me/avatar` and `auth/me/cover` don't exist on the backend yet
+    // (see MjengoAuthController.uploadAvatar/uploadCoverImage) — show this
+    // instead of picking an image and firing a request that's guaranteed
+    // to 404.
+    showComingSoonSnack(isCover
+        ? 'Cover photo upload isn\'t available in the app yet.'
+        : 'Profile photo upload isn\'t available in the app yet.');
   }
 
   @override
@@ -423,38 +405,19 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 // ── Points summary card ─────────────────────────────────────────────────────
+//
+// Bound to local-only state — `points/summary` doesn't exist on the backend
+// yet (see GamificationService), and the User model has no `points` column
+// either, so there's nothing live to fetch. Shows the local fallback plus a
+// "coming soon" badge rather than firing a request that's guaranteed to 404.
 
-class _PointsSummaryCard extends StatefulWidget {
+class _PointsSummaryCard extends StatelessWidget {
   final UserModel? user;
   const _PointsSummaryCard({required this.user});
 
   @override
-  State<_PointsSummaryCard> createState() => _PointsSummaryCardState();
-}
-
-class _PointsSummaryCardState extends State<_PointsSummaryCard> {
-  final _service = GamificationService();
-  PointsSummary? _summary;
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final fetched = await _service.getPointsSummary();
-    if (!mounted) return;
-    setState(() {
-      _summary = fetched ?? PointsSummary(totalPoints: widget.user?.points ?? 0);
-      _loading = false;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final total = _summary?.totalPoints ?? widget.user?.points ?? 0;
+    final total = user?.points ?? 0;
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.pointsBreakdown),
       child: Container(
@@ -483,15 +446,8 @@ class _PointsSummaryCardState extends State<_PointsSummaryCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('$total points', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-                  const SizedBox(height: 2),
-                  _loading
-                      ? Text('Loading breakdown…', style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle))
-                      : Text(
-                          'Reviews +${_summary?.fromReviews ?? 0} · Upvotes +${_summary?.fromUpvotes ?? 0} · Referrals +${_summary?.referralPoints ?? 0}',
-                          style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                  const SizedBox(height: 4),
+                  const ComingSoonBadge(),
                 ],
               ),
             ),

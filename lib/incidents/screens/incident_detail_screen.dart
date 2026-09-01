@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
@@ -11,8 +10,8 @@ import '../services/incidents_service.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
 import '../../news/widgets/net_image.dart';
-import '../../point/services/gamification_service.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/form_fields.dart';
 
 const _kDark    = Color(0xFF1A1A2E);
@@ -382,12 +381,8 @@ class IncidentDetailScreen extends StatelessWidget {
                       child: _ActionChip(
                         icon: Icons.copyright_rounded,
                         label: 'Claim Copyright',
-                        onTap: () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => _IncidentCopyrightClaimSheet(incident: incident),
-                        ),
+                        onTap: () => showComingSoonSnack(
+                            'Copyright claims aren\'t available in the app yet.'),
                       ),
                     ),
                   ],
@@ -682,132 +677,3 @@ class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
   }
 }
 
-/// Mirrors templates/incident_detail.html's "Claim Copyright" card, via
-/// `POST copyright-claim` with `content_type: 'incident'`
-/// (GamificationService already supports this generically).
-class _IncidentCopyrightClaimSheet extends StatefulWidget {
-  final Incident incident;
-  const _IncidentCopyrightClaimSheet({required this.incident});
-
-  @override
-  State<_IncidentCopyrightClaimSheet> createState() => _IncidentCopyrightClaimSheetState();
-}
-
-class _IncidentCopyrightClaimSheetState extends State<_IncidentCopyrightClaimSheet> {
-  final _nameCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-  XFile? _proof;
-  bool _submitting = false;
-
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    _emailCtrl.dispose();
-    _descCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickProof() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (file != null) setState(() => _proof = file);
-  }
-
-  Future<void> _submit() async {
-    if (_nameCtrl.text.trim().isEmpty ||
-        _emailCtrl.text.trim().isEmpty ||
-        _descCtrl.text.trim().isEmpty) {
-      Get.snackbar('Missing info', 'Please fill in your name, email, and description.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
-      return;
-    }
-    setState(() => _submitting = true);
-    final bytes = _proof != null ? await _proof!.readAsBytes() : null;
-    final ok = await GamificationService().submitCopyrightClaim(
-      contentType: 'incident',
-      contentId: widget.incident.id,
-      name: _nameCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
-      description: _descCtrl.text.trim(),
-      proofBytes: bytes,
-      proofFilename: _proof?.name,
-    );
-    if (!mounted) return;
-    setState(() => _submitting = false);
-    Navigator.of(context).pop();
-    Get.snackbar(
-      ok ? 'Claim submitted' : 'Couldn\'t submit',
-      ok ? 'Our team will review your claim shortly.' : 'Please try again later.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _IncidentSheetShell(
-      title: 'Claim Copyright',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Is a photo or piece of information here yours? Ask for credit, '
-            'removal, or replacement.',
-            style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
-          ),
-          const SizedBox(height: 14),
-          const FieldLabel('Your name', required: true),
-          AppTextField(controller: _nameCtrl, hint: 'Your name'),
-          const SizedBox(height: 12),
-          const FieldLabel('Your email', required: true),
-          AppTextField(
-            controller: _emailCtrl,
-            hint: 'you@example.com',
-            keyboard: TextInputType.emailAddress,
-            textCapitalization: TextCapitalization.none,
-          ),
-          const SizedBox(height: 12),
-          const FieldLabel('Describe the issue', required: true),
-          AppTextField(controller: _descCtrl, hint: 'What is the issue?', maxLines: 3),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: _pickProof,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(color: _kBg, borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.attach_file_rounded, size: 16, color: _kSubtext),
-                  const SizedBox(width: 6),
-                  Text(
-                    _proof == null ? 'Attach proof (optional)' : _proof!.name,
-                    style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _submitting ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: _submitting
-                  ? const SizedBox(
-                      width: 18, height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Submit Claim',
-                      style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

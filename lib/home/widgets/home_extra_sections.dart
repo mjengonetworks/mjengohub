@@ -156,13 +156,9 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([
-      _service.getPublicProjects(featured: true, perPage: 4),
-      _service.getPrivateProjects(featured: true, perPage: 4),
-    ]);
-    final merged = <Project>[...results[0], ...results[1]]..shuffle();
+    final projects = await _service.getProjects(featured: true, perPage: 8);
     if (!mounted) return;
-    if (merged.isEmpty) {
+    if (projects.isEmpty) {
       setState(() {
         _projects = demoProjects();
         _isDemo = true;
@@ -171,7 +167,7 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
       return;
     }
     setState(() {
-      _projects = merged.take(4).toList();
+      _projects = projects.take(4).toList();
       _loading = false;
     });
   }
@@ -232,7 +228,6 @@ class _ProjectCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPrivate = project.isPrivateProject;
     return GestureDetector(
       onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
       child: Container(
@@ -267,11 +262,11 @@ class _ProjectCategoryCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isPrivate ? AppColors.primeBadge : AppColors.accentBlue,
+                        color: AppColors.accentBlue,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        isPrivate ? 'PRIVATE' : 'PUBLIC',
+                        project.statusLabel.toUpperCase(),
                         style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.4),
                       ),
                     ),
@@ -492,13 +487,9 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([
-      _service.getPublicProjects(featured: true, perPage: 4),
-      _service.getPrivateProjects(featured: true, perPage: 4),
-    ]);
+    final projects = await _service.getProjects(featured: true, perPage: 8);
     if (!mounted) return;
-    final merged = [...results[0], ...results[1]];
-    if (merged.isEmpty) {
+    if (projects.isEmpty) {
       setState(() {
         _projects = demoProjects();
         _isDemo = true;
@@ -507,7 +498,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
       return;
     }
     setState(() {
-      _projects = merged;
+      _projects = projects;
       _loading = false;
     });
   }
@@ -575,7 +566,6 @@ class _FeaturedProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPrivate = project.isPrivateProject;
     final statusColor = _statusColors[project.status] ?? AppColors.textSubtle;
 
     return GestureDetector(
@@ -601,17 +591,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                   NetImage(
                     url: project.imageUrl,
                     fit: BoxFit.cover,
-                    placeholderColor: isPrivate
-                        ? AppColors.primeBadge.withValues(alpha: 0.85)
-                        : const Color(0xFF1E3A5F),
-                  ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: _pill(
-                      isPrivate ? 'PRIVATE' : 'PUBLIC',
-                      isPrivate ? AppColors.primeBadge : AppColors.accentBlue,
-                    ),
+                    placeholderColor: const Color(0xFF1E3A5F),
                   ),
                   Positioned(
                     top: 8,
