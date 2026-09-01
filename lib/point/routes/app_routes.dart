@@ -1,3 +1,5 @@
+import '../../shared/screens/saved_items_screen.dart';
+import '../../safety/screens/report_incident_screen.dart';
 // lib/routes/app_routes.dart
 import 'package:get/get.dart';
 
@@ -53,7 +55,9 @@ class AppRoutes {
   static const String reportDetail    = '/report';
   static const String submitReport    = '/submit-report';
   static const String reviews         = '/reviews';
-  static const String advertise       = '/advertise';
+  static const String advertise = '/advertise';
+  static const String savedItems = '/saved-items';
+  static const String reportIncident = '/report-incident';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -129,6 +133,10 @@ class AppRoutes {
     GetPage(name: reviews, page: () => const ReviewsScreen()),
 
     // Advertising enquiry (POST advertise)
-    GetPage(name: advertise, page: () => const AdvertiseScreen()),
+          // Saved Items and Safety Reporting
+      GetPage(name: savedItems, page: () => const SavedItemsScreen()),
+      GetPage(name: reportIncident, page: () => const ReportIncidentScreen()),
+      GetPage(name: advertise, page: () => const AdvertiseScreen()),
   ];
 }
+

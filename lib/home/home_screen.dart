@@ -1,3 +1,4 @@
+import '../shared/widgets/ad_banner_slot.dart';
 // lib/home/home_screen.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -190,7 +191,9 @@ class HomeScreen extends StatelessWidget {
 
                   // Gap to "Follow Mjengo Hub" reduced ~70% (32px -> 10px)
                   const SizedBox(height: 10),
-                  const FollowMjengoHubSection(),
+                  const AdBannerSlot(),
+                    const SizedBox(height: 10),
+                    const FollowMjengoHubSection(),
 
                   // ── Featured Projects (parity with the website's
                   // Latest/Featured Infrastructure & Private Projects) ──────
@@ -786,24 +789,29 @@ String _formatViews(int views) {
 class _ExploreSectionsWidget extends StatelessWidget {
   const _ExploreSectionsWidget();
 
-  static const _sections = [
-    _SectionData(
-      label: 'Projects',
-      icon: Icons.corporate_fare_rounded,
-      route: '/projects',
-    ),
-    _SectionData(
-      label: 'Site Safety',
-      icon: Icons.report_problem_rounded,
-      route: '/site-safety',
-    ),
-    _SectionData(
-      label: 'ShareBarabara',
-      icon: Icons.alt_route_rounded,
-      route: 'https://sharebarabara.co.ke',
-      isExternal: true,
-    ),
-  ];
+      static const _sections = [
+      _SectionData(
+        label: 'Projects',
+        icon: Icons.corporate_fare_rounded,
+        route: '/projects',
+      ),
+      _SectionData(
+        label: 'Saved',
+        icon: Icons.bookmark_rounded,
+        route: '/saved-items',
+      ),
+      _SectionData(
+        label: 'Report Hazard',
+        icon: Icons.warning_amber_rounded,
+        route: '/report-incident',
+      ),
+      _SectionData(
+        label: 'ShareBarabara',
+        icon: Icons.alt_route_rounded,
+        route: 'https://sharebarabara.co.ke',
+        isExternal: true,
+      ),
+    ];
 
   @override
   Widget build(BuildContext context) {
@@ -887,4 +895,5 @@ class _ExploreIconPill extends StatelessWidget {
     );
   }
 }
+
 
