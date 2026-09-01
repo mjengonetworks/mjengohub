@@ -798,9 +798,10 @@ class _ExploreSectionsWidget extends StatelessWidget {
       route: '/site-safety',
     ),
     _SectionData(
-      label: 'Mshikamano',
-      icon: Icons.volunteer_activism_rounded,
-      route: '/mshikamano',
+      label: 'ShareBarabara',
+      icon: Icons.alt_route_rounded,
+      route: 'https://sharebarabara.co.ke',
+      isExternal: true,
     ),
   ];
 
@@ -825,10 +826,12 @@ class _SectionData {
   final String label;
   final IconData icon;
   final String route;
+  final bool isExternal;
   const _SectionData({
     required this.label,
     required this.icon,
     required this.route,
+    this.isExternal = false,
   });
 }
 
@@ -836,18 +839,28 @@ class _ExploreIconPill extends StatelessWidget {
   final _SectionData data;
   const _ExploreIconPill({required this.data});
 
-  static const _bubbleBg  = Color(0xFFEFF6FF); // soft blue bubble
-  static const _iconColor  = Color(0xFF2563EB); // blue icon
+  static const _bubbleBg  = Color(0xFFEFF6FF);
+  static const _iconColor  = Color(0xFF2563EB);
   static const _labelColor = Color(0xFF111827);
+
+  Future<void> _handleTap() async {
+    if (data.isExternal) {
+      final uri = Uri.parse(data.route);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } else {
+      Get.toNamed(data.route);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(data.route),
+      onTap: _handleTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Rounded icon bubble
           Container(
             width: 56,
             height: 56,
@@ -858,7 +871,6 @@ class _ExploreIconPill extends StatelessWidget {
             child: Icon(data.icon, color: _iconColor, size: 26),
           ),
           const SizedBox(height: 6),
-          // Label — wide enough for "Mshikamano" on one line
           Text(
             data.label,
             textAlign: TextAlign.center,
@@ -868,7 +880,6 @@ class _ExploreIconPill extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: _labelColor,
-              height: 1.2,
             ),
           ),
         ],
@@ -877,81 +888,3 @@ class _ExploreIconPill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  NOTIFICATION BELL  –  floating button with unread badge
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _NotificationBell extends StatelessWidget {
-  final double topPad;
-  const _NotificationBell({required this.topPad});
-
-  @override
-  Widget build(BuildContext context) {
-    NotificationsController? ctrl;
-    try { ctrl = Get.find<NotificationsController>(); } catch (_) {}
-    if (ctrl == null) return const SizedBox.shrink();
-
-    return Obx(() {
-      final count = ctrl!.unreadCount.value;
-
-      return GestureDetector(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Bell button
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.38),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_outlined,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            // Badge
-            if (count > 0)
-              Positioned(
-                top: -3,
-                right: -3,
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444),
-                    shape: count > 9 ? BoxShape.rectangle : BoxShape.circle,
-                    borderRadius: count > 9
-                        ? BorderRadius.circular(9)
-                        : null,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  child: Text(
-                    count > 99 ? '99+' : '$count',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      height: 1.6,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-// MainNavController is defined here for convenience (used by HomeScreen)
-// and by MainNavigation.
-class MainNavController extends GetxController {
-  final currentIndex = 0.obs;
-}
