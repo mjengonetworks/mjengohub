@@ -176,3 +176,4 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     );
   }
 }
+
