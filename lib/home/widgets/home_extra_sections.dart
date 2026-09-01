@@ -8,7 +8,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../incidents/models/incident_model.dart';
+import '../../incidents/screens/incident_detail_screen.dart';
+import '../../incidents/services/incidents_service.dart';
 import '../../news/models/article_model.dart';
+import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
@@ -221,9 +225,11 @@ class _ProjectCategoryCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  project.imageUrl != null
-                      ? Image.network(project.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _placeholder())
-                      : _placeholder(),
+                  NetImage(
+                    url: project.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF1E3A5F),
+                  ),
                   Positioned(
                     top: 6,
                     left: 6,
@@ -257,10 +263,6 @@ class _ProjectCategoryCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(
-        color: const Color(0xFF1E3A5F),
-        child: const Center(child: Icon(Icons.business_rounded, color: Colors.white38, size: 28)),
-      );
 }
 
 // ── Follow Mjengo Hub (Mjengo Networks card + social cluster) ───────────────
@@ -426,4 +428,450 @@ class _SocialIcon extends StatelessWidget {
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Featured Projects
+//
+//  Mirrors the website's "Latest/Featured Infrastructure Projects" and
+//  "Latest/Featured Private Projects" sections (templates/homepage.html),
+//  collapsed into one horizontally-scrolling row since a phone screen can't
+//  afford four separate full-width sections. Each card carries the same
+//  fields as the website's `ph-card`: image, status pill, title, location,
+//  and a completion progress bar.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class FeaturedProjectsSection extends StatefulWidget {
+  const FeaturedProjectsSection({super.key});
+
+  @override
+  State<FeaturedProjectsSection> createState() => _FeaturedProjectsSectionState();
+}
+
+class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
+  final _service = ProjectsService();
+  List<Project> _projects = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final results = await Future.wait([
+      _service.getPublicProjects(featured: true, perPage: 4),
+      _service.getPrivateProjects(featured: true, perPage: 4),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _projects = [...results[0], ...results[1]];
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _projects.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: 'Featured Projects', onSeeAll: () => Get.toNamed(AppRoutes.projects)),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Infrastructure and private developments tracked across Kenya',
+            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 232,
+          child: _loading
+              ? ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: 3,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, __) => Container(
+                    width: 220,
+                    decoration: BoxDecoration(
+                      color: AppColors.divider,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _projects.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _FeaturedProjectCard(project: _projects[i]),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeaturedProjectCard extends StatelessWidget {
+  final Project project;
+  const _FeaturedProjectCard({required this.project});
+
+  static const _statusColors = {
+    'ongoing': AppColors.warning,
+    'completed': AppColors.success,
+    'suspended': AppColors.danger,
+    'planned': AppColors.accentBlue,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final isPrivate = project.isPrivateProject;
+    final statusColor = _statusColors[project.status] ?? AppColors.textSubtle;
+
+    return GestureDetector(
+      onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.divider),
+          boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 110,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NetImage(
+                    url: project.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: isPrivate
+                        ? AppColors.primeBadge.withValues(alpha: 0.85)
+                        : const Color(0xFF1E3A5F),
+                  ),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: _pill(
+                      isPrivate ? 'PRIVATE' : 'PUBLIC',
+                      isPrivate ? AppColors.primeBadge : AppColors.accentBlue,
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: _pill(project.statusLabel.toUpperCase(), statusColor),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    project.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                  ),
+                  if ((project.county ?? project.location) != null) ...[
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(Icons.place_outlined, size: 11, color: AppColors.textSubtle),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            project.county ?? project.location!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: (project.progressPercent.clamp(0, 100)) / 100,
+                      minHeight: 5,
+                      backgroundColor: AppColors.divider,
+                      color: isPrivate ? AppColors.primeBadge : AppColors.accentBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${project.progressPercent}% complete',
+                    style: GoogleFonts.montserrat(fontSize: 10, color: AppColors.textSubtle),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pill(String label, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5)),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3),
+        ),
+      );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Safety Incidents
+//
+//  Mirrors the website's "Road Safety: Share Barabara" and "Site Safety
+//  Database" preview strips (templates/homepage.html), but shows real recent
+//  incidents instead of a static CTA banner — the app already has both
+//  datasets wired (`IncidentsService`), so a content preview is more useful
+//  here than a link-out card.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class SafetyIncidentsSection extends StatefulWidget {
+  const SafetyIncidentsSection({super.key});
+
+  @override
+  State<SafetyIncidentsSection> createState() => _SafetyIncidentsSectionState();
+}
+
+class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
+  final _service = IncidentsService();
+  List<Incident> _incidents = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final results = await Future.wait([
+      _service.getIncidents(type: 'road_safety', perPage: 4),
+      _service.getIncidents(type: 'site_safety', perPage: 4),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _incidents = [...results[0], ...results[1]];
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _incidents.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Safety Incidents',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Road hazards and construction site incidents from across Kenya',
+            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 172,
+          child: _loading
+              ? ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: 3,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, __) => Container(
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: AppColors.divider,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _incidents.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _SafetyIncidentCard(incident: _incidents[i]),
+                ),
+        ),
+        const SizedBox(height: 14),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: _ctaChip(
+                  label: 'Road Safety',
+                  color: const Color(0xFFDC2626),
+                  onTap: () => Get.toNamed(AppRoutes.shareBarabara),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ctaChip(
+                  label: 'Site Safety',
+                  color: AppColors.warning,
+                  onTap: () => Get.toNamed(AppRoutes.siteSafety),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _ctaChip({required String label, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+class _SafetyIncidentCard extends StatelessWidget {
+  final Incident incident;
+  const _SafetyIncidentCard({required this.incident});
+
+  /// Matches the palette used in `incidents_list_screen.dart` — incidents use
+  /// their own severity scale (minor/moderate/serious/fatal), distinct from
+  /// the low/medium/high/critical scale used by infrastructure reports.
+  static const _severityColors = {
+    'fatal': Color(0xFF7F1D1D),
+    'serious': Color(0xFFDC2626),
+    'moderate': Color(0xFFF97316),
+    'minor': Color(0xFF22C55E),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final isRoad = incident.isRoadSafety;
+    final severityColor = _severityColors[incident.severity] ?? AppColors.textSubtle;
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.divider),
+          boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 88,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NetImage(
+                    url: incident.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: isRoad ? const Color(0xFF7F1D1D) : const Color(0xFF78350F),
+                  ),
+                  Positioned(
+                    top: 7,
+                    left: 7,
+                    child: _pill(isRoad ? 'ROAD' : 'SITE', isRoad ? const Color(0xFFDC2626) : AppColors.warning),
+                  ),
+                  Positioned(
+                    top: 7,
+                    right: 7,
+                    child: _pill(incident.severity.toUpperCase(), severityColor),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    incident.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark, height: 1.3),
+                  ),
+                  if ((incident.county ?? incident.location) != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.place_outlined, size: 11, color: AppColors.textSubtle),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            incident.county ?? incident.location!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pill(String label, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5)),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3),
+        ),
+      );
 }

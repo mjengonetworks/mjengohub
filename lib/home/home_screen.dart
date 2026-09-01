@@ -191,6 +191,17 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   const FollowMjengoHubSection(),
 
+                  // ── Featured Projects (parity with the website's
+                  // Latest/Featured Infrastructure & Private Projects) ──────
+                  const SizedBox(height: 24),
+                  const FeaturedProjectsSection(),
+
+                  // ── Safety Incidents (parity with the website's Road
+                  // Safety / Site Safety preview strips, but with real
+                  // incident cards instead of a static CTA banner) ─────────
+                  const SizedBox(height: 24),
+                  const SafetyIncidentsSection(),
+
                   const SizedBox(height: 24),
                   Obx(() => FeaturedArticlesAnalysisSection(
                         articles: ctrl.featuredArticles,
