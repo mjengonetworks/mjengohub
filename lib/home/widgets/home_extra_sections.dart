@@ -17,8 +17,10 @@ import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
+import '../../shared/services/demo_seed_data.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/preview_data_badge.dart';
 
 Future<void> _launchExternal(String url) async {
   final uri = Uri.parse(url);
@@ -30,7 +32,12 @@ Future<void> _launchExternal(String url) async {
 class _SectionHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onSeeAll;
-  const _SectionHeader({required this.title, this.onSeeAll});
+
+  /// True when the section below is showing fallback/demo data because the
+  /// live API returned nothing (network failure, host firewall 403, etc.).
+  final bool isDemo;
+
+  const _SectionHeader({required this.title, this.onSeeAll, this.isDemo = false});
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +46,13 @@ class _SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title,
-              style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+          Row(
+            children: [
+              Text(title,
+                  style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+              if (isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
+            ],
+          ),
           if (onSeeAll != null)
             GestureDetector(
               onTap: onSeeAll,
@@ -135,6 +147,7 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
   final _service = ProjectsService();
   List<Project> _projects = [];
   bool _loading = true;
+  bool _isDemo = false;
 
   @override
   void initState() {
@@ -149,6 +162,14 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
     ]);
     final merged = <Project>[...results[0], ...results[1]]..shuffle();
     if (!mounted) return;
+    if (merged.isEmpty) {
+      setState(() {
+        _projects = demoProjects();
+        _isDemo = true;
+        _loading = false;
+      });
+      return;
+    }
     setState(() {
       _projects = merged.take(4).toList();
       _loading = false;
@@ -164,7 +185,11 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Browse Projects by Category', onSeeAll: () => Get.toNamed(AppRoutes.projects)),
+        _SectionHeader(
+          title: 'Browse Projects by Category',
+          onSeeAll: () => Get.toNamed(AppRoutes.projects),
+          isDemo: _isDemo,
+        ),
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -458,6 +483,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
   final _service = ProjectsService();
   List<Project> _projects = [];
   bool _loading = true;
+  bool _isDemo = false;
 
   @override
   void initState() {
@@ -471,8 +497,17 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
       _service.getPrivateProjects(featured: true, perPage: 4),
     ]);
     if (!mounted) return;
+    final merged = [...results[0], ...results[1]];
+    if (merged.isEmpty) {
+      setState(() {
+        _projects = demoProjects();
+        _isDemo = true;
+        _loading = false;
+      });
+      return;
+    }
     setState(() {
-      _projects = [...results[0], ...results[1]];
+      _projects = merged;
       _loading = false;
     });
   }
@@ -484,7 +519,11 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Featured Projects', onSeeAll: () => Get.toNamed(AppRoutes.projects)),
+        _SectionHeader(
+          title: 'Featured Projects',
+          onSeeAll: () => Get.toNamed(AppRoutes.projects),
+          isDemo: _isDemo,
+        ),
         const SizedBox(height: 4),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -665,6 +704,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
   final _service = IncidentsService();
   List<Incident> _incidents = [];
   bool _loading = true;
+  bool _isDemo = false;
 
   @override
   void initState() {
@@ -678,8 +718,17 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
       _service.getIncidents(type: 'site_safety', perPage: 4),
     ]);
     if (!mounted) return;
+    final merged = [...results[0], ...results[1]];
+    if (merged.isEmpty) {
+      setState(() {
+        _incidents = demoIncidents();
+        _isDemo = true;
+        _loading = false;
+      });
+      return;
+    }
     setState(() {
-      _incidents = [...results[0], ...results[1]];
+      _incidents = merged;
       _loading = false;
     });
   }
@@ -691,11 +740,16 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Safety Incidents',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              const Text(
+                'Safety Incidents',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark),
+              ),
+              if (_isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
+            ],
           ),
         ),
         const SizedBox(height: 2),

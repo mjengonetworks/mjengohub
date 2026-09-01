@@ -1,6 +1,7 @@
 ﻿// lib/news/widgets/featured_article_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/widgets/preview_data_badge.dart';
 import '../models/article_model.dart';
 import 'net_image.dart';
 
@@ -9,8 +10,16 @@ class FeaturedArticleCard extends StatelessWidget {
   final Article article;
   final VoidCallback? onTap;
 
-  const FeaturedArticleCard({Key? key, required this.article, this.onTap})
-      : super(key: key);
+  /// True when [article] is fallback/demo content rather than a live API
+  /// response — shows a "PREVIEW" badge so it's never mistaken for real news.
+  final bool showPreviewBadge;
+
+  const FeaturedArticleCard({
+    Key? key,
+    required this.article,
+    this.onTap,
+    this.showPreviewBadge = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +50,14 @@ class FeaturedArticleCard extends StatelessWidget {
               ),
             ),
           ),
+
+          // ── Preview badge (top-right), only for fallback/demo content ──
+          if (showPreviewBadge)
+            const Positioned(
+              top: 60,
+              right: 20,
+              child: PreviewDataBadge(),
+            ),
 
           // ── Text content at bottom ────────────────────────────────────
           Positioned(

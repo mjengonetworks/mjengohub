@@ -16,6 +16,7 @@ import '../news/widgets/breaking_news_card.dart';
 import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
 import '../shared/widgets/badges.dart';
+import '../shared/widgets/preview_data_badge.dart';
 import '../videos/controllers/videos_controller.dart';
 import '../videos/models/video_model.dart';
 import '../videos/screens/video_player_screen.dart';
@@ -76,6 +77,7 @@ class HomeScreen extends StatelessWidget {
                       return FeaturedArticleCard(
                         article: article,
                         onTap: () => _openArticle(article),
+                        showPreviewBadge: ctrl.isShowingDemoData.value,
                       );
                     },
                   )),
@@ -235,13 +237,23 @@ class HomeScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Breaking News',
-            style: GoogleFonts.montserrat(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF111827),
-            ),
+          Row(
+            children: [
+              Text(
+                'Breaking News',
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              Obx(() => ctrl.isShowingDemoData.value
+                  ? const Padding(
+                      padding: EdgeInsets.only(left: 8),
+                      child: PreviewDataBadge(),
+                    )
+                  : const SizedBox.shrink()),
+            ],
           ),
           GestureDetector(
             onTap: () {
@@ -285,6 +297,7 @@ class HomeScreen extends StatelessWidget {
           return BreakingNewsCard(
             article: article,
             onTap: () => _openArticle(article),
+            showPreviewBadge: ctrl.isShowingDemoData.value,
           );
         },
       );

@@ -1,6 +1,7 @@
 ﻿// lib/news/widgets/breaking_news_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/widgets/preview_data_badge.dart';
 import '../models/article_model.dart';
 import 'net_image.dart';
 
@@ -9,8 +10,16 @@ class BreakingNewsCard extends StatelessWidget {
   final Article article;
   final VoidCallback? onTap;
 
-  const BreakingNewsCard({Key? key, required this.article, this.onTap})
-      : super(key: key);
+  /// True when [article] is fallback/demo content rather than a live API
+  /// response — shows a "PREVIEW" badge so it's never mistaken for real news.
+  final bool showPreviewBadge;
+
+  const BreakingNewsCard({
+    Key? key,
+    required this.article,
+    this.onTap,
+    this.showPreviewBadge = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +47,18 @@ class BreakingNewsCard extends StatelessWidget {
             ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(14)),
-              child: NetImage(
-                url: article.imageUrl,
-                width: 170,
-                height: 108,
-                fit: BoxFit.cover,
-                placeholderColor: const Color(0xFFE5E7EB),
+              child: Stack(
+                children: [
+                  NetImage(
+                    url: article.imageUrl,
+                    width: 170,
+                    height: 108,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFFE5E7EB),
+                  ),
+                  if (showPreviewBadge)
+                    const Positioned(top: 6, left: 6, child: PreviewDataBadge()),
+                ],
               ),
             ),
 

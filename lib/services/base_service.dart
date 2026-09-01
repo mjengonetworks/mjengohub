@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,11 +21,14 @@ class BaseService extends GetConnect {
     httpClient.timeout = const Duration(seconds: 60);
 
     httpClient.addRequestModifier<dynamic>((request) async {
+      // Keep this to the minimal, standard set a browser would send.
+      // A custom User-Agent (e.g. "Flutter/GetConnect Dart/3.0.0") reads as
+      // an automation signature to host-level bot protection (Imunify360)
+      // and was triggering 403s independent of any CORS concern.
       request.headers['Accept'] = 'application/json';
-      if (!kIsWeb) {
-        // These headers trigger CORS preflight on web and are either blocked
-        // (User-Agent is a forbidden header) or rejected by strict browsers.
-        request.headers['User-Agent'] = 'Flutter/GetConnect Dart/3.0.0';
+      final method = request.method?.toUpperCase() ?? '';
+      if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
+        request.headers['Content-Type'] = 'application/json';
       }
 
       final token = await _getToken();
