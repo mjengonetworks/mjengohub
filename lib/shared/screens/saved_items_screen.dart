@@ -36,7 +36,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
           Container(
@@ -47,7 +47,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                 GestureDetector(
                   onTap: () => Get.back(),
                   child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 20, color: AppColors.textDark),
+                      size: 20, color: const Color(0xFF1A1A2E)),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -55,7 +55,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                   style: GoogleFonts.montserrat(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
+                    color: const Color(0xFF1A1A2E),
                   ),
                 ),
                 const Spacer(),
@@ -64,7 +64,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: const Color(0xFF2563EB),
                   ),
                 ),
               ],
@@ -79,20 +79,20 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.bookmark_outline_rounded,
-                                size: 64, color: AppColors.textLight),
+                                size: 64, color: const Color(0xFF8888AA)),
                             const SizedBox(height: 16),
                             Text(
                               'No saved items yet',
                               style: GoogleFonts.montserrat(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textDark),
+                                  color: const Color(0xFF1A1A2E)),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Tap the bookmark icon on any article to save it here.',
                               style: GoogleFonts.montserrat(
-                                  fontSize: 13, color: AppColors.textLight),
+                                  fontSize: 13, color: const Color(0xFF8888AA)),
                             ),
                           ],
                         ),
@@ -125,7 +125,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                                         item.category!,
                                         style: GoogleFonts.montserrat(
                                             fontSize: 12,
-                                            color: AppColors.primary),
+                                            color: const Color(0xFF2563EB)),
                                       ),
                                     )
                                   : null,
@@ -153,3 +153,4 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
     );
   }
 }
+
