@@ -67,4 +67,50 @@ class MentalHealthService {
       return [];
     }
   }
+
+  /// Submits a community video to Mshikamano. The backend requires `title`,
+  /// `uploaderName`, and at least one of [youtubeId] / [filePath].
+  ///
+  /// Videos land with `is_approved=False`, so a freshly submitted video will
+  /// not appear in [getVideos] until an admin approves it — tell the user it's
+  /// pending review rather than optimistically inserting it.
+  Future<Map<String, dynamic>> submitVideo({
+    required String title,
+    required String uploaderName,
+    String? description,
+    String? youtubeId,
+    String? filePath,
+    String? thumbnail,
+  }) async {
+    if ((youtubeId == null || youtubeId.isEmpty) && (filePath == null || filePath.isEmpty)) {
+      return {'success': false, 'message': 'Provide a YouTube link or upload a file.'};
+    }
+    try {
+      final res = await _api.postRequest('mental-health/videos', {
+        'title': title,
+        'uploader_name': uploaderName,
+        if (description != null && description.isNotEmpty) 'description': description,
+        if (youtubeId != null && youtubeId.isNotEmpty) 'youtube_id': youtubeId,
+        if (filePath != null && filePath.isNotEmpty) 'file_path': filePath,
+        if (thumbnail != null && thumbnail.isNotEmpty) 'thumbnail': thumbnail,
+      });
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final data = res.body?['data'];
+        return {
+          'success': true,
+          'message': (data is Map ? data['message'] as String? : null) ??
+              'Video submitted for review and approval',
+        };
+      }
+      final body = res.body;
+      final msg = body is Map ? (body['message'] ?? body['error']) : null;
+      return {
+        'success': false,
+        'message': msg is String && msg.isNotEmpty ? msg : 'Could not submit video.',
+      };
+    } catch (e) {
+      print('MentalHealthService.submitVideo error: $e');
+      return {'success': false, 'message': 'Could not submit video. Check your connection.'};
+    }
+  }
 }

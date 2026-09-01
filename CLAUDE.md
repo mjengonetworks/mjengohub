@@ -43,6 +43,8 @@ lib/<feature>/
 ```
 
 Features: `auth`, `home`, `news`, `projects`, `incidents`, `mental_health`,
+`service_catalog` (services catalogue), `reports` (infrastructure reports),
+`reviews`,
 `videos`, `notifications`, `comments`, `point` (gamification: points/referrals/
 copyright claims), `profile`, `hub`, `search`, `onboarding`, `splash`,
 `navigation`, `shared` (cross-feature theme/widgets/services), `services`
@@ -57,10 +59,11 @@ has `AppRoutes`. Gamification itself is `point/services/gamification_service.dar
 
 `main.dart` → `DependencyInjection.init()` (`lib/point/core/dependency_injection.dart`)
 registers permanent singletons in order: `BaseService`, `MjengoService`,
-`MjengoAuthController`, `UserController`, `HomeNewsController`,
+`MjengoAuthController`, `HomeNewsController`,
 `DiscoverController`, `VideosController`, `NotificationsController`. Feature
 services that aren't permanent singletons (`ProjectsService`, `IncidentsService`,
-`CommentsService`, `SiteService`, `GamificationService`, etc.) are just
+`CommentsService`, `SiteService`, `GamificationService`, `ServiceCatalogService`,
+`ReportsService`, `ReviewsService`, `SearchService`, etc.) are just
 instantiated directly (`final _service = ProjectsService();`) inside the widget/
 controller that uses them — they're stateless wrappers, not DI-managed.
 
@@ -98,9 +101,10 @@ they are separate classes with separate method names:
   `hasSession`, `logout`).
 
 When adding a new service, match whichever client the sibling services in that
-feature already use rather than introducing a third pattern. Also note
-`UserController extends BaseService` directly (mixing controller + HTTP client)
-— that's legacy (see **Auth flows**); don't copy that shape for new controllers.
+feature already use rather than introducing a third pattern. Note also that
+`MjengoService` now owns `refreshAccessToken()`, and that its 401 response
+modifier clears only the *access* token (the refresh token is kept so a refresh
+is still possible).
 
 Every domain service method independently try/catches and returns `[]` / `null`
 / `false` on any failure (network, non-200, parse) rather than throwing — screens
@@ -150,9 +154,16 @@ Only one is live in the current UI.
 - **Email sign in** — `POST auth/login`.
 - **Google sign-in** — uses `google_sign_in`'s `GoogleSignIn.instance` directly
   (NOT `firebase_auth`'s `GoogleAuthProvider`/`signInWithPopup`) to get a Google
-  ID token, then `POST auth/google` with `{id_token}`; the *backend* verifies it
-  against OAuth client id `729219361762-...apps.googleusercontent.com` (also
-  registered as `google-signin-client_id` meta tag in `web/index.html`).
+  ID token, then `POST auth/google` with `{id_token}`. **This endpoint does not
+  exist in api.py** (verified against the website repo: the only Google route is
+  a session-based redirect at `application.py` `/auth/google`), so the call 404s
+  and the controller surfaces an explicit "not available yet" message. The
+  intended contract is that the *backend* verifies the ID token against an
+  OAuth client id. Note the client ids currently disagree three ways: the app
+  and `web/index.html` use `729219361762-...`, the website backend uses
+  `185210499275-...`, and `android/app/google-services.json` carries
+  `457461415783-...`. These must be reconciled to one client before Google
+  sign-in can work end to end.
   `GoogleSignIn.initialize()` is fired eagerly in `onInit()` (not awaited) so the
   later `authenticate()` call inside the button's `onTap` is the *first* await in
   that gesture — required for the web popup to count as user-initiated.
@@ -165,8 +176,10 @@ Only one is live in the current UI.
   people out).
 - **Sign out** — clears tokens + user cache, signs out of Google too (in case a
   Google session is active), routes to `/login`.
-- **Password reset** — `POST auth/forgot-password` (always 200, to prevent email
-  enumeration).
+- **Password reset** — `POST auth/forgot-password`. **Not implemented in api.py**
+  (the backend has no password-reset route at all), so this 404s today and the
+  controller says so explicitly instead of promising an email. When it is added
+  it should always return 200, to prevent email enumeration.
 - **Avatar / cover upload** — `POST auth/me/avatar` / `auth/me/cover` via
   `MjengoService.uploadMultipart` (Cloudflare R2-backed on the server).
 
@@ -176,26 +189,24 @@ to survive incognito), but the live flow never calls
 `FirebaseAuth.instance.signInWith*` — Firebase is present for `google_sign_in`
 interop and because the legacy stack below still uses it.
 
-### Legacy / unreachable from current UI: `UserController`
+### Removed: the legacy `UserController` stack
 
-`lib/auth/controllers/user_controller.dart` (extends `BaseService` directly) —
-a much older, more elaborate Firebase-Auth-based flow: email+password via
-`FirebaseAuth`, phone OTP via `FirebaseAuth.verifyPhoneNumber`, full Firebase
-Multi-Factor Auth (SMS) enrollment/challenge/unenroll, shop registration with
-document uploads, and backend calls under a **different** path prefix
-(`/users/auth/...` vs the live stack's `auth/...`). It's still registered in DI
-and still backs two screens (`two_factor_screen.dart`, `verify_otp_screen.dart`),
-but nothing in the live `MjengoAuthController` flow navigates to `/verify-otp`
-or `/mfa-verify` (the latter isn't even a registered route in `AppRoutes`) —
-these are effectively dead ends reachable only from within `UserController`'s
-own flow. `lib/auth/screens/sign_up_screen.dart` also appears orphaned — the
-`signup` route points at `LoginScreen(startOnSignUp: true)`, not `SignUpScreen`.
+There used to be a second, Firebase-Auth-based auth stack
+(`lib/auth/controllers/user_controller.dart` plus `sign_up_screen.dart`,
+`two_factor_screen.dart`, `verify_otp_screen.dart`) with phone OTP, Firebase
+Multi-Factor Auth, shop registration, and backend calls under a different
+`/users/auth/...` prefix. **It has been deleted**, along with its DI
+registration, its `/verify-otp` and `/mfa-enroll` routes, and the dead
+marketplace/2FA fields it required on `UserModel` (`ShopDetails`,
+`ShopDocuments`, `UserValidator`, `userType`, `trustBadges`, `twoFAEnabled`, …).
+None of it was reachable from the live UI and none of it matched api.py.
 
-**Do not extend `UserController` for new work** — build against
-`MjengoAuthController` unless a task specifically asks you to touch the legacy
-Firebase MFA flow. If asked to remove dead code, confirm with the user first
-since these screens are still routed and could be mid-migration rather than
-abandoned.
+`MjengoAuthController` is now the only auth stack. Firebase Core/Auth are still
+initialized at startup (`FirebaseInitializer`) purely for `google_sign_in`
+interop.
+
+`UserModel` now mirrors api.py's `_user_dict` exactly and
+`MjengoAuthController._parseUser` just delegates to `UserModel.fromJson`.
 
 ## Backend API
 
@@ -212,39 +223,51 @@ clients' request modifiers from the cached `mjengo_access_token`.
 |---|---|---|
 | Auth | `POST auth/register` | live signup |
 | | `POST auth/login` | live login |
-| | `POST auth/google` | `{id_token}`, backend-verified |
+| | `POST auth/google` | **missing from api.py** — 404s; see **Auth flows** |
 | | `GET auth/me` | profile fetch/refresh |
 | | `PUT auth/me` | profile update |
-| | `POST auth/forgot-password` | always 200 |
+| | `POST auth/forgot-password` | **missing from api.py** — 404s; see **Auth flows** |
+| | `POST auth/refresh` | refresh-token -> new access token; `MjengoService.refreshAccessToken()` bypasses `httpClient` to send the *refresh* token |
 | | `POST auth/me/avatar` / `auth/me/cover` | multipart |
 | News | `GET articles` (query) / `GET articles/{slug}` | featured + breaking use different query params on the same endpoint |
 | | `GET categories` | |
-| Projects | `GET projects` (query incl. `project_type=infrastructure\|private_development`) | client-side filtered too, see comment in `projects_service.dart` — "live API doesn't filter by this yet" |
+| Projects | `GET projects` (query incl. `project_type=infrastructure\|private_development`) | filtered server-side; `projects_service.dart` keeps a redundant client-side filter as a safety net |
 | | `GET projects/{slug}` / `GET clients` | |
 | | `POST projects/{id}/suggest-edit` / `suggest-progress` | |
 | Incidents | `GET incidents` (query incl. `type=road_safety\|site_safety`) / `GET incidents/{slug}` | |
 | | `POST incidents` | create (used by "Share Barabara" / site safety report flows) |
-| | `POST incidents/{id}/comment` / `suggest-edit` | |
+| | `POST incidents/{id}/comments` / `suggest-edit` | plural — the singular form was a bug, fixed |
 | | `POST incidents/{id}/media` | image upload via `uploadFile`, not multipart helper |
 | Mental health | `GET mental-health/posts`, `POST mental-health/posts`, `GET mental-health/videos` | "Mshikamano" |
 | Videos | `GET youtube/videos`, `GET youtube/playlists`, `GET youtube/categories` | |
-| Notifications | `GET notifications/unread-count`, `PUT notifications/{id}/read`, `PUT notifications/read-all`, `DELETE notifications/{id}`, `DELETE notifications` | |
+| Notifications | `GET notifications` (paginated list), `GET notifications/unread-count`, `PUT notifications/{id}/read`, `PUT notifications/read-all`, `DELETE notifications/{id}`, `DELETE notifications` | |
 | Comments (polymorphic) | `GET/POST {prefix}/{id}/comments` | `prefix` ∈ `articles`, `projects`, `incidents`, `mental-health/posts` — see `CommentResource` enum |
-| | `POST comments/{id}/vote`, `POST comments/{id}/report` | |
+| | `POST comments/{id}/vote` | no `/report` route exists under `/api/v1` (only a session-based one on the website), so `CommentsService` has no `report()` |
 | Site | `GET site/settings`, `GET site/social-links` | store URLs, admin-managed social links (home screen falls back to hardcoded links if this returns empty) |
-| Gamification | `GET points/summary`, `GET points/log`, `GET referrals/me`, `POST referrals/redeem`, `POST copyright-claim` (JSON or multipart with `proof`) | **flagged in source as possibly not deployed yet** — "these follow the same REST conventions... some of these endpoints don't exist on the backend yet;" every call degrades to a safe default rather than surfacing an error |
-| Legacy (`UserController` only) | `POST /users/auth/signup/google`, `/users/auth/signin/phone`, `/users/auth/signup/phone`, `PUT /users/auth/user/{uid}`, `/users/auth/user/{uid}/delete`, `/users/auth/user/{uid}/shop-status`, `/users/auth/user/{uid}/register-shop`, `/users/upload/document`, `/users/upload/business-photos` | different prefix from the live stack; treat as legacy, see **Auth flows** |
+| | `GET site/figures`, `GET site/alerts` | headline counters + scheduled site banners (`SiteService`) |
+| | `POST newsletter/subscribe` | 409 = already subscribed |
+| | `POST advertise` | advertising enquiry; returns a `reference` |
+| Services | `GET services`, `GET services/{slug}`, `POST services/{slug}/request` | `lib/service_catalog/` (folder is not `services/` because that name is the HTTP layer) |
+| Reports | `GET reports`, `GET reports/{id}`, `POST reports`, `POST reports/{id}/vote` | citizen infrastructure reports, `lib/reports/`; voting is IP-scoped and toggles |
+| Reviews | `GET reviews`, `POST reviews` | `lib/reviews/`; POST lands unapproved, so it won't appear in GET immediately |
+| Search | `GET search` | articles + services + reports only (min 2 chars) |
+| Projects (extra) | `GET projects/{id}/milestones`, `GET projects/{id}/media`, `POST projects/{id}/rate` | rating is 1–10, not 1–5 |
+| Clients | `GET clients/{slug}` | adds `description` + `project_count` |
+| Mental health (extra) | `POST mental-health/videos` | needs `title` + `uploader_name` and one of `youtube_id`/`file_path`; lands unapproved |
+| Calculators | `POST calculators/concrete\|plaster\|budget\|units`, `GET calculators/units/available` | **not wired** — the Tools screen does this maths locally so it works offline |
+| Gamification | `GET points/summary`, `GET points/log`, `GET referrals/me`, `POST referrals/redeem`, `POST copyright-claim` (JSON or multipart with `proof`) | all confirmed live in api.py; calls still degrade to safe defaults on failure |
 
-No unified `/search` endpoint — `SearchScreen` fans out to the existing
-per-feature endpoints (articles/projects/incidents) client-side rather than
-calling a single backend search route.
+`GET /search` **does** exist, but only covers articles, services and
+infrastructure reports. `SearchScreen` therefore merges two sources: the
+unified route (via `SearchService`) plus per-feature fan-out to `/projects`
+and `/incidents`, which `/search` deliberately doesn't touch.
 
 ## Conventions checklist for new work
 
 - New screen → new `lib/<feature>/screens/*.dart`; register it in
   `lib/point/routes/app_routes.dart` with a named constant, don't hardcode route
   strings at call sites except for the handful of existing inline ones
-  (`'/share-barabara'`, `'/mfa-verify'` etc. — inconsistent, but don't add more).
+  (`'/share-barabara'` etc. — inconsistent, but don't add more).
 - New backend call → add a method to the feature's `*_service.dart` (or extend
   an existing one), following the try/catch-and-return-empty pattern; don't call
   `BaseService`/`MjengoService` directly from a screen or controller.
@@ -255,6 +278,12 @@ calling a single backend search route.
   already used in nearby widgets in that screen.
 - GetX reactive state → `Rx<T>`/`.obs` fields with private backing + public
   getters (see `MjengoAuthController`), wrap consuming widgets in `Obx(() => ...)`.
+- New submission form → reuse `lib/shared/widgets/form_fields.dart`
+  (`AppTextField`, `AppDropdown`, `FieldLabel`, `AppSubmitButton`,
+  `requiredField`, `emailField`) rather than re-deriving the input decoration.
+- Any screen that also ships on web → wrap the scroll body in `ContentWidth`
+  from `lib/shared/widgets/responsive.dart` so it doesn't stretch to 1900px;
+  `Breakpoints`/`context.isDesktop`/`context.gridColumns` live there too.
 
 ## Known gaps (don't be surprised by these)
 
@@ -262,10 +291,24 @@ calling a single backend search route.
   smoke test — it references `MyApp` but asserts counter behavior the app
   doesn't have, so it fails as-is. There is no real test suite; don't assume
   `flutter test` passing means anything about app correctness.
-- Gamification endpoints (points/referrals/copyright-claim) may 404 on the live
-  backend — this is expected and handled, not a regression to chase.
-- `/mfa-verify` is referenced (`Get.toNamed`) but not registered in
-  `AppRoutes.routes` — a live crash risk only inside the legacy MFA flow.
+- **Google sign-in and password reset are broken end to end** because
+  `POST auth/google` and `POST auth/forgot-password` don't exist in api.py.
+  Both now fail with an explicit message instead of a generic error. Fixing
+  them needs backend routes, plus reconciling the three different Google OAuth
+  client ids (see **Auth flows**).
+- Several screens still use raw `Image.network` instead of `NetImage`
+  (`home_screen`, `home_extra_sections`, `incidents_list_screen`,
+  `incident_detail_screen`, `mshikamano_screen`, `projects_screen`,
+  `project_detail_screen`, `account_screen`, `profile_screen`,
+  `videos_screen`). On mobile these can fail cPanel hotlink protection, so
+  images silently don't load — worth converting.
+- The website has features with **no** `/api/v1` equivalent, so the app can't
+  reach parity on them: events, jobs, tenders, merch/cart/checkout, donations,
+  financiers, user pages (`my_pages`/`page_profile`), article/project/event
+  submission, and banner ads. Don't add app screens for these until the
+  backend exposes JSON routes.
+- The Flutter SDK is not installed on the current dev machine, so
+  `flutter analyze` / `flutter build` can only be validated in CI.
 - Every HTTP call logs full request/response (headers, body) via `print()` —
   expect verbose console output; this is intentional for now, not a stray debug
   leftover to "clean up" unless asked.

@@ -15,8 +15,8 @@ class ProjectsService {
     int page = 1,
     int perPage = 12,
     /// 'infrastructure' (public tracker) or 'private_development' (Private
-    /// Projects). The live API doesn't filter by this yet (audit gap), so
-    /// results are also filtered client-side as a safety net.
+    /// Projects). The API filters server-side on this now; the client-side
+    /// filter below is a redundant-but-harmless safety net.
     String? projectType,
   }) async {
     try {
@@ -177,6 +177,81 @@ class ProjectsService {
     } catch (e) {
       print('ProjectsService.suggestProgress error: $e');
       return false;
+    }
+  }
+
+  /// Single client with `description` + `project_count` (`full=True`).
+  Future<ProjectClientDetail?> getClient(String slug) async {
+    try {
+      final res = await _api.getRequest('clients/$slug');
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is Map<String, dynamic>) return ProjectClientDetail.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('ProjectsService.getClient error: $e');
+      return null;
+    }
+  }
+
+  /// Milestones for a project, ordered by `milestone_date` ascending.
+  /// `GET projects/{slug}` already embeds these, so this is only needed when
+  /// refreshing the timeline without refetching the whole project.
+  Future<List<ProjectMilestone>> getMilestones(int projectId) async {
+    try {
+      final res = await _api.getRequest('projects/$projectId/milestones');
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is List) {
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(ProjectMilestone.fromJson)
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('ProjectsService.getMilestones error: $e');
+      return [];
+    }
+  }
+
+  /// Project gallery, with the backend's own filters. Unlike the media
+  /// embedded in `GET projects/{slug}` (capped at 60) this returns everything
+  /// matching, so it suits "view all photos" / month-by-month browsing.
+  ///
+  /// [monthYear] matches the admin's `month_year` label (e.g. '2025-03'),
+  /// [mediaType] is 'image' or 'video'.
+  Future<List<ProjectMedia>> getProjectMedia(
+    int projectId, {
+    String? monthYear,
+    int? milestoneId,
+    String? mediaType,
+  }) async {
+    try {
+      final query = <String, dynamic>{};
+      if (monthYear != null && monthYear.isNotEmpty) query['month_year'] = monthYear;
+      if (milestoneId != null) query['milestone_id'] = '$milestoneId';
+      if (mediaType != null && mediaType.isNotEmpty) query['type'] = mediaType;
+
+      final res = await _api.getRequest(
+        'projects/$projectId/media',
+        query: query.isEmpty ? null : query,
+      );
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is List) {
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(ProjectMedia.fromJson)
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('ProjectsService.getProjectMedia error: $e');
+      return [];
     }
   }
 }

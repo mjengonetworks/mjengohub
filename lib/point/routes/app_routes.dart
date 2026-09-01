@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 
 import '../../auth/screens/login_screen.dart';
 import '../../auth/screens/reset_password_screen.dart';
-import '../../auth/screens/verify_otp_screen.dart';
-import '../../auth/screens/two_factor_screen.dart';
 import '../../onboarding/onboarding_screen.dart';
 import '../../splash/splash_screen.dart';
 import '../../navigation/main_navigation.dart';
@@ -18,6 +16,12 @@ import '../../projects/screens/private_projects_screen.dart';
 import '../../search/screens/search_screen.dart';
 import '../../profile/screens/referral_screen.dart';
 import '../../profile/screens/points_screen.dart';
+import '../../reports/screens/report_detail_screen.dart';
+import '../../reports/screens/reports_screen.dart';
+import '../../reports/screens/submit_report_screen.dart';
+import '../../reviews/screens/reviews_screen.dart';
+import '../../service_catalog/screens/service_detail_screen.dart';
+import '../../service_catalog/screens/services_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -25,8 +29,6 @@ class AppRoutes {
   static const String login          = '/login';
   static const String signup         = '/signup';
   static const String resetPassword  = '/reset-password';
-  static const String verifyOtp      = '/verify-otp';
-  static const String mfaEnroll      = '/mfa-enroll';
   static const String home           = '/home';
   static const String articleDetail  = '/article';
 
@@ -42,14 +44,21 @@ class AppRoutes {
   static const String referral        = '/referral';
   static const String pointsBreakdown = '/points';
 
+  // Website-parity sections backed by api.py endpoints that the app
+  // previously didn't consume at all.
+  static const String services        = '/services';
+  static const String serviceDetail   = '/service';
+  static const String reports         = '/reports';
+  static const String reportDetail    = '/report';
+  static const String submitReport    = '/submit-report';
+  static const String reviews         = '/reviews';
+
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
     GetPage(name: onboarding,    page: () => const OnboardingScreen()),
     GetPage(name: login,         page: () => const LoginScreen()),
     GetPage(name: signup,        page: () => const LoginScreen(startOnSignUp: true)),
     GetPage(name: resetPassword, page: () => const ResetPasswordScreen()),
-    GetPage(name: verifyOtp,     page: () => const VerifyOtpScreen()),
-    GetPage(name: mfaEnroll,     page: () => const MfaEnrollScreen()),
     GetPage(name: home,          page: () => const MainNavigation()),
     GetPage(name: articleDetail, page: () => const ArticleDetailScreen()),
 
@@ -92,5 +101,29 @@ class AppRoutes {
     // Gamification / referrals
     GetPage(name: referral, page: () => const ReferralScreen()),
     GetPage(name: pointsBreakdown, page: () => const PointsScreen()),
+
+    // Services catalogue (GET services, GET services/{slug}, POST request)
+    GetPage(name: services, page: () => const ServicesScreen()),
+    GetPage(
+      name: serviceDetail,
+      page: () {
+        final slug = Get.arguments as String? ?? '';
+        return ServiceDetailScreen(slug: slug);
+      },
+    ),
+
+    // Infrastructure reports (GET/POST reports, vote)
+    GetPage(name: reports, page: () => const ReportsScreen()),
+    GetPage(
+      name: reportDetail,
+      page: () {
+        final id = Get.arguments is int ? Get.arguments as int : 0;
+        return ReportDetailScreen(reportId: id);
+      },
+    ),
+    GetPage(name: submitReport, page: () => const SubmitReportScreen()),
+
+    // Client reviews (GET/POST reviews)
+    GetPage(name: reviews, page: () => const ReviewsScreen()),
   ];
 }

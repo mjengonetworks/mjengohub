@@ -2,11 +2,10 @@
 //
 // Points, referral, and copyright-claim API calls. These follow the same
 // REST conventions as the rest of api.py (`/api/v1/...`, `{success,data}`
-// envelope). Some of these endpoints don't exist on the backend yet (see
-// the cross-repo audit — points/referral/copyright currently only exist as
-// session-based HTML routes on the website), so every call degrades
-// gracefully: a 404 falls back to deriving what it can from `auth/me`
-// instead of crashing the UI.
+// envelope) and are confirmed live on the backend (api.py points_summary /
+// points_log / referrals / copyright-claim routes). Every call still
+// degrades gracefully on any failure (network, unexpected shape, future
+// backend changes) rather than crashing the UI.
 import 'dart:typed_data';
 
 import 'package:get/get.dart';

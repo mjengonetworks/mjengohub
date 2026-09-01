@@ -83,10 +83,25 @@ class MjengoAuthController extends GetxController {
   }
 
   /// Refresh user profile from network without blocking the UI.
-  /// Only clears session on a definitive 401 — network errors keep the cached session.
+  ///
+  /// On a 401 the access token has usually just expired, so one
+  /// `POST auth/refresh` is attempted before giving up; only if that also
+  /// fails (or the server says 403) is the session cleared. Network/5xx
+  /// errors always keep the cached session so a flaky connection doesn't log
+  /// people out.
   Future<void> _refreshProfileSilently() async {
     try {
-      final response = await _api.apiGet('auth/me');
+      var response = await _api.apiGet('auth/me');
+
+      if (response.statusCode == 401) {
+        final newToken = await _api.refreshAccessToken();
+        if (newToken == null) {
+          await signOut(silent: true);
+          return;
+        }
+        response = await _api.apiGet('auth/me');
+      }
+
       if (response.statusCode == 200) {
         final body = response.body as Map<String, dynamic>;
         final userData = body['data'] as Map<String, dynamic>;
@@ -269,6 +284,15 @@ class MjengoAuthController extends GetxController {
         Get.offAllNamed('/home');
       } else if (response.statusCode == 403) {
         _setError('Your account has been deactivated');
+      } else if (response.statusCode == 404) {
+        // `POST auth/google` is not implemented in api.py — the website's only
+        // Google flow is a session-based redirect (application.py
+        // `/auth/google`), which a mobile/web Flutter client can't consume.
+        // Surface that plainly instead of "an unexpected error occurred".
+        _setError(
+          'Google sign-in isn\'t available yet. '
+          'Please sign in with your email and password.',
+        );
       } else {
         _setError(_extractError(response.body));
       }
@@ -352,8 +376,13 @@ class MjengoAuthController extends GetxController {
   // ── Forgot password ───────────────────────────────────────────────────────
 
   /// Sends a password-reset link to [email] via the Mjengo backend.
-  /// Returns `true` on a successful request (email may or may not exist —
-  /// the backend always responds 200 to prevent enumeration).
+  ///
+  /// WARNING: `POST auth/forgot-password` is **not implemented in api.py** —
+  /// the backend has no password-reset route at all (verified against
+  /// mjengonetworks/mjengohub-website). This call therefore 404s today. The
+  /// 404 is translated into an explicit message instead of the generic
+  /// "unable to send" so users aren't left waiting for an email that will
+  /// never arrive. Remove this branch once the backend route lands.
   Future<bool> forgotPassword({required String email}) async {
     try {
       _setLoading(true);
@@ -367,6 +396,11 @@ class MjengoAuthController extends GetxController {
 
       if (response.statusCode == 200) {
         return true;
+      } else if (response.statusCode == 404) {
+        _setError(
+          'Password reset isn\'t available in the app yet. '
+          'Please reset your password on mjengohub.co.ke.',
+        );
       } else {
         _setError(_extractError(response.body));
       }
@@ -404,32 +438,9 @@ class MjengoAuthController extends GetxController {
   void _setLoading(bool v) => _isLoading.value = v;
   void _setError(String v)  => _errorMessage.value = v;
 
-  UserModel _parseUser(Map<String, dynamic> json) {
-    return UserModel(
-      uid:         json['id']?.toString() ?? '',
-      email:       json['email'] as String?,
-      firstName:   json['first_name'] as String?,
-      lastName:    json['last_name'] as String?,
-      phoneNumber: json['phone'] as String?,
-      photoURL:    json['profile_image'] as String?,
-      coverImageUrl: json['cover_image'] as String?,
-      bio:         json['bio'] as String?,
-      location:    json['location'] as String?,
-      company:     json['company'] as String?,
-      provider:    'email',
-      isActive:    json['is_active'] as bool? ?? true,
-      points:      (json['points'] as num?)?.toInt() ?? 0,
-      referralCode: json['referral_code'] as String?,
-      referredById: json['referred_by_id']?.toString(),
-      isVerified:  json['is_verified'] as bool? ?? false,
-      verificationExpiresAt: json['verification_expires_at'] != null
-          ? DateTime.tryParse(json['verification_expires_at'].toString())
-          : null,
-      createdAt:   json['created_at'] != null
-                       ? DateTime.tryParse(json['created_at'] as String)
-                       : null,
-    );
-  }
+  /// The API's user shape and the cached-user JSON are identical, so parsing
+  /// lives in [UserModel.fromJson] rather than being duplicated here.
+  UserModel _parseUser(Map<String, dynamic> json) => UserModel.fromJson(json);
 
   // ── Avatar / cover photo upload (Cloudflare R2-backed on the server) ────────
 

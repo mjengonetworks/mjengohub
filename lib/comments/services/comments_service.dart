@@ -89,14 +89,10 @@ class CommentsService {
     }
   }
 
-  Future<bool> report(int commentId, {String? reason}) async {
-    try {
-      final res = await _api.postRequest('comments/$commentId/report', {
-        if (reason != null) 'reason': reason,
-      });
-      return res.statusCode == 200 || res.statusCode == 201;
-    } catch (_) {
-      return false;
-    }
-  }
+  // NOTE: comment reporting is intentionally absent. The website has a
+  // session-based `POST /comments/<id>/report` (application.py) backed by a
+  // `comment_reports` table, but it was never exposed under `/api/v1/`, so the
+  // previous `report()` helper here always 404'd. It was unused by any screen
+  // and has been removed rather than left as a silent no-op; re-add it once
+  // api.py grows a `/comments/<int:comment_id>/report` route.
 }

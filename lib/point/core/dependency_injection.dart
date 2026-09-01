@@ -1,7 +1,6 @@
 // lib/core/services/dependency_injection.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
-import '../../auth/controllers/user_controller.dart';
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../services/base_service.dart';
 import '../../services/mjengo_service.dart';
@@ -38,14 +37,6 @@ class DependencyInjection {
       print('✅ MjengoAuthController initialized');
     } catch (e) {
       print('❌ MjengoAuthController failed: $e');
-    }
-
-    try {
-      print('👤 Initializing UserController...');
-      Get.put(UserController(), permanent: true);
-      print('✅ UserController initialized');
-    } catch (e) {
-      print('❌ UserController failed: $e');
     }
 
     try {
@@ -116,7 +107,6 @@ class DependencyInjection {
   static bool areAllDependenciesReady() {
     try {
       return Get.isRegistered<BaseService>() &&
-          Get.isRegistered<UserController>() &&
           Get.isRegistered<HomeNewsController>() &&
           Get.isRegistered<DiscoverController>();
     } catch (e) {

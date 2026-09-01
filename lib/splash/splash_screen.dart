@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:io' show Platform;
-import '../auth/controllers/user_controller.dart';
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../point/routes/app_routes.dart';
 
@@ -15,9 +14,6 @@ class ModernSplashScreen extends StatefulWidget {
 
 class _ModernSplashScreenState extends State<ModernSplashScreen>
     with TickerProviderStateMixin {
-  // Controllers for state management
-  UserController? _userController;
-
   // Animation controllers
   late AnimationController _logoController;
   late Animation<double> _logoScale;
@@ -62,11 +58,9 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
   }
 
   Future<void> _startAppInitialization() async {
-    // Step 1: Initialize app state — failures here must NOT skip location check.
+    // Step 1: Wait for MjengoAuthController to finish initializing (max 5s) —
+    // failures here must NOT skip the navigation/location check below.
     try {
-      await _initializeAppState();
-
-      // Mobile: Wait for MjengoAuthController + UserController to finish initializing (max 5s)
       if (!kIsWeb) {
         final startTime = DateTime.now();
         MjengoAuthController? mjengoAuth;
@@ -74,12 +68,6 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
         while (mjengoAuth != null && !mjengoAuth.isInitialized) {
           await Future.delayed(const Duration(milliseconds: 100));
           if (DateTime.now().difference(startTime).inMilliseconds >= 5000) break;
-        }
-        if (_userController != null) {
-          while (!_userController!.isInitialized) {
-            await Future.delayed(const Duration(milliseconds: 100));
-            if (DateTime.now().difference(startTime).inMilliseconds >= 5000) break;
-          }
         }
         final elapsed = DateTime.now().difference(startTime).inMilliseconds;
         if (elapsed < 2500) {
@@ -94,14 +82,6 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     // Step 2: Navigate based on app state.
     if (mounted) {
       _navigateBasedOnState();
-    }
-  }
-
-  Future<void> _initializeAppState() async {
-    try {
-      _userController = Get.find<UserController>();
-    } catch (e) {
-      print('UserController not found: $e');
     }
   }
 
@@ -156,19 +136,6 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
       } catch (e2) {
         print('Fallback navigation also failed: $e2');
       }
-    }
-  }
-
-  bool _checkIfUserIsLoggedIn() {
-    try {
-      // Check UserController auth status
-      if (_userController != null) {
-        return _userController!.isAuthenticated;
-      }
-
-      return false;
-    } catch (e) {
-      return false;
     }
   }
 

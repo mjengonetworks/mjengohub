@@ -66,7 +66,7 @@ class IncidentsService {
     int? parentId,
   }) async {
     try {
-      final res = await _api.postRequest('incidents/$incidentId/comment', {
+      final res = await _api.postRequest('incidents/$incidentId/comments', {
         'name': name,
         'content': content,
         if (email != null) 'email': email,

@@ -46,7 +46,10 @@ class MjengoService extends GetConnect {
     });
 
     httpClient.addResponseModifier<dynamic>((req, res) {
-      if (res.statusCode == 401) _clearTokens();
+      // Drop only the (now stale) access token. The refresh token is
+      // deliberately kept so `refreshAccessToken()` still has something to
+      // work with — clearing both here made `auth/refresh` unreachable.
+      if (res.statusCode == 401) _clearAccessToken();
       return res;
     });
   }
@@ -69,10 +72,62 @@ class MjengoService extends GetConnect {
     return prefs.getString(_refreshTokenKey);
   }
 
+  Future<void> _clearAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_accessTokenKey);
+  }
+
   Future<void> _clearTokens() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_accessTokenKey);
     await prefs.remove(_refreshTokenKey);
+  }
+
+  /// Exchanges the stored refresh token for a fresh access token via
+  /// `POST auth/refresh`.
+  ///
+  /// This deliberately bypasses [httpClient]: the request modifier always
+  /// attaches the *access* token, but this endpoint is
+  /// `@jwt_required(refresh=True)` and needs the *refresh* token in the
+  /// Authorization header. Going through raw `http` also keeps it clear of the
+  /// 401 response modifier.
+  ///
+  /// Returns the new access token, or null when refresh isn't possible (no
+  /// refresh token stored, expired refresh token, or a network failure). A
+  /// definitive 401/422 from the server clears the session, since the refresh
+  /// token itself is no longer usable.
+  Future<String?> refreshAccessToken() async {
+    final refresh = await getRefreshToken();
+    if (refresh == null || refresh.isEmpty) return null;
+    try {
+      final res = await http.post(
+        Uri.parse('${_apiBaseUrl}auth/refresh'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $refresh',
+        },
+      ).timeout(const Duration(seconds: 20));
+
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        final token = decoded is Map ? decoded['data']?['access_token'] : null;
+        if (token is String && token.isNotEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_accessTokenKey, token);
+          print('🔐 Access token refreshed');
+          return token;
+        }
+      }
+      // 401 = refresh token rejected, 422 = malformed/not a refresh token.
+      if (res.statusCode == 401 || res.statusCode == 422) {
+        print('🔐 Refresh token rejected (${res.statusCode}) — clearing session');
+        await _clearTokens();
+      }
+    } catch (e) {
+      // Network/timeout: keep the refresh token so a later attempt can retry.
+      print('❌ refreshAccessToken failed: $e');
+    }
+    return null;
   }
 
   // ── User cache ─────────────────────────────────────────────────────────────
@@ -98,9 +153,14 @@ class MjengoService extends GetConnect {
     await prefs.remove(_cachedUserKey);
   }
 
+  /// True when there is anything left to restore a session from. The refresh
+  /// token counts: an expired access token is cleared by the 401 modifier, but
+  /// the session is still recoverable via [refreshAccessToken].
   Future<bool> hasSession() async {
-    final token = await getAccessToken();
-    return token != null && token.isNotEmpty;
+    final access = await getAccessToken();
+    if (access != null && access.isNotEmpty) return true;
+    final refresh = await getRefreshToken();
+    return refresh != null && refresh.isNotEmpty;
   }
 
   // ── HTTP helpers ───────────────────────────────────────────────────────────

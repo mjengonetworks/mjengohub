@@ -51,6 +51,21 @@ class HubScreen extends StatelessWidget {
       route: AppRoutes.mshikamano,
     ),
     _HubItem(
+      label: 'Infrastructure Reports',
+      sub: 'Report a road, bridge or utility fault',
+      route: AppRoutes.reports,
+    ),
+    _HubItem(
+      label: 'Services',
+      sub: 'Request construction services',
+      route: AppRoutes.services,
+    ),
+    _HubItem(
+      label: 'Reviews',
+      sub: 'What our clients say',
+      route: AppRoutes.reviews,
+    ),
+    _HubItem(
       label: 'Mjengo Networks',
       sub: 'Our wider media & social network',
       route: null,
@@ -87,7 +102,7 @@ class HubScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Projects, safety incidents & mental health',
+                    'Projects, safety, services & community',
                     style: GoogleFonts.montserrat(
                         fontSize: 13, color: _kSubtext),
                   ),

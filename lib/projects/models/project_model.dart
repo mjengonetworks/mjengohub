@@ -8,20 +8,25 @@ class ProjectClient {
   final String? logo;
   final String? clientType;
 
+  /// Admin-set external site for the client (ministry / developer homepage).
+  final String? websiteUrl;
+
   const ProjectClient({
     required this.id,
     required this.name,
     required this.slug,
     this.logo,
     this.clientType,
+    this.websiteUrl,
   });
 
   factory ProjectClient.fromJson(Map<String, dynamic> j) => ProjectClient(
-        id: (j['id'] as num).toInt(),
+        id: (j['id'] as num?)?.toInt() ?? 0,
         name: (j['name'] as String?) ?? '',
         slug: (j['slug'] as String?) ?? '',
         logo: j['logo'] as String?,
         clientType: j['client_type'] as String?,
+        websiteUrl: j['website_url'] as String?,
       );
 
   String? get logoUrl {
@@ -29,6 +34,34 @@ class ProjectClient {
     if (logo!.startsWith('http')) return logo;
     return '$_kBase/static/$logo';
   }
+}
+
+/// `GET clients/{slug}` adds `description` + `project_count` on top of the
+/// list-shaped [ProjectClient]. Kept as a separate class so the list model
+/// stays a cheap value object.
+class ProjectClientDetail {
+  final ProjectClient client;
+  final String? description;
+  final int projectCount;
+
+  const ProjectClientDetail({
+    required this.client,
+    this.description,
+    this.projectCount = 0,
+  });
+
+  factory ProjectClientDetail.fromJson(Map<String, dynamic> j) => ProjectClientDetail(
+        client: ProjectClient.fromJson(j),
+        description: j['description'] as String?,
+        projectCount: (j['project_count'] as num?)?.toInt() ?? 0,
+      );
+
+  int get id => client.id;
+  String get name => client.name;
+  String get slug => client.slug;
+  String? get logoUrl => client.logoUrl;
+  String? get clientType => client.clientType;
+  String? get websiteUrl => client.websiteUrl;
 }
 
 class ProjectMilestone {
@@ -69,9 +102,8 @@ class ProjectMedia {
 
   /// 'progress' (real on-site photos) or 'render' (architectural renders /
   /// artistic impressions), mirroring the website's `media_kind` column.
-  /// NOTE: the JSON API doesn't expose this field yet (audit gap) — it
-  /// defaults to 'progress' until the backend adds it, so the render
-  /// gallery may be empty even when renders exist server-side.
+  /// Exposed by `_project_media_dict` in api.py; defaults to 'progress' for
+  /// older rows where the admin never set it.
   final String mediaKind;
 
   const ProjectMedia({

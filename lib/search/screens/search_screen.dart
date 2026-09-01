@@ -1,10 +1,16 @@
 // lib/search/screens/search_screen.dart
 //
-// Global, multi-category search — Articles, News, Public Projects, Private
-// Projects, Safety Incidents, Events — with debounced queries against the
-// existing per-feature endpoints (there is no single unified `/search`
-// JSON endpoint on the backend yet, see the cross-repo audit, so this fans
-// out to `/articles`, `/projects`, `/incidents` in parallel per filter).
+// Global, multi-category search with debounced queries.
+//
+// Two sources are merged, because neither covers everything:
+//   * `GET /search` (SearchService) — articles, services and infrastructure
+//     reports, in one round trip.
+//   * per-feature endpoints — `/projects` and `/incidents`, which the unified
+//     route deliberately doesn't touch.
+//
+// Filters are applied per source so an unticked category costs no request.
+// The old "Events" filter has been dropped: the website's events live only as
+// HTML routes with no `/api/v1` equivalent, so it could never return results.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -19,9 +25,20 @@ import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
+import '../../reports/models/report_model.dart';
+import '../../service_catalog/models/service_model.dart';
 import '../../shared/theme/app_theme.dart';
+import '../services/search_service.dart';
 
-enum _SearchCategory { articles, news, publicProjects, privateProjects, safetyIncidents, events }
+enum _SearchCategory {
+  articles,
+  news,
+  publicProjects,
+  privateProjects,
+  safetyIncidents,
+  services,
+  reports,
+}
 
 extension on _SearchCategory {
   String get label {
@@ -31,7 +48,8 @@ extension on _SearchCategory {
       case _SearchCategory.publicProjects: return 'Public Projects';
       case _SearchCategory.privateProjects: return 'Private Projects';
       case _SearchCategory.safetyIncidents: return 'Safety Incidents';
-      case _SearchCategory.events: return 'Events';
+      case _SearchCategory.services: return 'Services';
+      case _SearchCategory.reports: return 'Reports';
     }
   }
 }
@@ -47,6 +65,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final _newsApi = NewsApiService();
   final _projectsApi = ProjectsService();
   final _incidentsApi = IncidentsService();
+  final _searchApi = SearchService();
 
   final _controller = TextEditingController();
   Timer? _debounce;
@@ -57,7 +76,8 @@ class _SearchScreenState extends State<SearchScreen> {
     _SearchCategory.publicProjects,
     _SearchCategory.privateProjects,
     _SearchCategory.safetyIncidents,
-    _SearchCategory.events,
+    _SearchCategory.services,
+    _SearchCategory.reports,
   };
 
   bool _loading = false;
@@ -67,6 +87,8 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Project> _publicProjects = [];
   List<Project> _privateProjects = [];
   List<Incident> _incidents = [];
+  List<ServiceOffering> _services = [];
+  List<InfrastructureReport> _reports = [];
 
   @override
   void dispose() {
@@ -90,6 +112,8 @@ class _SearchScreenState extends State<SearchScreen> {
         _publicProjects = [];
         _privateProjects = [];
         _incidents = [];
+        _services = [];
+        _reports = [];
       });
       return;
     }
@@ -102,10 +126,18 @@ class _SearchScreenState extends State<SearchScreen> {
     Future<List<Project>> privateFuture = Future.value([]);
     Future<List<Incident>> incidentsRoadFuture = Future.value([]);
     Future<List<Incident>> incidentsSiteFuture = Future.value([]);
+    Future<UnifiedSearchResults> unifiedFuture =
+        Future.value(const UnifiedSearchResults());
 
     if (_activeFilters.contains(_SearchCategory.articles) || _activeFilters.contains(_SearchCategory.news)) {
       articlesFuture = _newsApi.getArticles(q: trimmed, perPage: 20);
       futures.add(articlesFuture);
+    }
+    // One call covers both services and reports, so only fire it once.
+    if (_activeFilters.contains(_SearchCategory.services) ||
+        _activeFilters.contains(_SearchCategory.reports)) {
+      unifiedFuture = _searchApi.search(trimmed);
+      futures.add(unifiedFuture);
     }
     if (_activeFilters.contains(_SearchCategory.publicProjects)) {
       publicFuture = _projectsApi.getPublicProjects(q: trimmed, perPage: 20);
@@ -129,6 +161,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final privateResults = await privateFuture;
     final roadIncidents = await incidentsRoadFuture;
     final siteIncidents = await incidentsSiteFuture;
+    final unified = await unifiedFuture;
 
     setState(() {
       _articles = _activeFilters.contains(_SearchCategory.articles) ? allArticles : [];
@@ -138,6 +171,10 @@ class _SearchScreenState extends State<SearchScreen> {
       _publicProjects = publicResults;
       _privateProjects = privateResults;
       _incidents = [...roadIncidents, ...siteIncidents];
+      _services =
+          _activeFilters.contains(_SearchCategory.services) ? unified.services : [];
+      _reports =
+          _activeFilters.contains(_SearchCategory.reports) ? unified.reports : [];
       _loading = false;
     });
   }
@@ -154,7 +191,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   int get _totalResults =>
-      _articles.length + _news.length + _publicProjects.length + _privateProjects.length + _incidents.length;
+      _articles.length +
+      _news.length +
+      _publicProjects.length +
+      _privateProjects.length +
+      _incidents.length +
+      _services.length +
+      _reports.length;
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +272,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildResults() {
     if (_query.length < 2) {
       return Center(
-        child: Text('Search articles, projects & safety incidents',
+        child: Text('Search articles, projects, services & safety reports',
             style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
       );
     }
@@ -249,12 +292,8 @@ class _SearchScreenState extends State<SearchScreen> {
         if (_publicProjects.isNotEmpty) _section('Public Projects', _publicProjects.map((p) => _ProjectRow(p)).toList()),
         if (_privateProjects.isNotEmpty) _section('Private Projects', _privateProjects.map((p) => _ProjectRow(p)).toList()),
         if (_incidents.isNotEmpty) _section('Safety Incidents', _incidents.map((i) => _IncidentRow(i)).toList()),
-        if (_activeFilters.contains(_SearchCategory.events))
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Text('Events search isn\'t available in the app yet — check the website.',
-                style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle, fontStyle: FontStyle.italic)),
-          ),
+        if (_services.isNotEmpty) _section('Services', _services.map((s) => _ServiceRow(s)).toList()),
+        if (_reports.isNotEmpty) _section('Reports', _reports.map((r) => _ReportRow(r)).toList()),
       ],
     );
   }
@@ -344,6 +383,46 @@ class _IncidentRow extends StatelessWidget {
       title: Text(incident.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
       subtitle: Text(incident.county ?? incident.location ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
       onTap: () => Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
+    );
+  }
+}
+
+class _ServiceRow extends StatelessWidget {
+  final ServiceOffering service;
+  const _ServiceRow(this.service);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.handyman_rounded, color: AppColors.primaryBlue),
+      title: Text(service.name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
+      subtitle: Text(service.description ?? '',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+      onTap: () => Get.toNamed(AppRoutes.serviceDetail, arguments: service.slug),
+    );
+  }
+}
+
+class _ReportRow extends StatelessWidget {
+  final InfrastructureReport report;
+  const _ReportRow(this.report);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.construction_rounded, color: AppColors.warning),
+      title: Text(report.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
+      subtitle: Text(report.location ?? '',
+          style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+      onTap: () => Get.toNamed(AppRoutes.reportDetail, arguments: report.id),
     );
   }
 }
