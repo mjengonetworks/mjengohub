@@ -181,7 +181,7 @@ class MjengoAuthController extends GetxController {
         _setError(_extractError(response.body));
       }
     } catch (e) {
-      _setError('An unexpected error occurred. Please try again.');
+      print('Google Sign-In caught error: $e'); _setError('Error: $e');
     } finally {
       _setLoading(false);
     }
@@ -234,7 +234,7 @@ class MjengoAuthController extends GetxController {
         _setError(_extractError(response.body));
       }
     } catch (e) {
-      _setError('An unexpected error occurred. Please try again.');
+      print('Google Sign-In caught error: $e'); _setError('Error: $e');
     } finally {
       _setLoading(false);
     }
@@ -301,7 +301,7 @@ class MjengoAuthController extends GetxController {
         _setError('Google sign-in failed. Please try again.');
       }
     } catch (e) {
-      _setError('An unexpected error occurred. Please try again.');
+      print('Google Sign-In caught error: $e'); _setError('Error: $e');
     } finally {
       _setLoading(false);
     }

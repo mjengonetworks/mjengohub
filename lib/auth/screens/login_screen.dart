@@ -97,8 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   : _LoginForm(key: const ValueKey('login')),
             ),
 
-            const SizedBox(height: 20),
-            _GuestButton(),
+            
           ],
         ),
       ),
