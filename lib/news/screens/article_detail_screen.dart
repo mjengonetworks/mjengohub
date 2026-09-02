@@ -70,33 +70,49 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
 
 // -- Article body (collapsing hero + content) ----------------------------------
 
-class _ArticleBody extends StatelessWidget {
+class _ArticleBody extends StatefulWidget {
   final Article article;
   const _ArticleBody({required this.article});
 
+  @override
+  State<_ArticleBody> createState() => _ArticleBodyState();
+}
+
+class _ArticleBodyState extends State<_ArticleBody> {
   static const double _heroHeight = 360.0;
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSavedStatus();
+  }
+
+  Future<void> _checkSavedStatus() async {
+    final saved = await BookmarksService.isBookmarked(widget.article.id.toString());
+    if (mounted) {
+      setState(() => _isSaved = saved);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        // -- Collapsing hero ----------------------------------------------
         SliverAppBar(
           expandedHeight: _heroHeight,
           pinned: true,
           backgroundColor: Colors.black,
           elevation: 0,
           leading: _backButton(),
-          actions: [_bookmarkButton(article), _shareButton(article)],
+          actions: [_bookmarkButton(widget.article), _shareButton(widget.article)],
           flexibleSpace: FlexibleSpaceBar(
-            background: _HeroImage(article: article),
+            background: _HeroImage(article: widget.article),
             collapseMode: CollapseMode.parallax,
           ),
         ),
-
-        // -- Content ------------------------------------------------------
         SliverToBoxAdapter(
-          child: _ContentSection(article: article),
+          child: _ContentSection(article: widget.article),
         ),
       ],
     );
@@ -141,7 +157,9 @@ class _ArticleBody extends StatelessWidget {
             setState(() => _isSaved = nowSaved);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(nowSaved ? 'Article saved to bookmarks' : 'Article removed from bookmarks'),
+                content: Text(nowSaved
+                    ? 'Article saved to bookmarks'
+                    : 'Article removed from bookmarks'),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -183,15 +201,14 @@ class _ArticleBody extends StatelessWidget {
   }
 
   void _shareArticle(Article article) {
-    final url = 'https://mjengohub.co.ke/news/${article.slug}';
+    final url = 'https://mjengohub.co.ke/news/';
     SocialShareModal.show(
       context,
-      title: 'Read this on Mjengo Hub: "${article.title}"',
+      title: 'Read this on Mjengo Hub: ""',
       url: url,
     );
   }
 }
-
 // -- Hero image with gradient & overlay text -----------------------------------
 
 class _HeroImage extends StatelessWidget {
