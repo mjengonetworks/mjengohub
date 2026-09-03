@@ -257,8 +257,6 @@ class MjengoAuthController extends GetxController {
         return;
       }
       final GoogleSignInAuthentication auth = await account.authentication;
-      print('DEBUG: idToken = ${auth.idToken}');
-      print('DEBUG: accessToken = ${auth.accessToken}');
       final String? token = auth.idToken ?? auth.accessToken;
       if (token == null) {
         _setError('Google sign-in failed: No credentials received from Google.');
