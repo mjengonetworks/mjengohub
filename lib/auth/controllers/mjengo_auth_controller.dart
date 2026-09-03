@@ -24,9 +24,11 @@ class MjengoAuthController extends GetxController {
   static const String _googleClientId =
       '729219361762-7pcsonpov16fit17ettakrj1cufsjel2.apps.googleusercontent.com';
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  Future<void>? _googleSignInInit;
-
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb ? _googleClientId : null,
+    serverClientId: _googleClientId,
+    scopes: ['email', 'profile'],
+  );
   // ── Getters ───────────────────────────────────────────────────────────────
 
   UserModel? get currentUser      => _user.value;
@@ -45,11 +47,7 @@ class MjengoAuthController extends GetxController {
     // later call to authenticate() from the button's onTap is the *first*
     // await in that gesture — required for the popup/GIS flow to be treated
     // as user-initiated on web.
-    if (_isGoogleSignInSupported) {
-      _googleSignInInit = _googleSignIn
-          .initialize(serverClientId: _googleClientId)
-          .catchError((_) {});
-    }
+    
   }
 
   bool get _isGoogleSignInSupported {
@@ -253,9 +251,6 @@ class MjengoAuthController extends GetxController {
       _setLoading(true);
       _setError('');
 
-      await (_googleSignInInit ??=
-          _googleSignIn.initialize(serverClientId: _googleClientId));
-
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
       if (account == null) {
         // User closed or dismissed the popup
@@ -299,10 +294,6 @@ class MjengoAuthController extends GetxController {
         );
       } else {
         _setError(_extractError(response.body));
-      }
-    } on GoogleSignInException catch (e) {
-      if (e.code != GoogleSignInExceptionCode.canceled) {
-        _setError('Google sign-in failed. Please try again.');
       }
     } catch (e) {
       print('Google Sign-In caught error: $e'); _setError('Error: $e');
