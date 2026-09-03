@@ -19,8 +19,8 @@ class HubScreen extends StatelessWidget {
 
   static const _items = [
     _HubItem(
-      label: 'Projects Database',
-      sub: "Kenya's roads, bridges & buildings",
+      label: 'Infrastructure Tracker',
+      sub: "Kenya's roads, bridges & public infrastructure",
       icon: Icons.corporate_fare_rounded,
       color: AppColors.accentBlue,
       route: AppRoutes.projects,

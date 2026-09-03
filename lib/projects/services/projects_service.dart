@@ -12,6 +12,10 @@ class ProjectsService {
     String? clientSlug,
     String? q,
     bool featured = false,
+    /// 'infrastructure' or 'private_development' — matches `Project.project_type`.
+    /// Left unset to fetch across both (used nowhere in-app today; every
+    /// caller passes one explicitly so the two trackers never mix rows).
+    String? projectType,
     int page = 1,
     int perPage = 12,
   }) async {
@@ -25,6 +29,7 @@ class ProjectsService {
       if (clientSlug != null && clientSlug.isNotEmpty) query['client'] = clientSlug;
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
+      if (projectType != null && projectType.isNotEmpty) query['project_type'] = projectType;
 
       final res = await _api.getRequest('projects', query: query);
       if (res.statusCode == 200 && res.body != null) {

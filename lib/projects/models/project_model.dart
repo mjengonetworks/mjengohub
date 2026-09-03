@@ -71,6 +71,10 @@ class ProjectMilestone {
   final String? milestoneDate;
   final String? milestoneType;
   final bool isAchieved;
+  final int sortOrder;
+
+  /// Up to 5 photos attached to this milestone (`_milestone_dict` in api.py).
+  final List<ProjectMedia> media;
 
   const ProjectMilestone({
     required this.id,
@@ -79,6 +83,8 @@ class ProjectMilestone {
     this.milestoneDate,
     this.milestoneType,
     required this.isAchieved,
+    this.sortOrder = 0,
+    this.media = const [],
   });
 
   factory ProjectMilestone.fromJson(Map<String, dynamic> j) => ProjectMilestone(
@@ -88,6 +94,12 @@ class ProjectMilestone {
         milestoneDate: j['milestone_date'] as String?,
         milestoneType: j['milestone_type'] as String?,
         isAchieved: (j['is_achieved'] as bool?) ?? false,
+        sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
+        media: (j['media'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(ProjectMedia.fromJson)
+                .toList() ??
+            [],
       );
 }
 
@@ -149,6 +161,13 @@ class Project {
   final String? consultant;
   final int progressPercent;
   final String status;
+
+  /// 'infrastructure' (public tracker, the default) or 'private_development'
+  /// (Private Projects) — same `Project` row shape, filtered views. Both the
+  /// Infrastructure Tracker and Private Projects screens filter on this via
+  /// `GET projects?project_type=...` so the two trackers never mix rows.
+  final String projectType;
+
   final String? featuredImage;
   final bool isFeatured;
   final double? averageRating;
@@ -156,9 +175,13 @@ class Project {
   final int viewCount;
   final String? startDate;
   final String? expectedEndDate;
+  final String? createdAt;
   // Detail-only
+  final double? contractValue;
+  final String? actualEndDate;
   final List<ProjectMilestone> milestones;
   final List<ProjectMedia> media;
+  final List<ProjectMedia> featuredMedia;
 
   const Project({
     required this.id,
@@ -173,6 +196,7 @@ class Project {
     this.consultant,
     required this.progressPercent,
     required this.status,
+    this.projectType = 'infrastructure',
     this.featuredImage,
     required this.isFeatured,
     this.averageRating,
@@ -180,8 +204,12 @@ class Project {
     required this.viewCount,
     this.startDate,
     this.expectedEndDate,
+    this.createdAt,
+    this.contractValue,
+    this.actualEndDate,
     this.milestones = const [],
     this.media = const [],
+    this.featuredMedia = const [],
   });
 
   factory Project.fromJson(Map<String, dynamic> j) => Project(
@@ -199,6 +227,7 @@ class Project {
         consultant: j['consultant'] as String?,
         progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
         status: (j['status'] as String?) ?? 'ongoing',
+        projectType: (j['project_type'] as String?) ?? 'infrastructure',
         featuredImage: j['featured_image'] as String?,
         isFeatured: (j['is_featured'] as bool?) ?? false,
         averageRating: (j['average_rating'] as num?)?.toDouble(),
@@ -206,12 +235,20 @@ class Project {
         viewCount: (j['view_count'] as num?)?.toInt() ?? 0,
         startDate: j['start_date'] as String?,
         expectedEndDate: j['expected_end_date'] as String?,
+        createdAt: j['created_at'] as String?,
+        contractValue: (j['contract_value'] as num?)?.toDouble(),
+        actualEndDate: j['actual_end_date'] as String?,
         milestones: (j['milestones'] as List?)
                 ?.whereType<Map<String, dynamic>>()
                 .map(ProjectMilestone.fromJson)
                 .toList() ??
             [],
         media: (j['media'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(ProjectMedia.fromJson)
+                .toList() ??
+            [],
+        featuredMedia: (j['featured_media'] as List?)
                 ?.whereType<Map<String, dynamic>>()
                 .map(ProjectMedia.fromJson)
                 .toList() ??
@@ -227,12 +264,21 @@ class Project {
     return '$_kBase/static/$featuredImage';
   }
 
-  String get statusLabel {
+  String get statusLabel => labelForStatus(status);
+
+  /// Matches the backend's `project_status_enum` exactly: planned, ongoing,
+  /// completed, stalled, cancelled. The previous 'suspended' case never
+  /// matched a real value, so stalled/cancelled projects fell through to the
+  /// raw lowercase enum string instead of a proper label. Static so callers
+  /// (status filter chips, badges) can label a status without a Project
+  /// instance on hand.
+  static String labelForStatus(String status) {
     switch (status) {
+      case 'planned': return 'Planned';
       case 'ongoing': return 'Ongoing';
       case 'completed': return 'Completed';
-      case 'suspended': return 'Suspended';
-      case 'planned': return 'Planned';
+      case 'stalled': return 'Stalled';
+      case 'cancelled': return 'Cancelled';
       default: return status;
     }
   }

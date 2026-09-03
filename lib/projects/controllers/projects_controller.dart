@@ -6,6 +6,12 @@ import '../services/projects_service.dart';
 class ProjectsController extends GetxController {
   final _service = ProjectsService();
 
+  /// 'infrastructure' (Infrastructure Tracker) or 'private_development'
+  /// (Private Projects) — fixed per screen instance so the two trackers
+  /// never mix rows. See ProjectsScreen's projectType param.
+  final String projectType;
+  ProjectsController({this.projectType = 'infrastructure'});
+
   final projects = <Project>[].obs;
   final featuredProjects = <Project>[].obs;
   final clients = <ProjectClient>[].obs;
@@ -33,8 +39,9 @@ class ProjectsController extends GetxController {
     _hasMore = true;
 
     final results = await Future.wait([
-      _service.getProjects(featured: true, perPage: 4),
+      _service.getProjects(projectType: projectType, featured: true, perPage: 4),
       _service.getProjects(
+        projectType: projectType,
         status: selectedStatus.value,
         clientSlug: selectedClientSlug.value,
         q: searchQuery.value,
@@ -67,6 +74,7 @@ class ProjectsController extends GetxController {
     _isFetchingMore = true;
     _page++;
     final more = await _service.getProjects(
+      projectType: projectType,
       status: selectedStatus.value,
       clientSlug: selectedClientSlug.value,
       q: searchQuery.value,

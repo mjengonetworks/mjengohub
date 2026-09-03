@@ -21,15 +21,20 @@ class ProjectsScreen extends StatelessWidget {
   final String title;
   final String subtitle;
 
+  /// 'infrastructure' (Infrastructure Tracker, the default) or
+  /// 'private_development' (Private Projects) — see ProjectsController.
+  final String projectType;
+
   const ProjectsScreen({
     Key? key,
-    this.title = 'Infrastructure Projects',
-    this.subtitle = 'Kenya\'s construction & infrastructure projects',
+    this.title = 'Infrastructure Tracker',
+    this.subtitle = "Kenya's roads, bridges & public infrastructure projects",
+    this.projectType = 'infrastructure',
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(ProjectsController());
+    final ctrl = Get.put(ProjectsController(projectType: projectType), tag: projectType);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -77,6 +82,10 @@ class ProjectsScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.only(bottom: 24),
               children: [
+                // Status filter chips — mirrors the website's status <select>
+                // (templates/projects.html: planned/ongoing/completed/stalled)
+                _buildStatusChips(ctrl),
+
                 // Client filter chips
                 if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
 
@@ -130,7 +139,11 @@ class ProjectsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             // Search bar
             TextField(
-              onSubmitted: (q) => ctrl.applyFilters(q: q),
+              onSubmitted: (q) => ctrl.applyFilters(
+                status: ctrl.selectedStatus.value,
+                clientSlug: ctrl.selectedClientSlug.value,
+                q: q,
+              ),
               style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
               decoration: InputDecoration(
                 hintText: 'Search projects…',
@@ -162,6 +175,43 @@ class ProjectsScreen extends StatelessWidget {
     );
   }
 
+  static const _statusOptions = ['planned', 'ongoing', 'completed', 'stalled'];
+
+  Widget _buildStatusChips(ProjectsController ctrl) {
+    return Container(
+      height: 42,
+      color: _kCard,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        itemCount: _statusOptions.length + 1,
+        itemBuilder: (_, i) {
+          if (i == 0) {
+            return _FilterChip(
+              label: 'All',
+              selected: ctrl.selectedStatus.value.isEmpty,
+              onTap: () => ctrl.applyFilters(
+                status: '',
+                clientSlug: ctrl.selectedClientSlug.value,
+                q: ctrl.searchQuery.value,
+              ),
+            );
+          }
+          final status = _statusOptions[i - 1];
+          return _FilterChip(
+            label: Project.labelForStatus(status),
+            selected: ctrl.selectedStatus.value == status,
+            onTap: () => ctrl.applyFilters(
+              status: status,
+              clientSlug: ctrl.selectedClientSlug.value,
+              q: ctrl.searchQuery.value,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildClientChips(ProjectsController ctrl) {
     return Container(
       height: 46,
@@ -175,14 +225,22 @@ class ProjectsScreen extends StatelessWidget {
             return _FilterChip(
               label: 'All',
               selected: ctrl.selectedClientSlug.value.isEmpty,
-              onTap: () => ctrl.applyFilters(clientSlug: ''),
+              onTap: () => ctrl.applyFilters(
+                status: ctrl.selectedStatus.value,
+                clientSlug: '',
+                q: ctrl.searchQuery.value,
+              ),
             );
           }
           final client = ctrl.clients[i - 1];
           return _FilterChip(
             label: client.name,
             selected: ctrl.selectedClientSlug.value == client.slug,
-            onTap: () => ctrl.applyFilters(clientSlug: client.slug),
+            onTap: () => ctrl.applyFilters(
+              status: ctrl.selectedStatus.value,
+              clientSlug: client.slug,
+              q: ctrl.searchQuery.value,
+            ),
           );
         },
       ),
@@ -508,18 +566,10 @@ class _StatusBadge extends StatelessWidget {
     switch (status) {
       case 'completed': return const Color(0xFF16A34A);
       case 'ongoing': return _kBlue;
-      case 'suspended': return const Color(0xFFDC2626);
+      case 'planned': return const Color(0xFFF59E0B);
+      case 'stalled':
+      case 'cancelled': return const Color(0xFFDC2626);
       default: return _kSubtext;
-    }
-  }
-
-  String get _label {
-    switch (status) {
-      case 'completed': return 'Completed';
-      case 'ongoing': return 'Ongoing';
-      case 'suspended': return 'Suspended';
-      case 'planned': return 'Planned';
-      default: return status;
     }
   }
 
@@ -532,7 +582,7 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        _label,
+        Project.labelForStatus(status),
         style: GoogleFonts.montserrat(
           fontSize: 9.5,
           fontWeight: FontWeight.w700,

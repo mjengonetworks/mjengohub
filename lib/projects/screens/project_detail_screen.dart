@@ -357,10 +357,15 @@ class ProjectDetailScreen extends StatelessWidget {
       rows.add(_DetailRow('Contractor', project.contractor!));
     if (project.consultant != null)
       rows.add(_DetailRow('Consultant', project.consultant!));
+    if (project.contractValue != null)
+      rows.add(_DetailRow('Contract Value', _fmtCurrency(project.contractValue!)));
     if (project.startDate != null)
       rows.add(_DetailRow('Start Date', _fmtDate(project.startDate!)));
-    if (project.expectedEndDate != null)
+    if (project.status == 'completed' && project.actualEndDate != null) {
+      rows.add(_DetailRow('Completed', _fmtDate(project.actualEndDate!)));
+    } else if (project.expectedEndDate != null) {
       rows.add(_DetailRow('Expected Completion', _fmtDate(project.expectedEndDate!)));
+    }
 
     if (rows.isEmpty) return const SizedBox.shrink();
 
@@ -368,6 +373,16 @@ class ProjectDetailScreen extends StatelessWidget {
       title: 'Project Details',
       child: Column(children: rows),
     );
+  }
+
+  String _fmtCurrency(double value) {
+    final s = value.toStringAsFixed(0);
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return 'KSh $buf';
   }
 
   Widget _buildDescriptionCard(Project project) {
@@ -436,6 +451,35 @@ class ProjectDetailScreen extends StatelessWidget {
                           m.description!,
                           style: GoogleFonts.montserrat(
                               fontSize: 12, color: _kSubtext),
+                        ),
+                      ],
+                      if (m.media.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 52,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: m.media.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 6),
+                            itemBuilder: (_, i) => ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: m.media[i].mediaType == 'image'
+                                  ? NetImage(
+                                      url: m.media[i].url,
+                                      width: 52,
+                                      height: 52,
+                                      fit: BoxFit.cover,
+                                      placeholderColor: _kDivider,
+                                    )
+                                  : Container(
+                                      width: 52,
+                                      height: 52,
+                                      color: _kDark,
+                                      child: const Icon(Icons.play_circle_fill_rounded,
+                                          color: Colors.white54, size: 22),
+                                    ),
+                            ),
+                          ),
                         ),
                       ],
                     ],
@@ -509,8 +553,9 @@ class _StatusDot extends StatelessWidget {
     switch (status) {
       case 'completed': return const Color(0xFF4ADE80);
       case 'ongoing': return const Color(0xFF60A5FA);
-      case 'suspended':
-      case 'stalled': return const Color(0xFFF87171);
+      case 'planned': return const Color(0xFFFBBF24);
+      case 'stalled':
+      case 'cancelled': return const Color(0xFFF87171);
       default: return Colors.white70;
     }
   }
