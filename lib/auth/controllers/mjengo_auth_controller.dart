@@ -257,10 +257,12 @@ class MjengoAuthController extends GetxController {
         return;
       }
       final GoogleSignInAuthentication auth = await account.authentication;
+      print('DEBUG: idToken = ${auth.idToken}');
+      print('DEBUG: accessToken = ${auth.accessToken}');
       final String? idToken = auth.idToken;
 
       if (idToken == null) {
-        _setError('Google sign-in failed. Please try again.');
+        _setError('Google sign-in failed: idToken is null (has accessToken: ${auth.accessToken != null})');
         return;
       }
 
