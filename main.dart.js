@@ -109081,14 +109081,14 @@ return A.i(l.gFX(),$async$mM)
 case 8:k=a1
 A.aU("DEBUG: idToken = "+A.k(k.a.a))
 A.aU("DEBUG: accessToken = "+A.k(k.a.b))
-j=k.a.a
-if(j==null){e.sl("Google sign-in failed: idToken is null (has accessToken: "+(k.a.b!=null)+")")
+d=k.a.a
+j=d==null?k.a.b:d
+if(j==null){e.sl("Google sign-in failed: No credentials received from Google.")
 n=[1]
 s=5
-break}d=m.ax
-c=t.N
+break}c=m.ax
 s=9
-return A.i(d.qT("auth/google",A.ak(["id_token",j],c,c),!1),$async$mM)
+return A.i(c.qT("auth/google",A.ak(["access_token",k.a.b,"id_token",k.a.a,"token",j],t.N,t.T),!1),$async$mM)
 case 9:i=a1
 s=i.c===200||i.c===201?10:12
 break
@@ -109096,9 +109096,9 @@ case 10:e=t.P
 h=e.a(i.r)
 g=e.a(J.b9(J.b9(h,"data"),"user"))
 s=13
-return A.i(d.nY(A.b4(J.b9(J.b9(h,"data"),"access_token")),A.b4(J.b9(J.b9(h,"data"),"refresh_token"))),$async$mM)
+return A.i(c.nY(A.b4(J.b9(J.b9(h,"data"),"access_token")),A.b4(J.b9(J.b9(h,"data"),"refresh_token"))),$async$mM)
 case 13:s=14
-return A.i(d.nZ(g),$async$mM)
+return A.i(c.nZ(g),$async$mM)
 case 14:m.ay.sl(A.L_(g))
 m.CW.sl(!0)
 A.yZ($.T(),"/home",t.z)
