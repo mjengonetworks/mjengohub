@@ -192,10 +192,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               ),
             ),
           ],
-          if (r.reporterName != null && r.reporterName!.isNotEmpty) ...[
+          if (r.reporterName != null && r.reporterName!.isNotEmpty || r.timeAgo.isNotEmpty) ...[
             const SizedBox(height: 18),
             Text(
-              'Reported by ${r.reporterName}',
+              [
+                if (r.reporterName != null && r.reporterName!.isNotEmpty) 'Reported by ${r.reporterName}',
+                if (r.timeAgo.isNotEmpty) r.timeAgo,
+              ].join(' · '),
               style: GoogleFonts.montserrat(
                 fontSize: 12.5,
                 fontStyle: FontStyle.italic,

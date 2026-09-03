@@ -8,6 +8,7 @@ import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
+import '../widgets/projects_map_view.dart';
 import 'project_detail_screen.dart';
 
 const _kBlue     = Color(0xFF2563EB);
@@ -70,34 +71,44 @@ class ProjectsScreen extends StatelessWidget {
     return Column(
       children: [
         _buildHeader(ctrl),
+        // Status filter chips — mirrors the website's status <select>
+        // (templates/projects.html: planned/ongoing/completed/stalled)
+        _buildStatusChips(ctrl),
+        // County filter chips — derived from loaded projects since there's
+        // no /api/v1/counties endpoint (see ProjectsController.availableCounties).
+        Obx(() => ctrl.availableCounties.isNotEmpty
+            ? _buildCountyChips(ctrl)
+            : const SizedBox.shrink()),
+        // Client filter chips
+        Obx(() => ctrl.clients.isNotEmpty
+            ? _buildClientChips(ctrl)
+            : const SizedBox.shrink()),
         Expanded(
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (n) {
-              if (n is ScrollEndNotification &&
-                  n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
-                ctrl.loadMore();
-              }
-              return false;
-            },
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 24),
-              children: [
-                // Status filter chips — mirrors the website's status <select>
-                // (templates/projects.html: planned/ongoing/completed/stalled)
-                _buildStatusChips(ctrl),
+          child: Obx(() {
+            if (ctrl.showMap.value) {
+              return ProjectsMapView(projects: ctrl.projects);
+            }
+            return NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (n is ScrollEndNotification &&
+                    n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
+                  ctrl.loadMore();
+                }
+                return false;
+              },
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  // Featured projects
+                  if (ctrl.featuredProjects.isNotEmpty)
+                    _buildFeaturedSection(ctrl),
 
-                // Client filter chips
-                if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
-
-                // Featured projects
-                if (ctrl.featuredProjects.isNotEmpty)
-                  _buildFeaturedSection(ctrl),
-
-                // All projects grid
-                _buildProjectsGrid(ctrl),
-              ],
-            ),
-          ),
+                  // All projects grid
+                  _buildProjectsGrid(ctrl),
+                ],
+              ),
+            );
+          }),
         ),
       ],
     );
@@ -128,6 +139,7 @@ class ProjectsScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              if (ctrl != null) _buildMapToggle(ctrl),
             ],
           ),
           const SizedBox(height: 4),
@@ -142,6 +154,7 @@ class ProjectsScreen extends StatelessWidget {
               onSubmitted: (q) => ctrl.applyFilters(
                 status: ctrl.selectedStatus.value,
                 clientSlug: ctrl.selectedClientSlug.value,
+                county: ctrl.selectedCounty.value,
                 q: q,
               ),
               style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
@@ -193,6 +206,7 @@ class ProjectsScreen extends StatelessWidget {
               onTap: () => ctrl.applyFilters(
                 status: '',
                 clientSlug: ctrl.selectedClientSlug.value,
+                county: ctrl.selectedCounty.value,
                 q: ctrl.searchQuery.value,
               ),
             );
@@ -204,6 +218,7 @@ class ProjectsScreen extends StatelessWidget {
             onTap: () => ctrl.applyFilters(
               status: status,
               clientSlug: ctrl.selectedClientSlug.value,
+              county: ctrl.selectedCounty.value,
               q: ctrl.searchQuery.value,
             ),
           );
@@ -228,6 +243,7 @@ class ProjectsScreen extends StatelessWidget {
               onTap: () => ctrl.applyFilters(
                 status: ctrl.selectedStatus.value,
                 clientSlug: '',
+                county: ctrl.selectedCounty.value,
                 q: ctrl.searchQuery.value,
               ),
             );
@@ -239,6 +255,63 @@ class ProjectsScreen extends StatelessWidget {
             onTap: () => ctrl.applyFilters(
               status: ctrl.selectedStatus.value,
               clientSlug: client.slug,
+              county: ctrl.selectedCounty.value,
+              q: ctrl.searchQuery.value,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMapToggle(ProjectsController ctrl) {
+    return Obx(() => GestureDetector(
+          onTap: () => ctrl.showMap.value = !ctrl.showMap.value,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: ctrl.showMap.value ? _kBlue : _kBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              ctrl.showMap.value ? Icons.list_rounded : Icons.map_rounded,
+              size: 20,
+              color: ctrl.showMap.value ? Colors.white : _kBlue,
+            ),
+          ),
+        ));
+  }
+
+  Widget _buildCountyChips(ProjectsController ctrl) {
+    final counties = ctrl.availableCounties;
+    return Container(
+      height: 42,
+      color: _kCard,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        itemCount: counties.length + 1,
+        itemBuilder: (_, i) {
+          if (i == 0) {
+            return _FilterChip(
+              label: 'All Counties',
+              selected: ctrl.selectedCounty.value.isEmpty,
+              onTap: () => ctrl.applyFilters(
+                status: ctrl.selectedStatus.value,
+                clientSlug: ctrl.selectedClientSlug.value,
+                county: '',
+                q: ctrl.searchQuery.value,
+              ),
+            );
+          }
+          final county = counties[i - 1];
+          return _FilterChip(
+            label: county,
+            selected: ctrl.selectedCounty.value == county,
+            onTap: () => ctrl.applyFilters(
+              status: ctrl.selectedStatus.value,
+              clientSlug: ctrl.selectedClientSlug.value,
+              county: county,
               q: ctrl.searchQuery.value,
             ),
           );

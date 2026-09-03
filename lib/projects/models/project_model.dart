@@ -1,6 +1,13 @@
 // lib/projects/models/project_model.dart
 const String _kBase = 'https://mjengohub.co.ke';
 
+double? _parseCoord(dynamic v) {
+  if (v == null) return null;
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v);
+  return null;
+}
+
 class ProjectClient {
   final int id;
   final String name;
@@ -156,6 +163,8 @@ class Project {
   final String? description;
   final String? location;
   final String? county;
+  final double? latitude;
+  final double? longitude;
   final ProjectClient? client;
   final String? contractor;
   final String? consultant;
@@ -191,6 +200,8 @@ class Project {
     this.description,
     this.location,
     this.county,
+    this.latitude,
+    this.longitude,
     this.client,
     this.contractor,
     this.consultant,
@@ -220,6 +231,10 @@ class Project {
         description: j['description'] as String?,
         location: j['location'] as String?,
         county: j['county'] as String?,
+        // The backend serializes these as decimal strings (e.g. "-1.21360000",
+        // from a SQLAlchemy Numeric column), not JSON numbers — tolerate both.
+        latitude: _parseCoord(j['latitude']),
+        longitude: _parseCoord(j['longitude']),
         client: j['client'] != null
             ? ProjectClient.fromJson(j['client'] as Map<String, dynamic>)
             : null,
@@ -257,6 +272,8 @@ class Project {
 
   List<ProjectMedia> get renderGallery => media.where((m) => m.isRender).toList();
   List<ProjectMedia> get progressGallery => media.where((m) => !m.isRender).toList();
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 
   String? get imageUrl {
     if (featuredImage == null || featuredImage!.isEmpty) return null;

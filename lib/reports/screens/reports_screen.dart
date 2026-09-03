@@ -88,8 +88,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.white,
               elevation: 0,
+              // Matches templates/infrastructure_reports.html's H1 exactly
+              // ("Report Infrastructure Issues") — the page itself is just a
+              // static placeholder with no real design to otherwise mirror,
+              // but the title/subtitle copy is real.
               title: Text(
-                'Infrastructure Reports',
+                'Report Infrastructure Issues',
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -115,6 +119,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             body: Column(
               children: [
+                Container(
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Text(
+                    "Help improve Kenya's infrastructure by reporting poorly constructed projects",
+                    style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textSubtle),
+                  ),
+                ),
                 _filters(),
                 Expanded(
                   child: RefreshIndicator(
@@ -331,6 +344,16 @@ class _ReportCard extends StatelessWidget {
                   onTap: () => onVote(false),
                 ),
                 const Spacer(),
+                if (report.timeAgo.isNotEmpty) ...[
+                  Text(
+                    report.timeAgo,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      color: AppColors.textSubtle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Text(
                   '${report.viewCount} views',
                   style: GoogleFonts.montserrat(

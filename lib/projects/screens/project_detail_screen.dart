@@ -15,6 +15,7 @@ import '../../shared/widgets/coming_soon.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
+import '../widgets/projects_map_view.dart';
 
 const _kBlue    = Color(0xFF2563EB);
 const _kBg      = Color(0xFFF0F4FF);
@@ -233,6 +234,10 @@ class ProjectDetailScreen extends StatelessWidget {
                         AddOnGooglePill(onTap: () => _openGoogleMaps(project)),
                       ],
                     ),
+                    if (project.hasCoordinates) ...[
+                      const SizedBox(height: 12),
+                      ProjectMiniMap(project: project),
+                    ],
                     const SizedBox(height: 16),
 
                     // Progress bar — prominent

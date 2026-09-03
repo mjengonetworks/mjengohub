@@ -96,4 +96,18 @@ class InfrastructureReport {
         description: description,
         reporterName: reporterName,
       );
+
+  /// Human-readable time since submission, e.g. "2 d ago" — mirrors
+  /// Article.timeAgo. Matches the website placeholder copy's intent
+  /// ("Reported 2 days ago") without needing a full date/time library.
+  String get timeAgo {
+    if (createdAt == null) return '';
+    final diff = DateTime.now().difference(createdAt!);
+    if (diff.inDays > 365) return '${(diff.inDays / 365).floor()} yr ago';
+    if (diff.inDays > 30) return '${(diff.inDays / 30).floor()} mo ago';
+    if (diff.inDays >= 1) return '${diff.inDays} d ago';
+    if (diff.inHours >= 1) return '${diff.inHours} h ago';
+    if (diff.inMinutes >= 1) return '${diff.inMinutes} min ago';
+    return 'Just now';
+  }
 }

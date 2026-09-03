@@ -20,7 +20,13 @@ class ProjectsController extends GetxController {
 
   final selectedStatus = ''.obs;
   final selectedClientSlug = ''.obs;
+  final selectedCounty = ''.obs;
   final searchQuery = ''.obs;
+
+  /// Toggles between the list and the interactive map (ProjectsMapView) on
+  /// ProjectsScreen. Kept here rather than as screen-local state so it
+  /// survives the screen's own rebuilds.
+  final showMap = false.obs;
 
   int _page = 1;
   bool _hasMore = true;
@@ -30,6 +36,18 @@ class ProjectsController extends GetxController {
   void onInit() {
     super.onInit();
     fetchAll();
+  }
+
+  /// There is no `/api/v1/counties` endpoint — the county list on the
+  /// website is only queryable server-side. Derive it from whatever
+  /// projects are already loaded instead of hardcoding Kenya's 47 counties.
+  List<String> get availableCounties {
+    final set = <String>{};
+    for (final p in projects) {
+      if (p.county != null && p.county!.isNotEmpty) set.add(p.county!);
+    }
+    final list = set.toList()..sort();
+    return list;
   }
 
   Future<void> fetchAll() async {
@@ -44,6 +62,7 @@ class ProjectsController extends GetxController {
         projectType: projectType,
         status: selectedStatus.value,
         clientSlug: selectedClientSlug.value,
+        county: selectedCounty.value,
         q: searchQuery.value,
         page: 1,
       ),
@@ -61,10 +80,12 @@ class ProjectsController extends GetxController {
   Future<void> applyFilters({
     String? status,
     String? clientSlug,
+    String? county,
     String? q,
   }) async {
     selectedStatus.value = status ?? '';
     selectedClientSlug.value = clientSlug ?? '';
+    selectedCounty.value = county ?? '';
     searchQuery.value = q ?? '';
     await fetchAll();
   }
@@ -77,6 +98,7 @@ class ProjectsController extends GetxController {
       projectType: projectType,
       status: selectedStatus.value,
       clientSlug: selectedClientSlug.value,
+      county: selectedCounty.value,
       q: searchQuery.value,
       page: _page,
     );
