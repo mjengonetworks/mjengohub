@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../navigation/app_header.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/responsive.dart';
@@ -71,62 +72,76 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Infrastructure Reports',
-          style: GoogleFonts.montserrat(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primaryBlue,
-        onPressed: () async {
-          final submitted = await Get.toNamed(AppRoutes.submitReport);
-          if (submitted == true) _load();
-        },
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'Report',
-          style: GoogleFonts.montserrat(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          _filters(),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _load,
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _reports.isEmpty
-                      ? _empty()
-                      : ContentWidth(
-                          child: ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-                            itemCount: _reports.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 10),
-                            itemBuilder: (_, i) => _ReportCard(
-                              report: _reports[i],
-                              onVote: (up) => _vote(_reports[i], up),
-                            ),
-                          ),
-                        ),
+    return Column(
+      children: [
+        const AppHeader(),
+        Expanded(
+          // AppBar always reserves MediaQuery.padding.top for the status bar
+          // itself, regardless of what's already above it — without this,
+          // AppHeader's own safe area plus the AppBar's would double up.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              elevation: 0,
+              title: Text(
+                'Infrastructure Reports',
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            floatingActionButton: FloatingActionButton.extended(
+              backgroundColor: AppColors.primaryBlue,
+              onPressed: () async {
+                final submitted = await Get.toNamed(AppRoutes.submitReport);
+                if (submitted == true) _load();
+              },
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text(
+                'Report',
+                style: GoogleFonts.montserrat(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            body: Column(
+              children: [
+                _filters(),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _load,
+                    child: _loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _reports.isEmpty
+                            ? _empty()
+                            : ContentWidth(
+                                child: ListView.separated(
+                                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                                  itemCount: _reports.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                                  itemBuilder: (_, i) => _ReportCard(
+                                    report: _reports[i],
+                                    onVote: (up) => _vote(_reports[i], up),
+                                  ),
+                                ),
+                              ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 

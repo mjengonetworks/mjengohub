@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../navigation/app_header.dart';
 import '../controllers/notifications_controller.dart';
 import '../models/notification_model.dart';
 
@@ -80,6 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         backgroundColor: _bg,
         body: Column(
           children: [
+            const AppHeader(),
             _Header(ctrl: _ctrl),
             _TabRow(controller: _tabCtrl),
             Expanded(
@@ -124,6 +126,7 @@ class _Header extends StatelessWidget {
         ),
       ),
       child: SafeArea(
+        top: false,
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(4, 4, 8, 16),

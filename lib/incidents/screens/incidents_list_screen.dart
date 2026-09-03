@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
@@ -45,7 +46,6 @@ class IncidentsListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tag  = 'incidents_$incidentType';
     final ctrl = Get.put(IncidentsController(incidentType), tag: tag);
-    final topPad = MediaQuery.of(context).padding.top;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -69,7 +69,8 @@ class IncidentsListScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: topPad + 12),
+            const AppHeader(),
+            const SizedBox(height: 12),
 
             // ── Header ─────────────────────────────────────────────────────
             Padding(

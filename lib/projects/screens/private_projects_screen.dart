@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../navigation/app_header.dart';
 import '../../shared/theme/app_theme.dart';
 
 class LocalPrivateProject {
@@ -180,14 +181,14 @@ class _PrivateProjectsScreenState extends State<PrivateProjectsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
+          const AppHeader(),
           Container(
             color: Colors.white,
-            padding: EdgeInsets.fromLTRB(20, topPad + 16, 20, 16),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             child: Row(
               children: [
                 GestureDetector(

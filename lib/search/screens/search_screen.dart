@@ -19,6 +19,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../incidents/models/incident_model.dart';
 import '../../incidents/services/incidents_service.dart';
+import '../../navigation/app_header.dart';
 import '../../news/models/article_model.dart';
 import '../../news/services/news_api_service.dart';
 import '../../point/routes/app_routes.dart';
@@ -188,14 +189,14 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
+          const AppHeader(),
           Container(
             color: Colors.white,
-            padding: EdgeInsets.fromLTRB(16, topPad + 12, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

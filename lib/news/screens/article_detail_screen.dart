@@ -294,13 +294,29 @@ class _ContentSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasContent = article.plainContent.isNotEmpty;
+    final paragraphs = article.paragraphs;
+    final hasCaption = article.featuredImageCaption != null && article.featuredImageCaption!.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // -- Image caption — directly below the featured image, matching
+          // the website's `.image-caption-credit` placement -----------------
+          if (hasCaption) ...[
+            Text(
+              article.featuredImageCaption!,
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                color: const Color(0xFF6B7280),
+                fontStyle: FontStyle.italic,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+
           // -- Author + meta row ------------------------------------------
           _AuthorRow(article: article),
           const SizedBox(height: 20),
@@ -323,37 +339,19 @@ class _ContentSection extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
-          // -- Body text --------------------------------------------------
-          if (hasContent)
+          // -- Body text, one paragraph per block with real spacing between
+          // them (article.plainContent used to collapse every <p> into one
+          // run-on block since closing tags stripped to nothing) -----------
+          for (int i = 0; i < paragraphs.length; i++) ...[
             Text(
-              article.plainContent,
+              paragraphs[i],
               style: GoogleFonts.montserrat(
                 fontSize: 15,
                 color: const Color(0xFF4B5563),
                 height: 1.7,
               ),
             ),
-
-          // -- Image caption ----------------------------------------------
-          if (article.featuredImageCaption != null &&
-              article.featuredImageCaption!.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-              ),
-              child: Text(
-                article.featuredImageCaption!,
-                style: GoogleFonts.montserrat(
-                  fontSize: 12.5,
-                  color: const Color(0xFF6B7280),
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
+            if (i != paragraphs.length - 1) const SizedBox(height: 16),
           ],
 
           const SizedBox(height: 40),

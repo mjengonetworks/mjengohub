@@ -140,16 +140,31 @@ class Article {
     return viewCount.toString();
   }
 
-  /// Strip HTML tags from content for plain-text rendering.
+  /// Strip HTML tags from content for plain-text rendering, preserving
+  /// paragraph breaks. Block-level closing tags become blank lines (and
+  /// `<br>` a single line break) *before* the remaining tags are stripped —
+  /// otherwise `</p><p>` collapses to nothing and every paragraph in the
+  /// source HTML runs together into one unbroken block of text.
   String get plainContent {
     if (content == null) return '';
     return content!
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'</(p|div|li|h[1-6])>', caseSensitive: false), '\n\n')
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .replaceAll(RegExp(r'&nbsp;'), ' ')
         .replaceAll(RegExp(r'&amp;'), '&')
         .replaceAll(RegExp(r'&lt;'), '<')
         .replaceAll(RegExp(r'&gt;'), '>')
         .replaceAll(RegExp(r'&quot;'), '"')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
         .trim();
   }
+
+  /// [plainContent] split into individual paragraphs, so callers can render
+  /// each with proper spacing between them instead of one run-on block.
+  List<String> get paragraphs => plainContent
+      .split(RegExp(r'\n\s*\n'))
+      .map((p) => p.trim())
+      .where((p) => p.isNotEmpty)
+      .toList();
 }

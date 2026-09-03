@@ -120,31 +120,31 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Explore Quick Actions ──────────────────────────────
-                  const _ExploreSectionsWidget(),
+                  // Section order mirrors the website homepage's actual flow
+                  // (templates/homepage.html): Hero → latest news → banner ad
+                  // → projects → videos → featured articles → site safety →
+                  // Mjengo Networks, with app-only utilities pushed to the end
+                  // rather than interrupting that flow up top.
 
-                  // ── Breaking News (More News) ───────────────────────────
+                  // ── Breaking News (Latest Construction News equivalent) ──
                   const SizedBox(height: 4),
                   _breakingHeader(ctrl),
                   const SizedBox(height: 14),
                   SizedBox(height: 220, child: _breakingList(ctrl)),
 
-                  // Gap to "Follow Mjengo Hub" reduced ~70% (32px -> 10px)
                   const SizedBox(height: 10),
                   const AdBannerSlot(),
-                    const SizedBox(height: 10),
-                    const FollowMjengoHubSection(),
 
                   // ── Featured Projects (parity with the website's
                   // Latest/Featured Infrastructure & Private Projects) ──────
                   const SizedBox(height: 24),
                   const FeaturedProjectsSection(),
 
-                  // ── Safety Incidents (parity with the website's Road
-                  // Safety / Site Safety preview strips, but with real
-                  // incident cards instead of a static CTA banner) ─────────
                   const SizedBox(height: 24),
-                  const SafetyIncidentsSection(),
+                  const BrowseProjectsByCategorySection(),
+
+                  // ── Latest Videos ──────────────────────────────────────
+                  const _HomeVideosSection(),
 
                   const SizedBox(height: 24),
                   Obx(() {
@@ -156,11 +156,19 @@ class HomeScreen extends StatelessWidget {
                     );
                   }),
 
+                  // ── Safety Incidents (parity with the website's Site
+                  // Safety preview strip, but with real incident cards
+                  // instead of a static CTA banner) ─────────────────────────
                   const SizedBox(height: 24),
-                  const BrowseProjectsByCategorySection(),
+                  const SafetyIncidentsSection(),
 
-                  // ── Latest Videos ──────────────────────────────────────
-                  const _HomeVideosSection(),
+                  const SizedBox(height: 24),
+                  const FollowMjengoHubSection(),
+
+                  // ── Explore Quick Actions (app-only shortcuts, no website
+                  // equivalent — kept as a closing utility row) ─────────────
+                  const SizedBox(height: 28),
+                  const _ExploreSectionsWidget(),
 
                   const SizedBox(height: 16),
                 ],

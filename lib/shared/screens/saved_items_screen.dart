@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/bookmarks_service.dart';
 import '../theme/app_theme.dart';
+import '../../navigation/app_header.dart';
 import '../../news/screens/article_detail_screen.dart';
 
 class SavedItemsScreen extends StatefulWidget {
@@ -34,14 +35,14 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
+          const AppHeader(),
           Container(
             color: Colors.white,
-            padding: EdgeInsets.fromLTRB(20, topPad + 16, 20, 16),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             child: Row(
               children: [
                 GestureDetector(

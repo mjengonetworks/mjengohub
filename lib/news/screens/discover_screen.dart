@@ -7,6 +7,7 @@ import '../controllers/discover_controller.dart';
 import '../models/article_model.dart';
 import '../widgets/article_list_tile.dart';
 import '../../point/routes/app_routes.dart';
+import '../../shared/theme/app_theme.dart';
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({Key? key}) : super(key: key);
@@ -29,19 +30,20 @@ class DiscoverScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Discover',
+                  'News and Articles',
                   style: GoogleFonts.montserrat(
-                    fontSize: 28,
+                    fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF111827),
+                    color: AppColors.textDark,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'News from all over the world',
+                  "Expert insights and analysis on Kenya's construction industry",
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
-                    color: const Color(0xFF9CA3AF),
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSubtle,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -132,7 +134,7 @@ class _SearchBar extends StatelessWidget {
                     Icon(Icons.tune_rounded,
                         size: 18,
                         color: active
-                            ? const Color(0xFF6C63FF)
+                            ? AppColors.accentBlue
                             : const Color(0xFF374151)),
                     if (active)
                       Positioned(
@@ -142,7 +144,7 @@ class _SearchBar extends StatelessWidget {
                           width: 7,
                           height: 7,
                           decoration: const BoxDecoration(
-                            color: Color(0xFF6C63FF),
+                            color: AppColors.accentBlue,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -195,6 +197,8 @@ class _CategoryTabs extends StatelessWidget {
   }
 }
 
+// Filled pill chips, matching the website's `.ar-pill` category filter
+// (templates/articles.html) rather than an underline-tab treatment.
 class _TabItem extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -211,27 +215,18 @@ class _TabItem extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(right: 24),
-        padding: const EdgeInsets.only(bottom: 6),
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected
-                  ? const Color(0xFF111827)
-                  : Colors.transparent,
-              width: 2,
-            ),
-          ),
+          color: isSelected ? AppColors.accentBlue : AppColors.background,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Text(
           label,
           style: GoogleFonts.montserrat(
-            fontSize: 14,
-            fontWeight:
-                isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected
-                ? const Color(0xFF111827)
-                : const Color(0xFF9CA3AF),
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : AppColors.textDark,
           ),
         ),
       ),
@@ -254,7 +249,7 @@ class _FilterSheet extends StatelessWidget {
   final DiscoverController ctrl;
   const _FilterSheet({required this.ctrl});
 
-  static const _kPurple  = Color(0xFF6C63FF);
+  static const _kPurple  = AppColors.accentBlue;
   static const _kDark    = Color(0xFF111827);
   static const _kSubtext = Color(0xFF9CA3AF);
   static const _kDivider = Color(0xFFF3F4F6);
@@ -419,7 +414,7 @@ class _FilterOption extends StatelessWidget {
     required this.onTap,
   });
 
-  static const _kPurple = Color(0xFF6C63FF);
+  static const _kPurple = AppColors.accentBlue;
   static const _kDark   = Color(0xFF111827);
 
   @override

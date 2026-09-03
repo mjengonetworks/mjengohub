@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
@@ -29,24 +30,30 @@ class ProjectsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.put(ProjectsController());
-    final topPad = MediaQuery.of(context).padding.top;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: _kBg,
-        body: Obx(() {
-          if (ctrl.isLoading.value) return _buildLoading(topPad);
-          return _buildContent(context, ctrl, topPad);
-        }),
+        body: Column(
+          children: [
+            const AppHeader(),
+            Expanded(
+              child: Obx(() {
+                if (ctrl.isLoading.value) return _buildLoading();
+                return _buildContent(context, ctrl);
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildLoading(double topPad) {
+  Widget _buildLoading() {
     return Column(
       children: [
-        _buildHeader(null, topPad),
+        _buildHeader(null),
         const Expanded(
           child: Center(child: CircularProgressIndicator(color: _kBlue)),
         ),
@@ -54,11 +61,10 @@ class ProjectsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, ProjectsController ctrl, double topPad) {
+  Widget _buildContent(BuildContext context, ProjectsController ctrl) {
     return Column(
       children: [
-        _buildHeader(ctrl, topPad),
+        _buildHeader(ctrl),
         Expanded(
           child: NotificationListener<ScrollNotification>(
             onNotification: (n) {
@@ -88,10 +94,10 @@ class ProjectsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(ProjectsController? ctrl, double topPad) {
+  Widget _buildHeader(ProjectsController? ctrl) {
     return Container(
       color: _kCard,
-      padding: EdgeInsets.fromLTRB(20, topPad + 16, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

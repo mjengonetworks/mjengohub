@@ -6,14 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../point/routes/app_routes.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Design tokens — mirrors Videos / Discover screens exactly
-// ─────────────────────────────────────────────────────────────────────────────
-const _kDark    = Color(0xFF111827);
-const _kSubtext = Color(0xFF9CA3AF);
-const _kBg      = Color(0xFFF3F4F6);
-const _kDivider = Color(0xFFF3F4F6);
+import '../../shared/theme/app_theme.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  HUB SCREEN
@@ -27,42 +20,65 @@ class HubScreen extends StatelessWidget {
   static const _items = [
     _HubItem(
       label: 'Projects Database',
-      sub: 'Kenya\'s roads, bridges & buildings',
+      sub: "Kenya's roads, bridges & buildings",
+      icon: Icons.corporate_fare_rounded,
+      color: AppColors.accentBlue,
       route: AppRoutes.projects,
     ),
     _HubItem(
       label: 'Private Projects',
       sub: 'Commercial & residential developments',
+      icon: Icons.apartment_rounded,
+      color: AppColors.primaryBlue,
       route: AppRoutes.privateProjects,
     ),
     _HubItem(
       label: 'Share Barabara',
       sub: 'Road accidents across Kenya',
+      icon: Icons.directions_car_filled_rounded,
+      color: AppColors.danger,
       route: AppRoutes.shareBarabara,
     ),
     _HubItem(
       label: 'Site Safety',
       sub: 'Construction site incident database',
+      icon: Icons.engineering_rounded,
+      color: AppColors.warning,
       route: AppRoutes.siteSafety,
     ),
     _HubItem(
       label: 'Infrastructure Reports',
       sub: 'Report a road, bridge or utility fault',
+      icon: Icons.report_gmailerrorred_rounded,
+      color: AppColors.warning,
       route: AppRoutes.reports,
+    ),
+    _HubItem(
+      label: 'Build Tools',
+      sub: 'Concrete, plaster & budget calculators',
+      icon: Icons.calculate_rounded,
+      color: AppColors.success,
+      route: AppRoutes.tools,
     ),
     _HubItem(
       label: 'Services',
       sub: 'Request construction services',
+      icon: Icons.handyman_rounded,
+      color: AppColors.accentBlue,
       route: AppRoutes.services,
     ),
     _HubItem(
       label: 'Advertise with Us',
       sub: 'Reach construction professionals across Kenya',
+      icon: Icons.campaign_rounded,
+      color: AppColors.primeBadge,
       route: AppRoutes.advertise,
     ),
     _HubItem(
       label: 'Mjengo Networks',
       sub: 'Our wider media & social network',
+      icon: Icons.hub_rounded,
+      color: AppColors.deepNavy,
       route: null,
       externalUrl: _mjengoNetworksUrl,
     ),
@@ -77,7 +93,7 @@ class HubScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             // ── Header ────────────────────────────────────────────────────
             Padding(
@@ -90,14 +106,17 @@ class HubScreen extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: _kDark,
+                      color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'Projects, safety, services & community',
                     style: GoogleFonts.montserrat(
-                        fontSize: 13, color: _kSubtext),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSubtle,
+                    ),
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -106,15 +125,9 @@ class HubScreen extends StatelessWidget {
 
             // ── List ─────────────────────────────────────────────────────
             Expanded(
-              child: ListView.separated(
+              child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 24),
                 itemCount: _items.length,
-                separatorBuilder: (_, __) => const Divider(
-                  height: 1,
-                  indent: 20,
-                  endIndent: 20,
-                  color: _kDivider,
-                ),
                 itemBuilder: (_, i) => _HubRow(item: _items[i]),
               ),
             ),
@@ -132,18 +145,24 @@ class HubScreen extends StatelessWidget {
 class _HubItem {
   final String label;
   final String sub;
+  final IconData icon;
+  final Color color;
   final String? route;
   final String? externalUrl;
   const _HubItem({
     required this.label,
     required this.sub,
+    required this.icon,
+    required this.color,
     this.route,
     this.externalUrl,
   });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  ROW TILE  (mirrors VideoListTile layout)
+//  ROW TILE — colored icon bubble + title/subtitle, matching the icon-led
+//  pattern used elsewhere in the app (e.g. ProfileScreen's settings rows)
+//  instead of a bare text row.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _HubRow extends StatelessWidget {
@@ -163,13 +182,26 @@ class _HubRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: _open,
-      behavior: HitTestBehavior.opaque,
+      splashColor: item.color.withValues(alpha: 0.06),
+      highlightColor: item.color.withValues(alpha: 0.04),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Row(
           children: [
+            // Icon bubble
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: item.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(item.icon, color: item.color, size: 22),
+            ),
+            const SizedBox(width: 14),
+
             // Text
             Expanded(
               child: Column(
@@ -180,14 +212,17 @@ class _HubRow extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: _kDark,
+                      color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     item.sub,
                     style: GoogleFonts.montserrat(
-                        fontSize: 12, color: _kSubtext),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSubtle,
+                    ),
                   ),
                 ],
               ),
@@ -195,10 +230,8 @@ class _HubRow extends StatelessWidget {
 
             // Chevron / external-link indicator
             Icon(
-              item.externalUrl != null
-                  ? Icons.open_in_new_rounded
-                  : Icons.chevron_right_rounded,
-              color: _kSubtext,
+              item.externalUrl != null ? Icons.open_in_new_rounded : Icons.chevron_right_rounded,
+              color: AppColors.textSubtle,
               size: item.externalUrl != null ? 18 : 22,
             ),
           ],
@@ -207,4 +240,3 @@ class _HubRow extends StatelessWidget {
     );
   }
 }
-

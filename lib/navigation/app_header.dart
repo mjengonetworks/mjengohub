@@ -29,6 +29,17 @@ class AppHeader extends StatelessWidget {
     if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  /// Jumps the bottom nav to [tabIndex] and, when called from a screen pushed
+  /// on top of MainNavigation (e.g. ProjectsScreen), pops back to it first —
+  /// otherwise the index change has no visible effect until the user
+  /// manually backs out of the current screen.
+  static void _goToTab(int tabIndex) {
+    Get.find<MainNavController>().currentIndex.value = tabIndex;
+    if (Get.currentRoute != AppRoutes.home) {
+      Get.until((route) => route.settings.name == AppRoutes.home);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -44,29 +55,16 @@ class AppHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                // ── Brand: logo + name, routes home ────────────────────────
+                // ── Brand: logo only, routes home (mirrors the website's
+                // nav-brand, which is the logo image with no adjacent
+                // wordmark text) ────────────────────────────────────────────
                 Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => Get.find<MainNavController>().currentIndex.value = 0,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset('assets/mjengo_hub_logo.png', height: 32),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Mjengo Hub',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                      ],
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _goToTab(0),
+                      child: Image.asset('assets/mjengo_hub_logo.png', height: 34),
                     ),
                   ),
                 ),
@@ -186,7 +184,7 @@ class _ProfileAvatarButton extends StatelessWidget {
     try { auth = Get.find<MjengoAuthController>(); } catch (_) {}
 
     return GestureDetector(
-      onTap: () => Get.find<MainNavController>().currentIndex.value = 5,
+      onTap: () => AppHeader._goToTab(4),
       child: Container(
         width: 32,
         height: 32,

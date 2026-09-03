@@ -7,9 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
 import '../videos/screens/videos_screen.dart';
-import '../tools/tools_screen.dart';
 import '../hub/screens/hub_screen.dart';
 import '../profile/profile_screen.dart';
+import '../shared/theme/app_theme.dart';
 import 'app_header.dart';
 
 class MainNavigation extends StatelessWidget {
@@ -33,12 +33,11 @@ class MainNavigation extends StatelessWidget {
                   child: Obx(() => IndexedStack(
                         index: ctrl.currentIndex.value,
                         children: const [
-                          HomeScreen(),   // 0
-                          HubScreen(),    // 1
+                          HomeScreen(),     // 0
+                          HubScreen(),      // 1
                           DiscoverScreen(), // 2
-                          VideosScreen(), // 3
-                          ToolsScreen(),  // 4
-                          ProfileScreen(), // 5
+                          VideosScreen(),   // 3
+                          ProfileScreen(),  // 4
                         ],
                       )),
                 ),
@@ -63,68 +62,57 @@ class _BottomNav extends StatelessWidget {
 
   const _BottomNav({required this.currentIndex, required this.onTap});
 
-  static const Color _active   = Color(0xFF2563EB);
-  static const Color _inactive = Color(0xFFAAAAAA);
+  static const _items = [
+    _NavData(
+      activeIcon: Icons.home_rounded,
+      inactiveIcon: Icons.home_outlined,
+      label: 'Home',
+    ),
+    _NavData(
+      activeIcon: Icons.hub_rounded,
+      inactiveIcon: Icons.hub_outlined,
+      label: 'Hub',
+    ),
+    _NavData(
+      activeIcon: Icons.article_rounded,
+      inactiveIcon: Icons.article_outlined,
+      label: 'News',
+    ),
+    _NavData(
+      activeIcon: Icons.play_circle_filled_rounded,
+      inactiveIcon: Icons.play_circle_outline_rounded,
+      label: 'Videos',
+    ),
+    _NavData(
+      activeIcon: Icons.person_rounded,
+      inactiveIcon: Icons.person_outline_rounded,
+      label: 'Profile',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      _NavData(
-        activeIcon: Icons.home_rounded,
-        inactiveIcon: Icons.home_outlined,
-        label: 'Home',
-      ),
-      _NavData(
-        activeIcon: Icons.hub_rounded,
-        inactiveIcon: Icons.hub_outlined,
-        label: 'Hub',
-      ),
-      _NavData(
-        activeIcon: Icons.search_rounded,
-        inactiveIcon: Icons.search_rounded,
-        label: 'Discover',
-      ),
-      _NavData(
-        activeIcon: Icons.play_circle_filled_rounded,
-        inactiveIcon: Icons.play_circle_outline_rounded,
-        label: 'Videos',
-      ),
-      _NavData(
-        activeIcon: Icons.construction_rounded,
-        inactiveIcon: Icons.construction_outlined,
-        label: 'Tools',
-      ),
-      _NavData(
-        activeIcon: Icons.settings_rounded,
-        inactiveIcon: Icons.settings_outlined,
-        label: 'Settings',
-      ),
-    ];
-
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEEEEF5), width: 0.8)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 12,
-            offset: Offset(0, -4),
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 62,
+          height: 64,
           child: Row(
             children: List.generate(
-              items.length,
+              _items.length,
               (i) => _NavItem(
-                data: items[i],
+                data: _items[i],
                 isSelected: currentIndex == i,
-                activeColor: _active,
-                inactiveColor: _inactive,
                 onTap: () => onTap(i),
               ),
             ),
@@ -149,26 +137,22 @@ class _NavData {
   });
 }
 
-// ── Nav item ──────────────────────────────────────────────────────────────────
+// ── Nav item — active state gets a soft pill behind the icon ──────────────────
 
 class _NavItem extends StatelessWidget {
   final _NavData data;
   final bool isSelected;
-  final Color activeColor;
-  final Color inactiveColor;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.data,
     required this.isSelected,
-    required this.activeColor,
-    required this.inactiveColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? activeColor : inactiveColor;
+    final color = isSelected ? AppColors.accentBlue : AppColors.textSubtle;
 
     return Expanded(
       child: GestureDetector(
@@ -177,22 +161,27 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedSwitcher(
+            AnimatedContainer(
               duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.accentBlue.withValues(alpha: 0.12) : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
               child: Icon(
                 isSelected ? data.activeIcon : data.inactiveIcon,
-                key: ValueKey(isSelected),
                 color: color,
-                size: 24,
+                size: 22,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 4),
             Text(
               data.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
                 fontSize: 10.5,
-                fontWeight:
-                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: color,
               ),
             ),

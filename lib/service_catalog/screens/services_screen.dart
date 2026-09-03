@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
@@ -43,36 +44,50 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Services',
-          style: GoogleFonts.montserrat(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
+    return Column(
+      children: [
+        const AppHeader(),
+        Expanded(
+          // AppBar always reserves MediaQuery.padding.top for the status bar
+          // itself, regardless of what's already above it — without this,
+          // AppHeader's own safe area plus the AppBar's would double up.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              elevation: 0,
+              title: Text(
+                'Services',
+                style: GoogleFonts.montserrat(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            body: RefreshIndicator(
+              onRefresh: _load,
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _services.isEmpty
+                      ? _empty()
+                      : ContentWidth(
+                          child: ListView.separated(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _services.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (_, i) => _ServiceCard(service: _services[i]),
+                          ),
+                        ),
+            ),
+          ),
           ),
         ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _services.isEmpty
-                ? _empty()
-                : ContentWidth(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _services.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (_, i) => _ServiceCard(service: _services[i]),
-                    ),
-                  ),
-      ),
+      ],
     );
   }
 
