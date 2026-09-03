@@ -24,9 +24,15 @@ import '../videos/models/video_model.dart';
 import '../videos/screens/video_player_screen.dart';
 import 'widgets/home_extra_sections.dart';
 
+/// Opens a genuine external website in an in-app browser (Chrome Custom Tabs
+/// on Android, SFSafariViewController on iOS) instead of handing off to the
+/// system browser — the user never perceives leaving the app, matching how
+/// X/Twitter's own in-app links behave. Native app hand-offs (Maps, the app
+/// stores, share intents, YouTube) intentionally don't go through this —
+/// those are genuinely better served by their own native app.
 Future<void> _launchExternalUrl(String url) async {
   final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppWebView);
 }
 
 class HomeScreen extends StatelessWidget {
@@ -53,157 +59,160 @@ class HomeScreen extends StatelessWidget {
   // ── Main content ────────────────────────────────────────────────────────────
 
   Widget _content(BuildContext context, HomeNewsController ctrl) {
-    return Column(
-      children: [
-        // ── Featured hero: strict 4:3 auto-playing photo carousel ─────────
-        AspectRatio(
-          aspectRatio: 4 / 3,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                children: [
-                  // Admin-managed hero photos (GET site/hero-images) are the
-                  // primary source, ordered by sort_order. Falls back to
-                  // featured-article images if the admin hasn't configured
-                  // any hero photos, so the carousel is never empty.
-                  Obx(() {
-                    final heroes = ctrl.heroImages;
-                    final articles = ctrl.featuredArticles;
-                    final slideCount = heroes.isNotEmpty ? heroes.length : articles.length;
+    // Hero scrolls away with the rest of the page (matches the website,
+    // where it's just the first section of a normal document flow) instead
+    // of staying pinned above a small scrollable remainder.
+    return Container(
+      color: Colors.white,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section order mirrors the website homepage's actual flow
+            // (templates/homepage.html): Hero → latest news → banner ad
+            // → projects → videos → featured articles → site safety →
+            // Mjengo Networks, with app-only utilities pushed to the end
+            // rather than interrupting that flow up top.
 
-                    if (slideCount == 0) {
-                      return const _HeroSlide(imageUrl: null);
-                    }
+            // ── Featured hero: auto-playing photo carousel, 3:2 aspect
+            // ratio — matches the website's own .mj-hero mobile breakpoint
+            // exactly (static/css/main.css: "Shorter, more landscape aspect
+            // ratio than the old 4:3 -- brings the hero's footprint down
+            // closer to the other pages' hero sections instead of a tall
+            // dedicated photo slab"). ───────────────────────────────────────
+            AspectRatio(
+              aspectRatio: 3 / 2,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Stack(
+                    children: [
+                      // Admin-managed hero photos (GET site/hero-images) are
+                      // the primary source, ordered by sort_order. Falls
+                      // back to featured-article images if the admin hasn't
+                      // configured any hero photos, so the carousel is never
+                      // empty.
+                      Obx(() {
+                        final heroes = ctrl.heroImages;
+                        final articles = ctrl.featuredArticles;
+                        final slideCount = heroes.isNotEmpty ? heroes.length : articles.length;
 
-                    return CarouselSlider.builder(
-                      itemCount: slideCount,
-                      itemBuilder: (context, i, realIndex) {
-                        if (heroes.isNotEmpty) {
-                          return _HeroSlide(imageUrl: heroes[i].image);
+                        if (slideCount == 0) {
+                          return const _HeroSlide(imageUrl: null);
                         }
-                        final article = articles[i];
-                        return _HeroSlide(
-                          imageUrl: article.imageUrl,
-                          onTap: () => _openArticle(article),
+
+                        return CarouselSlider.builder(
+                          itemCount: slideCount,
+                          itemBuilder: (context, i, realIndex) {
+                            if (heroes.isNotEmpty) {
+                              final h = heroes[i];
+                              return _HeroSlide(imageUrl: h.image, fallbackImageUrl: h.fallbackImage);
+                            }
+                            final article = articles[i];
+                            return _HeroSlide(
+                              imageUrl: article.imageUrl,
+                              onTap: () => _openArticle(article),
+                            );
+                          },
+                          options: CarouselOptions(
+                            height: constraints.maxHeight,
+                            viewportFraction: 1.0,
+                            autoPlay: slideCount > 1,
+                            autoPlayInterval: const Duration(seconds: 5),
+                            onPageChanged: (index, reason) => ctrl.onPageChanged(index),
+                          ),
                         );
-                      },
-                      options: CarouselOptions(
-                        height: constraints.maxHeight,
-                        viewportFraction: 1.0,
-                        autoPlay: slideCount > 1,
-                        autoPlayInterval: const Duration(seconds: 5),
-                        onPageChanged: (index, reason) => ctrl.onPageChanged(index),
+                      }),
+
+                      // Static headline + search CTA, constant across every slide —
+                      // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
+                      // (templates/homepage.html), which sits over a rotating photo
+                      // carousel the same way.
+                      const Positioned(
+                        left: 20,
+                        right: 20,
+                        top: 0,
+                        bottom: 60,
+                        child: Center(child: _HeroHeadline()),
                       ),
-                    );
-                  }),
 
-                  // Static headline + search CTA, constant across every slide —
-                  // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
-                  // (templates/homepage.html), which sits over a rotating photo
-                  // carousel the same way.
-                  const Positioned(
-                    left: 20,
-                    right: 20,
-                    top: 0,
-                    bottom: 60,
-                    child: Center(child: _HeroHeadline()),
-                  ),
+                      // Page dot indicators (bottom-right of hero) — flat line
+                      // dashes, matching the website's `.mj-hero-dot`.
+                      Positioned(
+                        bottom: 14,
+                        right: 20,
+                        child: Obx(() {
+                          final slideCount = ctrl.heroImages.isNotEmpty
+                              ? ctrl.heroImages.length
+                              : ctrl.featuredArticles.length;
+                          return slideCount > 1
+                              ? PageDotIndicator(count: slideCount, current: ctrl.featuredIndex.value)
+                              : const SizedBox.shrink();
+                        }),
+                      ),
 
-                  // Page dot indicators (bottom-right of hero) — flat line
-                  // dashes, matching the website's `.mj-hero-dot`.
-                  Positioned(
-                    bottom: 14,
-                    right: 20,
-                    child: Obx(() {
-                      final slideCount = ctrl.heroImages.isNotEmpty
-                          ? ctrl.heroImages.length
-                          : ctrl.featuredArticles.length;
-                      return slideCount > 1
-                          ? PageDotIndicator(count: slideCount, current: ctrl.featuredIndex.value)
-                          : const SizedBox.shrink();
-                    }),
-                  ),
-
-                  // Submit a Project CTA (bottom-left of hero, high-contrast)
-                  Positioned(
-                    bottom: 12,
-                    left: 16,
-                    child: SubmitProjectButton(
-                      onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-
-        // ── Scrollable bottom section ─────────────────────────────────────
-        Expanded(
-          child: Container(
-            color: Colors.white,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Section order mirrors the website homepage's actual flow
-                  // (templates/homepage.html): Hero → latest news → banner ad
-                  // → projects → videos → featured articles → site safety →
-                  // Mjengo Networks, with app-only utilities pushed to the end
-                  // rather than interrupting that flow up top.
-
-                  // ── Breaking News (Latest Construction News equivalent) ──
-                  const SizedBox(height: 4),
-                  _breakingHeader(ctrl),
-                  const SizedBox(height: 14),
-                  SizedBox(height: 220, child: _breakingList(ctrl)),
-
-                  const SizedBox(height: 10),
-                  const AdBannerSlot(),
-
-                  // ── Featured Projects (parity with the website's
-                  // Latest/Featured Infrastructure & Private Projects) ──────
-                  const SizedBox(height: 24),
-                  const FeaturedProjectsSection(),
-
-                  const SizedBox(height: 24),
-                  const BrowseProjectsByCategorySection(),
-
-                  // ── Latest Videos ──────────────────────────────────────
-                  const _HomeVideosSection(),
-
-                  const SizedBox(height: 24),
-                  Obx(() {
-                    final articles = ctrl.featuredArticles.toList();
-                    return FeaturedArticlesAnalysisSection(
-                      articles: articles,
-                      onOpen: _openArticle,
-                      onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
-                    );
-                  }),
-
-                  // ── Safety Incidents (parity with the website's Site
-                  // Safety preview strip, but with real incident cards
-                  // instead of a static CTA banner) ─────────────────────────
-                  const SizedBox(height: 24),
-                  const SafetyIncidentsSection(),
-
-                  const SizedBox(height: 24),
-                  const FollowMjengoHubSection(),
-
-                  // ── Explore Quick Actions (app-only shortcuts, no website
-                  // equivalent — kept as a closing utility row) ─────────────
-                  const SizedBox(height: 28),
-                  const _ExploreSectionsWidget(),
-
-                  const SizedBox(height: 16),
-                ],
+                      // Submit a Project CTA (bottom-left of hero, high-contrast)
+                      Positioned(
+                        bottom: 12,
+                        left: 16,
+                        child: SubmitProjectButton(
+                          onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-          ),
+
+            // ── Breaking News (Latest Construction News equivalent) ──
+            const SizedBox(height: 4),
+            _breakingHeader(ctrl),
+            const SizedBox(height: 14),
+            SizedBox(height: 220, child: _breakingList(ctrl)),
+
+            const SizedBox(height: 10),
+            const AdBannerSlot(),
+
+            // ── Featured Projects (parity with the website's
+            // Latest/Featured Infrastructure & Private Projects) ──────
+            const SizedBox(height: 24),
+            const FeaturedProjectsSection(),
+
+            const SizedBox(height: 24),
+            const BrowseProjectsByCategorySection(),
+
+            // ── Latest Videos ──────────────────────────────────────
+            const _HomeVideosSection(),
+
+            const SizedBox(height: 24),
+            Obx(() {
+              final articles = ctrl.featuredArticles.toList();
+              return FeaturedArticlesAnalysisSection(
+                articles: articles,
+                onOpen: _openArticle,
+                onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+              );
+            }),
+
+            // ── Safety Incidents (parity with the website's Site
+            // Safety preview strip, but with real incident cards
+            // instead of a static CTA banner) ─────────────────────────
+            const SizedBox(height: 24),
+            const SafetyIncidentsSection(),
+
+            const SizedBox(height: 24),
+            const FollowMjengoHubSection(),
+
+            // ── Explore Quick Actions (app-only shortcuts, no website
+            // equivalent — kept as a closing utility row) ─────────────
+            const SizedBox(height: 28),
+            const _ExploreSectionsWidget(),
+
+            const SizedBox(height: 16),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -287,7 +296,7 @@ class HomeScreen extends StatelessWidget {
   Widget _loadingState() {
     return Column(
       children: [
-        AspectRatio(aspectRatio: 4 / 3, child: Container(color: const Color(0xFF1F2937))),
+        AspectRatio(aspectRatio: 3 / 2, child: Container(color: const Color(0xFF1F2937))),
         const Expanded(
           child: Center(
             child: CircularProgressIndicator(
@@ -750,10 +759,7 @@ class _ExploreIconPill extends StatelessWidget {
 
   Future<void> _handleTap() async {
     if (data.isExternal) {
-      final uri = Uri.parse(data.route);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      await _launchExternalUrl(data.route);
     } else {
       Get.toNamed(data.route);
     }
@@ -800,8 +806,9 @@ class _ExploreIconPill extends StatelessWidget {
 
 class _HeroSlide extends StatelessWidget {
   final String? imageUrl;
+  final String? fallbackImageUrl;
   final VoidCallback? onTap;
-  const _HeroSlide({required this.imageUrl, this.onTap});
+  const _HeroSlide({required this.imageUrl, this.fallbackImageUrl, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -810,7 +817,20 @@ class _HeroSlide extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          NetImage(url: imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1F2937)),
+          NetImage(
+            url: imageUrl,
+            fit: BoxFit.cover,
+            placeholderColor: const Color(0xFF1F2937),
+            // Retries on the working host if the CDN URL 404s — see
+            // HeroImage.fallbackImage for why this is needed.
+            errorBuilder: fallbackImageUrl != null
+                ? (_) => NetImage(
+                      url: fallbackImageUrl,
+                      fit: BoxFit.cover,
+                      placeholderColor: const Color(0xFF1F2937),
+                    )
+                : null,
+          ),
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(

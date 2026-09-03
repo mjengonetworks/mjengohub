@@ -22,9 +22,12 @@ import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/preview_data_badge.dart';
 
+/// Opens in an in-app browser (Custom Tabs / SFSafariViewController) rather
+/// than handing off to the system browser — matches X/Twitter's in-app link
+/// behavior, so the user never perceives leaving the app.
 Future<void> _launchExternal(String url) async {
   final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppWebView);
 }
 
 // ── Section header (shared look across the three sections) ──────────────────
@@ -302,6 +305,7 @@ class FollowMjengoHubSection extends StatefulWidget {
 
 class _FollowMjengoHubSectionState extends State<FollowMjengoHubSection> {
   static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
+  static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
 
   // Fallback-only placeholders, used solely if the backend's admin-managed
   // SocialLink table (`/api/v1/site/social-links`) has no active rows yet.
@@ -398,6 +402,42 @@ class _FollowMjengoHubSectionState extends State<FollowMjengoHubSection> {
                         Text('Mjengo Networks', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
                         const SizedBox(height: 2),
                         Text('Our wider media & social network', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.9))),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: GestureDetector(
+            onTap: () => _launchExternal(_shareBarabaraUrl),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.danger,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(11)),
+                    child: const Icon(Icons.directions_car_filled_rounded, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Share Barabara', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                        const SizedBox(height: 2),
+                        Text('Road safety awareness & reporting', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.9))),
                       ],
                     ),
                   ),

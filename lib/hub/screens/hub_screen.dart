@@ -16,6 +16,7 @@ class HubScreen extends StatelessWidget {
   const HubScreen({Key? key}) : super(key: key);
 
   static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
+  static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
 
   static const _items = [
     _HubItem(
@@ -31,6 +32,14 @@ class HubScreen extends StatelessWidget {
       icon: Icons.apartment_rounded,
       color: AppColors.primaryBlue,
       route: AppRoutes.privateProjects,
+    ),
+    _HubItem(
+      label: 'Share Barabara',
+      sub: 'Road safety awareness & reporting',
+      icon: Icons.directions_car_filled_rounded,
+      color: AppColors.danger,
+      route: null,
+      externalUrl: _shareBarabaraUrl,
     ),
     _HubItem(
       label: 'Site Safety',
@@ -158,8 +167,10 @@ class _HubRow extends StatelessWidget {
   Future<void> _open() async {
     if (item.externalUrl != null) {
       final uri = Uri.parse(item.externalUrl!);
+      // In-app browser (Custom Tabs / SFSafariViewController), not a
+      // system-browser hand-off — matches X/Twitter's in-app link behavior.
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        await launchUrl(uri, mode: LaunchMode.inAppWebView);
       }
       return;
     }

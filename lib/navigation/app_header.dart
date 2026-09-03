@@ -24,9 +24,11 @@ class AppHeader extends StatelessWidget {
 
   static const double _barHeight = 56;
 
+  // In-app browser, not a system-browser hand-off — matches X/Twitter's
+  // in-app link behavior, so the user never perceives leaving the app.
   Future<void> _launchExternal(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppWebView);
   }
 
   /// Jumps the bottom nav to [tabIndex] and, when called from a screen pushed

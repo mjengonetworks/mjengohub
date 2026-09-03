@@ -15,10 +15,7 @@ import 'package:get/get.dart';
 import '../../services/base_service.dart';
 
 /// An admin-managed hero carousel photo for a given [pageKey] (e.g.
-/// 'homepage'), already ordered by [sortOrder] on the backend. `image` is
-/// always an absolute URL — served from the media.mjengohub.co.ke CDN, not
-/// the main domain, so it's used as-is rather than run through the
-/// `_full_url`-style relative-path joining the other site_service models need.
+/// 'homepage'), already ordered by [sortOrder] on the backend.
 class HeroImage {
   final int id;
   final String image;
@@ -38,6 +35,23 @@ class HeroImage {
         sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
         pageKey: (j['page_key'] as String?) ?? '',
       );
+
+  static const String _brokenCdnHost = 'media.mjengohub.co.ke';
+  static const String _workingHost = 'mjengohub.co.ke';
+
+  /// WARNING: verified against the live backend — `site_hero_images()` in
+  /// api.py rewrites relative image paths onto `media.mjengohub.co.ke`, but
+  /// that host 404s for every hero image as of 2026-09-03 (confirmed via
+  /// direct request). The same path resolves fine on the main domain
+  /// (`mjengohub.co.ke/static/...`), which is exactly what the website's own
+  /// template falls back to when it has no heroes. This needs a server-side
+  /// fix (populate that CDN, or point the rewrite at the right host); until
+  /// then, this is what [image] retries against on load failure so the
+  /// carousel isn't just blank photos with working swipe mechanics.
+  String? get fallbackImage {
+    if (!image.contains(_brokenCdnHost)) return null;
+    return image.replaceFirst(_brokenCdnHost, _workingHost);
+  }
 }
 
 class SocialLinkInfo {
