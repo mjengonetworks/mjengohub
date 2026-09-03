@@ -1,6 +1,7 @@
 import '../navigation/main_navigation.dart';
 import '../shared/widgets/ad_banner_slot.dart';
 // lib/home/home_screen.dart
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import '../news/widgets/featured_article_card.dart';
 import '../news/widgets/breaking_news_card.dart';
 import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
+import '../shared/services/site_service.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
 import '../shared/widgets/preview_data_badge.dart';
@@ -53,61 +55,86 @@ class HomeScreen extends StatelessWidget {
   Widget _content(BuildContext context, HomeNewsController ctrl) {
     return Column(
       children: [
-        // ── Featured hero: strict 4:3 photo carousel ──────────────────────
+        // ── Featured hero: strict 4:3 auto-playing photo carousel ─────────
         AspectRatio(
           aspectRatio: 4 / 3,
-          child: Stack(
-            children: [
-              // PageView of featured-article images (the only live,
-              // admin-controlled dynamic photo source — api.py has no
-              // hero-image endpoint, so this mirrors the website's own
-              // admin-managed "featured" flag rather than a static asset).
-              Obx(() => PageView.builder(
-                    itemCount: ctrl.featuredArticles.length,
-                    onPageChanged: ctrl.onPageChanged,
-                    itemBuilder: (_, i) {
-                      final article = ctrl.featuredArticles[i];
-                      return _HeroSlide(
-                        imageUrl: article.imageUrl,
-                        onTap: () => _openArticle(article),
-                      );
-                    },
-                  )),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  // Admin-managed hero photos (GET site/hero-images) are the
+                  // primary source, ordered by sort_order. Falls back to
+                  // featured-article images if the admin hasn't configured
+                  // any hero photos, so the carousel is never empty.
+                  Obx(() {
+                    final heroes = ctrl.heroImages;
+                    final articles = ctrl.featuredArticles;
+                    final slideCount = heroes.isNotEmpty ? heroes.length : articles.length;
 
-              // Static headline + search CTA, constant across every slide —
-              // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
-              // (templates/homepage.html), which sits over a rotating photo
-              // carousel the same way.
-              const Positioned(
-                left: 20,
-                right: 20,
-                top: 0,
-                bottom: 60,
-                child: Center(child: _HeroHeadline()),
-              ),
+                    if (slideCount == 0) {
+                      return const _HeroSlide(imageUrl: null);
+                    }
 
-              // Page dot indicators (bottom-right of hero) — flat line
-              // dashes, matching the website's `.mj-hero-dot`.
-              Positioned(
-                bottom: 14,
-                right: 20,
-                child: Obx(() => ctrl.featuredArticles.length > 1
-                    ? PageDotIndicator(
-                        count: ctrl.featuredArticles.length,
-                        current: ctrl.featuredIndex.value,
-                      )
-                    : const SizedBox.shrink()),
-              ),
+                    return CarouselSlider.builder(
+                      itemCount: slideCount,
+                      itemBuilder: (context, i, realIndex) {
+                        if (heroes.isNotEmpty) {
+                          return _HeroSlide(imageUrl: heroes[i].image);
+                        }
+                        final article = articles[i];
+                        return _HeroSlide(
+                          imageUrl: article.imageUrl,
+                          onTap: () => _openArticle(article),
+                        );
+                      },
+                      options: CarouselOptions(
+                        height: constraints.maxHeight,
+                        viewportFraction: 1.0,
+                        autoPlay: slideCount > 1,
+                        autoPlayInterval: const Duration(seconds: 5),
+                        onPageChanged: (index, reason) => ctrl.onPageChanged(index),
+                      ),
+                    );
+                  }),
 
-              // Submit a Project CTA (bottom-left of hero, high-contrast)
-              Positioned(
-                bottom: 12,
-                left: 16,
-                child: SubmitProjectButton(
-                  onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
-                ),
-              ),
-            ],
+                  // Static headline + search CTA, constant across every slide —
+                  // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
+                  // (templates/homepage.html), which sits over a rotating photo
+                  // carousel the same way.
+                  const Positioned(
+                    left: 20,
+                    right: 20,
+                    top: 0,
+                    bottom: 60,
+                    child: Center(child: _HeroHeadline()),
+                  ),
+
+                  // Page dot indicators (bottom-right of hero) — flat line
+                  // dashes, matching the website's `.mj-hero-dot`.
+                  Positioned(
+                    bottom: 14,
+                    right: 20,
+                    child: Obx(() {
+                      final slideCount = ctrl.heroImages.isNotEmpty
+                          ? ctrl.heroImages.length
+                          : ctrl.featuredArticles.length;
+                      return slideCount > 1
+                          ? PageDotIndicator(count: slideCount, current: ctrl.featuredIndex.value)
+                          : const SizedBox.shrink();
+                    }),
+                  ),
+
+                  // Submit a Project CTA (bottom-left of hero, high-contrast)
+                  Positioned(
+                    bottom: 12,
+                    left: 16,
+                    child: SubmitProjectButton(
+                      onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
 
@@ -773,8 +800,8 @@ class _ExploreIconPill extends StatelessWidget {
 
 class _HeroSlide extends StatelessWidget {
   final String? imageUrl;
-  final VoidCallback onTap;
-  const _HeroSlide({required this.imageUrl, required this.onTap});
+  final VoidCallback? onTap;
+  const _HeroSlide({required this.imageUrl, this.onTap});
 
   @override
   Widget build(BuildContext context) {

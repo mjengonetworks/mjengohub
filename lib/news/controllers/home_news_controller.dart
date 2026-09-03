@@ -1,14 +1,23 @@
 // lib/news/controllers/home_news_controller.dart
 import 'package:get/get.dart';
 import '../../shared/services/demo_seed_data.dart';
+import '../../shared/services/site_service.dart';
 import '../models/article_model.dart';
 import '../services/news_api_service.dart';
 
 class HomeNewsController extends GetxController {
   final _service = NewsApiService();
+  final _siteService = SiteService();
 
   final featuredArticles = <Article>[].obs;
   final breakingNews = <Article>[].obs;
+
+  /// Admin-managed hero carousel photos (`GET site/hero-images`) — the
+  /// primary hero image source. Empty until loaded or if the admin hasn't
+  /// configured any; the home screen falls back to featuredArticles' images
+  /// when this is empty, so the hero never shows a blank slide.
+  final heroImages = <HeroImage>[].obs;
+
   final isLoading = true.obs;
   final errorMessage = ''.obs;
   final featuredIndex = 0.obs;
@@ -31,12 +40,14 @@ class HomeNewsController extends GetxController {
     errorMessage.value = '';
     isShowingDemoData.value = false;
     try {
-      final results = await Future.wait([
+      final results = await Future.wait<dynamic>([
         _service.getFeaturedArticles(perPage: 5),
         _service.getBreakingNews(perPage: 10),
+        _siteService.getHeroImages(),
       ]);
-      featuredArticles.value = results[0];
-      breakingNews.value = results[1];
+      featuredArticles.value = results[0] as List<Article>;
+      breakingNews.value = results[1] as List<Article>;
+      heroImages.value = results[2] as List<HeroImage>;
 
       // Fallback: if no featured, use latest articles as featured hero
       if (featuredArticles.isEmpty) {

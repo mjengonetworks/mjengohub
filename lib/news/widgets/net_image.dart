@@ -1,6 +1,7 @@
 // lib/news/widgets/net_image.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// Network image with a shimmer placeholder and graceful error fallback.
 ///
@@ -109,9 +110,13 @@ class NetImage extends StatelessWidget {
         ),
       );
 
-  Widget _shimmer() => Container(
-        width: width,
-        height: height,
-        color: placeholderColor,
+  Widget _shimmer() => Shimmer.fromColors(
+        baseColor: placeholderColor,
+        highlightColor: Colors.white.withValues(alpha: 0.8),
+        child: Container(
+          width: width,
+          height: height,
+          color: placeholderColor,
+        ),
       );
 }

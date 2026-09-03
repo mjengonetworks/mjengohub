@@ -7,11 +7,38 @@
 //   GET  site/social-links   the social link cluster (SocialLink)
 //   GET  site/figures        headline stat counters (SiteFigures)
 //   GET  site/alerts         active site-wide banners (SiteAlert)
+//   GET  site/hero-images    admin-managed hero carousel photos (HeroImage)
 //   POST newsletter/subscribe
 //   POST advertise           advertising enquiry (AdvertisingInquiry)
 import 'package:get/get.dart';
 
 import '../../services/base_service.dart';
+
+/// An admin-managed hero carousel photo for a given [pageKey] (e.g.
+/// 'homepage'), already ordered by [sortOrder] on the backend. `image` is
+/// always an absolute URL — served from the media.mjengohub.co.ke CDN, not
+/// the main domain, so it's used as-is rather than run through the
+/// `_full_url`-style relative-path joining the other site_service models need.
+class HeroImage {
+  final int id;
+  final String image;
+  final int sortOrder;
+  final String pageKey;
+
+  const HeroImage({
+    required this.id,
+    required this.image,
+    required this.sortOrder,
+    required this.pageKey,
+  });
+
+  factory HeroImage.fromJson(Map<String, dynamic> j) => HeroImage(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        image: (j['image'] as String?) ?? '',
+        sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
+        pageKey: (j['page_key'] as String?) ?? '',
+      );
+}
 
 class SocialLinkInfo {
   final String platform;
@@ -134,6 +161,26 @@ class SiteService {
       }
     } catch (e) {
       print('❌ getSiteFigures failed: $e');
+    }
+    return [];
+  }
+
+  /// Admin-managed hero carousel photos for [pageKey], already sorted by
+  /// `sort_order` (also sorted here defensively, since a UI ordering
+  /// contract shouldn't silently depend on the backend never changing).
+  Future<List<HeroImage>> getHeroImages({String pageKey = 'homepage'}) async {
+    try {
+      final res = await _api.getRequest('site/hero-images', query: {'page_key': pageKey});
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is List) {
+          final items = data.whereType<Map<String, dynamic>>().map(HeroImage.fromJson).toList();
+          items.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+          return items;
+        }
+      }
+    } catch (e) {
+      print('❌ getHeroImages failed: $e');
     }
     return [];
   }
