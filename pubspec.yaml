@@ -40,7 +40,7 @@ dependencies:
   firebase_auth: ^6.4.0
   shared_preferences: ^2.5.5
   http: ^1.6.0
-  google_sign_in: ^7.2.0
+  google_sign_in: ^6.2.2
   url_launcher: ^6.3.1
   share_plus: ^10.1.4
   youtube_player_iframe: ^6.0.0
