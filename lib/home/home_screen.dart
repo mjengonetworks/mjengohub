@@ -8,15 +8,13 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../auth/controllers/mjengo_auth_controller.dart';
 import '../news/controllers/home_news_controller.dart';
-import '../notifications/controllers/notifications_controller.dart';
-import '../notifications/screens/notifications_screen.dart';
 import '../news/models/article_model.dart';
 import '../news/widgets/featured_article_card.dart';
 import '../news/widgets/breaking_news_card.dart';
 import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
+import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
 import '../shared/widgets/preview_data_badge.dart';
 import '../videos/controllers/videos_controller.dart';
@@ -35,122 +33,63 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<HomeNewsController>();
-    final topPad = MediaQuery.of(context).padding.top;
-    final screenH = MediaQuery.of(context).size.height;
-
-    // Hero height = 48 % of screen, clamped for small / large phones
-    final heroH = (screenH * 0.48).clamp(280.0, 420.0);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Obx(() {
         if (ctrl.isLoading.value) {
-          return _loadingState(heroH, topPad);
+          return _loadingState();
         }
         if (ctrl.featuredArticles.isEmpty && ctrl.breakingNews.isEmpty) {
           return _errorState(ctrl);
         }
-        return _content(context, ctrl, heroH, topPad);
+        return _content(context, ctrl);
       }),
     );
   }
 
   // ── Main content ────────────────────────────────────────────────────────────
 
-  Widget _content(
-    BuildContext context,
-    HomeNewsController ctrl,
-    double heroH,
-    double topPad,
-  ) {
+  Widget _content(BuildContext context, HomeNewsController ctrl) {
     return Column(
       children: [
-        // ── Featured hero (fixed height, no scroll) ──────────────────────
-        SizedBox(
-          height: heroH,
+        // ── Featured hero: strict 4:3 photo carousel ──────────────────────
+        AspectRatio(
+          aspectRatio: 4 / 3,
           child: Stack(
             children: [
-              // PageView of featured articles
+              // PageView of featured-article images (the only live,
+              // admin-controlled dynamic photo source — api.py has no
+              // hero-image endpoint, so this mirrors the website's own
+              // admin-managed "featured" flag rather than a static asset).
               Obx(() => PageView.builder(
                     itemCount: ctrl.featuredArticles.length,
                     onPageChanged: ctrl.onPageChanged,
                     itemBuilder: (_, i) {
                       final article = ctrl.featuredArticles[i];
-                      return FeaturedArticleCard(
-                        article: article,
+                      return _HeroSlide(
+                        imageUrl: article.imageUrl,
                         onTap: () => _openArticle(article),
-                        showPreviewBadge: ctrl.isShowingDemoData.value,
                       );
                     },
                   )),
 
-              // Header row: greeting (flexible, shrinks/ellipsizes first)
-              // + action icons (fixed, pinned right) sharing one Row so
-              // they can never overlap on narrow screens.
-              Positioned(
-                top: topPad + 8,
-                left: 16,
-                right: 16,
-                child: Row(
-                  children: [
-                    Flexible(child: _greetingWidget()),
-                    const Spacer(),
-                    // ── Get Verified pill (Mjengo Hub Prime) ─────────────
-                    GetVerifiedButton(
-                      compact: true,
-                      onTap: () => _launchExternalUrl('https://mjengohub.co.ke/verify'),
-                    ),
-                    const SizedBox(width: 8),
-                    // ── Search ────────────────────────────────────────────
-                    GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.search),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.38),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // ── Notification bell with badge ────────────────────
-                    _NotificationBell(topPad: topPad),
-                    const SizedBox(width: 8),
-                    // ── Road Safety ─────────────────────────────────────
-                    GestureDetector(
-                      onTap: () => Get.toNamed('/share-barabara'),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDC2626),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.report_problem_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              // Static headline + search CTA, constant across every slide —
+              // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
+              // (templates/homepage.html), which sits over a rotating photo
+              // carousel the same way.
+              const Positioned(
+                left: 20,
+                right: 20,
+                top: 0,
+                bottom: 60,
+                child: Center(child: _HeroHeadline()),
               ),
 
               // Page dot indicators (bottom-right of hero) — flat line
-              // dashes with clear vertical space above the greeting/search
-              // row and below the hero edge, per the minimalist-indicator spec.
+              // dashes, matching the website's `.mj-hero-dot`.
               Positioned(
-                bottom: 30,
+                bottom: 14,
                 right: 20,
                 child: Obx(() => ctrl.featuredArticles.length > 1
                     ? PageDotIndicator(
@@ -162,7 +101,7 @@ class HomeScreen extends StatelessWidget {
 
               // Submit a Project CTA (bottom-left of hero, high-contrast)
               Positioned(
-                bottom: 30,
+                bottom: 12,
                 left: 16,
                 child: SubmitProjectButton(
                   onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
@@ -308,79 +247,12 @@ class HomeScreen extends StatelessWidget {
     });
   }
 
-  // ── User greeting ────────────────────────────────────────────────────────────
-
-  Widget _greetingWidget() {
-    MjengoAuthController? userCtrl;
-    try { userCtrl = Get.find<MjengoAuthController>(); } catch (_) {}
-
-    if (userCtrl == null) return const SizedBox.shrink();
-
-    return Obx(() {
-      final user = userCtrl!.currentUser;
-      final firstName = (user?.firstName?.trim().isNotEmpty == true
-              ? user!.firstName!
-              : user?.displayName?.split(' ').first ?? '')
-          .trim();
-      final initial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '?';
-      final photoUrl = user?.photoURL;
-
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.38),
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Avatar circle
-            Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: Color(0xFF2563EB),
-                shape: BoxShape.circle,
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: NetImage(
-                url: photoUrl,
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
-                errorBuilder: (_) => Center(
-                  child: Text(initial,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'Hello, ${firstName.isNotEmpty ? firstName : 'there'}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
   // ── Loading state ────────────────────────────────────────────────────────────
 
-  Widget _loadingState(double heroH, double topPad) {
+  Widget _loadingState() {
     return Column(
       children: [
-        Container(height: heroH, color: const Color(0xFF1F2937)),
+        AspectRatio(aspectRatio: 4 / 3, child: Container(color: const Color(0xFF1F2937))),
         const Expanded(
           child: Center(
             child: CircularProgressIndicator(
@@ -801,17 +673,6 @@ class _ExploreSectionsWidget extends StatelessWidget {
         icon: Icons.bookmark_rounded,
         route: '/saved-items',
       ),
-      _SectionData(
-        label: 'Report Hazard',
-        icon: Icons.warning_amber_rounded,
-        route: '/report-incident',
-      ),
-      _SectionData(
-        label: 'ShareBarabara',
-        icon: Icons.alt_route_rounded,
-        route: 'https://sharebarabara.co.ke',
-        isExternal: true,
-      ),
     ];
 
   @override
@@ -897,26 +758,89 @@ class _ExploreIconPill extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  HERO SLIDE — background image only (no per-slide text); the headline and
+//  search CTA are a constant overlay rendered once above the PageView.
+// ─────────────────────────────────────────────────────────────────────────────
 
-
-
-class _NotificationBell extends StatelessWidget {
-  final double topPad;
-  const _NotificationBell({this.topPad = 0});
+class _HeroSlide extends StatelessWidget {
+  final String? imageUrl;
+  final VoidCallback onTap;
+  const _HeroSlide({required this.imageUrl, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed('/notifications'),
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 20),
+      onTap: onTap,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          NetImage(url: imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1F2937)),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0x66000000), Color(0x99000000)],
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  HERO HEADLINE + SEARCH CTA — matches the website's `.mj-hero-title` /
+//  `.mj-hero-search` copy and typography exactly (templates/homepage.html).
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _HeroHeadline extends StatelessWidget {
+  const _HeroHeadline();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Elevating and Documenting the Built Environment in Kenya and Beyond',
+          textAlign: TextAlign.center,
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            height: 1.25,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.search),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.search_rounded, size: 17, color: Color(0xFF6B7280)),
+                const SizedBox(width: 8),
+                Text(
+                  'Search articles, news, projects, safety incidents...',
+                  style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF6B7280)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

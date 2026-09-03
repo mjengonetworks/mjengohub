@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'point/core/firebase_initializer.dart';
 import 'point/core/dependency_injection.dart';
 import 'point/routes/app_routes.dart';
+import 'shared/theme/theme_controller.dart';
 
 
 
@@ -35,15 +36,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Apply Montserrat as the app-wide font via the text theme.
-    final base = ThemeData.light();
-    return GetMaterialApp(
-      title: 'Mjengo Hub',
-      debugShowCheckedModeBanner: false,
-      theme: base.copyWith(
-        textTheme: GoogleFonts.montserratTextTheme(base.textTheme),
-      ),
-      getPages: AppRoutes.routes,
-      initialRoute: AppRoutes.splash,
-    );
+    final lightBase = ThemeData.light();
+    final darkBase = ThemeData.dark();
+    final theme = Get.find<ThemeController>();
+
+    return Obx(() => GetMaterialApp(
+          title: 'Mjengo Hub',
+          debugShowCheckedModeBanner: false,
+          theme: lightBase.copyWith(
+            textTheme: GoogleFonts.montserratTextTheme(lightBase.textTheme),
+          ),
+          darkTheme: darkBase.copyWith(
+            textTheme: GoogleFonts.montserratTextTheme(darkBase.textTheme),
+          ),
+          themeMode: theme.themeMode,
+          getPages: AppRoutes.routes,
+          initialRoute: AppRoutes.splash,
+        ));
   }
 }

@@ -53,8 +53,6 @@ class _SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
-
     return Container(
       color: _bg,
       child: SingleChildScrollView(
@@ -65,7 +63,7 @@ class _SettingsView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Cover banner + overlapping avatar ─────────────────────────
-            _ProfileHeader(user: user, auth: auth, topPad: topPad),
+            _ProfileHeader(user: user, auth: auth, topPad: 0),
 
             const SizedBox(height: 14),
 
@@ -85,6 +83,12 @@ class _SettingsView extends StatelessWidget {
               onTap: () => Navigator.of(Get.context!).push(
                 MaterialPageRoute(builder: (_) => const AccountScreen()),
               ),
+            ),
+            _SettingsItem(
+              icon: Icons.inbox_outlined,
+              title: 'My Submissions',
+              subtitle: 'Articles, projects, incidents & comments',
+              onTap: () => Get.toNamed(AppRoutes.submissions),
             ),
             _SettingsItem(
               icon: Icons.card_giftcard_rounded,

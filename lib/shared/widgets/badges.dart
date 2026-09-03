@@ -1,60 +1,16 @@
 // lib/shared/widgets/badges.dart
 //
-// Reusable brand widgets shared across screens: the "Get Verified" pill CTA,
-// Mjengo Hub Prime badge, reviewer-level badge (Google Local Guides style),
-// and the animated Play/App Store footer buttons.
+// Reusable brand widgets shared across screens: Mjengo Hub Prime badge,
+// reviewer-level badge (Google Local Guides style), role badge, and the
+// animated Play/App Store footer buttons. The header's verification icon
+// lives in lib/navigation/app_header.dart, not here — it's icon-only per
+// spec, not a reusable pill CTA.
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../point/models/points_models.dart';
 import '../theme/app_theme.dart';
-
-/// Permanent primary-blue gradient pill CTA for "Get Verified", used in the
-/// global header. Always rendered in its active/default gradient state per
-/// spec — no idle/disabled visual variant.
-class GetVerifiedButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final bool compact;
-  const GetVerifiedButton({super.key, required this.onTap, this.compact = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 8 : 10),
-        decoration: BoxDecoration(
-          gradient: AppColors.verifiedPillGradient,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withValues(alpha: 0.35),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.verified_rounded, color: Colors.white, size: 15),
-            const SizedBox(width: 6),
-            Text(
-              'Get Verified',
-              style: GoogleFonts.montserrat(
-                fontSize: compact ? 11.5 : 12.5,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: 0.1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Dark contrasting backdrop for secondary hero text over a photo, used on
 /// non-home screens (project/incident/article detail hero images) so

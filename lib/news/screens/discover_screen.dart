@@ -14,14 +14,13 @@ class DiscoverScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<DiscoverController>();
-    final topPad = MediaQuery.of(context).padding.top;
 
     return Container(
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: topPad + 12),
+          const SizedBox(height: 12),
 
           // ── Header ──────────────────────────────────────────────────────
           Padding(

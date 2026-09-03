@@ -346,7 +346,7 @@ class _TabItem extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  CRISIS BANNER  (same card style as Mshikamano)
+//  CRISIS BANNER
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _CrisisBanner extends StatelessWidget {

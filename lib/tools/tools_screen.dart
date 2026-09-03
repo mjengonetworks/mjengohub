@@ -47,8 +47,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
@@ -58,7 +56,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             // ── Header ──────────────────────────────────────────────────────
             Container(
               color: _kCard,
-              padding: EdgeInsets.fromLTRB(20, topPad + 16, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

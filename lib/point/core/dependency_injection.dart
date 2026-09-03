@@ -8,6 +8,7 @@ import '../../news/controllers/home_news_controller.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../videos/controllers/videos_controller.dart';
 import '../../notifications/controllers/notifications_controller.dart';
+import '../../shared/theme/theme_controller.dart';
 import 'firebase_initializer.dart';
 
 
@@ -29,6 +30,14 @@ class DependencyInjection {
       print('✅ MjengoService initialized');
     } catch (e) {
       print('❌ MjengoService failed: $e');
+    }
+
+    try {
+      print('🎨 Initializing ThemeController...');
+      Get.put(ThemeController(), permanent: true);
+      print('✅ ThemeController initialized');
+    } catch (e) {
+      print('❌ ThemeController failed: $e');
     }
 
     try {

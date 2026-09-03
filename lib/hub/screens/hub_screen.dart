@@ -46,11 +46,6 @@ class HubScreen extends StatelessWidget {
       route: AppRoutes.siteSafety,
     ),
     _HubItem(
-      label: 'Mshikamano',
-      sub: 'Mental health & encouragement',
-      route: AppRoutes.mshikamano,
-    ),
-    _HubItem(
       label: 'Infrastructure Reports',
       sub: 'Report a road, bridge or utility fault',
       route: AppRoutes.reports,
@@ -59,11 +54,6 @@ class HubScreen extends StatelessWidget {
       label: 'Services',
       sub: 'Request construction services',
       route: AppRoutes.services,
-    ),
-    _HubItem(
-      label: 'Reviews',
-      sub: 'What our clients say',
-      route: AppRoutes.reviews,
     ),
     _HubItem(
       label: 'Advertise with Us',
@@ -80,8 +70,6 @@ class HubScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Container(
@@ -89,7 +77,7 @@ class HubScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: topPad + 12),
+            const SizedBox(height: 12),
 
             // ── Header ────────────────────────────────────────────────────
             Padding(

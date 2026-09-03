@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
 import '../news/widgets/net_image.dart';
+import '../shared/theme/theme_controller.dart';
 import '../shared/widgets/responsive.dart';
 
 // ─── Email masking helper ─────────────────────────────────────────────────────
@@ -676,6 +677,13 @@ class _ProfileTab extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 20),
+
+            // ── Appearance ──────────────────────────────────────────────────
+            _SectionLabel('Appearance'),
+            const SizedBox(height: 10),
+            const _Card(child: _DarkModeToggle()),
+
             const SizedBox(height: 32),
 
             // ── Save button ────────────────────────────────────────────────
@@ -931,6 +939,47 @@ class _SectionLabel extends StatelessWidget {
           ),
         ),
       );
+}
+
+class _DarkModeToggle extends StatelessWidget {
+  const _DarkModeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Get.find<ThemeController>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dark Mode',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _textPri,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Applies immediately and is remembered on this device.',
+                  style: GoogleFonts.montserrat(fontSize: 11.5, color: _textSec),
+                ),
+              ],
+            ),
+          ),
+          Obx(() => Switch(
+                value: theme.isDarkMode,
+                activeColor: _blue,
+                onChanged: theme.setDarkMode,
+              )),
+        ],
+      ),
+    );
+  }
 }
 
 class _Card extends StatelessWidget {

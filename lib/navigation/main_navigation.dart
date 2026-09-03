@@ -10,6 +10,7 @@ import '../videos/screens/videos_screen.dart';
 import '../tools/tools_screen.dart';
 import '../hub/screens/hub_screen.dart';
 import '../profile/profile_screen.dart';
+import 'app_header.dart';
 
 class MainNavigation extends StatelessWidget {
   const MainNavigation({Key? key}) : super(key: key);
@@ -22,21 +23,28 @@ class MainNavigation extends StatelessWidget {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: const Color(0xFFF0F4FF),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1080),
-            child: Obx(() => IndexedStack(
-                  index: ctrl.currentIndex.value,
-                  children: const [
-                    HomeScreen(),   // 0
-                    HubScreen(),    // 1
-                    DiscoverScreen(), // 2
-                    VideosScreen(), // 3
-                    ToolsScreen(),  // 4
-                    ProfileScreen(), // 5
-                  ],
-                )),
-          ),
+        body: Column(
+          children: [
+            const AppHeader(),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1080),
+                  child: Obx(() => IndexedStack(
+                        index: ctrl.currentIndex.value,
+                        children: const [
+                          HomeScreen(),   // 0
+                          HubScreen(),    // 1
+                          DiscoverScreen(), // 2
+                          VideosScreen(), // 3
+                          ToolsScreen(),  // 4
+                          ProfileScreen(), // 5
+                        ],
+                      )),
+                ),
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: Obx(() => _BottomNav(
               currentIndex: ctrl.currentIndex.value,
