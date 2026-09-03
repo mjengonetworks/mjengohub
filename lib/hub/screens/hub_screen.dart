@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../navigation/main_navigation.dart';
+import '../../news/controllers/discover_controller.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 
@@ -61,6 +63,23 @@ class HubScreen extends StatelessWidget {
       icon: Icons.handyman_rounded,
       color: AppColors.accentBlue,
       route: AppRoutes.services,
+    ),
+    // Jobs and Tenders aren't standalone models — they're Article categories
+    // (GET articles?category=jobs / category=tenders), same as any other
+    // news category. These tiles just preset that filter on the News tab.
+    _HubItem(
+      label: 'Jobs',
+      sub: 'Construction industry job listings',
+      icon: Icons.work_outline_rounded,
+      color: AppColors.deepNavy,
+      categorySlug: 'jobs',
+    ),
+    _HubItem(
+      label: 'Tenders',
+      sub: 'Open tenders across the industry',
+      icon: Icons.request_quote_outlined,
+      color: AppColors.deepNavy,
+      categorySlug: 'tenders',
     ),
     _HubItem(
       label: 'Advertise with Us',
@@ -144,6 +163,11 @@ class _HubItem {
   final Color color;
   final String? route;
   final String? externalUrl;
+
+  /// When set, tapping this tile presets the News tab's category filter to
+  /// this slug and switches to it, instead of pushing [route].
+  final String? categorySlug;
+
   const _HubItem({
     required this.label,
     required this.sub,
@@ -151,6 +175,7 @@ class _HubItem {
     required this.color,
     this.route,
     this.externalUrl,
+    this.categorySlug,
   });
 }
 
@@ -172,6 +197,15 @@ class _HubRow extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.inAppWebView);
       }
+      return;
+    }
+    if (item.categorySlug != null) {
+      try {
+        Get.find<DiscoverController>().selectCategory(item.categorySlug!);
+      } catch (_) {}
+      try {
+        Get.find<MainNavController>().currentIndex.value = 2; // News tab
+      } catch (_) {}
       return;
     }
     if (item.route != null) Get.toNamed(item.route!);

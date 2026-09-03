@@ -303,10 +303,16 @@ and `/incidents`, which `/search` deliberately doesn't touch.
   `videos_screen`). On mobile these can fail cPanel hotlink protection, so
   images silently don't load — worth converting.
 - The website has features with **no** `/api/v1` equivalent, so the app can't
-  reach parity on them: events, jobs, tenders, merch/cart/checkout, donations,
-  financiers, user pages (`my_pages`/`page_profile`), article/project/event
-  submission, and banner ads. Don't add app screens for these until the
-  backend exposes JSON routes.
+  reach parity on them: events, merch/cart/checkout, donations, financiers,
+  user pages (`my_pages`/`page_profile`), article/project/event submission,
+  and banner ads. Don't add app screens for these until the backend exposes
+  JSON routes.
+- Jobs and Tenders are **not** separate models/endpoints — they're plain
+  Article categories (`GET articles?category=jobs` / `category=tenders`),
+  same as any other news category. `HubScreen` has "Jobs"/"Tenders" tiles
+  that preset that filter on `DiscoverController` and switch to the News tab
+  rather than pushing a route; don't build standalone Jobs/Tenders
+  screens/services/models.
 - The Flutter SDK is not installed on the current dev machine, so
   `flutter analyze` / `flutter build` can only be validated in CI.
 - Every HTTP call logs full request/response (headers, body) via `print()` —
