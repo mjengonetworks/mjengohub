@@ -11,10 +11,12 @@ import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
 import '../shared/services/site_service.dart';
 import '../shared/theme/app_theme.dart';
+import '../point/models/points_models.dart';
+import '../point/services/gamification_service.dart';
 import '../shared/widgets/badges.dart';
-import '../shared/widgets/coming_soon.dart';
 import '../shared/widgets/form_fields.dart';
 import '../shared/widgets/responsive.dart';
+import '../shared/widgets/social_share_modal.dart';
 import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -67,10 +69,17 @@ class _SettingsView extends StatelessWidget {
 
             const SizedBox(height: 14),
 
-            // ── Points summary card ───────────────────────────────────────
+            // ── Points summary + referral sharing ───────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _PointsSummaryCard(user: user),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _PointsSummaryCard(user: user)),
+                  const SizedBox(width: 12),
+                  const Expanded(child: _ReferralShareCard()),
+                ],
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -493,10 +502,9 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
 
 // ── Points summary card ─────────────────────────────────────────────────────
 //
-// Bound to local-only state — `points/summary` doesn't exist on the backend
-// yet (see GamificationService), and the User model has no `points` column
-// either, so there's nothing live to fetch. Shows the local fallback plus a
-// "coming soon" badge rather than firing a request that's guaranteed to 404.
+// Points come straight off the cached UserModel (`GET auth/me`'s `points`
+// field), so this renders instantly with no network wait — the fuller
+// per-source breakdown + activity log lives behind the tap, on PointsScreen.
 
 class _PointsSummaryCard extends StatelessWidget {
   final UserModel? user;
@@ -516,29 +524,98 @@ class _PointsSummaryCard extends StatelessWidget {
             BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3)),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: AppColors.accentBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(11),
               ),
-              child: const Icon(Icons.emoji_events_rounded, color: AppColors.accentBlue, size: 24),
+              child: const Icon(Icons.emoji_events_rounded, color: AppColors.accentBlue, size: 20),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('$total points', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-                  const SizedBox(height: 4),
-                  const ComingSoonBadge(),
-                ],
-              ),
+            const SizedBox(height: 10),
+            Text('$total', style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+            Text('points', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Referral code sharing card ──────────────────────────────────────────────
+//
+// Fetches `GET referrals/me` for the current code + shareable link
+// (GamificationService); tapping "Share" reuses the same SocialShareModal
+// (WhatsApp/X/LinkedIn/copy-link) that project/article detail pages use.
+
+class _ReferralShareCard extends StatefulWidget {
+  const _ReferralShareCard();
+
+  @override
+  State<_ReferralShareCard> createState() => _ReferralShareCardState();
+}
+
+class _ReferralShareCardState extends State<_ReferralShareCard> {
+  final _api = GamificationService();
+  ReferralInfo? _info;
+
+  @override
+  void initState() {
+    super.initState();
+    _api.getReferralInfo().then((info) {
+      if (mounted) setState(() => _info = info);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.referral),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: const Icon(Icons.card_giftcard_rounded, color: AppColors.accentBlue, size: 20),
+                ),
+                if (_info != null)
+                  GestureDetector(
+                    onTap: () => SocialShareModal.show(
+                      context,
+                      title: 'Join me on Mjengo Hub — Kenya\'s construction industry platform:',
+                      url: _info!.shareUrl,
+                    ),
+                    child: const Icon(Icons.ios_share_rounded, color: AppColors.accentBlue, size: 18),
+                  ),
+              ],
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textSubtle, size: 22),
+            const SizedBox(height: 10),
+            Text(
+              _info?.code.isNotEmpty == true ? _info!.code : '—',
+              style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textDark, letterSpacing: 0.5),
+            ),
+            Text('referral code', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
           ],
         ),
       ),

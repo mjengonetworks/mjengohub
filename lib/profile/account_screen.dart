@@ -10,6 +10,7 @@ import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
 import '../news/widgets/net_image.dart';
 import '../shared/theme/theme_controller.dart';
+import '../shared/widgets/badges.dart';
 import '../shared/widgets/responsive.dart';
 
 // ─── Email masking helper ─────────────────────────────────────────────────────
@@ -421,14 +422,23 @@ class _Hero extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // name + email + member-since
-              Text(
-                name,
-                style: GoogleFonts.montserrat(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+              // name + verified badge + email + member-since
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (user?.isPrime == true) const PrimeBadge(),
+                ],
               ),
               if (email.isNotEmpty) ...[
                 const SizedBox(height: 4),

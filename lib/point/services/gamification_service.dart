@@ -1,12 +1,10 @@
 // lib/point/services/gamification_service.dart
 //
-// Points and referral API calls. WARNING: verified against the live backend
-// (models.py/api.py) — none of `points/summary`, `points/log`, `referrals/me`,
-// or `referrals/redeem` exist there yet (no PointsLog/Referral model, no
-// `points`/`referral_code` column on User). Every call 404s today. Kept
-// ready for when the backend ships these routes; until then, callers must
-// not rely on them and should fall back to local-only state (see
-// PointsScreen/ReferralScreen, which are gated rather than wired to these).
+// Points and referral API calls — `points/summary`, `points/log`,
+// `referrals/me` and `referrals/redeem` are all live in api.py (PointsScreen
+// and ReferralScreen call these directly). Every method still degrades to a
+// safe default (null/empty list) on any failure, matching every other
+// service in the app, so callers never need their own try/catch.
 import 'package:get/get.dart';
 
 import '../../services/mjengo_service.dart';
