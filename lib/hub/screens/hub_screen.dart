@@ -33,13 +33,6 @@ class HubScreen extends StatelessWidget {
       route: AppRoutes.privateProjects,
     ),
     _HubItem(
-      label: 'Share Barabara',
-      sub: 'Road accidents across Kenya',
-      icon: Icons.directions_car_filled_rounded,
-      color: AppColors.danger,
-      route: AppRoutes.shareBarabara,
-    ),
-    _HubItem(
       label: 'Site Safety',
       sub: 'Construction site incident database',
       icon: Icons.engineering_rounded,
@@ -52,13 +45,6 @@ class HubScreen extends StatelessWidget {
       icon: Icons.report_gmailerrorred_rounded,
       color: AppColors.warning,
       route: AppRoutes.reports,
-    ),
-    _HubItem(
-      label: 'Build Tools',
-      sub: 'Concrete, plaster & budget calculators',
-      icon: Icons.calculate_rounded,
-      color: AppColors.success,
-      route: AppRoutes.tools,
     ),
     _HubItem(
       label: 'Services',

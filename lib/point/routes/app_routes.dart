@@ -23,7 +23,6 @@ import '../../reports/screens/submit_report_screen.dart';
 import '../../shared/screens/advertise_screen.dart';
 import '../../service_catalog/screens/service_detail_screen.dart';
 import '../../service_catalog/screens/services_screen.dart';
-import '../../tools/tools_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -37,7 +36,6 @@ class AppRoutes {
   // New sections
   static const String projects        = '/projects';
   static const String projectDetail   = '/project';
-  static const String shareBarabara   = '/share-barabara';
   static const String siteSafety      = '/site-safety';
   static const String incidentDetail  = '/incident';
   static const String privateProjects = '/private-projects';
@@ -55,7 +53,6 @@ class AppRoutes {
   static const String submitReport    = '/submit-report';
   static const String advertise = '/advertise';
   static const String savedItems = '/saved-items';
-  static const String tools = '/tools';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -77,10 +74,6 @@ class AppRoutes {
     ),
 
     // Incidents
-    GetPage(
-      name: shareBarabara,
-      page: () => const IncidentsListScreen(incidentType: 'road_safety'),
-    ),
     GetPage(
       name: siteSafety,
       page: () => const IncidentsListScreen(incidentType: 'site_safety'),
@@ -128,7 +121,6 @@ class AppRoutes {
     // Advertising enquiry (POST advertise)
     GetPage(name: savedItems, page: () => const SavedItemsScreen()),
     GetPage(name: advertise, page: () => const AdvertiseScreen()),
-    GetPage(name: tools, page: () => const ToolsScreen()),
   ];
 }
 

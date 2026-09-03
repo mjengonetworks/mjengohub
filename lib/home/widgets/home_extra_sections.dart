@@ -666,11 +666,12 @@ class _FeaturedProjectCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 //  Safety Incidents
 //
-//  Mirrors the website's "Road Safety: Share Barabara" and "Site Safety
-//  Database" preview strips (templates/homepage.html), but shows real recent
-//  incidents instead of a static CTA banner — the app already has both
-//  datasets wired (`IncidentsService`), so a content preview is more useful
-//  here than a link-out card.
+//  Mirrors the website's "Site Safety Database" preview strip
+//  (templates/homepage.html), but shows real recent incidents instead of a
+//  static CTA banner. Site-safety only — road-safety ("Share Barabara") was
+//  removed entirely, in-app list screen and preview cards both, since it
+//  never actually opened the external sharebarabara.co.ke site it was named
+//  after.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class SafetyIncidentsSection extends StatefulWidget {
@@ -693,22 +694,18 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([
-      _service.getIncidents(type: 'road_safety', perPage: 4),
-      _service.getIncidents(type: 'site_safety', perPage: 4),
-    ]);
+    final results = await _service.getIncidents(type: 'site_safety', perPage: 8);
     if (!mounted) return;
-    final merged = [...results[0], ...results[1]];
-    if (merged.isEmpty) {
+    if (results.isEmpty) {
       setState(() {
-        _incidents = demoIncidents();
+        _incidents = demoIncidents().where((i) => i.incidentType == 'site_safety').toList();
         _isDemo = true;
         _loading = false;
       });
       return;
     }
     setState(() {
-      _incidents = merged;
+      _incidents = results;
       _loading = false;
     });
   }
@@ -725,7 +722,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
           child: Row(
             children: [
               const Text(
-                'Safety Incidents',
+                'Site Safety',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark),
               ),
               if (_isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
@@ -736,7 +733,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Road hazards and construction site incidents from across Kenya',
+            'Construction site incidents from across Kenya',
             style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
           ),
         ),
@@ -768,24 +765,10 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
         const SizedBox(height: 14),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: _ctaChip(
-                  label: 'Road Safety',
-                  color: const Color(0xFFDC2626),
-                  onTap: () => Get.toNamed(AppRoutes.shareBarabara),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ctaChip(
-                  label: 'Site Safety',
-                  color: AppColors.warning,
-                  onTap: () => Get.toNamed(AppRoutes.siteSafety),
-                ),
-              ),
-            ],
+          child: _ctaChip(
+            label: 'View All Incidents',
+            color: AppColors.warning,
+            onTap: () => Get.toNamed(AppRoutes.siteSafety),
           ),
         ),
       ],
