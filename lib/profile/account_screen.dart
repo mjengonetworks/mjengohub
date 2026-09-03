@@ -1,13 +1,15 @@
 // lib/profile/account_screen.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
 import '../news/widgets/net_image.dart';
-import '../shared/widgets/coming_soon.dart';
+import '../shared/widgets/responsive.dart';
 
 // ─── Email masking helper ─────────────────────────────────────────────────────
 String _maskEmailStatic(String email) {
@@ -64,6 +66,9 @@ class _AccountScreenState extends State<AccountScreen>
 
   bool _profileDirty  = false;
   bool _saving        = false;
+  bool _uploadingAvatar = false;
+
+  final _picker = ImagePicker();
 
   final _profileFormKey  = GlobalKey<FormState>();
   final _passwordFormKey = GlobalKey<FormState>();
@@ -166,11 +171,57 @@ class _AccountScreenState extends State<AccountScreen>
   }
 
   // ── Avatar upload ──────────────────────────────────────────────────────────
-  // `auth/me/avatar` doesn't exist on the backend yet (see
-  // MjengoAuthController.uploadAvatar), so this shows a "coming soon" message
-  // instead of picking an image and firing a request that's guaranteed to 404.
-  void _pickAndUploadAvatar() {
-    showComingSoonSnack('Profile photo upload isn\'t available in the app yet.');
+  Future<void> _pickAndUploadAvatar() async {
+    if (_uploadingAvatar) return;
+
+    final XFile? picked = kIsWeb
+        ? await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85)
+        : await _showAvatarSourceSheet();
+    if (picked == null) return;
+
+    setState(() => _uploadingAvatar = true);
+    final bytes = await picked.readAsBytes();
+    final ok = await _auth.uploadAvatar(bytes, picked.name);
+
+    if (!mounted) return;
+    setState(() => _uploadingAvatar = false);
+
+    _showSnack(
+      ok
+          ? 'Profile photo updated'
+          : (_auth.errorMessage.isNotEmpty ? _auth.errorMessage : 'Failed to upload photo'),
+      success: ok,
+    );
+  }
+
+  Future<XFile?> _showAvatarSourceSheet() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded, color: _blue),
+              title: Text('Camera', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded, color: _blue),
+              title: Text('Photo Library', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return null;
+    return _picker.pickImage(source: source, imageQuality: 85);
   }
 
   void _showSnack(String msg, {bool success = false}) {
@@ -209,6 +260,7 @@ class _AccountScreenState extends State<AccountScreen>
                 topPad: topPad,
                 onBack: () => Get.back(),
                 onTapAvatar: _pickAndUploadAvatar,
+                uploadingAvatar: _uploadingAvatar,
               ),
 
               // ── Tab bar ──────────────────────────────────────────────────
@@ -264,12 +316,14 @@ class _Hero extends StatelessWidget {
   final double topPad;
   final VoidCallback onBack;
   final VoidCallback onTapAvatar;
+  final bool uploadingAvatar;
 
   const _Hero({
     required this.user,
     required this.topPad,
     required this.onBack,
     required this.onTapAvatar,
+    this.uploadingAvatar = false,
   });
 
   @override
@@ -352,7 +406,13 @@ class _Hero extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 1.5),
                         ),
-                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 12),
+                        child: uploadingAvatar
+                            ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.white),
+                              )
+                            : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 12),
                       ),
                     ),
                   ],
@@ -498,7 +558,9 @@ class _ProfileTab extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      child: Form(
+      child: ContentWidth(
+        maxWidth: 600,
+        child: Form(
         key: formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,6 +610,13 @@ class _ProfileTab extends StatelessWidget {
                     keyboardType: TextInputType.phone,
                     hint: '+254 7XX XXX XXX',
                   ),
+                  const Divider(height: 1, thickness: 0.8, color: _divider),
+                  _Field(
+                    controller: locationCtrl,
+                    label: 'Location',
+                    icon: Icons.location_on_outlined,
+                    hint: 'e.g. Nairobi, Kenya',
+                  ),
                 ],
               ),
             ),
@@ -568,18 +637,12 @@ class _ProfileTab extends StatelessWidget {
                   ),
                   const Divider(height: 1, thickness: 0.8, color: _divider),
                   _Field(
-                    controller: locationCtrl,
-                    label: 'Location',
-                    icon: Icons.location_on_outlined,
-                    hint: 'e.g. Nairobi, Kenya',
-                  ),
-                  const Divider(height: 1, thickness: 0.8, color: _divider),
-                  _Field(
                     controller: bioCtrl,
                     label: 'Bio',
                     icon: Icons.notes_outlined,
-                    hint: 'Tell us about yourself…',
+                    hint: 'Tell us about your professional background…',
                     maxLines: 3,
+                    maxLength: 500,
                   ),
                 ],
               ),
@@ -626,6 +689,7 @@ class _ProfileTab extends StatelessWidget {
             const SizedBox(height: 32),
           ],
         ),
+        ),
       ),
     );
   }
@@ -661,7 +725,9 @@ class _PasswordTab extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      child: Form(
+      child: ContentWidth(
+        maxWidth: 600,
+        child: Form(
         key: formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -743,6 +809,7 @@ class _PasswordTab extends StatelessWidget {
 
             const SizedBox(height: 32),
           ],
+        ),
         ),
       ),
     );
@@ -895,6 +962,7 @@ class _Field extends StatelessWidget {
   final String? hint;
   final TextInputType keyboardType;
   final int maxLines;
+  final int? maxLength;
   final String? Function(String?)? validator;
 
   const _Field({
@@ -904,6 +972,7 @@ class _Field extends StatelessWidget {
     this.hint,
     this.keyboardType = TextInputType.text,
     this.maxLines = 1,
+    this.maxLength,
     this.validator,
   });
 
@@ -915,6 +984,7 @@ class _Field extends StatelessWidget {
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
+        maxLength: maxLength,
         validator: validator,
         style: GoogleFonts.montserrat(
           fontSize: 14,
@@ -933,6 +1003,7 @@ class _Field extends StatelessWidget {
             fontSize: 12,
             color: const Color(0xFFBBBBBB),
           ),
+          counterStyle: GoogleFonts.montserrat(fontSize: 10.5, color: _textSec),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,

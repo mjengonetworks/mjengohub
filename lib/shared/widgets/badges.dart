@@ -182,6 +182,38 @@ class ReviewerLevelBadge extends StatelessWidget {
   }
 }
 
+/// Role badge for elevated accounts (admin/editor/moderator/author) — mirrors
+/// the website profile hero's `{{ user.role.value.title() }}` pill. Not shown
+/// for the plain 'user' role, which carries no special standing.
+class RoleBadge extends StatelessWidget {
+  final String role;
+  const RoleBadge({super.key, required this.role});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = role
+        .split('_')
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}')
+        .join(' ');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.textDark,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.montserrat(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
 /// Inline "Add on Google" pill — the mobile equivalent of the website's
 /// Google Maps share trigger on a project's detail page.
 class AddOnGooglePill extends StatelessWidget {

@@ -1,7 +1,9 @@
 // lib/profile/profile_screen.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../auth/models/user_model.dart';
@@ -12,6 +14,7 @@ import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
 import '../shared/widgets/coming_soon.dart';
 import '../shared/widgets/form_fields.dart';
+import '../shared/widgets/responsive.dart';
 import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -56,7 +59,9 @@ class _SettingsView extends StatelessWidget {
       color: _bg,
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        child: Column(
+        child: ContentWidth(
+          maxWidth: 700,
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Cover banner + overlapping avatar ─────────────────────────
@@ -151,6 +156,7 @@ class _SettingsView extends StatelessWidget {
 
             const SizedBox(height: 32),
           ],
+          ),
         ),
       ),
     );
@@ -204,25 +210,88 @@ class _GetTheAppSectionState extends State<_GetTheAppSection> {
 
 // ── Profile header: cover banner + overlapping avatar ──────────────────────────
 
-class _ProfileHeader extends StatelessWidget {
+class _ProfileHeader extends StatefulWidget {
   final UserModel? user;
   final MjengoAuthController auth;
   final double topPad;
   const _ProfileHeader({required this.user, required this.auth, required this.topPad});
 
+  @override
+  State<_ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<_ProfileHeader> {
   static const double _coverHeight = 150;
   static const double _avatarSize = 84;
   static const double _ringWidth = 3;
   static const double _ringGap = 3;
 
-  void _pickAndUpload({required bool isCover}) {
-    // `auth/me/avatar` and `auth/me/cover` don't exist on the backend yet
-    // (see MjengoAuthController.uploadAvatar/uploadCoverImage) — show this
-    // instead of picking an image and firing a request that's guaranteed
-    // to 404.
-    showComingSoonSnack(isCover
-        ? 'Cover photo upload isn\'t available in the app yet.'
-        : 'Profile photo upload isn\'t available in the app yet.');
+  final _picker = ImagePicker();
+  bool _uploadingAvatar = false;
+  bool _uploadingCover = false;
+
+  UserModel? get user => widget.user;
+  MjengoAuthController get auth => widget.auth;
+  double get topPad => widget.topPad;
+
+  Future<void> _pickAndUpload({required bool isCover}) async {
+    if (isCover ? _uploadingCover : _uploadingAvatar) return;
+
+    final XFile? picked = kIsWeb
+        ? await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85)
+        : await _showSourceSheet();
+    if (picked == null) return;
+
+    setState(() => isCover ? _uploadingCover = true : _uploadingAvatar = true);
+
+    final bytes = await picked.readAsBytes();
+    final ok = isCover
+        ? await auth.uploadCoverImage(bytes, picked.name)
+        : await auth.uploadAvatar(bytes, picked.name);
+
+    if (!mounted) return;
+    setState(() => isCover ? _uploadingCover = false : _uploadingAvatar = false);
+
+    Get.snackbar(
+      ok ? 'Success' : 'Error',
+      ok
+          ? (isCover ? 'Cover photo updated' : 'Profile photo updated')
+          : (auth.errorMessage.isNotEmpty ? auth.errorMessage : 'Failed to upload photo'),
+      backgroundColor: ok ? const Color(0xFF22C55E) : AppColors.danger,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(12),
+    );
+  }
+
+  Future<XFile?> _showSourceSheet() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded, color: AppColors.accentBlue),
+              title: Text('Camera', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded, color: AppColors.accentBlue),
+              title: Text('Photo Library', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return null;
+    return _picker.pickImage(source: source, imageQuality: 85);
   }
 
   @override
@@ -268,7 +337,13 @@ class _ProfileHeader extends StatelessWidget {
                         color: Colors.black.withValues(alpha: 0.35),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 15),
+                      child: _uploadingCover
+                          ? const SizedBox(
+                              width: 15,
+                              height: 15,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 15),
                     ),
                   ),
                 ),
@@ -320,7 +395,13 @@ class _ProfileHeader extends StatelessWidget {
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 1.5),
                             ),
-                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 11),
+                            child: _uploadingAvatar
+                                ? const SizedBox(
+                                    width: 11,
+                                    height: 11,
+                                    child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.white),
+                                  )
+                                : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 11),
                           ),
                         ),
                       ],
@@ -354,6 +435,8 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                   ),
                   if (user?.isPrime == true) const PrimeBadge(),
+                  if (user?.role != null && user!.role!.toUpperCase() != 'USER')
+                    RoleBadge(role: user!.role!),
                 ],
               ),
               const SizedBox(height: 6),
