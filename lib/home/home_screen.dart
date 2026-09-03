@@ -156,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                         bottom: 12,
                         left: 16,
                         child: SubmitProjectButton(
-                          onTap: () => _launchExternalUrl('https://mjengohub.co.ke/projects/submit'),
+                          onTap: () => Get.toNamed(AppRoutes.submitProject),
                         ),
                       ),
                     ],

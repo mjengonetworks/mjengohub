@@ -10,6 +10,7 @@ import '../../navigation/main_navigation.dart';
 import '../../news/screens/article_detail_screen.dart';
 import '../../projects/screens/projects_screen.dart';
 import '../../projects/screens/project_detail_screen.dart';
+import '../../projects/screens/submit_project_screen.dart';
 import '../../incidents/screens/incidents_list_screen.dart';
 import '../../incidents/screens/incident_detail_screen.dart';
 import '../../projects/screens/private_projects_screen.dart';
@@ -36,6 +37,7 @@ class AppRoutes {
   // New sections
   static const String projects        = '/projects';
   static const String projectDetail   = '/project';
+  static const String submitProject   = '/submit-project';
   static const String siteSafety      = '/site-safety';
   static const String incidentDetail  = '/incident';
   static const String privateProjects = '/private-projects';
@@ -70,6 +72,13 @@ class AppRoutes {
       page: () {
         final slug = Get.arguments as String? ?? '';
         return ProjectDetailScreen(slug: slug);
+      },
+    ),
+    GetPage(
+      name: submitProject,
+      page: () {
+        final projectType = Get.arguments as String? ?? 'infrastructure';
+        return SubmitProjectScreen(initialProjectType: projectType);
       },
     ),
 

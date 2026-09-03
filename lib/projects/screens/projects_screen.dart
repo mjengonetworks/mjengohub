@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
+import '../../point/routes/app_routes.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../widgets/projects_map_view.dart';
@@ -41,6 +42,18 @@ class ProjectsScreen extends StatelessWidget {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: _kBg,
+        floatingActionButton: FloatingActionButton.extended(
+          backgroundColor: _kBlue,
+          onPressed: () async {
+            final submitted = await Get.toNamed(AppRoutes.submitProject, arguments: projectType);
+            if (submitted == true) ctrl.fetchAll();
+          },
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: Text(
+            'Submit',
+            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+          ),
+        ),
         body: Column(
           children: [
             const AppHeader(),

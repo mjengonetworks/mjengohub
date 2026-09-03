@@ -143,6 +143,38 @@ class ProjectsService {
     }
   }
 
+  /// Submits a new project directly (`POST /projects`), landing unapproved
+  /// pending admin review — the native replacement for the old
+  /// in-app-browser redirect to mjengohub.co.ke/projects/submit.
+  /// [data] matches the backend's payload schema exactly: `title` required,
+  /// `status`/`project_type` are enum strings, `latitude`/`longitude` optional.
+  Future<Map<String, dynamic>> submitProject(Map<String, dynamic> data) async {
+    try {
+      final res = await _api.postRequest('projects', data);
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final body = res.body?['data'];
+        return {
+          'success': true,
+          'id': body is Map ? body['id'] : null,
+          'message': (body is Map ? body['message'] as String? : null) ??
+              'Project submitted for admin review',
+        };
+      }
+      return {'success': false, 'message': _errorMessage(res.body)};
+    } catch (e) {
+      print('ProjectsService.submitProject error: $e');
+      return {'success': false, 'message': 'Could not submit project. Check your connection.'};
+    }
+  }
+
+  String _errorMessage(dynamic body) {
+    if (body is Map) {
+      final msg = body['message'] ?? body['error'];
+      if (msg is String && msg.isNotEmpty) return msg;
+    }
+    return 'Could not submit project. Please try again.';
+  }
+
   /// Single client with `description` + `project_count` (`full=True`).
   Future<ProjectClientDetail?> getClient(String slug) async {
     try {
