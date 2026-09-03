@@ -256,7 +256,11 @@ class MjengoAuthController extends GetxController {
       await (_googleSignInInit ??=
           _googleSignIn.initialize(serverClientId: _googleClientId));
 
-      final GoogleSignInAccount account = await _googleSignIn.authenticate();
+      final GoogleSignInAccount? account = await _googleSignIn.signIn();
+      if (account == null) {
+        // User closed or dismissed the popup
+        return;
+      }
       final GoogleSignInAuthentication auth = await account.authentication;
       final String? idToken = auth.idToken;
 
