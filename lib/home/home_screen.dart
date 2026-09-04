@@ -18,6 +18,7 @@ import '../point/routes/app_routes.dart';
 import '../shared/services/site_service.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
+import '../shared/widgets/leaderboard_widget.dart';
 import '../shared/widgets/preview_data_badge.dart';
 import '../videos/controllers/videos_controller.dart';
 import '../videos/models/video_model.dart';
@@ -32,7 +33,7 @@ import 'widgets/home_extra_sections.dart';
 /// those are genuinely better served by their own native app.
 Future<void> _launchExternalUrl(String url) async {
   final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppWebView);
+  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
 }
 
 class HomeScreen extends StatelessWidget {
@@ -165,26 +166,42 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // ── Breaking News (Latest Construction News equivalent) ──
-            const SizedBox(height: 4),
-            _breakingHeader(ctrl),
-            const SizedBox(height: 14),
-            SizedBox(height: 220, child: _breakingList(ctrl)),
+            // Homepage section order below is deliberately interleaved
+            // rather than stacked monolithically by content type: platform
+            // sections (projects/articles/trackers) alternate with
+            // ecosystem cross-promotion banners and the two curated
+            // showcases (Built History, Africa & World), closing with a
+            // micro leaderboard and the remaining utility feed.
 
-            const SizedBox(height: 10),
-            const AdBannerSlot(),
+            // 2 — Mjengo Networks showcase banner
+            const SizedBox(height: 24),
+            const MjengoNetworksBanner(),
 
-            // ── Featured Projects (parity with the website's
-            // Latest/Featured Infrastructure & Private Projects) ──────
+            // 3 — Featured Infrastructure Projects
             const SizedBox(height: 24),
             const FeaturedProjectsSection(),
 
+            // 4 — Built History showcase preview
             const SizedBox(height: 24),
-            const BrowseProjectsByCategorySection(),
+            const BuiltHistoryPreviewSection(),
 
-            // ── Latest Videos ──────────────────────────────────────
-            const _HomeVideosSection(),
+            // 5 — Latest News & Articles (Part 1)
+            const SizedBox(height: 24),
+            _breakingHeader(ctrl),
+            const SizedBox(height: 14),
+            SizedBox(height: 220, child: _breakingList(ctrl)),
+            const SizedBox(height: 10),
+            const AdBannerSlot(),
 
+            // 6 — Share Barabara showcase banner
+            const SizedBox(height: 24),
+            const ShareBarabaraBanner(),
+
+            // 7 — Africa & World continental spotlight preview
+            const SizedBox(height: 24),
+            const AfricaWorldPreviewSection(),
+
+            // 8 — Extended Articles & Analysis (Part 2)
             const SizedBox(height: 24),
             Obx(() {
               final articles = ctrl.featuredArticles.toList();
@@ -195,19 +212,33 @@ class HomeScreen extends StatelessWidget {
               );
             }),
 
-            // ── Safety Incidents (parity with the website's Site
-            // Safety preview strip, but with real incident cards
-            // instead of a static CTA banner) ─────────────────────────
+            // 9 — Private Developments showcase
+            const SizedBox(height: 24),
+            const PrivateDevelopmentsShowcaseSection(),
+
+            // 10 — Micro top-contributors leaderboard
+            const SizedBox(height: 24),
+            const MicroLeaderboardStrip(),
+
+            // 11 — Remaining feed & footer
+            const SizedBox(height: 24),
+            const BrowseProjectsByCategorySection(),
+
+            const _HomeVideosSection(),
+
             const SizedBox(height: 24),
             const SafetyIncidentsSection(),
 
             const SizedBox(height: 24),
-            const FollowMjengoHubSection(),
+            const SocialLinksGrid(),
 
             // ── Explore Quick Actions (app-only shortcuts, no website
             // equivalent — kept as a closing utility row) ─────────────
             const SizedBox(height: 28),
             const _ExploreSectionsWidget(),
+
+            const SizedBox(height: 20),
+            const _PartnerWithUsBanner(),
 
             const SizedBox(height: 16),
           ],
@@ -896,6 +927,55 @@ class _HeroHeadline extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Partner With Us promo banner — closes the homepage feed, routes to the
+//  Advertise pitch deck (AdvertiseScreen).
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PartnerWithUsBanner extends StatelessWidget {
+  const _PartnerWithUsBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GestureDetector(
+        onTap: () => Get.toNamed(AppRoutes.advertise),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.deepNavy,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
+                child: const Icon(Icons.handshake_rounded, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Partner With Us', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                    const SizedBox(height: 2),
+                    Text('Advertise, sponsor a project, or reach our audience',
+                        style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.85))),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

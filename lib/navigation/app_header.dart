@@ -28,7 +28,7 @@ class AppHeader extends StatelessWidget {
   // in-app link behavior, so the user never perceives leaving the app.
   Future<void> _launchExternal(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppWebView);
+    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
   }
 
   /// Jumps the bottom nav to [tabIndex] and, when called from a screen pushed

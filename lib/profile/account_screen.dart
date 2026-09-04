@@ -58,6 +58,8 @@ class _AccountScreenState extends State<AccountScreen>
   final _bioCtrl        = TextEditingController();
   final _locationCtrl   = TextEditingController();
   final _companyCtrl    = TextEditingController();
+  final _mjengoNetworksUrlCtrl = TextEditingController();
+  final _shareBarabaraUrlCtrl  = TextEditingController();
 
   // ── Password tab controllers ───────────────────────────────────────────────
   final _newPassCtrl     = TextEditingController();
@@ -85,7 +87,8 @@ class _AccountScreenState extends State<AccountScreen>
     // mark dirty when any profile field changes
     for (final c in [
       _firstNameCtrl, _lastNameCtrl, _phoneCtrl,
-      _bioCtrl, _locationCtrl, _companyCtrl
+      _bioCtrl, _locationCtrl, _companyCtrl,
+      _mjengoNetworksUrlCtrl, _shareBarabaraUrlCtrl,
     ]) {
       c.addListener(_onProfileChanged);
     }
@@ -99,6 +102,8 @@ class _AccountScreenState extends State<AccountScreen>
     _bioCtrl.text       = user.bio       ?? '';
     _locationCtrl.text  = user.location  ?? '';
     _companyCtrl.text   = user.company   ?? '';
+    _mjengoNetworksUrlCtrl.text = user.mjengoNetworksUrl ?? '';
+    _shareBarabaraUrlCtrl.text  = user.shareBarabaraUrl  ?? '';
     _profileDirty = false;
   }
 
@@ -112,6 +117,7 @@ class _AccountScreenState extends State<AccountScreen>
     for (final c in [
       _firstNameCtrl, _lastNameCtrl, _phoneCtrl,
       _bioCtrl, _locationCtrl, _companyCtrl,
+      _mjengoNetworksUrlCtrl, _shareBarabaraUrlCtrl,
       _newPassCtrl, _confirmPassCtrl,
     ]) {
       c.dispose();
@@ -131,6 +137,8 @@ class _AccountScreenState extends State<AccountScreen>
       bio       : _bioCtrl.text.trim(),
       location  : _locationCtrl.text.trim(),
       company   : _companyCtrl.text.trim(),
+      mjengoNetworksUrl : _mjengoNetworksUrlCtrl.text.trim(),
+      shareBarabaraUrl  : _shareBarabaraUrlCtrl.text.trim(),
     );
 
     if (!mounted) return;
@@ -282,6 +290,8 @@ class _AccountScreenState extends State<AccountScreen>
                       bioCtrl      : _bioCtrl,
                       locationCtrl : _locationCtrl,
                       companyCtrl  : _companyCtrl,
+                      mjengoNetworksUrlCtrl: _mjengoNetworksUrlCtrl,
+                      shareBarabaraUrlCtrl: _shareBarabaraUrlCtrl,
                       user         : user,
                       dirty        : _profileDirty,
                       saving       : _saving,
@@ -545,6 +555,8 @@ class _ProfileTab extends StatelessWidget {
   final TextEditingController bioCtrl;
   final TextEditingController locationCtrl;
   final TextEditingController companyCtrl;
+  final TextEditingController mjengoNetworksUrlCtrl;
+  final TextEditingController shareBarabaraUrlCtrl;
   final UserModel? user;
   final bool dirty;
   final bool saving;
@@ -558,6 +570,8 @@ class _ProfileTab extends StatelessWidget {
     required this.bioCtrl,
     required this.locationCtrl,
     required this.companyCtrl,
+    required this.mjengoNetworksUrlCtrl,
+    required this.shareBarabaraUrlCtrl,
     required this.user,
     required this.dirty,
     required this.saving,
@@ -654,6 +668,33 @@ class _ProfileTab extends StatelessWidget {
                     hint: 'Tell us about your professional background…',
                     maxLines: 3,
                     maxLength: 500,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Ecosystem links (self-service) ─────────────────────────────
+            _SectionLabel('Ecosystem Links'),
+            const SizedBox(height: 10),
+            _Card(
+              child: Column(
+                children: [
+                  _Field(
+                    controller: mjengoNetworksUrlCtrl,
+                    label: 'Mjengo Networks Profile',
+                    icon: Icons.hub_rounded,
+                    hint: 'https://mjengonetworks.co.ke/...',
+                    keyboardType: TextInputType.url,
+                  ),
+                  const Divider(height: 1, thickness: 0.8, color: _divider),
+                  _Field(
+                    controller: shareBarabaraUrlCtrl,
+                    label: 'Share Barabara Profile',
+                    icon: Icons.directions_car_filled_rounded,
+                    hint: 'https://sharebarabara.co.ke/...',
+                    keyboardType: TextInputType.url,
                   ),
                 ],
               ),

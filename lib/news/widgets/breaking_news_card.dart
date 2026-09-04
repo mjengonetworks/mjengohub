@@ -47,18 +47,21 @@ class BreakingNewsCard extends StatelessWidget {
             ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(14)),
-              child: Stack(
-                children: [
-                  NetImage(
-                    url: article.imageUrl,
-                    width: 170,
-                    height: 108,
-                    fit: BoxFit.cover,
-                    placeholderColor: const Color(0xFFE5E7EB),
-                  ),
-                  if (showPreviewBadge)
-                    const Positioned(top: 6, left: 6, child: PreviewDataBadge()),
-                ],
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    NetImage(
+                      url: article.imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholderColor: const Color(0xFFE5E7EB),
+                    ),
+                    if (showPreviewBadge)
+                      const Positioned(top: 6, left: 6, child: PreviewDataBadge()),
+                  ],
+                ),
               ),
             ),
 

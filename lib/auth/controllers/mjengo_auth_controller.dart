@@ -340,6 +340,8 @@ class MjengoAuthController extends GetxController {
     String? location,
     String? company,
     String? password,
+    String? mjengoNetworksUrl,
+    String? shareBarabaraUrl,
   }) async {
     try {
       _setLoading(true);
@@ -353,6 +355,8 @@ class MjengoAuthController extends GetxController {
         if (location  != null) 'location':    location,
         if (company   != null) 'company':     company,
         if (password  != null && password.isNotEmpty) 'password': password,
+        if (mjengoNetworksUrl != null) 'mjengo_networks_url': mjengoNetworksUrl,
+        if (shareBarabaraUrl  != null) 'share_barabara_url':  shareBarabaraUrl,
       };
 
       final response = await _api.apiPut('auth/me', body);

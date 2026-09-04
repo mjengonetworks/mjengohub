@@ -16,6 +16,8 @@ import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/projects_map_view.dart';
+import 'post_update_screen.dart';
+import 'submit_project_screen.dart';
 
 const _kBlue    = Color(0xFF2563EB);
 const _kBg      = Color(0xFFF0F4FF);
@@ -101,6 +103,7 @@ class ProjectDetailScreen extends StatelessWidget {
             ),
           ),
           actions: [
+            _FollowButton(project: project, ctrl: ctrl),
             GestureDetector(
               onTap: () {
                 final projectUrl = 'https://mjengohub.co.ke/projects/${project.slug}';
@@ -292,6 +295,12 @@ class ProjectDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // ── Admin action bar (Admin/Editor/Moderator) or "Suggest an
+              // Update" entry point (everyone else, signed in) ───────────
+              _ProjectActionBar(project: project, ctrl: ctrl),
+
+              const SizedBox(height: 8),
+
               // ── Details card (primary section) ─────────────────────────
               _buildDetailsCard(project),
 
@@ -303,15 +312,16 @@ class ProjectDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              // ── Milestones ───────────────────────────────────────────────
-              if (project.milestones.isNotEmpty)
-                _buildMilestonesCard(project),
+              // ── Renders (architectural impressions) — directly below the
+              // summary/description, ahead of milestones/photos ───────────
+              if (project.renderGallery.isNotEmpty)
+                _buildGalleryCard('Architectural Renders & Visualizations', project.renderGallery),
 
               const SizedBox(height: 8),
 
-              // ── Renders (architectural impressions) ─────────────────────
-              if (project.renderGallery.isNotEmpty)
-                _buildGalleryCard('Architectural Renders', project.renderGallery),
+              // ── Milestones ───────────────────────────────────────────────
+              if (project.milestones.isNotEmpty)
+                _buildMilestonesCard(project),
 
               const SizedBox(height: 8),
 
@@ -549,6 +559,140 @@ class ProjectDetailScreen extends StatelessWidget {
 }
 
 // ── Status dot (used in the hero badge) ───────────────────────────────────────
+
+/// App-bar Follow toggle — signed-in only; guests get a snackbar nudging
+/// them to sign in rather than a silent no-op or being bounced to /login.
+class _FollowButton extends StatelessWidget {
+  final Project project;
+  final ProjectDetailController ctrl;
+  const _FollowButton({required this.project, required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<MjengoAuthController>();
+    return GestureDetector(
+      onTap: () {
+        if (!auth.isAuthenticated) {
+          Get.snackbar('Sign in required', 'Sign in to follow projects and get update notifications.',
+              snackPosition: SnackPosition.BOTTOM);
+          return;
+        }
+        ctrl.toggleFollow();
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: Colors.black38,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          project.isFollowing ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+    );
+  }
+}
+
+/// Admin/Editor/Moderator: "Add an Update", "Edit Project", publish toggle.
+/// Everyone else, signed in: "Suggest an Update" only. Signed-out users see
+/// nothing — matches the Follow button's guest handling.
+class _ProjectActionBar extends StatelessWidget {
+  final Project project;
+  final ProjectDetailController ctrl;
+  const _ProjectActionBar({required this.project, required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<MjengoAuthController>();
+    if (!auth.isAuthenticated) return const SizedBox.shrink();
+    final canManage = auth.currentUser?.canManageProjects == true;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kDivider),
+      ),
+      child: canManage
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ProjectActionChip(
+                        icon: Icons.add_comment_rounded,
+                        label: 'Add an Update',
+                        onTap: () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: true)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ProjectActionChip(
+                        icon: Icons.edit_rounded,
+                        label: 'Edit Project',
+                        onTap: () => Get.to(() => SubmitProjectScreen(existingProject: project)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Obx(() => _ProjectActionChip(
+                      icon: Icons.visibility_off_rounded,
+                      label: ctrl.publishToggling.value ? 'Working…' : 'Publish / Unpublish',
+                      onTap: ctrl.publishToggling.value ? null : ctrl.togglePublish,
+                      fullWidth: true,
+                    )),
+              ],
+            )
+          : _ProjectActionChip(
+              icon: Icons.add_comment_outlined,
+              label: 'Suggest an Update',
+              onTap: () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: false)),
+              fullWidth: true,
+            ),
+    );
+  }
+}
+
+class _ProjectActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+  final bool fullWidth;
+  const _ProjectActionChip({required this.icon, required this.label, required this.onTap, this.fullWidth = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: fullWidth ? double.infinity : null,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: _kBlue.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _kBlue.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15, color: _kBlue),
+            const SizedBox(width: 6),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: _kBlue)),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _StatusDot extends StatelessWidget {
   final String status;

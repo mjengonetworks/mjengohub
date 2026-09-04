@@ -10,6 +10,7 @@ import '../../point/routes/app_routes.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../widgets/projects_map_view.dart';
+import '../widgets/tracker_dynamic_sections.dart';
 import 'project_detail_screen.dart';
 
 const _kBlue     = Color(0xFF2563EB);
@@ -118,6 +119,10 @@ class ProjectsScreen extends StatelessWidget {
 
                   // All projects grid
                   _buildProjectsGrid(ctrl),
+
+                  // Browse by Category / Most Viewed / By Status
+                  const SizedBox(height: 12),
+                  TrackerDynamicSections(projectType: ctrl.projectType),
                 ],
               ),
             );
@@ -433,8 +438,8 @@ class _FeaturedProjectCard extends StatelessWidget {
             ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(14)),
-              child: SizedBox(
-                height: 110,
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
                 child: NetImage(
                   url: project.imageUrl,
                   fit: BoxFit.cover,

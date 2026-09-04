@@ -23,8 +23,58 @@ extension on CommentResource {
   }
 }
 
+/// One row from `GET /auth/me/comments` — the signed-in user's own comments
+/// across every content type (project/article/incident/mental-health post),
+/// flat (no reply tree; that's only meaningful within one thread).
+class MyComment {
+  final int id;
+  final String content;
+  final String commentableType;
+  final int commentableId;
+  final int upvotes;
+  final int downvotes;
+  final bool isApproved;
+  final DateTime? createdAt;
+
+  const MyComment({
+    required this.id,
+    required this.content,
+    required this.commentableType,
+    required this.commentableId,
+    required this.upvotes,
+    required this.downvotes,
+    required this.isApproved,
+    this.createdAt,
+  });
+
+  factory MyComment.fromJson(Map<String, dynamic> j) => MyComment(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        content: (j['content'] as String?) ?? '',
+        commentableType: (j['commentable_type'] as String?) ?? '',
+        commentableId: (j['commentable_id'] as num?)?.toInt() ?? 0,
+        upvotes: (j['upvotes'] as num?)?.toInt() ?? 0,
+        downvotes: (j['downvotes'] as num?)?.toInt() ?? 0,
+        isApproved: j['is_approved'] as bool? ?? true,
+        createdAt: DateTime.tryParse((j['created_at'] as String?) ?? ''),
+      );
+}
+
 class CommentsService {
   BaseService get _api => Get.find<BaseService>();
+
+  /// The signed-in user's own comments across every content type.
+  Future<List<MyComment>> getMyComments({int page = 1, int perPage = 20}) async {
+    try {
+      final res = await _api.getRequest('auth/me/comments', query: {'page': '$page', 'per_page': '$perPage'});
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is List) return data.whereType<Map<String, dynamic>>().map(MyComment.fromJson).toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
 
   Future<List<ThreadedComment>> getComments(CommentResource resource, int id) async {
     try {

@@ -69,6 +69,7 @@ class AppTextField extends StatelessWidget {
     this.keyboard = TextInputType.text,
     this.validator,
     this.textCapitalization = TextCapitalization.sentences,
+    this.onSubmitted,
   });
 
   final TextEditingController controller;
@@ -77,6 +78,7 @@ class AppTextField extends StatelessWidget {
   final TextInputType keyboard;
   final String? Function(String?)? validator;
   final TextCapitalization textCapitalization;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) => TextFormField(
@@ -85,6 +87,7 @@ class AppTextField extends StatelessWidget {
         keyboardType: keyboard,
         validator: validator,
         textCapitalization: textCapitalization,
+        onFieldSubmitted: onSubmitted,
         style: GoogleFonts.montserrat(fontSize: 13.5, color: AppColors.textDark),
         decoration: appInputDecoration(hint),
       );

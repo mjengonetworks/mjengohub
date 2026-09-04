@@ -22,6 +22,9 @@ import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
 import 'contact_screen.dart';
+import 'widgets/profile_content_previews.dart';
+import '../news/screens/submit_article_screen.dart';
+import '../shared/widgets/leaderboard_widget.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -82,7 +85,29 @@ class _SettingsView extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+
+            // ── Ecosystem links (self-service Mjengo Networks / Share
+            // Barabara profile handles) ───────────────────────────────────
+            EcosystemLinksRow(user: user),
+
+            const SizedBox(height: 20),
+
+            // ── Content hierarchy: submissions, followed projects,
+            // articles, comments, site safety ───────────────────────────
+            const MyProjectSubmissionsRow(),
+            const SizedBox(height: 14),
+            const MyFollowedProjectsPreview(),
+            const SizedBox(height: 20),
+            const MyArticlesPreview(),
+            const SizedBox(height: 20),
+            const MyCommentsPreview(),
+            const SizedBox(height: 20),
+            const SiteSafetySubmissionsCard(),
+            const SizedBox(height: 20),
+            const MicroLeaderboardStrip(),
+
+            const SizedBox(height: 28),
 
             // ── Settings items ───────────────────────────────────────────
             _SettingsItem(
@@ -98,6 +123,12 @@ class _SettingsView extends StatelessWidget {
               title: 'My Submissions',
               subtitle: 'Articles, projects, incidents & comments',
               onTap: () => Get.toNamed(AppRoutes.submissions),
+            ),
+            _SettingsItem(
+              icon: Icons.edit_note_rounded,
+              title: 'Submit an Article',
+              subtitle: 'Prime members can submit for editorial review',
+              onTap: () => SubmitArticleScreen.open(context),
             ),
             _SettingsItem(
               icon: Icons.card_giftcard_rounded,

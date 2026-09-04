@@ -24,6 +24,11 @@ import '../../reports/screens/submit_report_screen.dart';
 import '../../shared/screens/advertise_screen.dart';
 import '../../service_catalog/screens/service_detail_screen.dart';
 import '../../service_catalog/screens/services_screen.dart';
+import '../screens/contributors_screen.dart';
+import '../../profile/screens/public_profile_screen.dart';
+import '../../projects/screens/built_history_screen.dart';
+import '../../projects/screens/africa_world_screen.dart';
+import '../../merch/screens/merch_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -55,6 +60,11 @@ class AppRoutes {
   static const String submitReport    = '/submit-report';
   static const String advertise = '/advertise';
   static const String savedItems = '/saved-items';
+  static const String contributors = '/contributors';
+  static const String publicProfile = '/user';
+  static const String builtHistory = '/built-history';
+  static const String africaWorld = '/africa-world';
+  static const String merch = '/merch';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -130,6 +140,22 @@ class AppRoutes {
     // Advertising enquiry (POST advertise)
     GetPage(name: savedItems, page: () => const SavedItemsScreen()),
     GetPage(name: advertise, page: () => const AdvertiseScreen()),
+
+    // Community leaderboards / public profiles (GET contributors, GET users/{id})
+    GetPage(name: contributors, page: () => const ContributorsScreen()),
+    GetPage(
+      name: publicProfile,
+      page: () {
+        final userId = Get.arguments is int ? Get.arguments as int : 0;
+        return PublicProfileScreen(userId: userId);
+      },
+    ),
+
+    // Trackers with no separate submit flow (Built History / Africa & World
+    // are filtered views over the same Project rows), merch
+    GetPage(name: builtHistory, page: () => const BuiltHistoryScreen()),
+    GetPage(name: africaWorld, page: () => const AfricaWorldScreen()),
+    GetPage(name: merch, page: () => const MerchScreen()),
   ];
 }
 

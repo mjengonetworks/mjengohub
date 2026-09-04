@@ -139,6 +139,45 @@ class ProjectDetailController extends GetxController {
     isLoading.value = false;
   }
 
+  final followLoading = false.obs;
+
+  /// Optimistic follow/unfollow toggle — flips local state immediately,
+  /// reverts if the request fails.
+  Future<void> toggleFollow() async {
+    final current = project.value;
+    if (current == null || followLoading.value) return;
+    final next = !current.isFollowing;
+    followLoading.value = true;
+    project.value = current.copyWith(isFollowing: next);
+    final result = await _service.setFollowing(current.id, next);
+    if (result == null) {
+      project.value = current.copyWith(isFollowing: current.isFollowing);
+      Get.snackbar('Error', 'Could not update follow status. Please try again.', snackPosition: SnackPosition.BOTTOM);
+    }
+    followLoading.value = false;
+  }
+
+  final publishToggling = false.obs;
+
+  /// `GET /projects/{slug}` only ever returns published rows, so flipping
+  /// to unpublished would 404 on a re-fetch here — this deliberately
+  /// doesn't reload the project afterward (there's also no `is_published`
+  /// field on the mobile Project model to reflect either way); it just
+  /// confirms the action via snackbar. Managing already-unpublished
+  /// projects is an admin-panel (web) task, not this screen's job.
+  Future<void> togglePublish() async {
+    final current = project.value;
+    if (current == null || publishToggling.value) return;
+    publishToggling.value = true;
+    final result = await _service.togglePublish(current.id);
+    publishToggling.value = false;
+    if (result != null) {
+      Get.snackbar('Done', result ? 'Project published' : 'Project unpublished', snackPosition: SnackPosition.BOTTOM);
+    } else {
+      Get.snackbar('Error', 'Could not update publish status.', snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
   Future<void> submitRating(int rating) async {
     if (project.value == null) return;
     ratingLoading.value = true;

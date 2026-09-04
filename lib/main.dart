@@ -1,5 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -52,6 +54,14 @@ class MyApp extends StatelessWidget {
           themeMode: theme.themeMode,
           getPages: AppRoutes.routes,
           initialRoute: AppRoutes.splash,
+          // Required by flutter_quill's toolbar (unified rich-text editor,
+          // Submit/Edit Project) for its own localized tooltips/labels.
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            FlutterQuillLocalizations.delegate,
+          ],
         ));
   }
 }

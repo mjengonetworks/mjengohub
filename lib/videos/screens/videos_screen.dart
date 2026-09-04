@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../news/widgets/net_image.dart';
 import '../../shared/services/site_service.dart';
+import '../../shared/widgets/leaderboard_widget.dart';
 import '../controllers/videos_controller.dart';
 import '../models/video_model.dart';
 import 'video_player_screen.dart';
@@ -384,7 +385,10 @@ class _VideoList extends StatelessWidget {
           },
           child: ListView.separated(
             padding: const EdgeInsets.only(top: 4, bottom: 16),
-            itemCount: ctrl.videos.length + (ctrl.hasMore.value ? 1 : 0),
+            // One trailing slot beyond the loaded videos: the load-more
+            // sentinel while more pages remain, or the weekly leaderboard
+            // preview once every video is loaded.
+            itemCount: ctrl.videos.length + 1,
             separatorBuilder: (_, __) => const Divider(
               height: 1,
               indent: 20,
@@ -393,16 +397,24 @@ class _VideoList extends StatelessWidget {
             ),
             itemBuilder: (_, i) {
               if (i == ctrl.videos.length) {
-                // load-more sentinel
-                ctrl.loadMore();
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(_kDark),
+                if (ctrl.hasMore.value) {
+                  // load-more sentinel
+                  ctrl.loadMore();
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(_kDark),
+                      ),
                     ),
-                  ),
+                  );
+                }
+                // Weekly leaderboard preview — every video is loaded, so this
+                // is genuinely the end of the list.
+                return const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: LeaderboardPreview(),
                 );
               }
               return VideoListTile(

@@ -48,6 +48,12 @@ class UserModel {
   final bool isVerified;
   final DateTime? verificationExpiresAt;
 
+  /// Optional self-service links to the user's own profile on Mjengo Hub's
+  /// sister platforms — shown as small clickable badges on the Profile
+  /// screen, editable from Account settings.
+  final String? mjengoNetworksUrl;
+  final String? shareBarabaraUrl;
+
   const UserModel({
     required this.uid,
     this.email,
@@ -69,6 +75,8 @@ class UserModel {
     this.referredById,
     this.isVerified = false,
     this.verificationExpiresAt,
+    this.mjengoNetworksUrl,
+    this.shareBarabaraUrl,
   });
 
   /// Parses api.py's `_user_dict`. Also used for the `shared_preferences`
@@ -94,6 +102,8 @@ class UserModel {
         referredById: json['referred_by_id']?.toString(),
         isVerified: json['is_verified'] as bool? ?? false,
         verificationExpiresAt: _parseDate(json['verification_expires_at']),
+        mjengoNetworksUrl: json['mjengo_networks_url'] as String?,
+        shareBarabaraUrl: json['share_barabara_url'] as String?,
         createdAt: _parseDate(json['created_at']) ?? _parseDate(json['joined_at']),
       );
 
@@ -115,6 +125,8 @@ class UserModel {
         'referred_by_id': referredById,
         'is_verified': isVerified,
         'verification_expires_at': verificationExpiresAt?.toIso8601String(),
+        'mjengo_networks_url': mjengoNetworksUrl,
+        'share_barabara_url': shareBarabaraUrl,
         'created_at': createdAt?.toIso8601String(),
       };
 
@@ -139,6 +151,8 @@ class UserModel {
     String? referredById,
     bool? isVerified,
     DateTime? verificationExpiresAt,
+    String? mjengoNetworksUrl,
+    String? shareBarabaraUrl,
   }) =>
       UserModel(
         uid: uid ?? this.uid,
@@ -161,6 +175,8 @@ class UserModel {
         referredById: referredById ?? this.referredById,
         isVerified: isVerified ?? this.isVerified,
         verificationExpiresAt: verificationExpiresAt ?? this.verificationExpiresAt,
+        mjengoNetworksUrl: mjengoNetworksUrl ?? this.mjengoNetworksUrl,
+        shareBarabaraUrl: shareBarabaraUrl ?? this.shareBarabaraUrl,
       );
 
   // ── Computed helpers ───────────────────────────────────────────────────────
@@ -198,6 +214,14 @@ class UserModel {
   bool get isEmailUser => provider == 'email';
   bool get isGoogleUser => provider == 'google';
   bool get isAdmin => (role ?? '').toUpperCase() == 'ADMIN';
+  bool get isEditor => (role ?? '').toUpperCase() == 'EDITOR';
+  bool get isModerator => (role ?? '').toUpperCase() == 'MODERATOR';
+
+  /// Admin, Editor, or Moderator — mirrors the backend's moderator_required
+  /// gate (admin.py) used for project publish/approve/edit actions. Drives
+  /// the project detail screen's admin action bar (Add Update, Edit,
+  /// publish toggle) and update auto-approval.
+  bool get canManageProjects => isAdmin || isEditor || isModerator;
 
   /// Mjengo Hub Prime status — verified AND (no expiry, or not yet expired).
   /// Mirrors `User.is_currently_verified` on the Flask backend.

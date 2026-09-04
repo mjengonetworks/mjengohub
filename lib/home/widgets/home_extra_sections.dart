@@ -15,8 +15,12 @@ import '../../news/models/article_model.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
+import '../../projects/screens/africa_world_screen.dart';
+import '../../projects/screens/built_history_screen.dart';
+import '../../projects/screens/private_projects_screen.dart';
 import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
+import '../../projects/widgets/tracker_project_card.dart';
 import '../../shared/services/demo_seed_data.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
@@ -27,7 +31,7 @@ import '../../shared/widgets/preview_data_badge.dart';
 /// behavior, so the user never perceives leaving the app.
 Future<void> _launchExternal(String url) async {
   final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppWebView);
+  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
 }
 
 // ── Section header (shared look across the three sections) ──────────────────
@@ -294,19 +298,117 @@ class _ProjectCategoryCard extends StatelessWidget {
 
 }
 
-// ── Follow Mjengo Hub (Mjengo Networks card + social cluster) ───────────────
+// ── Ecosystem cross-promotion: two standalone banners (Mjengo Networks,
+// Share Barabara) placed at separate points in the homepage's interleaved
+// flow (see home_screen.dart), plus a separate social-links grid — split
+// out of the old combined "Follow Mjengo Hub" section, which bundled all
+// three into one block. ───────────────────────────────────────────────────
 
-class FollowMjengoHubSection extends StatefulWidget {
-  const FollowMjengoHubSection({super.key});
+class _EcosystemBanner extends StatefulWidget {
+  final String heroImagePageKey;
+  final String url;
+  final IconData fallbackIcon;
+  final String title;
+  final String subtitle;
+  final Decoration Function() background;
+
+  const _EcosystemBanner({
+    required this.heroImagePageKey,
+    required this.url,
+    required this.fallbackIcon,
+    required this.title,
+    required this.subtitle,
+    required this.background,
+  });
 
   @override
-  State<FollowMjengoHubSection> createState() => _FollowMjengoHubSectionState();
+  State<_EcosystemBanner> createState() => _EcosystemBannerState();
 }
 
-class _FollowMjengoHubSectionState extends State<FollowMjengoHubSection> {
-  static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
-  static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
+class _EcosystemBannerState extends State<_EcosystemBanner> {
+  final _service = SiteService();
+  String? _icon;
 
+  @override
+  void initState() {
+    super.initState();
+    _service.getHeroImages(pageKey: widget.heroImagePageKey).then((icons) {
+      if (mounted && icons.isNotEmpty) setState(() => _icon = icons.first.image);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GestureDetector(
+        onTap: () => _launchExternal(widget.url),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: widget.background(),
+          child: Row(
+            children: [
+              _EcosystemIcon(imageUrl: _icon, fallbackIcon: widget.fallbackIcon),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.title, style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                    const SizedBox(height: 2),
+                    Text(widget.subtitle, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.9))),
+                  ],
+                ),
+              ),
+              const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MjengoNetworksBanner extends StatelessWidget {
+  const MjengoNetworksBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _EcosystemBanner(
+      heroImagePageKey: 'hero_cta_mjengo_networks',
+      url: 'https://mjengonetworks.co.ke/',
+      fallbackIcon: Icons.hub_rounded,
+      title: 'Mjengo Networks',
+      subtitle: 'Our wider media & social network',
+      background: () => BoxDecoration(gradient: AppColors.verifiedPillGradient, borderRadius: BorderRadius.circular(14)),
+    );
+  }
+}
+
+class ShareBarabaraBanner extends StatelessWidget {
+  const ShareBarabaraBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _EcosystemBanner(
+      heroImagePageKey: 'hero_cta_share_barabara',
+      url: 'https://sharebarabara.co.ke',
+      fallbackIcon: Icons.directions_car_filled_rounded,
+      title: 'Share Barabara',
+      subtitle: 'Road safety awareness & reporting',
+      background: () => BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(14)),
+    );
+  }
+}
+
+class SocialLinksGrid extends StatefulWidget {
+  const SocialLinksGrid({super.key});
+
+  @override
+  State<SocialLinksGrid> createState() => _SocialLinksGridState();
+}
+
+class _SocialLinksGridState extends State<SocialLinksGrid> {
   // Fallback-only placeholders, used solely if the backend's admin-managed
   // SocialLink table (`/api/v1/site/social-links`) has no active rows yet.
   static const List<SocialLinkInfo> _fallbackLinks = [
@@ -325,13 +427,9 @@ class _FollowMjengoHubSectionState extends State<FollowMjengoHubSection> {
   @override
   void initState() {
     super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final fetched = await _service.getSocialLinks();
-    if (!mounted || fetched.isEmpty) return;
-    setState(() => _links = fetched);
+    _service.getSocialLinks().then((links) {
+      if (mounted && links.isNotEmpty) setState(() => _links = links);
+    });
   }
 
   static const Map<String, IconData> _iconFor = {
@@ -378,78 +476,6 @@ class _FollowMjengoHubSectionState extends State<FollowMjengoHubSection> {
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: GestureDetector(
-            onTap: () => _launchExternal(_mjengoNetworksUrl),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: AppColors.verifiedPillGradient,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(11)),
-                    child: const Icon(Icons.hub_rounded, color: Colors.white, size: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Mjengo Networks', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
-                        const SizedBox(height: 2),
-                        Text('Our wider media & social network', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.9))),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: GestureDetector(
-            onTap: () => _launchExternal(_shareBarabaraUrl),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.danger,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(11)),
-                    child: const Icon(Icons.directions_car_filled_rounded, color: Colors.white, size: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Share Barabara', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
-                        const SizedBox(height: 2),
-                        Text('Road safety awareness & reporting', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.9))),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 14),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -464,6 +490,36 @@ class _FollowMjengoHubSectionState extends State<FollowMjengoHubSection> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Circular brand icon for the Mjengo Networks / Share Barabara banners.
+/// The logo is scaled to ~76% of the circle's diameter with inner padding
+/// so it sits comfortably centered without grazing the circle's edge.
+/// Falls back to a plain Material icon if no admin-managed brand icon
+/// (`GET site/hero-images?page_key=hero_cta_*`) is configured yet.
+class _EcosystemIcon extends StatelessWidget {
+  final String? imageUrl;
+  final IconData fallbackIcon;
+  static const double _diameter = 46;
+
+  const _EcosystemIcon({required this.imageUrl, required this.fallbackIcon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: _diameter,
+      height: _diameter,
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+      child: (imageUrl != null && imageUrl!.isNotEmpty)
+          ? Padding(
+              padding: const EdgeInsets.all(_diameter * 0.12),
+              child: ClipOval(
+                child: NetImage(url: imageUrl, fit: BoxFit.contain, placeholderColor: Colors.transparent),
+              ),
+            )
+          : Icon(fallbackIcon, color: Colors.white, size: 22),
     );
   }
 }
@@ -527,7 +583,10 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
   }
 
   Future<void> _load() async {
-    final projects = await _service.getProjects(featured: true, perPage: 8);
+    // Infrastructure only — Private Developments gets its own dedicated
+    // showcase section (PrivateDevelopmentsShowcaseSection) further down the
+    // homepage, so the two don't show overlapping cards.
+    final projects = await _service.getProjects(featured: true, projectType: 'infrastructure', perPage: 8);
     if (!mounted) return;
     if (projects.isEmpty) {
       setState(() {
@@ -551,7 +610,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Featured Projects',
+          title: 'Featured Infrastructure Projects',
           onSeeAll: () => Get.toNamed(AppRoutes.projects),
           isDemo: _isDemo,
         ),
@@ -559,7 +618,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Infrastructure and private developments tracked across Kenya',
+            'Roads, bridges and major public infrastructure tracked across Kenya',
             style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
           ),
         ),
@@ -622,15 +681,15 @@ class _FeaturedProjectCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 110,
-              width: double.infinity,
+            AspectRatio(
+              aspectRatio: 16 / 9,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   NetImage(
                     url: project.imageUrl,
                     fit: BoxFit.cover,
+                    width: double.infinity,
                     placeholderColor: const Color(0xFF1E3A5F),
                   ),
                   Positioned(
@@ -701,6 +760,202 @@ class _FeaturedProjectCard extends StatelessWidget {
           style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3),
         ),
       );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Built History preview — homepage carousel for the archive tracker
+//  (Project.is_built_history=True, same Project rows as every other
+//  tracker, just filtered/labeled differently). Links out to
+//  BuiltHistoryScreen.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class BuiltHistoryPreviewSection extends StatefulWidget {
+  const BuiltHistoryPreviewSection({super.key});
+
+  @override
+  State<BuiltHistoryPreviewSection> createState() => _BuiltHistoryPreviewSectionState();
+}
+
+class _BuiltHistoryPreviewSectionState extends State<BuiltHistoryPreviewSection> {
+  final _service = ProjectsService();
+  List<Project> _projects = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getProjects(isBuiltHistory: true, perPage: 8).then((p) {
+      if (!mounted) return;
+      setState(() {
+        _projects = p;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _projects.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: 'Built History', onSeeAll: () => Get.to(() => const BuiltHistoryScreen())),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Kenya\'s architectural and infrastructure heritage',
+            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 190,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _projects.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => TrackerProjectCard(
+                    project: _projects[i],
+                    captionOverride: _projects[i].completionDecade,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Africa & World spotlight preview — homepage carousel for curated
+//  international entries (Project.geo_scope='global'). Links out to
+//  AfricaWorldScreen.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class AfricaWorldPreviewSection extends StatefulWidget {
+  const AfricaWorldPreviewSection({super.key});
+
+  @override
+  State<AfricaWorldPreviewSection> createState() => _AfricaWorldPreviewSectionState();
+}
+
+class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
+  final _service = ProjectsService();
+  List<Project> _projects = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getProjects(geoScope: 'global', perPage: 8).then((p) {
+      if (!mounted) return;
+      setState(() {
+        _projects = p;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _projects.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: 'Africa & World', onSeeAll: () => Get.to(() => const AfricaWorldScreen())),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Landmark projects from across the continent and beyond',
+            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 190,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _projects.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => TrackerProjectCard(
+                    project: _projects[i],
+                    captionOverride: _projects[i].country,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Private Developments showcase — homepage carousel for
+//  project_type='private_development' (Housing, Commercial, ...). Links out
+//  to PrivateProjectsScreen (already the dedicated screen for this tracker).
+// ─────────────────────────────────────────────────────────────────────────────
+
+class PrivateDevelopmentsShowcaseSection extends StatefulWidget {
+  const PrivateDevelopmentsShowcaseSection({super.key});
+
+  @override
+  State<PrivateDevelopmentsShowcaseSection> createState() => _PrivateDevelopmentsShowcaseSectionState();
+}
+
+class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopmentsShowcaseSection> {
+  final _service = ProjectsService();
+  List<Project> _projects = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getProjects(projectType: 'private_development', perPage: 8).then((p) {
+      if (!mounted) return;
+      setState(() {
+        _projects = p;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _projects.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: 'Private Developments', onSeeAll: () => Get.to(() => const PrivateProjectsScreen())),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Housing, commercial and mixed-use developments',
+            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 190,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _projects.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => TrackerProjectCard(project: _projects[i]),
+                ),
+        ),
+      ],
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

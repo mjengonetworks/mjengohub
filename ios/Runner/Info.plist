@@ -45,6 +45,8 @@
 	<string>Mjengo Hub needs access to your photos to attach images to incident reports.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Mjengo Hub needs camera access to capture incident photos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Mjengo Hub uses your location to pin a project's location when submitting or editing it.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

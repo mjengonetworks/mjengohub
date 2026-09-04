@@ -1,17 +1,22 @@
 // lib/shared/screens/advertise_screen.dart
 //
-// "Advertise with Us" enquiry form — mirrors templates/advertise.html.
-// Backed by api.py's `POST advertise` (AdvertisingInquiry). The website's
-// form also has a file-attachment input, but the JSON endpoint never reads
-// it (`request.get_json()` only), so it's omitted here rather than faked.
+// "Advertise with Us" — a high-conversion pitch deck (alternating navy/gray/
+// white cards making the case for advertising, plus direct call/email CTAs)
+// followed by the enquiry form. Backed by api.py's `POST advertise`
+// (AdvertisingInquiry). The website's form also has a file-attachment input,
+// but the JSON endpoint never reads it (`request.get_json()` only), so it's
+// omitted here rather than faked.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/site_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/form_fields.dart';
 import '../widgets/responsive.dart';
+
+const String _kFallbackAdvertiseEmail = 'info@mjengohub.com';
 
 class AdvertiseScreen extends StatefulWidget {
   const AdvertiseScreen({super.key});
@@ -23,6 +28,7 @@ class AdvertiseScreen extends StatefulWidget {
 class _AdvertiseScreenState extends State<AdvertiseScreen> {
   final _api = SiteService();
   final _formKey = GlobalKey<FormState>();
+  SiteSettings? _settings;
 
   final _companyName = TextEditingController();
   final _contactPerson = TextEditingController();
@@ -66,6 +72,33 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
   bool _submitting = false;
   bool _submitted = false;
   String? _reference;
+
+  @override
+  void initState() {
+    super.initState();
+    _api.getSiteSettings().then((s) {
+      if (mounted && s != null) setState(() => _settings = s);
+    });
+  }
+
+  Future<void> _callUs() async {
+    final phone = _settings?.contactPhone;
+    if (phone == null || phone.isEmpty) return;
+    final uri = Uri(scheme: 'tel', path: phone);
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  Future<void> _emailUs() async {
+    final email = _settings?.contactEmail?.isNotEmpty == true
+        ? _settings!.contactEmail!
+        : _kFallbackAdvertiseEmail;
+    final uri = Uri(
+      scheme: 'mailto',
+      path: email,
+      query: 'subject=${Uri.encodeComponent('[Mjengo Hub] Advertising Enquiry')}',
+    );
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
 
   @override
   void dispose() {
@@ -190,9 +223,64 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _PitchCard(
+            background: AppColors.deepNavy,
+            titleColor: Colors.white,
+            bodyColor: Colors.white70,
+            icon: Icons.groups_rounded,
+            title: 'Reach the people who build Kenya',
+            body: 'Contractors, architects, engineers, project managers and '
+                'developers across the country read Mjengo Hub every week — '
+                'put your brand in front of the audience that specifies and '
+                'buys.',
+          ),
+          const SizedBox(height: 12),
+          _PitchCard(
+            background: const Color(0xFFF3F4F8),
+            titleColor: AppColors.textDark,
+            bodyColor: AppColors.textSubtle,
+            icon: Icons.trending_up_rounded,
+            title: 'Multiple placements, one campaign',
+            body: 'Homepage banners, sponsored project spotlights on the '
+                'Infrastructure and Private Developments trackers, and '
+                'newsletter features — pick the mix that fits your budget.',
+          ),
+          const SizedBox(height: 12),
+          _PitchCard(
+            background: Colors.white,
+            border: AppColors.divider,
+            titleColor: AppColors.textDark,
+            bodyColor: AppColors.textSubtle,
+            icon: Icons.handshake_rounded,
+            title: 'Sponsored project spotlights',
+            body: 'Attach your brand to a real, tracked project — visibility '
+                'that lasts as long as the build, not just a campaign window.',
+          ),
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              Expanded(
+                child: _CtaButton(
+                  icon: Icons.call_rounded,
+                  label: 'Call us',
+                  onTap: _settings?.contactPhone?.isNotEmpty == true ? _callUs : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _CtaButton(
+                  icon: Icons.mail_rounded,
+                  label: 'Email us',
+                  onTap: _emailUs,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+
           Text(
-            'Reach thousands of construction professionals and decision-makers '
-            'across Kenya through Mjengo Hub.',
+            'Or send us the details below and our advertising team will reach out.',
             style: GoogleFonts.montserrat(fontSize: 12.5, height: 1.5, color: AppColors.textSubtle),
           ),
           const SizedBox(height: 20),
@@ -293,6 +381,114 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
           ),
           const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+}
+
+/// One card in the alternating navy/gray/white pitch-deck intro.
+class _PitchCard extends StatelessWidget {
+  final Color background;
+  final Color? border;
+  final Color titleColor;
+  final Color bodyColor;
+  final IconData icon;
+  final String title;
+  final String body;
+
+  const _PitchCard({
+    required this.background,
+    this.border,
+    required this.titleColor,
+    required this.bodyColor,
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(16),
+        border: border != null ? Border.all(color: border!) : null,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: titleColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: titleColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  body,
+                  style: GoogleFonts.montserrat(fontSize: 12, height: 1.5, color: bodyColor),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CtaButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  const _CtaButton({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: enabled ? AppColors.primaryBlue.withValues(alpha: 0.1) : AppColors.divider.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: enabled ? AppColors.primaryBlue.withValues(alpha: 0.3) : AppColors.divider),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 17, color: enabled ? AppColors.primaryBlue : AppColors.textSubtle),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: enabled ? AppColors.primaryBlue : AppColors.textSubtle,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

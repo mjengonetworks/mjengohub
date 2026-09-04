@@ -44,6 +44,21 @@ class IncidentsService {
     }
   }
 
+  /// Incidents the signed-in user reported — `GET /auth/me/incidents`.
+  Future<List<Incident>> getMyIncidents({int page = 1, int perPage = 20}) async {
+    try {
+      final res = await _api.getRequest('auth/me/incidents', query: {'page': '$page', 'per_page': '$perPage'});
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is List) return data.whereType<Map<String, dynamic>>().map(Incident.fromJson).toList();
+      }
+      return [];
+    } catch (e) {
+      print('IncidentsService.getMyIncidents error: $e');
+      return [];
+    }
+  }
+
   Future<Incident?> getIncident(String slug) async {
     try {
       final res = await _api.getRequest('incidents/$slug');

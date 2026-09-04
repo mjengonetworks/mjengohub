@@ -70,11 +70,24 @@ class SocialLinkInfo {
 class SiteSettings {
   final String? playStoreUrl;
   final String? appStoreUrl;
-  const SiteSettings({this.playStoreUrl, this.appStoreUrl});
+  final String? contactEmail;
+  final String? contactPhone;
+  final String? contactLocation;
+
+  const SiteSettings({
+    this.playStoreUrl,
+    this.appStoreUrl,
+    this.contactEmail,
+    this.contactPhone,
+    this.contactLocation,
+  });
 
   factory SiteSettings.fromJson(Map<String, dynamic> j) => SiteSettings(
         playStoreUrl: j['footer_playstore_url'] as String?,
         appStoreUrl: j['footer_appstore_url'] as String?,
+        contactEmail: j['footer_contact_email'] as String?,
+        contactPhone: j['footer_contact_phone'] as String?,
+        contactLocation: j['footer_contact_location'] as String?,
       );
 }
 

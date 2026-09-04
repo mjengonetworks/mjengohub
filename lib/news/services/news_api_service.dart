@@ -76,6 +76,51 @@ class NewsApiService {
     }
   }
 
+  /// Submits a new article — `POST /articles`, gated server-side behind
+  /// Mjengo Hub Prime (403 if the caller isn't verified). Lands PENDING,
+  /// awaiting editorial review before publication.
+  Future<Map<String, dynamic>> submitArticle({
+    required String title,
+    required String content,
+    String? summary,
+    String? categorySlug,
+  }) async {
+    try {
+      final res = await _api.postRequest('articles', {
+        'title': title,
+        'content': content,
+        if (summary != null && summary.isNotEmpty) 'summary': summary,
+        if (categorySlug != null) 'category': categorySlug,
+      });
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return {'success': true, 'message': res.body?['message'] as String?};
+      }
+      return {'success': false, 'message': _errorMessage(res.body), 'status': res.statusCode};
+    } catch (e) {
+      _log('submitArticle', e);
+      return {'success': false, 'message': 'Could not submit article. Check your connection.'};
+    }
+  }
+
+  String _errorMessage(dynamic body) {
+    if (body is Map) {
+      final msg = body['message'] ?? body['error'];
+      if (msg is String && msg.isNotEmpty) return msg;
+    }
+    return 'Could not submit article. Please try again.';
+  }
+
+  /// Articles authored by the signed-in user — `GET /auth/me/articles`.
+  Future<List<Article>> getMyArticles({int page = 1, int perPage = 20}) async {
+    try {
+      final res = await _api.getRequest('auth/me/articles', query: {'page': '$page', 'per_page': '$perPage'});
+      return _parseArticleList(res);
+    } catch (e) {
+      _log('getMyArticles', e);
+      return [];
+    }
+  }
+
   // ── Categories ────────────────────────────────────────────────────────────
 
   Future<List<Category>> getCategories() async {

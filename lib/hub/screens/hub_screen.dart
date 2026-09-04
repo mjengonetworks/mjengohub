@@ -82,6 +82,34 @@ class HubScreen extends StatelessWidget {
       categorySlug: 'tenders',
     ),
     _HubItem(
+      label: 'Built History',
+      sub: "Kenya's architectural & infrastructure heritage",
+      icon: Icons.account_balance_rounded,
+      color: AppColors.deepNavy,
+      route: AppRoutes.builtHistory,
+    ),
+    _HubItem(
+      label: 'Africa & World',
+      sub: 'Landmark projects across the continent and beyond',
+      icon: Icons.public_rounded,
+      color: AppColors.accentBlue,
+      route: AppRoutes.africaWorld,
+    ),
+    _HubItem(
+      label: 'Top Contributors',
+      sub: 'Weekly leaderboards — points & project submissions',
+      icon: Icons.emoji_events_rounded,
+      color: const Color(0xFFFBBF24),
+      route: AppRoutes.contributors,
+    ),
+    _HubItem(
+      label: 'Merch',
+      sub: 'Mjengo Hub branded gear',
+      icon: Icons.shopping_bag_rounded,
+      color: AppColors.primeBadge,
+      route: AppRoutes.merch,
+    ),
+    _HubItem(
       label: 'Advertise with Us',
       sub: 'Reach construction professionals across Kenya',
       icon: Icons.campaign_rounded,
@@ -195,7 +223,7 @@ class _HubRow extends StatelessWidget {
       // In-app browser (Custom Tabs / SFSafariViewController), not a
       // system-browser hand-off — matches X/Twitter's in-app link behavior.
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.inAppWebView);
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
       }
       return;
     }
