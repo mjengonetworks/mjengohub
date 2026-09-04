@@ -9,7 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../incidents/models/incident_model.dart';
-import '../../incidents/screens/incident_detail_screen.dart';
 import '../../incidents/services/incidents_service.dart';
 import '../../news/models/article_model.dart';
 import '../../news/widgets/net_image.dart';
@@ -310,6 +309,7 @@ class _EcosystemBanner extends StatefulWidget {
   final IconData fallbackIcon;
   final String title;
   final String subtitle;
+  final String ctaLabel;
   final Decoration Function() background;
 
   const _EcosystemBanner({
@@ -318,6 +318,7 @@ class _EcosystemBanner extends StatefulWidget {
     required this.fallbackIcon,
     required this.title,
     required this.subtitle,
+    required this.ctaLabel,
     required this.background,
   });
 
@@ -339,30 +340,52 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
 
   @override
   Widget build(BuildContext context) {
+    // Standalone card, not a tappable strip: icon + heading + copy stacked
+    // above an explicit CTA button — mirrors the website's .ph-preview-card
+    // (an icon/heading/paragraph row followed by its own <a class="btn">),
+    // rather than the whole card doubling as one big tap target.
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GestureDetector(
-        onTap: () => _launchExternal(widget.url),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: widget.background(),
-          child: Row(
-            children: [
-              _EcosystemIcon(imageUrl: _icon, fallbackIcon: widget.fallbackIcon),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.title, style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
-                    const SizedBox(height: 2),
-                    Text(widget.subtitle, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.9))),
-                  ],
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: widget.background(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _EcosystemIcon(imageUrl: _icon, fallbackIcon: widget.fallbackIcon),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
+                      const SizedBox(height: 4),
+                      Text(widget.subtitle,
+                          style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white.withValues(alpha: 0.92), height: 1.4)),
+                    ],
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => _launchExternal(widget.url),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  side: BorderSide.none,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: Text(widget.ctaLabel,
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.textDark)),
               ),
-              const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -379,7 +402,9 @@ class MjengoNetworksBanner extends StatelessWidget {
       url: 'https://mjengonetworks.co.ke/',
       fallbackIcon: Icons.hub_rounded,
       title: 'Mjengo Networks',
-      subtitle: 'Our wider media & social network',
+      subtitle: 'Mjengo Networks — redefining construction networking in Kenya '
+          'and beyond. Mjengo Hub is proudly built and run by Mjengo Networks.',
+      ctaLabel: 'Visit Mjengo Networks →',
       background: () => BoxDecoration(gradient: AppColors.verifiedPillGradient, borderRadius: BorderRadius.circular(14)),
     );
   }
@@ -395,7 +420,8 @@ class ShareBarabaraBanner extends StatelessWidget {
       url: 'https://sharebarabara.co.ke',
       fallbackIcon: Icons.directions_car_filled_rounded,
       title: 'Share Barabara',
-      subtitle: 'Road safety awareness & reporting',
+      subtitle: 'Report and track road conditions across Kenya, together with fellow road users.',
+      ctaLabel: 'Visit Share Barabara →',
       background: () => BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(14)),
     );
   }
@@ -735,7 +761,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                       value: (project.progressPercent.clamp(0, 100)) / 100,
                       minHeight: 5,
                       backgroundColor: AppColors.divider,
-                      color: false ? AppColors.primeBadge : AppColors.accentBlue,
+                      color: AppColors.accentBlue,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -1128,15 +1154,15 @@ class _SafetyIncidentCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 88,
-              width: double.infinity,
+            AspectRatio(
+              aspectRatio: 16 / 9,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   NetImage(
                     url: incident.imageUrl,
                     fit: BoxFit.cover,
+                    width: double.infinity,
                     placeholderColor: isRoad ? const Color(0xFF7F1D1D) : const Color(0xFF78350F),
                     placeholderIcon: Icons.report_problem_rounded,
                   ),

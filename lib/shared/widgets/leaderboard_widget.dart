@@ -31,7 +31,7 @@ class LeaderboardPreview extends StatefulWidget {
 
 class _LeaderboardPreviewState extends State<LeaderboardPreview> {
   final _service = ContributorsService();
-  late Future<CommunityLeaderboards> _future = _service.getContributors(window: widget.window, limit: 5);
+  late final Future<CommunityLeaderboards> _future = _service.getContributors(window: widget.window, limit: 5);
   bool _showProjects = false;
 
   @override
@@ -197,14 +197,21 @@ class _MicroLeaderboardStripState extends State<MicroLeaderboardStrip> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.divider),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 16),
-                const SizedBox(width: 8),
-                Expanded(child: _MicroEntry(label: 'Top Points', row: topPoints)),
-                Container(width: 1, height: 22, color: AppColors.divider, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                Expanded(child: _MicroEntry(label: 'Top Contributor', row: topProject)),
-                const Icon(Icons.chevron_right_rounded, color: Color(0xFFBBBBBB), size: 18),
+                Row(
+                  children: [
+                    const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(child: _MicroEntry(label: 'Top Points', row: topPoints)),
+                    Container(width: 1, height: 22, color: AppColors.divider, margin: const EdgeInsets.symmetric(horizontal: 10)),
+                    Expanded(child: _MicroEntry(label: 'Top Contributor', row: topProject)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text('View All Leaderboards →',
+                    style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
               ],
             ),
           ),

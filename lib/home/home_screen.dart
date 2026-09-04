@@ -2,7 +2,6 @@ import '../navigation/main_navigation.dart';
 import '../shared/widgets/ad_banner_slot.dart';
 // lib/home/home_screen.dart
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -11,18 +10,17 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../news/controllers/home_news_controller.dart';
 import '../news/models/article_model.dart';
-import '../news/widgets/featured_article_card.dart';
 import '../news/widgets/breaking_news_card.dart';
+// featured_article_card.dart is imported for PageDotIndicator (hero
+// carousel dots), not FeaturedArticleCard itself — this screen doesn't use
+// that card.
+import '../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
-import '../shared/services/site_service.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
 import '../shared/widgets/leaderboard_widget.dart';
 import '../shared/widgets/preview_data_badge.dart';
-import '../videos/controllers/videos_controller.dart';
-import '../videos/models/video_model.dart';
-import '../videos/screens/video_player_screen.dart';
 import 'widgets/home_extra_sections.dart';
 
 /// Opens a genuine external website in an in-app browser (Chrome Custom Tabs
@@ -220,25 +218,24 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const MicroLeaderboardStrip(),
 
-            // 11 — Remaining feed & footer
-            const SizedBox(height: 24),
-            const BrowseProjectsByCategorySection(),
-
-            const _HomeVideosSection(),
-
+            // 11 — Site Safety strip + Partner With Us pitch card, back to
+            // back as one high-conversion closing pair (matches the
+            // website's Site Safety Preview immediately followed by the
+            // Advertise-with-Us strip near the foot of the page)
             const SizedBox(height: 24),
             const SafetyIncidentsSection(),
 
-            const SizedBox(height: 24),
-            const SocialLinksGrid(),
+            const SizedBox(height: 20),
+            const _PartnerWithUsBanner(),
 
             // ── Explore Quick Actions (app-only shortcuts, no website
-            // equivalent — kept as a closing utility row) ─────────────
+            // equivalent — kept just above the footer) ───────────────────
             const SizedBox(height: 28),
             const _ExploreSectionsWidget(),
 
-            const SizedBox(height: 20),
-            const _PartnerWithUsBanner(),
+            // 12 — Footer & channel links
+            const SizedBox(height: 24),
+            const SocialLinksGrid(),
 
             const SizedBox(height: 16),
           ],
@@ -378,356 +375,6 @@ class HomeScreen extends StatelessWidget {
   void _openArticle(Article article) {
     Get.toNamed(AppRoutes.articleDetail, arguments: article.slug);
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  HOME VIDEOS SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _HomeVideosSection extends StatelessWidget {
-  const _HomeVideosSection();
-
-  static const _kYT = Color(0xFFFF0000);
-
-  @override
-  Widget build(BuildContext context) {
-    // Safely find the controller — may not be ready if DI failed
-    final VideosController? ctrl;
-    try {
-      ctrl = Get.find<VideosController>();
-    } catch (_) {
-      return const SizedBox.shrink();
-    }
-
-    return Obx(() {
-      // Don't render anything while loading or if empty
-      if (ctrl!.isLoading.value) return const _VideosSectionShimmer();
-      final videos = ctrl.videos.take(8).toList();
-      if (videos.isEmpty) return const SizedBox.shrink();
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Divider
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(color: Color(0xFFEEEEF5), height: 32),
-          ),
-
-          // Header row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: _kYT.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.play_circle_filled_rounded,
-                          color: _kYT, size: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Latest Videos',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF111827),
-                      ),
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Navigate to Videos tab (index 2)
-                    final navCtrl = Get.find<MainNavController>();
-                    navCtrl.currentIndex.value = 3; // Videos
-                  },
-                  child: Text(
-                    'See All',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          // Horizontal video list
-          SizedBox(
-            height: 190,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: videos.length,
-              itemBuilder: (_, i) => _HomeVideoCard(video: videos[i]),
-            ),
-          ),
-        ],
-      );
-    });
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  HOME VIDEO CARD (horizontal scroll item)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _HomeVideoCard extends StatelessWidget {
-  final Video video;
-  const _HomeVideoCard({required this.video});
-
-  static const _kDark    = Color(0xFF1A1A2E);
-  static const _kSubtext = Color(0xFF8888AA);
-  static const _kYT      = Color(0xFFFF0000);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (kIsWeb) {
-          _launchYouTube(video.youtubeUrl);
-        } else {
-          Get.to(
-            () => VideoPlayerScreen(video: video),
-            transition: Transition.cupertino,
-          );
-        }
-      },
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFEEEEF5)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x06000000),
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              child: SizedBox(
-                height: 108,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Image
-                    _VideoThumbnail(url: video.thumbnailUrl),
-
-                    // Dark gradient at bottom
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Color(0x88000000)],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Play button
-                    Center(
-                      child: Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.40),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.play_arrow_rounded,
-                            color: Colors.white, size: 20),
-                      ),
-                    ),
-
-                    // Duration badge
-                    if (video.duration != null)
-                      Positioned(
-                        bottom: 5,
-                        right: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            video.duration!,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 9.5,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Text section
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title
-                    Text(
-                      video.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: _kDark,
-                        height: 1.3,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Views + YT icon
-                    Row(
-                      children: [
-                        const Icon(Icons.visibility_rounded,
-                            size: 10, color: _kSubtext),
-                        const SizedBox(width: 3),
-                        Text(
-                          _formatViews(video.viewCount),
-                          style: GoogleFonts.montserrat(
-                              fontSize: 9.5, color: _kSubtext),
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.play_circle_filled_rounded,
-                            size: 13, color: _kYT),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Thumbnail helper
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _VideoThumbnail extends StatelessWidget {
-  final String? url;
-  const _VideoThumbnail({this.url});
-
-  @override
-  Widget build(BuildContext context) {
-    return NetImage(
-      url: url,
-      fit: BoxFit.cover,
-      placeholderColor: const Color(0xFFEEEEF5),
-      placeholderIcon: Icons.videocam_rounded,
-      placeholderIconColor: const Color(0xFFCCCCDD),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Loading shimmer placeholder
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _VideosSectionShimmer extends StatelessWidget {
-  const _VideosSectionShimmer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Divider(color: Color(0xFFEEEEF5), height: 32),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              Container(
-                width: 28, height: 28,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEEEF5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 120, height: 16,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEEEF5),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 190,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: 4,
-            itemBuilder: (_, __) => Container(
-              width: 160,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEEEEF5),
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-Future<void> _launchYouTube(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-}
-
-String _formatViews(int views) {
-  if (views >= 1000000) return '${(views / 1000000).toStringAsFixed(1)}M';
-  if (views >= 1000) return '${(views / 1000).toStringAsFixed(1)}K';
-  return '$views';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
