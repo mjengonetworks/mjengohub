@@ -17,12 +17,11 @@ import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
-import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/responsive.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/tracker_dynamic_sections.dart';
-import '../widgets/tracker_project_card.dart';
+import '../widgets/tracker_map_grid_section.dart';
 
 const _kDecades = ['pre-1960s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s+'];
 
@@ -124,8 +123,20 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ── From the Archives ────────────────────────────────────────
+              // ── Grid/Map toggle + pane (the tracker's live interactive
+              // map, color-coded pins, tap-to-preview) — this IS the "all
+              // entries" feed, mirrors built_history.html's .bh-views ─────
+              TrackerMapGridSection(
+                projects: _projects,
+                loading: _loading,
+                captionOf: (p) => p.completionDecade ?? p.statusLabel,
+                emptyMessage: 'No Built History entries match this filter.',
+              ),
+
+              // ── From the Archives — after the grid/map, before the
+              // bottom Browse/Most Viewed/Status sections ─────────────────
               if (_archiveArticles.isNotEmpty) ...[
+                const SizedBox(height: 24),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text('From the Archives', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
@@ -162,31 +173,9 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 24),
               ],
 
-              // ── Project grid ──────────────────────────────────────────────
-              if (_loading)
-                const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
-              else if (_projects.isEmpty)
-                const ComingSoonPlaceholder(
-                  icon: Icons.account_balance_rounded,
-                  title: 'No entries yet',
-                  message: 'No Built History entries match this filter.',
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: _projects
-                        .map((p) => TrackerProjectCard(project: p, captionOverride: p.completionDecade, width: 220))
-                        .toList(),
-                  ),
-                ),
-
-              const SizedBox(height: 12),
+              const SizedBox(height: 24),
               const TrackerDynamicSections(isBuiltHistory: true),
             ],
           ),

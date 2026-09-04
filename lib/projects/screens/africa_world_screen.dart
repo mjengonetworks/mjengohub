@@ -12,13 +12,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../shared/theme/app_theme.dart';
-import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/responsive.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
-import '../widgets/projects_map_view.dart';
 import '../widgets/tracker_dynamic_sections.dart';
-import '../widgets/tracker_project_card.dart';
+import '../widgets/tracker_map_grid_section.dart';
 
 const _kRegions = <String, String>{
   'east_africa': 'East Africa',
@@ -43,7 +41,6 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
 
   List<Project> _projects = [];
   bool _loading = true;
-  bool _showMap = false;
 
   static final _regionKeys = _kRegions.keys.toList();
 
@@ -86,12 +83,6 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
         elevation: 0,
         foregroundColor: AppColors.textDark,
         title: Text('Africa & World', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textDark)),
-        actions: [
-          IconButton(
-            icon: Icon(_showMap ? Icons.list_rounded : Icons.map_rounded, color: AppColors.textDark),
-            onPressed: () => setState(() => _showMap = !_showMap),
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -105,38 +96,29 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
       ),
       body: ContentWidth(
         maxWidth: 900,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _projects.isEmpty
-                ? const ComingSoonPlaceholder(
-                    icon: Icons.public_rounded,
-                    title: 'Nothing here yet',
-                    message: 'No Africa & World entries in this region yet.',
-                  )
-                : _showMap
-                    ? ProjectsMapView(projects: _projects)
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.only(top: 16, bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Wrap(
-                                  spacing: 12,
-                                  runSpacing: 12,
-                                  children: _projects.map((p) => TrackerProjectCard(project: p, captionOverride: p.country, width: 220)).toList(),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TrackerDynamicSections(geoScope: 'global'),
-                            ],
-                          ),
-                        ),
-                      ),
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(top: 16, bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Grid/Map toggle + pane (live interactive map, color-coded
+                // pins, tap-to-preview) — this IS the "all entries" feed for
+                // the selected region, mirrors africa_world.html's .aw-views.
+                TrackerMapGridSection(
+                  projects: _projects,
+                  loading: _loading,
+                  captionOf: (p) => p.country ?? p.statusLabel,
+                  emptyMessage: 'No Africa & World entries in this region yet.',
+                ),
+                const SizedBox(height: 24),
+                TrackerDynamicSections(geoScope: 'global'),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

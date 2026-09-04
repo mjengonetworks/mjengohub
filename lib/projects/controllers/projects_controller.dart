@@ -23,11 +23,6 @@ class ProjectsController extends GetxController {
   final selectedCounty = ''.obs;
   final searchQuery = ''.obs;
 
-  /// Toggles between the list and the interactive map (ProjectsMapView) on
-  /// ProjectsScreen. Kept here rather than as screen-local state so it
-  /// survives the screen's own rebuilds.
-  final showMap = false.obs;
-
   int _page = 1;
   bool _hasMore = true;
   bool _isFetchingMore = false;

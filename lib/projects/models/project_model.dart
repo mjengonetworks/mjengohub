@@ -451,6 +451,7 @@ class Project {
       case 'planned': return 'Planned';
       case 'ongoing': return 'Ongoing';
       case 'completed': return 'Completed';
+      case 'commissioned': return 'Commissioned';
       case 'stalled': return 'Stalled';
       case 'cancelled': return 'Cancelled';
       default: return status;

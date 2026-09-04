@@ -9,8 +9,8 @@ import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
-import '../widgets/projects_map_view.dart';
 import '../widgets/tracker_dynamic_sections.dart';
+import '../widgets/tracker_map_grid_section.dart';
 import 'project_detail_screen.dart';
 
 const _kBlue     = Color(0xFF2563EB);
@@ -98,35 +98,39 @@ class ProjectsScreen extends StatelessWidget {
             ? _buildClientChips(ctrl)
             : const SizedBox.shrink()),
         Expanded(
-          child: Obx(() {
-            if (ctrl.showMap.value) {
-              return ProjectsMapView(projects: ctrl.projects);
-            }
-            return NotificationListener<ScrollNotification>(
-              onNotification: (n) {
-                if (n is ScrollEndNotification &&
-                    n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
-                  ctrl.loadMore();
-                }
-                return false;
-              },
-              child: ListView(
-                padding: const EdgeInsets.only(bottom: 24),
-                children: [
-                  // Featured projects
-                  if (ctrl.featuredProjects.isNotEmpty)
-                    _buildFeaturedSection(ctrl),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (n) {
+              if (n is ScrollEndNotification &&
+                  n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
+                ctrl.loadMore();
+              }
+              return false;
+            },
+            child: Obx(() => ListView(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  children: [
+                    // Featured projects
+                    if (ctrl.featuredProjects.isNotEmpty)
+                      _buildFeaturedSection(ctrl),
 
-                  // All projects grid
-                  _buildProjectsGrid(ctrl),
+                    // All projects: Grid/Map toggle + pane — this is the
+                    // tracker's live interactive map (color-coded pins,
+                    // tap-to-preview), reachable via the toggle rather than
+                    // always-open, matching the website's own Grid/Map view
+                    // switch (templates/projects.html's #pj-map).
+                    const SizedBox(height: 8),
+                    TrackerMapGridSection(
+                      projects: ctrl.projects,
+                      loading: false,
+                      gridChild: _buildProjectsGrid(ctrl),
+                    ),
 
-                  // Browse by Category / Most Viewed / By Status
-                  const SizedBox(height: 12),
-                  TrackerDynamicSections(projectType: ctrl.projectType),
-                ],
-              ),
-            );
-          }),
+                    // Browse by Category / Most Viewed / By Status
+                    const SizedBox(height: 12),
+                    TrackerDynamicSections(projectType: ctrl.projectType),
+                  ],
+                )),
+          ),
         ),
       ],
     );
@@ -157,7 +161,6 @@ class ProjectsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              if (ctrl != null) _buildMapToggle(ctrl),
             ],
           ),
           const SizedBox(height: 4),
@@ -280,24 +283,6 @@ class ProjectsScreen extends StatelessWidget {
         },
       ),
     );
-  }
-
-  Widget _buildMapToggle(ProjectsController ctrl) {
-    return Obx(() => GestureDetector(
-          onTap: () => ctrl.showMap.value = !ctrl.showMap.value,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: ctrl.showMap.value ? _kBlue : _kBg,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              ctrl.showMap.value ? Icons.list_rounded : Icons.map_rounded,
-              size: 20,
-              color: ctrl.showMap.value ? Colors.white : _kBlue,
-            ),
-          ),
-        ));
   }
 
   Widget _buildCountyChips(ProjectsController ctrl) {

@@ -53,8 +53,15 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (sections.categoryPreview.isNotEmpty) ...[
-              _Heading('Browse by Category'),
+            // "Browse by Category" always renders once this tracker has the
+            // dimension at all (categoryPreview is a real, possibly-empty
+            // list here, never omitted) — an empty tracker shows the
+            // section with a placeholder rather than disappearing, matching
+            // tracker_browse_sections.html's own "exists, just empty" intent.
+            _Heading('Browse by Category'),
+            if (sections.categoryPreview.isEmpty)
+              const _EmptyNote('Nothing published in any category yet.')
+            else
               ...sections.categoryPreview.map((g) => _CategoryRow(
                     group: g,
                     onViewMore: () => _openFiltered(
@@ -75,28 +82,37 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                       ),
                     ),
                   )),
-              const SizedBox(height: 20),
-            ],
-            if (sections.mostViewedWindows.isNotEmpty) ...[
-              _MostViewedSection(
-                windows: sections.mostViewedWindows,
-                onViewMore: (window) => _openFiltered(
-                  'Most Viewed — ${_windowFullLabel(window.label)}',
-                  () => _service
-                      .getTrackerSections(
-                        projectType: widget.projectType,
-                        isBuiltHistory: widget.isBuiltHistory,
-                        geoScope: widget.geoScope,
-                        mostViewedLimit: 20,
-                      )
-                      .then((s) => s.mostViewedWindows.firstWhere((w) => w.label == window.label, orElse: () => window).projects),
-                ),
+            const SizedBox(height: 20),
+
+            // Most Viewed: the backend always returns 3 window entries
+            // (each with its own per-window "no views yet" placeholder), so
+            // this section always renders too.
+            _MostViewedSection(
+              windows: sections.mostViewedWindows,
+              onViewMore: (window) => _openFiltered(
+                'Most Viewed — ${_windowFullLabel(window.label)}',
+                () => _service
+                    .getTrackerSections(
+                      projectType: widget.projectType,
+                      isBuiltHistory: widget.isBuiltHistory,
+                      geoScope: widget.geoScope,
+                      mostViewedLimit: 20,
+                    )
+                    .then((s) => s.mostViewedWindows.firstWhere((w) => w.label == window.label, orElse: () => window).projects),
               ),
-              const SizedBox(height: 20),
-            ],
-            if (sections.statusPreview != null && sections.statusPreview!.isNotEmpty) ...[
+            ),
+            const SizedBox(height: 20),
+
+            // "By Status" is genuinely omitted (not just empty) for Built
+            // History — planned/ongoing makes no sense for heritage entries
+            // that already exist, matching tracker_browse_sections.html's
+            // `{% if status_preview is not none %}`.
+            if (sections.statusPreview != null) ...[
               _Heading('By Status'),
-              ...sections.statusPreview!.map((g) => _CategoryRow(
+              if (sections.statusPreview!.isEmpty)
+                const _EmptyNote('Nothing published yet.')
+              else
+                ...sections.statusPreview!.map((g) => _CategoryRow(
                     group: g,
                     onViewMore: () => _openFiltered(
                       g.label,
@@ -133,6 +149,22 @@ class _Heading extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
       child: Text(title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+    );
+  }
+}
+
+/// Matches tracker_browse_sections.html's `.tbs-empty` placeholder text —
+/// the section header still renders so an empty tracker reads as "exists,
+/// just empty" rather than looking like the feature is missing.
+class _EmptyNote extends StatelessWidget {
+  final String message;
+  const _EmptyNote(this.message);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(message, style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
     );
   }
 }
@@ -198,6 +230,7 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.windows.isEmpty) return const SizedBox.shrink();
     final window = widget.windows[_index.clamp(0, widget.windows.length - 1)];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
