@@ -436,7 +436,10 @@ class _FeaturedSection extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 190,
+          // +18px vs. the old fixed-100 thumbnail to fit the true 16:9
+          // height at this card's 210px width, without shrinking the text
+          // area below it.
+          height: 208,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -501,12 +504,12 @@ class _FeaturedCard extends StatelessWidget {
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(14)),
-              child: SizedBox(
-                height: 100,
-                width: double.infinity,
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
                 child: NetImage(
                   url: incident.imageUrl,
                   fit: BoxFit.cover,
+                  width: double.infinity,
                   placeholderColor: _kBg,
                   placeholderIcon: incident.isRoadSafety
                       ? Icons.report_problem_rounded

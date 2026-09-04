@@ -104,21 +104,30 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top interactive live map (color-coded pins, tap-to-
-                // preview), pinned above the grid.
+                // 1. Top interactive live map — the very first scrollable
+                // item, directly beneath the app bar (continent tabs live
+                // in the app bar itself). Never gated behind a toggle.
                 TrackerLiveMap(projects: _projects, loading: _loading),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                // Grid — the "all entries" feed for the selected region,
-                // mirrors africa_world.html's .aw-views.
+                // 3-5. Browse by Category / Most Viewed / By Status
+                TrackerDynamicSections(geoScope: 'global'),
+
+                // 6. All entries grid for the selected region, mirrors
+                // africa_world.html's .aw-views.
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('All Entries in This Region',
+                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                ),
+                const SizedBox(height: 10),
                 TrackerProjectsWrapGrid(
                   projects: _projects,
                   loading: _loading,
                   captionOf: (p) => p.country ?? p.statusLabel,
                   emptyMessage: 'No Africa & World entries in this region yet.',
                 ),
-                const SizedBox(height: 24),
-                TrackerDynamicSections(geoScope: 'global'),
               ],
             ),
           ),

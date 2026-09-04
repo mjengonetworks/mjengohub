@@ -84,19 +84,9 @@ class ProjectsScreen extends StatelessWidget {
   Widget _buildContent(BuildContext context, ProjectsController ctrl) {
     return Column(
       children: [
+        // App bar / header — title, back button, search only. Filter chips
+        // live in the scrollable content below the map, not here.
         _buildHeader(ctrl),
-        // Status filter chips — mirrors the website's status <select>
-        // (templates/projects.html: planned/ongoing/completed/stalled)
-        _buildStatusChips(ctrl),
-        // County filter chips — derived from loaded projects since there's
-        // no /api/v1/counties endpoint (see ProjectsController.availableCounties).
-        Obx(() => ctrl.availableCounties.isNotEmpty
-            ? _buildCountyChips(ctrl)
-            : const SizedBox.shrink()),
-        // Client filter chips
-        Obx(() => ctrl.clients.isNotEmpty
-            ? _buildClientChips(ctrl)
-            : const SizedBox.shrink()),
         Expanded(
           child: NotificationListener<ScrollNotification>(
             onNotification: (n) {
@@ -109,23 +99,35 @@ class ProjectsScreen extends StatelessWidget {
             child: Obx(() => ListView(
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
-                    // Top interactive live map — pinned at the very top of
-                    // the tracker's scrollable content, color-coded status
-                    // pins, tap-to-preview bottom sheet.
+                    // 1. Top interactive live map — the very first scrollable
+                    // item, directly beneath the app bar. Color-coded status
+                    // pins, tap-to-preview bottom sheet. Never gated behind a
+                    // toggle and never pushed below other content.
                     const SizedBox(height: 12),
                     TrackerLiveMap(projects: ctrl.projects, loading: false),
+                    const SizedBox(height: 12),
 
-                    // Featured projects
-                    if (ctrl.featuredProjects.isNotEmpty)
-                      _buildFeaturedSection(ctrl),
+                    // 2. Dedicated tracker control — status/county/client
+                    // filter chips.
+                    _buildStatusChips(ctrl),
+                    if (ctrl.availableCounties.isNotEmpty) _buildCountyChips(ctrl),
+                    if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
 
-                    // All projects grid (paginated list feed)
-                    const SizedBox(height: 8),
-                    _buildProjectsGrid(ctrl),
+                    if (ctrl.featuredProjects.isNotEmpty) _buildFeaturedSection(ctrl),
 
-                    // Browse by Category / Most Viewed / By Status
+                    // 3-5. Browse by Category / Most Viewed / By Status
                     const SizedBox(height: 12),
                     TrackerDynamicSections(projectType: ctrl.projectType),
+
+                    // 6. All projects grid (paginated list feed)
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('All Projects',
+                          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: _kDark)),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildProjectsGrid(ctrl),
                   ],
                 )),
           ),
@@ -350,19 +352,6 @@ class ProjectsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const Divider(height: 1, color: _kDivider),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'All Projects',
-            style: GoogleFonts.montserrat(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: _kDark,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
       ],
     );
   }

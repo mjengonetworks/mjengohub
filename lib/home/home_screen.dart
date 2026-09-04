@@ -175,21 +175,22 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const MjengoNetworksBanner(),
 
-            // 3 — Featured Infrastructure Projects
-            const SizedBox(height: 24),
-            const FeaturedProjectsSection(),
-
-            // 4 — Built History showcase preview
-            const SizedBox(height: 24),
-            const BuiltHistoryPreviewSection(),
-
-            // 5 — Latest News & Articles (Part 1)
+            // 3 — Latest News & Articles (Part 1) — immediately follows the
+            // Mjengo Networks banner
             const SizedBox(height: 24),
             _breakingHeader(ctrl),
             const SizedBox(height: 14),
             SizedBox(height: 220, child: _breakingList(ctrl)),
             const SizedBox(height: 10),
             const AdBannerSlot(),
+
+            // 4 — Featured Infrastructure Projects
+            const SizedBox(height: 24),
+            const FeaturedProjectsSection(),
+
+            // 5 — Built History showcase preview
+            const SizedBox(height: 24),
+            const BuiltHistoryPreviewSection(),
 
             // 6 — Share Barabara showcase banner
             const SizedBox(height: 24),

@@ -91,7 +91,13 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
             children: [
               const SizedBox(height: 12),
 
-              // ── Ownership chips ─────────────────────────────────────────
+              // 1. Top interactive live map — the very first scrollable
+              // item, directly beneath the app bar. Never gated behind a
+              // toggle, never pushed below other content.
+              TrackerLiveMap(projects: _projects, loading: _loading),
+              const SizedBox(height: 20),
+
+              // 2. Dedicated tracker control — ownership + decade chips.
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Wrap(
@@ -105,8 +111,6 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-
-              // ── Decade chips ─────────────────────────────────────────────
               SizedBox(
                 height: 36,
                 child: ListView.separated(
@@ -123,21 +127,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ── Top interactive live map (color-coded pins, tap-to-
-              // preview), pinned above the grid ──────────────────────────
-              TrackerLiveMap(projects: _projects, loading: _loading),
-              const SizedBox(height: 20),
-
-              // ── Grid — the "all entries" feed, mirrors
-              // built_history.html's .bh-views ─────────────────────────
-              TrackerProjectsWrapGrid(
-                projects: _projects,
-                loading: _loading,
-                captionOf: (p) => p.completionDecade ?? p.statusLabel,
-                emptyMessage: 'No Built History entries match this filter.',
-              ),
-
-              // ── From the Archives — after the grid/map, before the
+              // From the Archives — after the map/controls, before the
               // bottom Browse/Most Viewed/Status sections ─────────────────
               if (_archiveArticles.isNotEmpty) ...[
                 const SizedBox(height: 24),
@@ -179,8 +169,24 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                 ),
               ],
 
+              // 3-5. Browse by Category / Most Viewed / By Status
               const SizedBox(height: 24),
               const TrackerDynamicSections(isBuiltHistory: true),
+
+              // 6. All entries grid, mirrors built_history.html's .bh-views
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text('All Built History Entries',
+                    style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+              ),
+              const SizedBox(height: 10),
+              TrackerProjectsWrapGrid(
+                projects: _projects,
+                loading: _loading,
+                captionOf: (p) => p.completionDecade ?? p.statusLabel,
+                emptyMessage: 'No Built History entries match this filter.',
+              ),
             ],
           ),
         ),
