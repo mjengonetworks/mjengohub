@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../home/widgets/home_extra_sections.dart' show SocialLinksGrid;
 import '../../news/widgets/net_image.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/widgets/leaderboard_widget.dart';
@@ -410,11 +411,18 @@ class _VideoList extends StatelessWidget {
                     ),
                   );
                 }
-                // Weekly leaderboard preview — every video is loaded, so this
-                // is genuinely the end of the list.
+                // Channel directory ("Follow Us Everywhere") + weekly
+                // leaderboard preview directly beneath it — every video is
+                // loaded, so this is genuinely the end of the list.
                 return const Padding(
                   padding: EdgeInsets.only(top: 12),
-                  child: LeaderboardPreview(),
+                  child: Column(
+                    children: [
+                      SocialLinksGrid(),
+                      SizedBox(height: 20),
+                      LeaderboardPreview(),
+                    ],
+                  ),
                 );
               }
               return VideoListTile(

@@ -109,21 +109,19 @@ class ProjectsScreen extends StatelessWidget {
             child: Obx(() => ListView(
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
+                    // Top interactive live map — pinned at the very top of
+                    // the tracker's scrollable content, color-coded status
+                    // pins, tap-to-preview bottom sheet.
+                    const SizedBox(height: 12),
+                    TrackerLiveMap(projects: ctrl.projects, loading: false),
+
                     // Featured projects
                     if (ctrl.featuredProjects.isNotEmpty)
                       _buildFeaturedSection(ctrl),
 
-                    // All projects: Grid/Map toggle + pane — this is the
-                    // tracker's live interactive map (color-coded pins,
-                    // tap-to-preview), reachable via the toggle rather than
-                    // always-open, matching the website's own Grid/Map view
-                    // switch (templates/projects.html's #pj-map).
+                    // All projects grid (paginated list feed)
                     const SizedBox(height: 8),
-                    TrackerMapGridSection(
-                      projects: ctrl.projects,
-                      loading: false,
-                      gridChild: _buildProjectsGrid(ctrl),
-                    ),
+                    _buildProjectsGrid(ctrl),
 
                     // Browse by Category / Most Viewed / By Status
                     const SizedBox(height: 12),

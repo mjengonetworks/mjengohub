@@ -83,9 +83,10 @@ class ProjectDetailScreen extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        // Hero app bar with image
+        // Hero app bar with image — full-bleed, locked to a 16:9 ratio
+        // against the screen width rather than a fixed height.
         SliverAppBar(
-          expandedHeight: 240,
+          expandedHeight: MediaQuery.of(context).size.width * 9 / 16,
           pinned: true,
           backgroundColor: const Color(0xFF1E3A5F),
           leading: GestureDetector(

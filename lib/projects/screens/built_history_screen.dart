@@ -123,10 +123,14 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ── Grid/Map toggle + pane (the tracker's live interactive
-              // map, color-coded pins, tap-to-preview) — this IS the "all
-              // entries" feed, mirrors built_history.html's .bh-views ─────
-              TrackerMapGridSection(
+              // ── Top interactive live map (color-coded pins, tap-to-
+              // preview), pinned above the grid ──────────────────────────
+              TrackerLiveMap(projects: _projects, loading: _loading),
+              const SizedBox(height: 20),
+
+              // ── Grid — the "all entries" feed, mirrors
+              // built_history.html's .bh-views ─────────────────────────
+              TrackerProjectsWrapGrid(
                 projects: _projects,
                 loading: _loading,
                 captionOf: (p) => p.completionDecade ?? p.statusLabel,

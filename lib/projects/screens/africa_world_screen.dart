@@ -104,10 +104,14 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Grid/Map toggle + pane (live interactive map, color-coded
-                // pins, tap-to-preview) — this IS the "all entries" feed for
-                // the selected region, mirrors africa_world.html's .aw-views.
-                TrackerMapGridSection(
+                // Top interactive live map (color-coded pins, tap-to-
+                // preview), pinned above the grid.
+                TrackerLiveMap(projects: _projects, loading: _loading),
+                const SizedBox(height: 20),
+
+                // Grid — the "all entries" feed for the selected region,
+                // mirrors africa_world.html's .aw-views.
+                TrackerProjectsWrapGrid(
                   projects: _projects,
                   loading: _loading,
                   captionOf: (p) => p.country ?? p.statusLabel,

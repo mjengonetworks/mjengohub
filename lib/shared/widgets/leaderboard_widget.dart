@@ -19,7 +19,12 @@ import '../theme/app_theme.dart';
 
 void _openProfile(int userId) => Get.to(() => PublicProfileScreen(userId: userId));
 
-// ── Fuller card (Media Hub / Merch) ──────────────────────────────────────
+// ── Fuller cards (Media Hub / Merch) ─────────────────────────────────────
+//
+// Two separate stacked cards — Top Point Gainers and Top Project
+// Contributors — each with its own Profiles/Pages toggle, rather than one
+// combined card with a Points/Projects switch. One shared API call backs
+// both (the /contributors response already carries both metrics).
 
 class LeaderboardPreview extends StatefulWidget {
   final LeaderboardWindow window;
@@ -32,7 +37,6 @@ class LeaderboardPreview extends StatefulWidget {
 class _LeaderboardPreviewState extends State<LeaderboardPreview> {
   final _service = ContributorsService();
   late final Future<CommunityLeaderboards> _future = _service.getContributors(window: widget.window, limit: 5);
-  bool _showProjects = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,56 +44,100 @@ class _LeaderboardPreviewState extends State<LeaderboardPreview> {
       future: _future,
       builder: (context, snap) {
         final boards = snap.data;
-        final rows = boards == null ? const <LeaderboardRow>[] : (_showProjects ? boards.projects.profiles : boards.points.profiles);
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3))],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${widget.window.label} Top Contributors',
-                      style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-                  _MetricToggle(showProjects: _showProjects, onChanged: (v) => setState(() => _showProjects = v)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (snap.connectionState != ConnectionState.done)
-                const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
-              else if (rows.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text('No contributors yet this period.', style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
-                )
-              else
-                ...rows.take(5).toList().asMap().entries.map((e) => _LeaderboardRowTile(rank: e.key + 1, row: e.value)),
-              const SizedBox(height: 6),
-              GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.contributors),
-                child: Center(
-                  child: Text('View More',
-                      style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
-                ),
-              ),
-            ],
-          ),
+        final loading = snap.connectionState != ConnectionState.done;
+        return Column(
+          children: [
+            _MetricLeaderboardCard(
+              title: 'Top Point Gainers (${widget.window.label})',
+              metric: boards?.points,
+              loading: loading,
+              emptyLabel: 'No contributors yet this period.',
+            ),
+            const SizedBox(height: 16),
+            _MetricLeaderboardCard(
+              title: 'Top Project Contributors (${widget.window.label})',
+              metric: boards?.projects,
+              loading: loading,
+              emptyLabel: 'No project contributors yet this period.',
+            ),
+          ],
         );
       },
     );
   }
 }
 
-class _MetricToggle extends StatelessWidget {
-  final bool showProjects;
+class _MetricLeaderboardCard extends StatefulWidget {
+  final String title;
+  final LeaderboardMetric? metric;
+  final bool loading;
+  final String emptyLabel;
+  const _MetricLeaderboardCard({required this.title, required this.metric, required this.loading, required this.emptyLabel});
+
+  @override
+  State<_MetricLeaderboardCard> createState() => _MetricLeaderboardCardState();
+}
+
+class _MetricLeaderboardCardState extends State<_MetricLeaderboardCard> {
+  bool _showPages = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = widget.metric == null ? const <LeaderboardRow>[] : (_showPages ? widget.metric!.pages : widget.metric!.profiles);
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(widget.title,
+                    style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+              ),
+              const SizedBox(width: 8),
+              _ProfilesPagesToggle(showPages: _showPages, onChanged: (v) => setState(() => _showPages = v)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (widget.loading)
+            const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
+          else if (rows.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              // Business Pages have no points/submission mechanism in the
+              // schema yet, so this branch is always what the Pages tab
+              // shows today — a real backend limitation, not a bug.
+              child: Text(_showPages ? 'No business pages on the leaderboard yet.' : widget.emptyLabel,
+                  style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
+            )
+          else
+            ...rows.take(5).toList().asMap().entries.map((e) => _LeaderboardRowTile(rank: e.key + 1, row: e.value)),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.contributors),
+            child: Center(
+              child: Text('View More',
+                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfilesPagesToggle extends StatelessWidget {
+  final bool showPages;
   final ValueChanged<bool> onChanged;
-  const _MetricToggle({required this.showProjects, required this.onChanged});
+  const _ProfilesPagesToggle({required this.showPages, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -112,8 +160,8 @@ class _MetricToggle extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          pill('Points', !showProjects, () => onChanged(false)),
-          pill('Projects', showProjects, () => onChanged(true)),
+          pill('Profiles', !showPages, () => onChanged(false)),
+          pill('Pages', showPages, () => onChanged(true)),
         ],
       ),
     );
