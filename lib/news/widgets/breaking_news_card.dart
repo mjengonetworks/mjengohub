@@ -88,7 +88,7 @@ class BreakingNewsCard extends StatelessWidget {
                     article.timeAgo,
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
-                      color: const Color(0xFF9CA3AF),
+                      color: const Color(0xFF475569),
                     ),
                   ),
                   if (article.author != null) ...[
@@ -99,7 +99,7 @@ class BreakingNewsCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
-                        color: const Color(0xFF6B7280),
+                        color: const Color(0xFF475569),
                       ),
                     ),
                   ],

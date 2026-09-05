@@ -150,10 +150,10 @@ class _ArticleBodyState extends State<_ArticleBody> {
                 Text(
                   widget.article.title,
                   style: GoogleFonts.montserrat(
-                    fontSize: 26,
+                    fontSize: 20.8, // 26 * 0.8 -- 20% smaller headline
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0F172A),
-                    height: 1.28,
+                    height: 1.25,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -182,15 +182,15 @@ class _ArticleBodyState extends State<_ArticleBody> {
                       if (hasCaption)
                         Text(
                           widget.article.featuredImageCaption!,
-                          style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF64748B), fontStyle: FontStyle.italic, height: 1.4),
+                          style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF475569), fontStyle: FontStyle.italic, height: 1.4),
                         ),
                       if (hasCaption && hasCredit)
-                        const Text('  ·  ', style: TextStyle(color: Color(0xFF64748B))),
+                        const Text('  ·  ', style: TextStyle(color: Color(0xFF475569))),
                       if (hasCredit)
                         Text(
                           'Photo: ${widget.article.featuredImageCredit}',
                           style: GoogleFonts.montserrat(
-                              fontSize: 12.5, color: const Color(0xFF64748B), fontStyle: FontStyle.italic, fontWeight: FontWeight.normal),
+                              fontSize: 12.5, color: const Color(0xFF475569), fontStyle: FontStyle.italic, fontWeight: FontWeight.normal),
                         ),
                     ],
                   ),
@@ -371,15 +371,15 @@ class _MetadataRow extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (date.isNotEmpty)
-          Text(date, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
+          Text(date, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF475569))),
         if (date.isNotEmpty && article.readTime != null)
-          Text('•', style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF9CA3AF))),
+          Text('•', style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF475569))),
         if (article.readTime != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharp)),
             child: Text('${article.readTime} min read',
-                style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
+                style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w600, color: const Color(0xFF475569))),
           ),
       ],
     );
@@ -411,7 +411,7 @@ class _SummaryCallout extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xFF334155), height: 1.6, fontWeight: FontWeight.w500),
+        style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xFF1E293B), height: 1.6, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -466,7 +466,7 @@ class _AuthorRow extends StatelessWidget {
               Text(author.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: const Color(0xFF111827))),
               if (article.timeAgo.isNotEmpty)
-                Text(article.timeAgo, style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF9CA3AF))),
+                Text(article.timeAgo, style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF475569))),
             ],
           ),
         ),
@@ -545,7 +545,7 @@ class _ArticleBlockWidget extends StatelessWidget {
               if (block.imageCaption?.isNotEmpty == true) ...[
                 const SizedBox(height: 6),
                 Text(block.imageCaption!,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF9CA3AF), fontStyle: FontStyle.italic)),
+                    style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF475569), fontStyle: FontStyle.italic)),
               ],
             ],
           ),
@@ -626,7 +626,7 @@ class _ErrorView extends StatelessWidget {
             const Icon(Icons.article_outlined, size: 52, color: Color(0xFFD1D5DB)),
             const SizedBox(height: 16),
             Text(message.isEmpty ? 'Article not found.' : message,
-                textAlign: TextAlign.center, style: GoogleFonts.montserrat(fontSize: 14, color: const Color(0xFF6B7280))),
+                textAlign: TextAlign.center, style: GoogleFonts.montserrat(fontSize: 14, color: const Color(0xFF475569))),
             const SizedBox(height: 20),
             TextButton(
               onPressed: Get.back,

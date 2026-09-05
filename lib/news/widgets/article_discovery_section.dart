@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../navigation/main_navigation.dart';
 import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/services/projects_service.dart';
 import '../../projects/widgets/tracker_project_card.dart';
 import '../../shared/theme/app_theme.dart';
+import '../controllers/discover_controller.dart';
 import '../models/article_model.dart';
 import '../services/news_api_service.dart';
 import 'net_image.dart';
@@ -108,15 +110,28 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
     final trendingSource = (results[1] as List<Article>).where((a) => a.slug != widget.article.slug).toList()
       ..sort((a, b) => b.viewCount.compareTo(a.viewCount));
     setState(() {
-      _related = related.take(6).toList();
-      _trending = trendingSource.take(5).toList();
-      _latest = (results[2] as List<Article>).where((a) => a.slug != widget.article.slug).take(5).toList();
+      _related = related.take(4).toList();
+      _trending = trendingSource.take(4).toList();
+      _latest = (results[2] as List<Article>).where((a) => a.slug != widget.article.slug).take(4).toList();
       _showcaseProjects = results[3] as List<Project>;
       _loading = false;
     });
   }
 
   void _openArticle(Article a) => Get.toNamed(AppRoutes.articleDetail, arguments: a.slug);
+
+  /// "View All" / "Read More" targets all resolve to the News tab -- there's
+  /// no dedicated trending/related-only screen, same destination the
+  /// homepage's own "More News & Articles" sections already route to.
+  void _viewAllNews() => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+
+  void _viewAllRelated() {
+    final slug = widget.article.category?.slug;
+    if (slug != null && Get.isRegistered<DiscoverController>()) {
+      Get.find<DiscoverController>().selectCategory(slug);
+    }
+    _viewAllNews();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +144,36 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Latest Articles comes first, directly below the article content,
+        // followed by Trending -- both capped at 4 cards with a centered
+        // "View All" button, matching the homepage's section pattern.
+        if (_latest.isNotEmpty) ...[
+          _SectionHeading('Latest Articles'),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 168,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: _latest.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (_, i) => _RelatedArticleCard(article: _latest[i], onTap: () => _openArticle(_latest[i])),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ViewAllButton(label: 'View All Latest Articles', onTap: _viewAllNews),
+          const SizedBox(height: 24),
+        ],
+
+        if (_trending.isNotEmpty) ...[
+          _SectionHeading('Trending Articles'),
+          const SizedBox(height: 6),
+          ..._trending.asMap().entries.map((e) => _TrendingRow(rank: e.key + 1, article: e.value, onTap: () => _openArticle(e.value))),
+          const SizedBox(height: 6),
+          _ViewAllButton(label: 'View All Trending Articles', onTap: _viewAllNews),
+          const SizedBox(height: 24),
+        ],
+
         if (_related.isNotEmpty) ...[
           _SectionHeading('Related News & Articles'),
           const SizedBox(height: 10),
@@ -142,13 +187,8 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
               itemBuilder: (_, i) => _RelatedArticleCard(article: _related[i], onTap: () => _openArticle(_related[i])),
             ),
           ),
-          const SizedBox(height: 24),
-        ],
-
-        if (_trending.isNotEmpty) ...[
-          _SectionHeading('Trending Articles'),
-          const SizedBox(height: 6),
-          ..._trending.asMap().entries.map((e) => _TrendingRow(rank: e.key + 1, article: e.value, onTap: () => _openArticle(e.value))),
+          const SizedBox(height: 12),
+          _ViewAllButton(label: 'View All Related Articles', onTap: _viewAllRelated),
           const SizedBox(height: 24),
         ],
 
@@ -167,13 +207,40 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
           ),
           const SizedBox(height: 24),
         ],
-
-        if (_latest.isNotEmpty) ...[
-          _SectionHeading('Latest Articles'),
-          const SizedBox(height: 10),
-          ..._latest.map((a) => _LatestArticleRow(article: a, onTap: () => _openArticle(a))),
-        ],
       ],
+    );
+  }
+}
+
+// ── Centered "View All" button (architectural sharp style) ─────────────────
+
+class _ViewAllButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _ViewAllButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+            border: Border.all(color: AppColors.borderSlate),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_forward, size: 14, color: AppColors.headingSlate),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -241,7 +308,7 @@ class _TrendingRow extends StatelessWidget {
             SizedBox(
               width: 28,
               child: Text('$rank',
-                  style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.accentBlue.withValues(alpha: 0.35))),
+                  style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.accentBlue)),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -255,35 +322,3 @@ class _TrendingRow extends StatelessWidget {
   }
 }
 
-class _LatestArticleRow extends StatelessWidget {
-  final Article article;
-  final VoidCallback onTap;
-  const _LatestArticleRow({required this.article, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: 64,
-                height: 48,
-                child: NetImage(url: article.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1F2937)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(article.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textDark, height: 1.35)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

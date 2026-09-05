@@ -52,24 +52,24 @@ class ArticleListTile extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.access_time_rounded,
-                          size: 12, color: Color(0xFF9CA3AF)),
+                          size: 12, color: Color(0xFF475569)),
                       const SizedBox(width: 3),
                       Text(
                         article.timeAgo,
                         style: GoogleFonts.montserrat(
                           fontSize: 11.5,
-                          color: const Color(0xFF9CA3AF),
+                          color: const Color(0xFF475569),
                         ),
                       ),
                       const SizedBox(width: 12),
                       const Icon(Icons.remove_red_eye_outlined,
-                          size: 12, color: Color(0xFF9CA3AF)),
+                          size: 12, color: Color(0xFF475569)),
                       const SizedBox(width: 3),
                       Text(
                         '${article.formattedViews} views',
                         style: GoogleFonts.montserrat(
                           fontSize: 11.5,
-                          color: const Color(0xFF9CA3AF),
+                          color: const Color(0xFF475569),
                         ),
                       ),
                     ],
