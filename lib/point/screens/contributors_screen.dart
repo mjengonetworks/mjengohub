@@ -13,6 +13,7 @@ import '../../profile/screens/public_profile_screen.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/responsive.dart';
+import '../../shared/widgets/scroll_to_top_fab.dart';
 import '../models/contributors_model.dart';
 import '../services/contributors_service.dart';
 
@@ -25,6 +26,7 @@ class ContributorsScreen extends StatefulWidget {
 
 class _ContributorsScreenState extends State<ContributorsScreen> with SingleTickerProviderStateMixin {
   final _service = ContributorsService();
+  final _scrollController = ScrollController();
   late final TabController _windowTab;
 
   LeaderboardWindow _window = LeaderboardWindow.past7Days;
@@ -52,6 +54,7 @@ class _ContributorsScreenState extends State<ContributorsScreen> with SingleTick
   @override
   void dispose() {
     _windowTab.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -74,7 +77,9 @@ class _ContributorsScreenState extends State<ContributorsScreen> with SingleTick
           tabs: _windows.map((w) => Tab(text: w.label)).toList(),
         ),
       ),
-      body: ContentWidth(
+      body: ScrollToTopFab(
+        controller: _scrollController,
+        child: ContentWidth(
         maxWidth: 700,
         child: Column(
           children: [
@@ -117,6 +122,7 @@ class _ContributorsScreenState extends State<ContributorsScreen> with SingleTick
                     );
                   }
                   return ListView.separated(
+                    controller: _scrollController,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     itemCount: rows.length,
                     separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
@@ -127,6 +133,7 @@ class _ContributorsScreenState extends State<ContributorsScreen> with SingleTick
             ),
           ],
         ),
+      ),
       ),
     );
   }

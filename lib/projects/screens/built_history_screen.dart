@@ -22,6 +22,7 @@ import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/tracker_dynamic_sections.dart';
 import '../widgets/tracker_map_grid_section.dart';
+import '../../shared/widgets/scroll_to_top_fab.dart';
 
 const _kDecades = ['pre-1960s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s+'];
 
@@ -37,6 +38,7 @@ class BuiltHistoryScreen extends StatefulWidget {
 class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
   final _projectsService = ProjectsService();
   final _newsService = NewsApiService();
+  final _scrollController = ScrollController();
 
   String? _decade;
   String _ownership = 'all'; // 'all' | 'public' | 'private'
@@ -50,6 +52,12 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
     super.initState();
     _loadArchives();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadArchives() async {
@@ -82,11 +90,14 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
         foregroundColor: AppColors.textDark,
         title: Text('Built History', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textDark)),
       ),
-      body: ContentWidth(
+      body: ScrollToTopFab(
+        controller: _scrollController,
+        child: ContentWidth(
         maxWidth: 900,
         child: RefreshIndicator(
           onRefresh: _load,
           child: ListView(
+            controller: _scrollController,
             padding: const EdgeInsets.only(bottom: 24),
             children: [
               const SizedBox(height: 12),
@@ -190,6 +201,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

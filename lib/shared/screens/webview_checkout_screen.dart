@@ -1,23 +1,24 @@
 // lib/shared/screens/webview_checkout_screen.dart
 //
 // In-app WebView for the existing session-based web checkout/verification
-// flows (merch purchase, Prime verification) — opened with a short-lived
-// SSO handoff token (WebviewCheckoutService) so the WebView starts already
-// signed in as the mobile user. Everything after that (cart, Paystack
-// redirect, webhook) is the web app's own existing flow, untouched.
+// flows (merch purchase, Prime verification). Loads the real
+// mjengohub.co.ke page directly — there is no SSO token-handoff endpoint on
+// the backend (POST /auth/webview-token doesn't exist), so this can't start
+// pre-authenticated as the mobile user; the user signs in on the page itself
+// if the site doesn't already have a browser session. Everything after that
+// (cart, Paystack redirect, webhook) is the web app's own existing flow,
+// untouched.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../theme/app_theme.dart';
-import '../services/webview_checkout_service.dart';
 
 class WebviewCheckoutScreen extends StatefulWidget {
   final String title;
 
-  /// Relative path on mjengohub.co.ke to open after the handoff, e.g.
-  /// '/merch' or '/verify'.
+  /// Relative path on mjengohub.co.ke to open, e.g. '/merch' or '/verify'.
   final String nextPath;
 
   /// Called with the current URL on every navigation — return true to pop
@@ -40,28 +41,13 @@ class WebviewCheckoutScreen extends StatefulWidget {
 }
 
 class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
-  final _service = WebviewCheckoutService();
+  static const _baseUrl = 'https://mjengohub.co.ke';
   WebViewController? _controller;
   bool _loading = true;
-  bool _failed = false;
 
   @override
   void initState() {
     super.initState();
-    _open();
-  }
-
-  Future<void> _open() async {
-    final url = await _service.getHandoffUrl(widget.nextPath);
-    if (!mounted) return;
-    if (url == null) {
-      setState(() {
-        _loading = false;
-        _failed = true;
-      });
-      return;
-    }
-
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
@@ -74,9 +60,8 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
           }
         },
       ))
-      ..loadRequest(Uri.parse(url));
-
-    setState(() => _controller = controller);
+      ..loadRequest(Uri.parse('$_baseUrl${widget.nextPath}'));
+    _controller = controller;
   }
 
   @override
@@ -86,27 +71,13 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(widget.title, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+        title: Text(widget.title,
+            style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.headingSlate)),
       ),
       body: Stack(
         children: [
           if (_controller != null) WebViewWidget(controller: _controller!),
           if (_loading) const Center(child: CircularProgressIndicator()),
-          if (_failed)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.textSubtle),
-                    const SizedBox(height: 12),
-                    Text('Could not open this page. Please try again.',
-                        textAlign: TextAlign.center, style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
-                  ],
-                ),
-              ),
-            ),
         ],
       ),
     );

@@ -14,6 +14,7 @@ import '../../shared/screens/webview_checkout_screen.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/leaderboard_widget.dart';
 import '../../shared/widgets/responsive.dart';
+import '../../shared/widgets/scroll_to_top_fab.dart';
 import '../models/merch_model.dart';
 import '../services/merch_service.dart';
 
@@ -26,6 +27,7 @@ class MerchScreen extends StatefulWidget {
 
 class _MerchScreenState extends State<MerchScreen> {
   final _service = MerchService();
+  final _scrollController = ScrollController();
   List<MerchProduct> _products = [];
   List<MerchShoutout> _shoutouts = [];
   bool _loading = true;
@@ -34,6 +36,12 @@ class _MerchScreenState extends State<MerchScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -59,13 +67,16 @@ class _MerchScreenState extends State<MerchScreen> {
         elevation: 0,
         title: Text('Merch', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
       ),
-      body: ContentWidth(
+      body: ScrollToTopFab(
+        controller: _scrollController,
+        child: ContentWidth(
         maxWidth: 900,
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
                 onRefresh: _load,
                 child: ListView(
+                  controller: _scrollController,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   children: [
                     if (_products.isEmpty)
@@ -119,6 +130,7 @@ class _MerchScreenState extends State<MerchScreen> {
                   ],
                 ),
               ),
+      ),
       ),
     );
   }

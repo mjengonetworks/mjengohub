@@ -25,6 +25,7 @@ import 'contact_screen.dart';
 import 'widgets/profile_content_previews.dart';
 import '../news/screens/submit_article_screen.dart';
 import '../shared/widgets/leaderboard_widget.dart';
+import '../shared/screens/webview_checkout_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -130,6 +131,13 @@ class _SettingsView extends StatelessWidget {
               subtitle: 'Prime members can submit for editorial review',
               onTap: () => SubmitArticleScreen.open(context),
             ),
+            if (user?.isPrime != true)
+              _SettingsItem(
+                icon: Icons.workspace_premium_outlined,
+                title: 'Get Verified',
+                subtitle: 'Apply for Mjengo Hub Prime',
+                onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'Get Verified', nextPath: '/verify')),
+              ),
             _SettingsItem(
               icon: Icons.card_giftcard_rounded,
               title: 'Referrals & Rewards',
@@ -550,7 +558,7 @@ class _PointsSummaryCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.sharpLg),
           boxShadow: [
             BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3)),
           ],
@@ -610,7 +618,7 @@ class _ReferralShareCardState extends State<_ReferralShareCard> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.sharpLg),
           boxShadow: [
             BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3)),
           ],

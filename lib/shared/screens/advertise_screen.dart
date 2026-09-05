@@ -412,7 +412,7 @@ class _PitchCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
         border: border != null ? Border.all(color: border!) : null,
       ),
       child: Row(

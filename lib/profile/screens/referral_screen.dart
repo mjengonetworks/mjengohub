@@ -181,7 +181,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                       // ── Total referred ──────────────────────────────────────
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
                         child: Row(
                           children: [
                             Container(

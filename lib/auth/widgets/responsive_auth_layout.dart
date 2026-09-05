@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/theme/app_theme.dart';
+
 /// A responsive layout wrapper for auth screens.
 /// - Mobile (<600px): Full width with padding
 /// - Tablet/Desktop (>=600px): Centered form with max width and card styling
@@ -56,7 +58,7 @@ class ResponsiveAuthLayout extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 36),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppRadius.sharpLg),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.06),

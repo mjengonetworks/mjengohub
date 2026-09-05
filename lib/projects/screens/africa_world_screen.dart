@@ -17,6 +17,7 @@ import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/tracker_dynamic_sections.dart';
 import '../widgets/tracker_map_grid_section.dart';
+import '../../shared/widgets/scroll_to_top_fab.dart';
 
 const _kRegions = <String, String>{
   'east_africa': 'East Africa',
@@ -37,6 +38,7 @@ class AfricaWorldScreen extends StatefulWidget {
 
 class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTickerProviderStateMixin {
   final _service = ProjectsService();
+  final _scrollController = ScrollController();
   late final TabController _tabController;
 
   List<Project> _projects = [];
@@ -57,6 +59,7 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
   @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -94,11 +97,14 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
           tabs: _regionKeys.map((k) => Tab(text: _kRegions[k])).toList(),
         ),
       ),
-      body: ContentWidth(
+      body: ScrollToTopFab(
+        controller: _scrollController,
+        child: ContentWidth(
         maxWidth: 900,
         child: RefreshIndicator(
           onRefresh: _load,
           child: SingleChildScrollView(
+            controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.only(top: 16, bottom: 16),
             child: Column(
@@ -132,6 +138,7 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
             ),
           ),
         ),
+      ),
       ),
     );
   }

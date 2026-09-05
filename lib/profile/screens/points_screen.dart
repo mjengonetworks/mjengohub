@@ -125,7 +125,7 @@ class _PointsScreenState extends State<PointsScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 32),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
                     child: Column(
                       children: [
                         const Icon(Icons.receipt_long_rounded, size: 36, color: AppColors.textSubtle),
@@ -136,7 +136,7 @@ class _PointsScreenState extends State<PointsScreen> {
                   )
                 else
                   Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [

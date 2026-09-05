@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../navigation/app_header.dart';
+import '../../shared/theme/app_theme.dart';
 import '../controllers/notifications_controller.dart';
 import '../models/notification_model.dart';
 
@@ -241,7 +242,7 @@ class _Header extends StatelessWidget {
   void _confirmClear() {
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
         title: Text(
           'Clear all notifications?',
           style: GoogleFonts.montserrat(

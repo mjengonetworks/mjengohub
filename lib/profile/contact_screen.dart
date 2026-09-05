@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../shared/theme/app_theme.dart';
+
 class ContactScreen extends StatefulWidget {
   const ContactScreen({Key? key}) : super(key: key);
 
@@ -53,7 +55,12 @@ class _ContactScreenState extends State<ContactScreen> {
 
   Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!await canLaunchUrl(uri)) return;
+    // Genuine web pages (maps, social profiles) open in-app like the rest of
+    // the app's external links; tel:/mailto: intents have no "page" to
+    // browse, so those still hand off to the native dialer/mail client.
+    final isWebLink = uri.scheme == 'http' || uri.scheme == 'https';
+    await launchUrl(uri, mode: isWebLink ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
   }
 
   Future<void> _sendEmail() async {
@@ -159,7 +166,7 @@ class _ContactScreenState extends State<ContactScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
         gradient: const LinearGradient(
           colors: [Color(0xFF1A1A2E), Color(0xFF2C2C4E)],
           begin: Alignment.topLeft,

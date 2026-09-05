@@ -80,7 +80,7 @@ class _CommentsSectionState extends State<CommentsSection> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
         title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
         content: Text(
           'Please sign in to your Mjengo Hub account to join the discussion.',

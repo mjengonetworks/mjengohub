@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/mjengo_auth_controller.dart';
+import '../../shared/theme/app_theme.dart';
 
 // ── Palette (matches login_screen.dart) ───────────────────────────────────────
 const Color _accent      = Color(0xFF3B82F6);
@@ -306,7 +307,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
         border: Border.all(color: _accent.withValues(alpha: 0.2)),
       ),
       child: Column(

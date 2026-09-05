@@ -8,6 +8,7 @@ import '../../home/widgets/home_extra_sections.dart' show SocialLinksGrid;
 import '../../news/widgets/net_image.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/widgets/leaderboard_widget.dart';
+import '../../shared/widgets/scroll_to_top_fab.dart';
 import '../controllers/videos_controller.dart';
 import '../models/video_model.dart';
 import 'video_player_screen.dart';
@@ -26,14 +27,29 @@ const _kYT      = Color(0xFFFF0000);
 //  ROOT SCREEN
 // ═════════════════════════════════════════════════════════════════════════════
 
-class VideosScreen extends StatelessWidget {
+class VideosScreen extends StatefulWidget {
   const VideosScreen({Key? key}) : super(key: key);
+
+  @override
+  State<VideosScreen> createState() => _VideosScreenState();
+}
+
+class _VideosScreenState extends State<VideosScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final ctrl   = Get.find<VideosController>();
 
-    return Container(
+    return ScrollToTopFab(
+      controller: _scrollController,
+      child: Container(
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,8 +97,9 @@ class VideosScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           // ── Video list ────────────────────────────────────────────────
-          Expanded(child: _VideoList(ctrl: ctrl)),
+          Expanded(child: _VideoList(ctrl: ctrl, scrollController: _scrollController)),
         ],
+      ),
       ),
     );
   }
@@ -348,7 +365,8 @@ class _TabItem extends StatelessWidget {
 
 class _VideoList extends StatelessWidget {
   final VideosController ctrl;
-  const _VideoList({required this.ctrl});
+  final ScrollController scrollController;
+  const _VideoList({required this.ctrl, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
@@ -385,6 +403,7 @@ class _VideoList extends StatelessWidget {
             return false;
           },
           child: ListView.separated(
+            controller: scrollController,
             padding: const EdgeInsets.only(top: 4, bottom: 16),
             // One trailing slot beyond the loaded videos: the load-more
             // sentinel while more pages remain, or the weekly leaderboard
