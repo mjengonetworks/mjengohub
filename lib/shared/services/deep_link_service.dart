@@ -48,10 +48,12 @@ class DeepLinkService {
 
     final head = segments.first.toLowerCase();
 
-    // /article/{slug} or /articles/{slug-or-id}
+    // /article/{slug}, or the real website shape /articles/{category}/{slug}
+    // (and the legacy flat /articles/{slug-or-id}) — always take the last
+    // segment as the article identifier, never assume a fixed position.
     if (head == 'article' || head == 'articles') {
       if (segments.length < 2) return;
-      final value = segments[1];
+      final value = segments.last;
       if (_looksLikeSlug(value)) {
         Get.toNamed(AppRoutes.articleDetail, arguments: value);
       } else {

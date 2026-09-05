@@ -11,6 +11,15 @@ library;
 
 enum ArticleBlockType { heading2, heading3, quote, bulletList, image, paragraph }
 
+/// One inline fragment of a paragraph's text — either plain text, or a
+/// segment that was inside an `<a href="...">` tag in the source HTML.
+/// [href] is null for plain-text fragments.
+class ArticleInlineSpan {
+  final String text;
+  final String? href;
+  const ArticleInlineSpan(this.text, {this.href});
+}
+
 class ArticleContentBlock {
   final ArticleBlockType type;
   final String? text;
@@ -18,12 +27,21 @@ class ArticleContentBlock {
   final String? imageUrl;
   final String? imageCaption;
 
+  /// Populated only for [ArticleBlockType.paragraph] blocks that contain at
+  /// least one `<a href="...">` link — lets the renderer show tappable
+  /// inline links (in-app for other Mjengo Hub articles, external browser
+  /// otherwise) instead of silently dropping the href like plain-text
+  /// flattening does. Null for link-free paragraphs, so the common case
+  /// stays on the cheap plain-Text render path.
+  final List<ArticleInlineSpan>? spans;
+
   const ArticleContentBlock._({
     required this.type,
     this.text,
     this.items,
     this.imageUrl,
     this.imageCaption,
+    this.spans,
   });
 
   factory ArticleContentBlock.heading2(String text) =>
@@ -36,8 +54,8 @@ class ArticleContentBlock {
       ArticleContentBlock._(type: ArticleBlockType.bulletList, items: items);
   factory ArticleContentBlock.image(String url, {String? caption}) =>
       ArticleContentBlock._(type: ArticleBlockType.image, imageUrl: url, imageCaption: caption);
-  factory ArticleContentBlock.paragraph(String text) =>
-      ArticleContentBlock._(type: ArticleBlockType.paragraph, text: text);
+  factory ArticleContentBlock.paragraph(String text, {List<ArticleInlineSpan>? spans}) =>
+      ArticleContentBlock._(type: ArticleBlockType.paragraph, text: text, spans: spans);
 }
 
 final RegExp _kBlockPattern = RegExp(
@@ -58,6 +76,30 @@ final RegExp _kImgTagPattern = RegExp(r'<img([^>]*)/?>', caseSensitive: false, d
 final RegExp _kFigcaptionPattern = RegExp(r'<figcaption[^>]*>(.*?)</figcaption>', caseSensitive: false, dotAll: true);
 final RegExp _kSrcAttr = RegExp(r'''src=["']([^"']*)["']''', caseSensitive: false);
 final RegExp _kAltAttr = RegExp(r'''alt=["']([^"']*)["']''', caseSensitive: false);
+final RegExp _kAnchorPattern =
+    RegExp(r'''<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)</a>''', caseSensitive: false, dotAll: true);
+
+/// Splits a paragraph's raw (pre-tag-strip) HTML into plain-text and
+/// `<a href>` link fragments, in source order. Returns a single plain-text
+/// span (matching [_cleanInline]'s output) when there are no links.
+List<ArticleInlineSpan> _parseInlineSpans(String rawHtml) {
+  final spans = <ArticleInlineSpan>[];
+  var last = 0;
+  for (final m in _kAnchorPattern.allMatches(rawHtml)) {
+    if (m.start > last) {
+      final plain = _cleanInline(rawHtml.substring(last, m.start));
+      if (plain.isNotEmpty) spans.add(ArticleInlineSpan(plain));
+    }
+    final linkText = _cleanInline(m.group(2) ?? '');
+    if (linkText.isNotEmpty) spans.add(ArticleInlineSpan(linkText, href: m.group(1)));
+    last = m.end();
+  }
+  if (last < rawHtml.length) {
+    final plain = _cleanInline(rawHtml.substring(last));
+    if (plain.isNotEmpty) spans.add(ArticleInlineSpan(plain));
+  }
+  return spans;
+}
 
 String _cleanInline(String html) => html
     .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
@@ -122,8 +164,13 @@ List<ArticleContentBlock> parseArticleHtml(String? html) {
         blocks.add(ArticleContentBlock.image(src, caption: (alt?.isNotEmpty == true) ? alt : null));
       }
     } else if (m.group(8) != null) {
-      final text = _cleanInline(m.group(8)!);
-      if (text.isNotEmpty) blocks.add(ArticleContentBlock.paragraph(text));
+      final raw = m.group(8)!;
+      final text = _cleanInline(raw);
+      if (text.isNotEmpty) {
+        final spans = _parseInlineSpans(raw);
+        final hasLink = spans.any((s) => s.href != null && s.href!.isNotEmpty);
+        blocks.add(ArticleContentBlock.paragraph(text, spans: hasLink ? spans : null));
+      }
     }
   }
 

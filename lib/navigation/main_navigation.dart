@@ -33,11 +33,11 @@ class MainNavigation extends StatelessWidget {
                   child: Obx(() => IndexedStack(
                         index: ctrl.currentIndex.value,
                         children: const [
-                          HomeScreen(),     // 0
-                          HubScreen(),      // 1
-                          DiscoverScreen(), // 2
-                          VideosScreen(),   // 3
-                          ProfileScreen(),  // 4
+                          HomeScreen(),     // MainNavController.tabHome
+                          DiscoverScreen(), // MainNavController.tabNews
+                          HubScreen(),      // MainNavController.tabHub
+                          VideosScreen(),   // MainNavController.tabMedia
+                          ProfileScreen(),  // MainNavController.tabProfile
                         ],
                       )),
                 ),
@@ -62,6 +62,7 @@ class _BottomNav extends StatelessWidget {
 
   const _BottomNav({required this.currentIndex, required this.onTap});
 
+  // Order matches MainNavController.tabHome/tabNews/tabHub/tabMedia/tabProfile.
   static const _items = [
     _NavData(
       activeIcon: Icons.home_rounded,
@@ -69,19 +70,19 @@ class _BottomNav extends StatelessWidget {
       label: 'Home',
     ),
     _NavData(
-      activeIcon: Icons.hub_rounded,
-      inactiveIcon: Icons.hub_outlined,
-      label: 'Hub',
-    ),
-    _NavData(
       activeIcon: Icons.article_rounded,
       inactiveIcon: Icons.article_outlined,
       label: 'News',
     ),
     _NavData(
+      activeIcon: Icons.hub_rounded,
+      inactiveIcon: Icons.hub_outlined,
+      label: 'Hub',
+    ),
+    _NavData(
       activeIcon: Icons.play_circle_filled_rounded,
       inactiveIcon: Icons.play_circle_outline_rounded,
-      label: 'Videos',
+      label: 'Media',
     ),
     _NavData(
       activeIcon: Icons.person_rounded,
@@ -194,6 +195,14 @@ class _NavItem extends StatelessWidget {
 
 
 class MainNavController extends GetxController {
+  // Named tab indices — use these instead of magic numbers when jumping
+  // tabs from elsewhere in the app (Home/Hub sections, category tiles, …).
+  static const int tabHome = 0;
+  static const int tabNews = 1;
+  static const int tabHub = 2;
+  static const int tabMedia = 3;
+  static const int tabProfile = 4;
+
   final RxInt currentIndex = 0.obs;
 }
 

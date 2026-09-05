@@ -63,7 +63,7 @@ class _VideosScreenState extends State<VideosScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Videos',
+                  'Media',
                   style: GoogleFonts.montserrat(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,

@@ -1,13 +1,16 @@
 import '../../shared/widgets/social_share_modal.dart';
 import '../../shared/services/bookmarks_service.dart';
 // lib/news/screens/article_detail_screen.dart
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 import '../controllers/article_detail_controller.dart';
 import '../models/article_content_blocks.dart';
@@ -15,6 +18,7 @@ import '../models/article_model.dart';
 import '../widgets/article_discovery_section.dart';
 import '../widgets/article_map_embed.dart';
 import '../widgets/net_image.dart';
+import '../widgets/read_also_card.dart';
 import '../widgets/tagged_project_card.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
@@ -85,7 +89,6 @@ class _ArticleBody extends StatefulWidget {
 }
 
 class _ArticleBodyState extends State<_ArticleBody> {
-  static const double _heroHeight = 300.0;
   bool _isSaved = false;
   late final List<ArticleContentBlock> _blocks;
 
@@ -112,12 +115,18 @@ class _ArticleBodyState extends State<_ArticleBody> {
     // through the body, plus one more at the very end — matches the spec's
     // "between content blocks and at the end of the article."
     final midpoint = (_blocks.length / 2).ceil();
+    // Strict full-bleed 16:9 hero, sized off the viewport width so it holds
+    // that ratio on every screen size rather than a fixed pixel height.
+    final heroHeight = MediaQuery.of(context).size.width * 9 / 16;
+
+    final hasCaption = widget.article.featuredImageCaption?.isNotEmpty == true;
+    final hasCredit = widget.article.featuredImageCredit?.isNotEmpty == true;
 
     return CustomScrollView(
       controller: widget.scrollController,
       slivers: [
         SliverAppBar(
-          expandedHeight: _heroHeight,
+          expandedHeight: heroHeight,
           pinned: true,
           backgroundColor: Colors.black,
           elevation: 0,
@@ -128,6 +137,33 @@ class _ArticleBodyState extends State<_ArticleBody> {
             collapseMode: CollapseMode.parallax,
           ),
         ),
+
+        // Caption + credit sit directly beneath the hero image with zero
+        // large gap, before anything else in the header.
+        if (hasCaption || hasCredit)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (hasCaption)
+                    Text(
+                      widget.article.featuredImageCaption!,
+                      style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF64748B), fontStyle: FontStyle.italic, height: 1.4),
+                    ),
+                  if (hasCaption && hasCredit)
+                    const Text('  ·  ', style: TextStyle(color: Color(0xFF64748B))),
+                  if (hasCredit)
+                    Text(
+                      'Photo: ${widget.article.featuredImageCredit}',
+                      style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF64748B), fontWeight: FontWeight.w600),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -154,22 +190,11 @@ class _ArticleBodyState extends State<_ArticleBody> {
                 _AuthorBylineRow(article: widget.article, onShare: _shareArticle),
                 const SizedBox(height: 20),
 
-                if (widget.article.featuredImageCaption?.isNotEmpty == true) ...[
-                  Text(
-                    widget.article.featuredImageCaption!,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF6B7280), fontStyle: FontStyle.italic, height: 1.4),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
                 const Divider(color: Color(0xFFF3F4F6), height: 1),
                 const SizedBox(height: 20),
 
                 if (widget.article.summary != null && widget.article.summary!.isNotEmpty) ...[
-                  Text(
-                    widget.article.summary!,
-                    style: GoogleFonts.montserrat(fontSize: 16, color: const Color(0xFF334155), height: 1.6, fontWeight: FontWeight.w600),
-                  ),
+                  _SummaryCallout(text: widget.article.summary!),
                   const SizedBox(height: 24),
                 ],
               ],
@@ -186,6 +211,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
+                    ReadAlsoCard(article: widget.article),
                     TaggedProjectCard(article: widget.article),
                     ArticleMapEmbed(article: widget.article),
                   ],
@@ -322,6 +348,37 @@ class _HeroImage extends StatelessWidget {
   }
 }
 
+// -- Summary callout ---------------------------------------------------------
+//
+// The deck/summary is a distinct editorial callout, not body copy — light
+// slate tint, 1px slate-200 border, plus a 3px deep-slate left accent bar.
+
+class _SummaryCallout extends StatelessWidget {
+  final String text;
+  const _SummaryCallout({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        border: const Border(
+          top: BorderSide(color: Color(0xFFE2E8F0)),
+          right: BorderSide(color: Color(0xFFE2E8F0)),
+          bottom: BorderSide(color: Color(0xFFE2E8F0)),
+          left: BorderSide(color: Color(0xFF0F172A), width: 3),
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xFF334155), height: 1.6, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+}
+
 class _CategoryPill extends StatelessWidget {
   final String name;
   const _CategoryPill({required this.name});
@@ -405,10 +462,6 @@ class _AuthorBylineRow extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 8),
-        Icon(Icons.remove_red_eye_outlined, size: 14, color: const Color(0xFF9CA3AF)),
-        const SizedBox(width: 4),
-        Text(article.formattedViews, style: GoogleFonts.montserrat(fontSize: 12, color: const Color(0xFF9CA3AF))),
         const SizedBox(width: 10),
         GestureDetector(
           onTap: onShare,
@@ -500,11 +553,61 @@ class _ArticleBlockWidget extends StatelessWidget {
           ),
         );
       case ArticleBlockType.paragraph:
+        final baseStyle = GoogleFonts.montserrat(fontSize: 15.5, color: const Color(0xFF334155), height: 1.75);
+        if (block.spans == null) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(block.text!, style: baseStyle),
+          );
+        }
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Text(block.text!, style: GoogleFonts.montserrat(fontSize: 15.5, color: const Color(0xFF334155), height: 1.75)),
+          child: Text.rich(
+            TextSpan(
+              children: block.spans!
+                  .map((s) => s.href == null || s.href!.isEmpty
+                      ? TextSpan(text: s.text, style: baseStyle)
+                      : TextSpan(
+                          text: s.text,
+                          style: baseStyle.copyWith(color: AppColors.accentBlue, decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()..onTap = () => _openInlineLink(s.href!),
+                        ))
+                  .toList(),
+            ),
+          ),
         );
     }
+  }
+
+  /// Article-internal links (`mjengohub.co.ke/articles/<category>/<slug>` and
+  /// the legacy `/article/<slug>` / `/news/<slug>` forms) navigate natively
+  /// inside the app; anything else opens in the in-app browser, matching
+  /// every other external link in this app.
+  void _openInlineLink(String href) {
+    final slug = _internalArticleSlug(href);
+    if (slug != null) {
+      Get.toNamed(AppRoutes.articleDetail, arguments: slug);
+      return;
+    }
+    final uri = Uri.tryParse(href);
+    if (uri == null) return;
+    canLaunchUrl(uri).then((ok) {
+      if (ok) launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    });
+  }
+
+  String? _internalArticleSlug(String href) {
+    final uri = Uri.tryParse(href);
+    if (uri == null) return null;
+    final host = uri.host.toLowerCase();
+    final isMjengoHost =
+        host.isEmpty || host == 'mjengohub.co.ke' || host == 'www.mjengohub.co.ke' || host == 'app.mjengohub.co.ke';
+    if (!isMjengoHost) return null;
+    final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+    if (segments.isEmpty) return null;
+    final head = segments.first.toLowerCase();
+    if (head != 'articles' && head != 'article' && head != 'news') return null;
+    return segments.last;
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../navigation/main_navigation.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../point/routes/app_routes.dart';
+import '../../profile/contact_screen.dart';
 import '../../shared/theme/app_theme.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -20,6 +21,10 @@ class HubScreen extends StatelessWidget {
   static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
   static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
 
+  // Order matches the website's header menu exactly (Spec: Infrastructure
+  // Tracker, Private Projects, Built History, Africa & World, Site Safety,
+  // Merch). Everything else the app also exposes here lives in
+  // [_utilityItems] instead, grouped below a divider.
   static const _items = [
     _HubItem(
       label: 'Infrastructure Tracker',
@@ -36,12 +41,18 @@ class HubScreen extends StatelessWidget {
       route: AppRoutes.privateProjects,
     ),
     _HubItem(
-      label: 'Share Barabara',
-      sub: 'Road safety awareness & reporting',
-      icon: Icons.directions_car_filled_rounded,
-      color: AppColors.danger,
-      route: null,
-      externalUrl: _shareBarabaraUrl,
+      label: 'Built History',
+      sub: "Kenya's architectural & infrastructure heritage",
+      icon: Icons.account_balance_rounded,
+      color: AppColors.deepNavy,
+      route: AppRoutes.builtHistory,
+    ),
+    _HubItem(
+      label: 'Africa & World',
+      sub: 'Landmark projects across the continent and beyond',
+      icon: Icons.public_rounded,
+      color: AppColors.accentBlue,
+      route: AppRoutes.africaWorld,
     ),
     _HubItem(
       label: 'Site Safety',
@@ -50,6 +61,18 @@ class HubScreen extends StatelessWidget {
       color: AppColors.warning,
       route: AppRoutes.siteSafety,
     ),
+    _HubItem(
+      label: 'Merch',
+      sub: 'Mjengo Hub branded gear',
+      icon: Icons.shopping_bag_rounded,
+      color: AppColors.primeBadge,
+      route: AppRoutes.merch,
+    ),
+  ];
+
+  // Remaining ecosystem/utility links — grouped beneath a divider with the
+  // sharp architectural button styling rather than the primary tracker rows.
+  static const _utilityItems = [
     _HubItem(
       label: 'Infrastructure Reports',
       sub: 'Report a road, bridge or utility fault',
@@ -82,39 +105,25 @@ class HubScreen extends StatelessWidget {
       categorySlug: 'tenders',
     ),
     _HubItem(
-      label: 'Built History',
-      sub: "Kenya's architectural & infrastructure heritage",
-      icon: Icons.account_balance_rounded,
-      color: AppColors.deepNavy,
-      route: AppRoutes.builtHistory,
-    ),
-    _HubItem(
-      label: 'Africa & World',
-      sub: 'Landmark projects across the continent and beyond',
-      icon: Icons.public_rounded,
-      color: AppColors.accentBlue,
-      route: AppRoutes.africaWorld,
-    ),
-    _HubItem(
       label: 'Top Contributors',
       sub: 'Weekly leaderboards — points & project submissions',
       icon: Icons.emoji_events_rounded,
-      color: const Color(0xFFFBBF24),
+      color: Color(0xFFFBBF24),
       route: AppRoutes.contributors,
     ),
     _HubItem(
-      label: 'Merch',
-      sub: 'Mjengo Hub branded gear',
-      icon: Icons.shopping_bag_rounded,
-      color: AppColors.primeBadge,
-      route: AppRoutes.merch,
-    ),
-    _HubItem(
-      label: 'Advertise with Us',
+      label: 'Partner With Us',
       sub: 'Reach construction professionals across Kenya',
       icon: Icons.campaign_rounded,
       color: AppColors.primeBadge,
       route: AppRoutes.advertise,
+    ),
+    _HubItem(
+      label: 'About & Contact',
+      sub: 'Get in touch with the Mjengo Hub team',
+      icon: Icons.info_outline_rounded,
+      color: AppColors.deepNavy,
+      openScreen: _openContact,
     ),
     _HubItem(
       label: 'Mjengo Networks',
@@ -124,7 +133,17 @@ class HubScreen extends StatelessWidget {
       route: null,
       externalUrl: _mjengoNetworksUrl,
     ),
+    _HubItem(
+      label: 'Share Barabara',
+      sub: 'Road safety awareness & reporting',
+      icon: Icons.directions_car_filled_rounded,
+      color: AppColors.danger,
+      route: null,
+      externalUrl: _shareBarabaraUrl,
+    ),
   ];
+
+  static void _openContact() => Get.to(() => const ContactScreen());
 
   @override
   Widget build(BuildContext context) {
@@ -167,10 +186,40 @@ class HubScreen extends StatelessWidget {
 
             // ── List ─────────────────────────────────────────────────────
             Expanded(
-              child: ListView.builder(
+              child: ListView(
                 padding: const EdgeInsets.only(bottom: 24),
-                itemCount: _items.length,
-                itemBuilder: (_, i) => _HubRow(item: _items[i]),
+                children: [
+                  for (final item in _items) _HubRow(item: item),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    child: Row(
+                      children: [
+                        const Expanded(child: Divider(color: AppColors.borderSlate, height: 1)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(
+                            'MORE',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.captionSlate,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: Divider(color: AppColors.borderSlate, height: 1)),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        for (final item in _utilityItems) _HubUtilityButton(item: item),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -196,6 +245,11 @@ class _HubItem {
   /// this slug and switches to it, instead of pushing [route].
   final String? categorySlug;
 
+  /// When set, tapping this tile pushes a screen directly (Get.to) instead
+  /// of going through a named route — used for tiles with no AppRoutes
+  /// entry, e.g. About & Contact.
+  final VoidCallback? openScreen;
+
   const _HubItem({
     required this.label,
     required this.sub,
@@ -204,7 +258,34 @@ class _HubItem {
     this.route,
     this.externalUrl,
     this.categorySlug,
+    this.openScreen,
   });
+
+  Future<void> open() async {
+    if (externalUrl != null) {
+      final uri = Uri.parse(externalUrl!);
+      // In-app browser (Custom Tabs / SFSafariViewController), not a
+      // system-browser hand-off — matches X/Twitter's in-app link behavior.
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      }
+      return;
+    }
+    if (categorySlug != null) {
+      try {
+        Get.find<DiscoverController>().selectCategory(categorySlug!);
+      } catch (_) {}
+      try {
+        Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+      } catch (_) {}
+      return;
+    }
+    if (openScreen != null) {
+      openScreen!();
+      return;
+    }
+    if (route != null) Get.toNamed(route!);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -217,32 +298,10 @@ class _HubRow extends StatelessWidget {
   final _HubItem item;
   const _HubRow({required this.item});
 
-  Future<void> _open() async {
-    if (item.externalUrl != null) {
-      final uri = Uri.parse(item.externalUrl!);
-      // In-app browser (Custom Tabs / SFSafariViewController), not a
-      // system-browser hand-off — matches X/Twitter's in-app link behavior.
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-      }
-      return;
-    }
-    if (item.categorySlug != null) {
-      try {
-        Get.find<DiscoverController>().selectCategory(item.categorySlug!);
-      } catch (_) {}
-      try {
-        Get.find<MainNavController>().currentIndex.value = 2; // News tab
-      } catch (_) {}
-      return;
-    }
-    if (item.route != null) Get.toNamed(item.route!);
-  }
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: _open,
+      onTap: item.open,
       splashColor: item.color.withValues(alpha: 0.06),
       highlightColor: item.color.withValues(alpha: 0.04),
       child: Padding(
@@ -294,6 +353,63 @@ class _HubRow extends StatelessWidget {
               size: item.externalUrl != null ? 18 : 22,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UTILITY BUTTON — sharp architectural button card (BorderRadius.circular(4),
+//  slate-50 background) for the ecosystem/utility links grouped below the
+//  primary 6 trackers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _HubUtilityButton extends StatelessWidget {
+  final _HubItem item;
+  const _HubUtilityButton({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+        child: InkWell(
+          onTap: item.open,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              border: Border.all(color: AppColors.borderSlate),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(item.icon, color: item.color, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.label,
+                          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+                      Text(item.sub,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.captionSlate)),
+                    ],
+                  ),
+                ),
+                Icon(
+                  item.externalUrl != null ? Icons.open_in_new_rounded : Icons.chevron_right_rounded,
+                  color: AppColors.captionSlate,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

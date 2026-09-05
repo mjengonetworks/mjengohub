@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return FeaturedArticlesAnalysisSection(
                 articles: articles,
                 onOpen: _openArticle,
-                onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+                onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews,
               );
             }),
 
@@ -326,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
           title: 'Latest Construction News',
           isDemo: ctrl.isShowingDemoData.value,
           seeAllLabel: 'Read More',
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews,
         ));
   }
 

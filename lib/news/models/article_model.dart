@@ -95,6 +95,7 @@ class Article {
   // Detail-only fields
   final String? content;
   final String? featuredImageCaption;
+  final String? featuredImageCredit;
 
   // In-article map + tagged-project fields (Spec 6). Not sent by the
   // current backend (`_article_dict` in api.py has no `map_enabled`/
@@ -123,6 +124,7 @@ class Article {
     this.author,
     this.content,
     this.featuredImageCaption,
+    this.featuredImageCredit,
     this.mapEnabled = false,
     this.mapType,
     this.mapCenter,
@@ -166,6 +168,7 @@ class Article {
           : null,
       content: json['content'] as String?,
       featuredImageCaption: json['featured_image_caption'] as String?,
+      featuredImageCredit: json['featured_image_credit'] as String?,
       mapEnabled: (json['map_enabled'] as bool?) ?? false,
       mapType: json['map_type'] as String?,
       mapCenter: _parseLatLng(json['map_center']),

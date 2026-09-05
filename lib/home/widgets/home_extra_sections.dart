@@ -1291,7 +1291,7 @@ class _CategoryPillsBarState extends State<CategoryPillsBar> {
     if (Get.isRegistered<DiscoverController>()) {
       Get.find<DiscoverController>().selectCategory(slug);
     }
-    Get.find<MainNavController>().currentIndex.value = 2;
+    Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
   }
 
   @override
@@ -1342,7 +1342,7 @@ class MediaPreviewBanner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GestureDetector(
-        onTap: () => Get.find<MainNavController>().currentIndex.value = 3,
+        onTap: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabMedia,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -1412,7 +1412,7 @@ class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
       children: [
         shared.SectionHeader(
           title: 'Mjengo Hub on YouTube',
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 3,
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabMedia,
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -1628,7 +1628,7 @@ class _MoreNewsSectionState extends State<MoreNewsSection> {
       children: [
         shared.SectionHeader(
           title: widget.title,
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews,
         ),
         const SizedBox(height: 12),
         if (_loading)

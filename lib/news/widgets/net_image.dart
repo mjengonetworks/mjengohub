@@ -3,6 +3,24 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+/// Normalizes a possibly-relative or possibly-insecure image URL into an
+/// absolute `https://mjengohub.co.ke/...` URL. Several model `imageUrl`
+/// getters across the app already prepend the production host to bare
+/// relative paths (e.g. `/static/uploads/...`), but pass an already-`http://`
+/// URL straight through unchanged -- which Flutter web silently fails to
+/// load on the HTTPS-hosted app (mixed-content blocking) and looks exactly
+/// like a broken image. This is the single normalization point every
+/// [NetImage] goes through regardless of what its caller already did, so
+/// it's safe/idempotent to call even on an already-resolved URL.
+String? resolveImageUrl(String? raw) {
+  if (raw == null) return null;
+  final url = raw.trim();
+  if (url.isEmpty) return null;
+  if (url.startsWith('http://')) return 'https://${url.substring('http://'.length)}';
+  if (url.startsWith('https://')) return url;
+  return 'https://mjengohub.co.ke${url.startsWith('/') ? '' : '/'}$url';
+}
+
 /// Network image with a shimmer placeholder and graceful error fallback.
 ///
 /// On mobile: sends a [Referer] header so cPanel hotlink-protection
@@ -65,7 +83,8 @@ class NetImage extends StatelessWidget {
   }
 
   Widget _buildImage(BuildContext context) {
-    if (url == null || url!.isEmpty) {
+    final resolved = resolveImageUrl(url);
+    if (resolved == null) {
       return errorBuilder?.call(context) ?? _placeholder(isError: false);
     }
 
@@ -80,13 +99,13 @@ class NetImage extends StatelessWidget {
           };
 
     return Image.network(
-      url!,
+      resolved,
       width: width,
       height: height,
       fit: fit,
       headers: headers,
       errorBuilder: (context, error, stack) {
-        debugPrint('NetImage error for $url: $error');
+        debugPrint('NetImage error for $resolved: $error');
         return errorBuilder?.call(context) ?? _placeholder(isError: true);
       },
       loadingBuilder: (_, child, progress) {
