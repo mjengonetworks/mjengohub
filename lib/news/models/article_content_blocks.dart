@@ -92,7 +92,7 @@ List<ArticleInlineSpan> _parseInlineSpans(String rawHtml) {
     }
     final linkText = _cleanInline(m.group(2) ?? '');
     if (linkText.isNotEmpty) spans.add(ArticleInlineSpan(linkText, href: m.group(1)));
-    last = m.end();
+    last = m.end;
   }
   if (last < rawHtml.length) {
     final plain = _cleanInline(rawHtml.substring(last));
