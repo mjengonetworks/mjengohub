@@ -77,7 +77,12 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   }
 }
 
-// -- Article body (collapsing hero + content) ----------------------------------
+// -- Article body ---------------------------------------------------------
+//
+// Layout order (top to bottom): category pill -> title -> metadata row
+// (weekday+date, read time -- no view count) -> full-bleed 16:9 featured
+// image with caption/credit -> author row -> summary callout -> body
+// content -> more-browsing sections.
 
 class _ArticleBody extends StatefulWidget {
   final Article article;
@@ -115,9 +120,6 @@ class _ArticleBodyState extends State<_ArticleBody> {
     // through the body, plus one more at the very end — matches the spec's
     // "between content blocks and at the end of the article."
     final midpoint = (_blocks.length / 2).ceil();
-    // Strict full-bleed 16:9 hero, sized off the viewport width so it holds
-    // that ratio on every screen size rather than a fixed pixel height.
-    final heroHeight = MediaQuery.of(context).size.width * 9 / 16;
 
     final hasCaption = widget.article.featuredImageCaption?.isNotEmpty == true;
     final hasCredit = widget.article.featuredImageCredit?.isNotEmpty == true;
@@ -126,47 +128,18 @@ class _ArticleBodyState extends State<_ArticleBody> {
       controller: widget.scrollController,
       slivers: [
         SliverAppBar(
-          expandedHeight: heroHeight,
           pinned: true,
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           elevation: 0,
           leading: _backButton(),
           actions: [_bookmarkButton(), _shareButton()],
-          flexibleSpace: FlexibleSpaceBar(
-            background: _HeroImage(article: widget.article),
-            collapseMode: CollapseMode.parallax,
-          ),
         ),
 
-        // Caption + credit sit directly beneath the hero image with zero
-        // large gap, before anything else in the header.
-        if (hasCaption || hasCredit)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (hasCaption)
-                    Text(
-                      widget.article.featuredImageCaption!,
-                      style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF64748B), fontStyle: FontStyle.italic, height: 1.4),
-                    ),
-                  if (hasCaption && hasCredit)
-                    const Text('  ·  ', style: TextStyle(color: Color(0xFF64748B))),
-                  if (hasCredit)
-                    Text(
-                      'Photo: ${widget.article.featuredImageCredit}',
-                      style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF64748B), fontWeight: FontWeight.w600),
-                    ),
-                ],
-              ),
-            ),
-          ),
-
+        // 1-3: category pill, title, metadata row (weekday+date, read time).
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -174,8 +147,6 @@ class _ArticleBodyState extends State<_ArticleBody> {
                   _CategoryPill(name: widget.article.category!.name),
                   const SizedBox(height: 10),
                 ],
-
-                // Editorial header — full, un-truncated title.
                 Text(
                   widget.article.title,
                   style: GoogleFonts.montserrat(
@@ -185,10 +156,58 @@ class _ArticleBodyState extends State<_ArticleBody> {
                     height: 1.28,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
+                _MetadataRow(article: widget.article),
+                const SizedBox(height: 18),
+              ],
+            ),
+          ),
+        ),
 
-                _AuthorBylineRow(article: widget.article, onShare: _shareArticle),
-                const SizedBox(height: 20),
+        // 4: full-bleed 16:9 featured image + caption/credit directly below.
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: NetImage(url: widget.article.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1F2937)),
+              ),
+              if (hasCaption || hasCredit)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (hasCaption)
+                        Text(
+                          widget.article.featuredImageCaption!,
+                          style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF64748B), fontStyle: FontStyle.italic, height: 1.4),
+                        ),
+                      if (hasCaption && hasCredit)
+                        const Text('  ·  ', style: TextStyle(color: Color(0xFF64748B))),
+                      if (hasCredit)
+                        Text(
+                          'Photo: ${widget.article.featuredImageCredit}',
+                          style: GoogleFonts.montserrat(
+                              fontSize: 12.5, color: const Color(0xFF64748B), fontStyle: FontStyle.italic, fontWeight: FontWeight.normal),
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // 5-6: author row, summary callout.
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _AuthorRow(article: widget.article),
+                const SizedBox(height: 18),
 
                 const Divider(color: Color(0xFFF3F4F6), height: 1),
                 const SizedBox(height: 20),
@@ -202,7 +221,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
           ),
         ),
 
-        // Rich body blocks, with a discovery card spliced in at the
+        // 7: rich body blocks, with a discovery card spliced in at the
         // midpoint.
         for (int i = 0; i < _blocks.length; i++) ...[
           if (i == midpoint)
@@ -261,8 +280,9 @@ class _ArticleBodyState extends State<_ArticleBody> {
         child: Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+          child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F172A), size: 20),
         ),
       ),
     );
@@ -294,10 +314,11 @@ class _ArticleBodyState extends State<_ArticleBody> {
         child: Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(10)),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
           child: Icon(
             _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-            color: _isSaved ? const Color(0xFFF59E0B) : Colors.white,
+            color: _isSaved ? const Color(0xFFF59E0B) : const Color(0xFF0F172A),
             size: 20,
           ),
         ),
@@ -313,36 +334,53 @@ class _ArticleBodyState extends State<_ArticleBody> {
         child: Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+          child: const Icon(Icons.share_rounded, color: Color(0xFF0F172A), size: 20),
         ),
       ),
     );
   }
 }
 
-// -- Hero image ------------------------------------------------------------
+// -- Metadata row (Spec item 3): weekday + full date, read time. View count
+// is permanently excluded here for every user. ------------------------------
 
-class _HeroImage extends StatelessWidget {
+class _MetadataRow extends StatelessWidget {
   final Article article;
-  const _HeroImage({required this.article});
+  const _MetadataRow({required this.article});
+
+  static const _weekdays = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  static const _months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  String _fullDate() {
+    if (article.publishedAt == null) return '';
+    try {
+      final d = DateTime.parse(article.publishedAt!).toLocal();
+      return '${_weekdays[d.weekday]}, ${d.day} ${_months[d.month]} ${d.year}';
+    } catch (_) {
+      return '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
+    final date = _fullDate();
+    return Wrap(
+      spacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        NetImage(url: article.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1F2937)),
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0x22000000), Color(0x66000000)],
-              stops: [0.5, 1.0],
-            ),
+        if (date.isNotEmpty)
+          Text(date, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
+        if (date.isNotEmpty && article.readTime != null)
+          Text('•', style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF9CA3AF))),
+        if (article.readTime != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharp)),
+            child: Text('${article.readTime} min read',
+                style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
           ),
-        ),
       ],
     );
   }
@@ -396,80 +434,40 @@ class _CategoryPill extends StatelessWidget {
   }
 }
 
-// -- Author byline row -------------------------------------------------------
+// -- Author row (Spec item 5) -------------------------------------------------
 //
-// Avatar, published date, read-time chip, and an inline share button. No
-// Prime badge here — `is_prime` is a session-rendered-only field on the
-// website (application.py), never exposed by `/api/v1` (`_article_dict` in
-// api.py has no `is_prime` key), so the app has no real signal to show one
-// on; fabricating it would be a lie the API can't back up.
+// Avatar, author name, and a relative-time timestamp. No Prime badge and no
+// author "role" here — `is_prime` is a session-rendered-only field on the
+// website (application.py), never exposed by `/api/v1`, and ArticleAuthor
+// has no role/title field in the API response either (`author` is just
+// `{id, name, image}`) — nothing to honestly show for either.
 
-class _AuthorBylineRow extends StatelessWidget {
+class _AuthorRow extends StatelessWidget {
   final Article article;
-  final VoidCallback onShare;
-  const _AuthorBylineRow({required this.article, required this.onShare});
-
-  String _formattedDate() {
-    if (article.publishedAt == null) return '';
-    try {
-      final d = DateTime.parse(article.publishedAt!).toLocal();
-      const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return '${months[d.month]} ${d.day}, ${d.year}';
-    } catch (_) {
-      return '';
-    }
-  }
+  const _AuthorRow({required this.article});
 
   @override
   Widget build(BuildContext context) {
     final author = article.author;
-    final date = _formattedDate();
+    if (author == null) return const SizedBox.shrink();
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (author != null) ...[
-          ClipOval(
-            child: NetImage(url: author.imageUrl, width: 36, height: 36, fit: BoxFit.cover, placeholderColor: const Color(0xFF374151)),
-          ),
-          const SizedBox(width: 10),
-        ],
+        ClipOval(
+          child: NetImage(url: author.imageUrl, width: 40, height: 40, fit: BoxFit.cover, placeholderColor: const Color(0xFF374151)),
+        ),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (author != null)
-                Text(author.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: const Color(0xFF111827))),
-              Wrap(
-                spacing: 6,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (date.isNotEmpty)
-                    Text(date, style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF9CA3AF))),
-                  if (date.isNotEmpty && article.readTime != null)
-                    Text('•', style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF9CA3AF))),
-                  if (article.readTime != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(20)),
-                      child: Text('${article.readTime} min read',
-                          style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
-                    ),
-                ],
-              ),
+              Text(author.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: const Color(0xFF111827))),
+              if (article.timeAgo.isNotEmpty)
+                Text(article.timeAgo, style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF9CA3AF))),
             ],
-          ),
-        ),
-        const SizedBox(width: 10),
-        GestureDetector(
-          onTap: onShare,
-          child: Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), shape: BoxShape.circle),
-            child: const Icon(Icons.ios_share_rounded, size: 15, color: Color(0xFF64748B)),
           ),
         ),
       ],

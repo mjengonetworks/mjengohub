@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'net_image_html_stub.dart' if (dart.library.html) 'net_image_html_web.dart' as html_image;
+
 /// Normalizes a possibly-relative or possibly-insecure image URL into an
 /// absolute `https://mjengohub.co.ke/...` URL. Several model `imageUrl`
 /// getters across the app already prepend the production host to bare
@@ -23,13 +25,15 @@ String? resolveImageUrl(String? raw) {
 
 /// Network image with a shimmer placeholder and graceful error fallback.
 ///
-/// On mobile: sends a [Referer] header so cPanel hotlink-protection
-/// doesn't block the request.
+/// On mobile/desktop: uses [Image.network] with a [Referer] header so
+/// cPanel hotlink-protection doesn't block the request.
 ///
-/// On web: custom headers are NOT sent. Browsers enforce CORS and treat
-/// Referer/User-Agent as forbidden headers (silently ignored). The only
-/// real fix on web is an `Access-Control-Allow-Origin` header returned
-/// by the server for static files.
+/// On web: renders through a genuine DOM `<img>` element instead
+/// (`_WebNetImage`/net_image_html_web.dart) rather than [Image.network].
+/// CanvasKit fetches image bytes itself for WebGL texture upload, which
+/// requires `Access-Control-Allow-Origin` from the server — mjengohub.co.ke
+/// doesn't send it for static uploads, so [Image.network] fails outright on
+/// web. A plain `<img>` has no such requirement just to display an image.
 class NetImage extends StatelessWidget {
   final String? url;
   final double? width;
@@ -88,15 +92,29 @@ class NetImage extends StatelessWidget {
       return errorBuilder?.call(context) ?? _placeholder(isError: false);
     }
 
-    // On web: Referer & User-Agent are forbidden headers — browsers ignore
-    // them and the extra CORS preflight they trigger makes things worse.
-    // CORS must be solved on the server (.htaccess Access-Control-Allow-Origin).
-    final Map<String, String>? headers = kIsWeb
-        ? null
-        : {
-            ..._mobileHeaders,
-            if (extraHeaders != null) ...extraHeaders!,
-          };
+    // Web: route through a genuine DOM <img> element instead of
+    // Image.network — CanvasKit needs CORS headers to fetch cross-origin
+    // image bytes for its own decode/texture-upload, which mjengohub.co.ke
+    // doesn't send for static uploads, so Image.network fails outright
+    // there. A plain <img> tag has no such requirement just to *display*
+    // a cross-origin image. See net_image_html_web.dart.
+    if (kIsWeb) {
+      return SizedBox(
+        width: width,
+        height: height,
+        child: _WebNetImage(
+          url: resolved,
+          fit: fit,
+          errorWidget: errorBuilder?.call(context) ?? _placeholder(isError: true),
+        ),
+      );
+    }
+
+    // Mobile/desktop: Referer & User-Agent bypass cPanel hotlink protection.
+    final Map<String, String>? headers = {
+      ..._mobileHeaders,
+      if (extraHeaders != null) ...extraHeaders!,
+    };
 
     return Image.network(
       resolved,
@@ -138,4 +156,56 @@ class NetImage extends StatelessWidget {
           color: placeholderColor,
         ),
       );
+}
+
+/// Web-only DOM-`<img>`-backed image (see net_image_html_web.dart for why).
+/// Owns its own failure state, since the underlying platform view reports
+/// load errors via a DOM event rather than a Flutter-level errorBuilder.
+class _WebNetImage extends StatefulWidget {
+  final String url;
+  final BoxFit fit;
+  final Widget errorWidget;
+  const _WebNetImage({required this.url, required this.fit, required this.errorWidget});
+
+  @override
+  State<_WebNetImage> createState() => _WebNetImageState();
+}
+
+class _WebNetImageState extends State<_WebNetImage> {
+  bool _failed = false;
+  late Widget _view;
+
+  @override
+  void initState() {
+    super.initState();
+    _registerView();
+  }
+
+  @override
+  void didUpdateWidget(covariant _WebNetImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url || oldWidget.fit != widget.fit) {
+      _failed = false;
+      _registerView();
+    }
+  }
+
+  // Registers a fresh platform view exactly once per widget instance (here
+  // and on URL/fit change) rather than on every rebuild -- see the warning
+  // in net_image_html_web.dart about calling buildHtmlNetworkImage from
+  // build().
+  void _registerView() {
+    _view = html_image.buildHtmlNetworkImage(
+      url: widget.url,
+      fit: widget.fit,
+      onError: () {
+        if (mounted) setState(() => _failed = true);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _failed ? widget.errorWidget : _view;
+  }
 }
