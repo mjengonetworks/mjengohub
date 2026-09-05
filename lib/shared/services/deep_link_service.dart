@@ -30,7 +30,7 @@ class DeepLinkService {
   StreamSubscription<Uri>? _sub;
 
   Future<void> init() async {
-    final initial = await _appLinks.getInitialAppLink();
+    final initial = await _appLinks.getInitialLink();
     if (initial != null) _handle(initial);
 
     _sub = _appLinks.uriLinkStream.listen(_handle, onError: (_) {});

@@ -16,6 +16,7 @@ import '../../merch/services/merch_service.dart';
 import '../../navigation/main_navigation.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../news/models/article_model.dart';
+import '../../news/models/category_model.dart';
 import '../../news/screens/article_detail_screen.dart';
 import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
