@@ -13,7 +13,10 @@ import '../controllers/article_detail_controller.dart';
 import '../models/article_content_blocks.dart';
 import '../models/article_model.dart';
 import '../widgets/article_discovery_section.dart';
+import '../widgets/article_map_embed.dart';
 import '../widgets/net_image.dart';
+import '../widgets/tagged_project_card.dart';
+import '../../shared/widgets/scroll_to_top_fab.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
   const ArticleDetailScreen({Key? key}) : super(key: key);
@@ -24,6 +27,7 @@ class ArticleDetailScreen extends StatefulWidget {
 
 class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   late final ArticleDetailController _ctrl;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   @override
   void dispose() {
     Get.delete<ArticleDetailController>(force: true);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -46,7 +51,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
       child: Scaffold(
         // Clean off-white editorial backdrop.
         backgroundColor: const Color(0xFFF8FAFC),
-        body: Obx(() {
+        body: ScrollToTopFab(
+          controller: _scrollController,
+          child: Obx(() {
           if (_ctrl.isLoading.value) {
             return const Center(
               child: CircularProgressIndicator(
@@ -58,8 +65,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
           if (_ctrl.errorMessage.isNotEmpty || _ctrl.article.value == null) {
             return _ErrorView(message: _ctrl.errorMessage.value);
           }
-          return _ArticleBody(article: _ctrl.article.value!);
+          return _ArticleBody(article: _ctrl.article.value!, scrollController: _scrollController);
         }),
+        ),
       ),
     );
   }
@@ -69,7 +77,8 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
 
 class _ArticleBody extends StatefulWidget {
   final Article article;
-  const _ArticleBody({required this.article});
+  final ScrollController? scrollController;
+  const _ArticleBody({required this.article, this.scrollController});
 
   @override
   State<_ArticleBody> createState() => _ArticleBodyState();
@@ -105,6 +114,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
     final midpoint = (_blocks.length / 2).ceil();
 
     return CustomScrollView(
+      controller: widget.scrollController,
       slivers: [
         SliverAppBar(
           expandedHeight: _heroHeight,
@@ -170,6 +180,18 @@ class _ArticleBodyState extends State<_ArticleBody> {
         // Rich body blocks, with a discovery card spliced in at the
         // midpoint.
         for (int i = 0; i < _blocks.length; i++) ...[
+          if (i == midpoint)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    TaggedProjectCard(article: widget.article),
+                    ArticleMapEmbed(article: widget.article),
+                  ],
+                ),
+              ),
+            ),
           if (i == midpoint) const SliverToBoxAdapter(child: RelatedTrackersCard()),
           SliverToBoxAdapter(
             child: Padding(

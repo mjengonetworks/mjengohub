@@ -1,6 +1,40 @@
 // lib/news/models/article_model.dart
 
+import 'package:latlong2/latlong.dart';
+
 const String _kBaseUrl = 'https://mjengohub.co.ke';
+
+/// A project tagged onto an article for the "View Tracker Project" card.
+/// Parsed from an optional `tagged_project` object — not sent by the
+/// current backend, so this is always null today; the app is ready for it.
+class ArticleTaggedProject {
+  final String slug;
+  final String title;
+  final String? image;
+  final String? trackerLabel;
+
+  const ArticleTaggedProject({
+    required this.slug,
+    required this.title,
+    this.image,
+    this.trackerLabel,
+  });
+
+  factory ArticleTaggedProject.fromJson(Map<String, dynamic> json) {
+    return ArticleTaggedProject(
+      slug: (json['slug'] as String?) ?? '',
+      title: (json['title'] as String?) ?? '',
+      image: json['image'] as String?,
+      trackerLabel: json['tracker_label'] as String?,
+    );
+  }
+
+  String? get imageUrl {
+    if (image == null || image!.isEmpty) return null;
+    if (image!.startsWith('http')) return image;
+    return '$_kBaseUrl$image';
+  }
+}
 
 class ArticleAuthor {
   final int id;
@@ -62,6 +96,17 @@ class Article {
   final String? content;
   final String? featuredImageCaption;
 
+  // In-article map + tagged-project fields (Spec 6). Not sent by the
+  // current backend (`_article_dict` in api.py has no `map_enabled`/
+  // `map_type`/`map_center`/`map_route`/`tagged_project` keys) — these all
+  // default to absent so the map/tagged-project card widgets stay dormant
+  // until the API adds them.
+  final bool mapEnabled;
+  final String? mapType;
+  final LatLng? mapCenter;
+  final List<LatLng>? mapRoute;
+  final ArticleTaggedProject? taggedProject;
+
   const Article({
     required this.id,
     required this.title,
@@ -78,7 +123,26 @@ class Article {
     this.author,
     this.content,
     this.featuredImageCaption,
+    this.mapEnabled = false,
+    this.mapType,
+    this.mapCenter,
+    this.mapRoute,
+    this.taggedProject,
   });
+
+  static LatLng? _parseLatLng(dynamic value) {
+    if (value is! List || value.length < 2) return null;
+    final lat = (value[0] as num?)?.toDouble();
+    final lng = (value[1] as num?)?.toDouble();
+    if (lat == null || lng == null) return null;
+    return LatLng(lat, lng);
+  }
+
+  static List<LatLng>? _parseRoute(dynamic value) {
+    if (value is! List) return null;
+    final points = value.map(_parseLatLng).whereType<LatLng>().toList();
+    return points.isEmpty ? null : points;
+  }
 
   factory Article.fromJson(Map<String, dynamic> json) {
     return Article(
@@ -102,6 +166,13 @@ class Article {
           : null,
       content: json['content'] as String?,
       featuredImageCaption: json['featured_image_caption'] as String?,
+      mapEnabled: (json['map_enabled'] as bool?) ?? false,
+      mapType: json['map_type'] as String?,
+      mapCenter: _parseLatLng(json['map_center']),
+      mapRoute: _parseRoute(json['map_route']),
+      taggedProject: json['tagged_project'] != null
+          ? ArticleTaggedProject.fromJson(json['tagged_project'] as Map<String, dynamic>)
+          : null,
     );
   }
 
