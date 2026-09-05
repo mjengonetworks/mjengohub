@@ -18,7 +18,7 @@ import 'video_player_screen.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 const _kBlue    = Color(0xFF2563EB);
 const _kDark    = Color(0xFF111827);
-const _kSubtext = Color(0xFF9CA3AF);
+const _kSubtext = Color(0xFF475569);
 const _kBg      = Color(0xFFF3F4F6);
 const _kDivider = Color(0xFFF3F4F6);
 const _kYT      = Color(0xFFFF0000);
@@ -224,7 +224,7 @@ class _SearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search videos',
                 hintStyle:
-                    GoogleFonts.montserrat(fontSize: 14, color: const Color(0xFFADB5BD)),
+                    GoogleFonts.montserrat(fontSize: 14, color: const Color(0xFF475569)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -672,7 +672,7 @@ class _FilterSheet extends StatelessWidget {
   const _FilterSheet({required this.ctrl});
 
   static const _kSheetDark    = Color(0xFF111827);
-  static const _kSheetSubtext = Color(0xFF9CA3AF);
+  static const _kSheetSubtext = Color(0xFF475569);
   static const _kSheetDivider = Color(0xFFF3F4F6);
 
   @override
@@ -838,7 +838,7 @@ class _FilterOption extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 18,
-                color: isSelected ? _kBlue : const Color(0xFF6B7280)),
+                color: isSelected ? _kBlue : const Color(0xFF475569)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

@@ -11,7 +11,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   static const Color _bg          = Color(0xFFF4F4FB);
   static const Color _surface     = Colors.white;
   static const Color _primary     = Color(0xFF1A1A2E);
-  static const Color _secondary   = Color(0xFF888888);
+  static const Color _secondary   = Color(0xFF475569);
   static const Color _divider     = Color(0xFFEEEEF5);
   static const Color _accent      = Color(0xFF6C63FF);
 

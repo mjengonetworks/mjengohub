@@ -215,7 +215,7 @@ class _MyProjectSubmissionsRowState extends State<MyProjectSubmissionsRow> {
                 Text(count == null ? '…' : '$count',
                     style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSubtle)),
                 const SizedBox(width: 4),
-                const Icon(Icons.chevron_right_rounded, color: Color(0xFFBBBBBB), size: 20),
+                const Icon(Icons.chevron_right_rounded, color: Color(0xFF475569), size: 20),
               ],
             ),
           ),

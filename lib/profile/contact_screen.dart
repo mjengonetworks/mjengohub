@@ -17,7 +17,7 @@ class _ContactScreenState extends State<ContactScreen> {
   static const Color _bg        = Color(0xFFF4F4FB);
   static const Color _surface   = Colors.white;
   static const Color _primary   = Color(0xFF1A1A2E);
-  static const Color _secondary = Color(0xFF888888);
+  static const Color _secondary = Color(0xFF475569);
   static const Color _divider   = Color(0xFFEEEEF5);
   static const Color _accent    = Color(0xFF6C63FF);
   static const Color _body      = Color(0xFF444444);
@@ -529,7 +529,7 @@ class _ContactScreenState extends State<ContactScreen> {
           style: GoogleFonts.montserrat(fontSize: 13, color: _primary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFFBBBBBB)),
+            hintStyle: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF475569)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             filled: true,
             fillColor: _bg,
@@ -588,7 +588,7 @@ class _ContactScreenState extends State<ContactScreen> {
           value: _inquiryType,
           hint: Text('Select an option…',
               style: GoogleFonts.montserrat(
-                  fontSize: 12.5, color: const Color(0xFFBBBBBB))),
+                  fontSize: 12.5, color: const Color(0xFF475569))),
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
               color: _secondary, size: 20),
           style: GoogleFonts.montserrat(fontSize: 13, color: _primary),

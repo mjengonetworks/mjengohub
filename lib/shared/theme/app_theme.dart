@@ -9,7 +9,11 @@ class AppColors {
   // Compatibility aliases
   static const Color primary = Color(0xFF2563EB);
   static const Color accent = Color(0xFF2563EB);
-  static const Color textLight = Color(0xFF8888AA);
+  // Was 0xFF8888AA (a washed-out lavender-gray) -- raised to slate-600 for
+  // legible secondary/caption text app-wide. Same value as captionSlate
+  // below; kept as a separate token since callers already reference both
+  // textLight/textSubtle and captionSlate by name.
+  static const Color textLight = Color(0xFF475569);
 
   AppColors._();
 
@@ -25,7 +29,8 @@ class AppColors {
   static const Color surface = Colors.white;
   static const Color background = Color(0xFFF0F4FF);
   static const Color textDark = Color(0xFF1A1A2E);
-  static const Color textSubtle = Color(0xFF8888AA);
+  // Was 0xFF8888AA -- see textLight's comment above, same fix.
+  static const Color textSubtle = Color(0xFF475569);
   static const Color divider = Color(0xFFEEEEF5);
 
   static const Color success = Color(0xFF16A34A);

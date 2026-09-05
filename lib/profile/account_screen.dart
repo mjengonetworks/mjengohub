@@ -35,7 +35,7 @@ const _blueDark   = Color(0xFF1D4ED8);
 const _bg         = Color(0xFFF0F4FF);
 const _surface    = Colors.white;
 const _textPri    = Color(0xFF1A1A2E);
-const _textSec    = Color(0xFF888888);
+const _textSec    = Color(0xFF475569);
 const _divider    = Color(0xFFEEEEF5);
 const _error      = Color(0xFFEF4444);
 
@@ -1101,7 +1101,7 @@ class _Field extends StatelessWidget {
           ),
           hintStyle: GoogleFonts.montserrat(
             fontSize: 12,
-            color: const Color(0xFFBBBBBB),
+            color: const Color(0xFF475569),
           ),
           counterStyle: GoogleFonts.montserrat(fontSize: 10.5, color: _textSec),
           border: InputBorder.none,

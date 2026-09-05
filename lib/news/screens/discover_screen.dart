@@ -85,7 +85,7 @@ class _SearchBar extends StatelessWidget {
         children: [
           const SizedBox(width: 12),
           const Icon(Icons.search_rounded,
-              size: 20, color: Color(0xFF9CA3AF)),
+              size: 20, color: Color(0xFF475569)),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -97,7 +97,7 @@ class _SearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search',
                 hintStyle: GoogleFonts.montserrat(
-                    fontSize: 14, color: const Color(0xFFADB5BD)),
+                    fontSize: 14, color: const Color(0xFF475569)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -112,7 +112,7 @@ class _SearchBar extends StatelessWidget {
                       child: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Icon(Icons.close_rounded,
-                            size: 18, color: Color(0xFF9CA3AF)),
+                            size: 18, color: Color(0xFF475569)),
                       ),
                     )
                   : const SizedBox(width: 8),
@@ -251,7 +251,7 @@ class _FilterSheet extends StatelessWidget {
 
   static const _kPurple  = AppColors.accentBlue;
   static const _kDark    = Color(0xFF111827);
-  static const _kSubtext = Color(0xFF9CA3AF);
+  static const _kSubtext = Color(0xFF475569);
   static const _kDivider = Color(0xFFF3F4F6);
 
   @override
@@ -440,7 +440,7 @@ class _FilterOption extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 18,
-                color: isSelected ? _kPurple : const Color(0xFF6B7280)),
+                color: isSelected ? _kPurple : const Color(0xFF475569)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -487,7 +487,7 @@ class _ArticleList extends StatelessWidget {
           child: Text(
             'No articles found.',
             style: GoogleFonts.montserrat(
-                fontSize: 14, color: const Color(0xFF9CA3AF)),
+                fontSize: 14, color: const Color(0xFF475569)),
           ),
         );
       }

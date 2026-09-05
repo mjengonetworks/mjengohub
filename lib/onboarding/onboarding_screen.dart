@@ -7,7 +7,7 @@ import '../point/routes/app_routes.dart';
 const Color _primary     = Color(0xFF3B82F6);
 const Color _primaryDeep = Color(0xFF1D4ED8);
 const Color _textDark    = Color(0xFF111827);
-const Color _textGray    = Color(0xFF6B7280);
+const Color _textGray    = Color(0xFF475569);
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);

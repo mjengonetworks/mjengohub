@@ -187,13 +187,13 @@ class _MetaItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: const Color(0xFF9CA3AF)),
+        Icon(icon, size: 12, color: const Color(0xFF475569)),
         const SizedBox(width: 4),
         Text(
           label,
           style: GoogleFonts.montserrat(
             fontSize: 12,
-            color: const Color(0xFF6B7280),
+            color: const Color(0xFF475569),
           ),
         ),
       ],

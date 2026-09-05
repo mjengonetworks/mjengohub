@@ -16,7 +16,7 @@ import 'report_incident_screen.dart';
 // Design tokens — mirrors Videos / Discover screens
 // ─────────────────────────────────────────────────────────────────────────────
 const _kDark    = Color(0xFF111827);
-const _kSubtext = Color(0xFF9CA3AF);
+const _kSubtext = Color(0xFF475569);
 const _kBg      = Color(0xFFF3F4F6);
 const _kDivider = Color(0xFFF3F4F6);
 
@@ -245,7 +245,7 @@ class _SearchBarState extends State<_SearchBar> {
               decoration: InputDecoration(
                 hintText: 'Search incidents…',
                 hintStyle: GoogleFonts.montserrat(
-                    fontSize: 14, color: const Color(0xFFADB5BD)),
+                    fontSize: 14, color: const Color(0xFF475569)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -395,7 +395,7 @@ class _CrisisBanner extends StatelessWidget {
                   Text(
                     'Befrienders Kenya · +254 722 178 177  |  999 / 112',
                     style: GoogleFonts.montserrat(
-                        fontSize: 11.5, color: const Color(0xFF6B7280)),
+                        fontSize: 11.5, color: const Color(0xFF475569)),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],

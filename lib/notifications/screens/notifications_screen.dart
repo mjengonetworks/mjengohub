@@ -15,7 +15,7 @@ const _blueDark = Color(0xFF1D4ED8);
 const _bg       = Color(0xFFF0F4FF);
 const _surface  = Colors.white;
 const _textPri  = Color(0xFF1A1A2E);
-const _textSec  = Color(0xFF888888);
+const _textSec  = Color(0xFF475569);
 const _divider  = Color(0xFFEEEEF5);
 
 // ── Type colours ─────────────────────────────────────────────────────────────

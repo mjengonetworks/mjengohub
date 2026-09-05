@@ -13,7 +13,7 @@ const Color _bg          = Color(0xFFFFFFFF);
 const Color _inputBg     = Color(0xFFF4F4FB);
 const Color _inputBorder = Color(0xFFE8E8F0);
 const Color _textDark    = Color(0xFF1A1A2E);
-const Color _textGray    = Color(0xFF888888);
+const Color _textGray    = Color(0xFF475569);
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
