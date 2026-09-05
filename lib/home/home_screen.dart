@@ -579,7 +579,7 @@ class _HeroHeadline extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.montserrat(
             fontSize: 22,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: Colors.white,
             height: 1.25,
           ),
@@ -646,7 +646,7 @@ class _PartnerWithUsBanner extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Partner With Us', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                    Text('Partner With Us', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: Colors.white)),
                     const SizedBox(height: 2),
                     Text('Advertise, sponsor a project, or reach our audience',
                         style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.85))),

@@ -100,7 +100,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                     widget.video.title,
                     style: GoogleFonts.montserrat(
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: _kDark,
                       height: 1.35,
                     ),

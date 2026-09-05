@@ -377,7 +377,7 @@ class _Hero extends StatelessWidget {
                     'Account',
                     style: GoogleFonts.montserrat(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
                   ),
@@ -443,7 +443,7 @@ class _Hero extends StatelessWidget {
                     name,
                     style: GoogleFonts.montserrat(
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
                   ),
@@ -482,7 +482,7 @@ class _Hero extends StatelessWidget {
           i,
           style: GoogleFonts.montserrat(
             fontSize: 26,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
             color: Colors.white,
           ),
         ),
@@ -1280,7 +1280,7 @@ class _SaveButton extends StatelessWidget {
                       label,
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: enabled ? Colors.white : _textSec,
                       ),
                     ),

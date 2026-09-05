@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _onSignUp ? 'Create\nAccount' : 'Sign In',
               style: GoogleFonts.montserrat(
                 fontSize: 36,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 color: _textDark,
                 height: 1.15,
               ),
@@ -634,7 +634,7 @@ class _PrimaryButton extends StatelessWidget {
                       label,
                       style: GoogleFonts.montserrat(
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),

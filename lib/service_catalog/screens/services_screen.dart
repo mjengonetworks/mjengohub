@@ -64,7 +64,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 'Services',
                 style: GoogleFonts.montserrat(
                   fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textDark,
                 ),
               ),
@@ -101,7 +101,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 15,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: AppColors.textDark,
             ),
           ),
@@ -158,7 +158,7 @@ class _ServiceCard extends StatelessWidget {
                           service.name,
                           style: GoogleFonts.montserrat(
                             fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w500,
                             color: AppColors.textDark,
                           ),
                         ),
@@ -174,7 +174,7 @@ class _ServiceCard extends StatelessWidget {
                             'Featured',
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: AppColors.primaryBlue,
                             ),
                           ),
@@ -200,7 +200,7 @@ class _ServiceCard extends StatelessWidget {
                       'From KES ${service.basePrice}',
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: AppColors.primaryBlue,
                       ),
                     ),

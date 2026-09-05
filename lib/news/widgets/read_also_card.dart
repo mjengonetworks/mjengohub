@@ -74,7 +74,7 @@ class _ReadAlsoCardState extends State<ReadAlsoCard> {
           children: [
             Text(
               'READ ALSO',
-              style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w800, color: const Color(0xFFF97316), letterSpacing: 0.6),
+              style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: const Color(0xFFF97316), letterSpacing: 0.6),
             ),
             const SizedBox(height: 4),
             Text(

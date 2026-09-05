@@ -238,7 +238,7 @@ class _SettingsView extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-        title: Text('Delete Account', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
+        title: Text('Delete Account', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
         content: Text(
           'Self-service account deletion isn\'t available in the app yet. Contact support and we\'ll take care of it.',
           style: GoogleFonts.montserrat(fontSize: 13.5, height: 1.4),
@@ -525,7 +525,7 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                     name,
                     style: GoogleFonts.montserrat(
                       fontSize: 19,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.headingSlate,
                     ),
                   ),
@@ -567,7 +567,7 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                       const Icon(Icons.edit_outlined, size: 14, color: AppColors.captionSlate),
                       const SizedBox(width: 6),
                       Text('Edit Profile',
-                          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.captionSlate)),
+                          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.captionSlate)),
                     ],
                   ),
                 ),
@@ -598,7 +598,7 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
           initials,
           style: GoogleFonts.montserrat(
             fontSize: 26,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
             color: Colors.white,
           ),
         ),
@@ -642,7 +642,7 @@ class _PointsSummaryCard extends StatelessWidget {
               child: const Icon(Icons.emoji_events_rounded, color: AppColors.accentBlue, size: 20),
             ),
             const SizedBox(height: 10),
-            Text('$total', style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+            Text('$total', style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.textDark)),
             Text('points', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
           ],
         ),
@@ -711,7 +711,7 @@ class _ReferralCompactTileState extends State<_ReferralCompactTile> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Invite Colleagues & Earn Points',
-                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
                   if (_info?.code.isNotEmpty == true)
                     Text(_info!.code,
                         style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.captionSlate, letterSpacing: 0.4)),
@@ -776,7 +776,7 @@ class _SettingsGroup extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8, left: 2),
             child: Text(
               title.toUpperCase(),
-              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.captionSlate, letterSpacing: 0.6),
+              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.captionSlate, letterSpacing: 0.6),
             ),
           ),
           Container(
@@ -905,7 +905,7 @@ class _NewsletterSheetState extends State<_NewsletterSheet> {
                 'Subscribe to the newsletter',
                 style: GoogleFonts.montserrat(
                   fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textDark,
                 ),
               ),

@@ -69,7 +69,7 @@ class TrackerProjectCard extends StatelessWidget {
                     project.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
                   ),
                   if ((project.county ?? project.location ?? project.country) != null) ...[
                     const SizedBox(height: 3),
@@ -100,6 +100,6 @@ class TrackerProjectCard extends StatelessWidget {
   Widget _pill(String label, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
-        child: Text(label, style: GoogleFonts.montserrat(fontSize: 8.5, fontWeight: FontWeight.w800, color: Colors.white)),
+        child: Text(label, style: GoogleFonts.montserrat(fontSize: 8.5, fontWeight: FontWeight.w500, color: Colors.white)),
       );
 }

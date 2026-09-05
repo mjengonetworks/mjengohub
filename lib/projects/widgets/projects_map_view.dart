@@ -61,7 +61,7 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
                       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                       decoration: BoxDecoration(color: statusMarkerColor(project.status), borderRadius: BorderRadius.circular(999)),
                       child: Text(project.statusLabel.toUpperCase(),
-                          style: GoogleFonts.montserrat(fontSize: 9.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                          style: GoogleFonts.montserrat(fontSize: 9.5, fontWeight: FontWeight.w500, color: Colors.white)),
                     ),
                   ),
                 ],
@@ -74,7 +74,7 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
                 children: [
                   Text(project.title,
                       maxLines: 2, overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                   if ((project.county ?? project.location ?? project.country) != null) ...[
                     const SizedBox(height: 4),
                     Row(
@@ -103,7 +103,7 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: Text('View Details', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700)),
+                      child: Text('View Details', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   ),
                 ],

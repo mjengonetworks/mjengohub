@@ -47,7 +47,7 @@ class SectionHeader extends StatelessWidget {
                         title,
                         style: GoogleFonts.montserrat(
                           fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                           color: AppColors.headingSlate,
                         ),
                       ),
@@ -66,7 +66,7 @@ class SectionHeader extends StatelessWidget {
                         seeAllLabel,
                         style: GoogleFonts.montserrat(
                           fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                           color: AppColors.accentBlue,
                         ),
                       ),

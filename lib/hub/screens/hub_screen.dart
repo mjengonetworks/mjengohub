@@ -149,7 +149,7 @@ class HubScreen extends StatelessWidget {
                     'Hub',
                     style: GoogleFonts.montserrat(
                       fontSize: 28,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.textDark,
                     ),
                   ),
@@ -184,7 +184,7 @@ class HubScreen extends StatelessWidget {
                             'MORE',
                             style: GoogleFonts.montserrat(
                               fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: AppColors.captionSlate,
                               letterSpacing: 0.6,
                             ),
@@ -312,7 +312,7 @@ class _HubRow extends StatelessWidget {
                     item.label,
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.textDark,
                     ),
                   ),
@@ -377,7 +377,7 @@ class _HubUtilityButton extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.label,
-                          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+                          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
                       Text(item.sub,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

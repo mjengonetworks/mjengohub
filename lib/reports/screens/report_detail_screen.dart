@@ -68,7 +68,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           label,
           style: GoogleFonts.montserrat(
             fontSize: 10.5,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
             color: color,
           ),
         ),
@@ -114,7 +114,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           'Report',
           style: GoogleFonts.montserrat(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),
         ),
@@ -158,7 +158,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             r.title,
             style: GoogleFonts.montserrat(
               fontSize: 20,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               height: 1.3,
               color: AppColors.textDark,
             ),

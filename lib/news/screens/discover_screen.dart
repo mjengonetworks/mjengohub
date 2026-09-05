@@ -33,7 +33,7 @@ class DiscoverScreen extends StatelessWidget {
                   'News and Articles',
                   style: GoogleFonts.montserrat(
                     fontSize: 26,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     color: AppColors.textDark,
                   ),
                 ),
@@ -225,7 +225,7 @@ class _TabItem extends StatelessWidget {
           label,
           style: GoogleFonts.montserrat(
             fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            fontWeight: isSelected ? FontWeight.w500 : FontWeight.w600,
             color: isSelected ? Colors.white : AppColors.textDark,
           ),
         ),
@@ -296,7 +296,7 @@ class _FilterSheet extends StatelessWidget {
                       Text('Filter by Category',
                           style: GoogleFonts.montserrat(
                               fontSize: 17,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: _kDark)),
                       Obx(() => ctrl.selectedSlug.value.isNotEmpty
                           ? GestureDetector(
@@ -448,7 +448,7 @@ class _FilterOption extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
                   fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                      isSelected ? FontWeight.w500 : FontWeight.w500,
                   color: isSelected ? _kPurple : _kDark,
                 ),
               ),

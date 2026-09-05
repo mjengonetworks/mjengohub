@@ -108,7 +108,7 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
         elevation: 0,
         title: Text(
           widget.isPrivileged ? 'Add an Update' : 'Suggest an Update',
-          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark),
+          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark),
         ),
       ),
       body: ContentWidth(
@@ -118,7 +118,7 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(widget.projectTitle, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSubtle)),
+              Text(widget.projectTitle, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
               const SizedBox(height: 4),
               Text(
                 widget.isPrivileged

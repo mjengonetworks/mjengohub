@@ -55,7 +55,7 @@ class _PointsScreenState extends State<PointsScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDark),
-        title: Text('Your Points', style: GoogleFonts.montserrat(color: AppColors.textDark, fontWeight: FontWeight.w700)),
+        title: Text('Your Points', style: GoogleFonts.montserrat(color: AppColors.textDark, fontWeight: FontWeight.w500)),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
@@ -75,7 +75,7 @@ class _PointsScreenState extends State<PointsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$points', style: GoogleFonts.montserrat(fontSize: 34, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                        Text('$points', style: GoogleFonts.montserrat(fontSize: 34, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                         ReviewerLevelBadge(points: points),
                       ],
                     ),
@@ -103,7 +103,7 @@ class _PointsScreenState extends State<PointsScreen> {
               ),
 
               const SizedBox(height: 20),
-              Text('Breakdown', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+              Text('Breakdown', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               const SizedBox(height: 10),
 
               if (_loading)
@@ -119,7 +119,7 @@ class _PointsScreenState extends State<PointsScreen> {
               else ...[
                 _BreakdownGrid(summary: _summary!),
                 const SizedBox(height: 24),
-                Text('Recent Activity', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                Text('Recent Activity', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                 const SizedBox(height: 10),
                 if (_log.isEmpty)
                   Container(
@@ -186,7 +186,7 @@ class _BreakdownGrid extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: AppColors.accentBlue),
               const Spacer(),
-              Text('$value', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+              Text('$value', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               Text(label, style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle), maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
@@ -234,7 +234,7 @@ class _LogRow extends StatelessWidget {
               ],
             ),
           ),
-          Text('+${entry.points}', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.success)),
+          Text('+${entry.points}', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.success)),
         ],
       ),
     );

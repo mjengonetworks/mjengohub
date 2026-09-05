@@ -37,7 +37,7 @@ class AdBannerSlot extends StatelessWidget {
               slotNumber != null ? 'SPONSORED — SLOT $slotNumber' : 'SPONSORED / ADVERTISEMENT',
               style: GoogleFonts.montserrat(
                 fontSize: 10,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: AppColors.captionSlate,
                 letterSpacing: 1.1,
               ),

@@ -106,7 +106,7 @@ class IncidentDetailScreen extends StatelessWidget {
               incident.title,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
                 shadows: [
                   const Shadow(color: Colors.black54, blurRadius: 4)
@@ -334,7 +334,7 @@ class IncidentDetailScreen extends StatelessWidget {
                                   u.title ?? 'Update',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w500,
                                     color: _kDark,
                                   ),
                                 ),
@@ -419,7 +419,7 @@ class IncidentDetailScreen extends StatelessWidget {
           Text(title,
               style: GoogleFonts.montserrat(
                 fontSize: 15,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: _kDark,
               )),
           const SizedBox(height: 12),
@@ -467,7 +467,7 @@ class _SeverityBadge extends StatelessWidget {
         severity.toUpperCase(),
         style: GoogleFonts.montserrat(
           fontSize: 10,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: Colors.white,
           letterSpacing: 0.5,
         ),
@@ -487,7 +487,7 @@ class _StatChip extends StatelessWidget {
       label,
       style: GoogleFonts.montserrat(
         fontSize: 12,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w500,
         color: color,
       ),
     );
@@ -520,7 +520,7 @@ class _ActionChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(label,
                 style: GoogleFonts.montserrat(
-                    fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryBlue)),
+                    fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.primaryBlue)),
           ],
         ),
       ),
@@ -565,7 +565,7 @@ class _IncidentSheetShell extends StatelessWidget {
                 title,
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: _kDark,
                 ),
               ),

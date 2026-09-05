@@ -126,7 +126,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           s?.name ?? 'Service',
           style: GoogleFonts.montserrat(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),
         ),
@@ -150,7 +150,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                               s.name,
                               style: GoogleFonts.montserrat(
                                 fontSize: 21,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w500,
                                 color: AppColors.textDark,
                               ),
                             ),
@@ -160,7 +160,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                 'From KES ${s.basePrice}',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                   color: AppColors.primaryBlue,
                                 ),
                               ),
@@ -210,7 +210,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           title,
           style: GoogleFonts.montserrat(
             fontSize: 15.5,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),
         ),
@@ -226,7 +226,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                             '${e.key + 1}. ',
                             style: GoogleFonts.montserrat(
                               fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: AppColors.primaryBlue,
                             ),
                           )
@@ -268,7 +268,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               'Request received',
               style: GoogleFonts.montserrat(
                 fontSize: 15.5,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textDark,
               ),
             ),
@@ -299,7 +299,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               'Request this service',
               style: GoogleFonts.montserrat(
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textDark,
               ),
             ),

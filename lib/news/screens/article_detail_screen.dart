@@ -190,7 +190,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
                         Text(
                           'Photo: ${widget.article.featuredImageCredit}',
                           style: GoogleFonts.montserrat(
-                              fontSize: 12.5, color: const Color(0xFF475569), fontStyle: FontStyle.italic, fontWeight: FontWeight.normal),
+                              fontSize: 12.5, color: const Color(0xFF475569), fontStyle: FontStyle.normal, fontWeight: FontWeight.normal),
                         ),
                     ],
                   ),
@@ -428,7 +428,7 @@ class _CategoryPill extends StatelessWidget {
       decoration: BoxDecoration(color: const Color(0xFFF97316), borderRadius: BorderRadius.circular(20)),
       child: Text(
         name.toUpperCase(),
-        style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.4),
+        style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
       ),
     );
   }
@@ -464,7 +464,7 @@ class _AuthorRow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(author.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: const Color(0xFF111827))),
+                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: const Color(0xFF111827))),
               if (article.timeAgo.isNotEmpty)
                 Text(article.timeAgo, style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF475569))),
             ],
@@ -488,13 +488,13 @@ class _ArticleBlockWidget extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(top: 24, bottom: 10),
           child: Text(block.text!,
-              style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: const Color(0xFF0F172A), height: 1.3)),
+              style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w500, color: const Color(0xFF0F172A), height: 1.3)),
         );
       case ArticleBlockType.heading3:
         return Padding(
           padding: const EdgeInsets.only(top: 20, bottom: 8),
           child: Text(block.text!,
-              style: GoogleFonts.montserrat(fontSize: 17, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A), height: 1.3)),
+              style: GoogleFonts.montserrat(fontSize: 17, fontWeight: FontWeight.w500, color: const Color(0xFF0F172A), height: 1.3)),
         );
       case ArticleBlockType.quote:
         return Container(

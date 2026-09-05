@@ -63,7 +63,7 @@ class IncidentsListScreen extends StatelessWidget {
           label: Text(
             'Report Incident',
             style: GoogleFonts.montserrat(
-                fontSize: 13, fontWeight: FontWeight.w700),
+                fontSize: 13, fontWeight: FontWeight.w500),
           ),
         ),
         body: Column(
@@ -104,7 +104,7 @@ class IncidentsListScreen extends StatelessWidget {
                             _title,
                             style: GoogleFonts.montserrat(
                               fontSize: 20,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w500,
                               color: _kDark,
                             ),
                           ),
@@ -337,7 +337,7 @@ class _TabItem extends StatelessWidget {
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight:
-                isSelected ? FontWeight.w700 : FontWeight.w500,
+                isSelected ? FontWeight.w500 : FontWeight.w500,
             color: isSelected ? _kDark : _kSubtext,
           ),
         ),
@@ -388,7 +388,7 @@ class _CrisisBanner extends StatelessWidget {
                     'Crisis Support',
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: const Color(0xFFDC2626),
                     ),
                   ),
@@ -429,7 +429,7 @@ class _FeaturedSection extends StatelessWidget {
             'Featured Incidents',
             style: GoogleFonts.montserrat(
               fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _kDark,
             ),
           ),
@@ -460,7 +460,7 @@ class _FeaturedSection extends StatelessWidget {
             'All Incidents',
             style: GoogleFonts.montserrat(
               fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _kDark,
             ),
           ),
@@ -533,7 +533,7 @@ class _FeaturedCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
                         fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: _kDark,
                         height: 1.3,
                       ),
@@ -658,7 +658,7 @@ class _IncidentTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
                       fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: _kDark,
                       height: 1.3,
                     ),
@@ -738,7 +738,7 @@ class _SeverityBadge extends StatelessWidget {
         severity.toUpperCase(),
         style: GoogleFonts.montserrat(
           fontSize: 9,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: Colors.white,
           letterSpacing: 0.5,
         ),
@@ -764,7 +764,7 @@ class _StatChip extends StatelessWidget {
         label,
         style: GoogleFonts.montserrat(
           fontSize: 10.5,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           color: color,
         ),
       ),

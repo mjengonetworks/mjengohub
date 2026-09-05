@@ -52,7 +52,7 @@ class FieldLabel extends StatelessWidget {
           required ? '$text *' : text,
           style: GoogleFonts.montserrat(
             fontSize: 11.5,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
             letterSpacing: 0.2,
           ),
@@ -160,7 +160,7 @@ class AppSubmitButton extends StatelessWidget {
                   label,
                   style: GoogleFonts.montserrat(
                     fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
                 ),

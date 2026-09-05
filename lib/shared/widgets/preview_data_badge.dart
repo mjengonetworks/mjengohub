@@ -26,7 +26,7 @@ class PreviewDataBadge extends StatelessWidget {
         'PREVIEW',
         style: GoogleFonts.montserrat(
           fontSize: 8.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: AppColors.warning,
           letterSpacing: 0.4,
         ),

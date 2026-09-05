@@ -163,7 +163,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                           'Report an Incident',
                           style: GoogleFonts.montserrat(
                             fontSize: 18,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                             color: Colors.white,
                           ),
                         ),
@@ -212,7 +212,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               'Report Submitted!',
               style: GoogleFonts.montserrat(
                 fontSize: 20,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: _kDark,
               ),
             ),
@@ -238,7 +238,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 ),
                 child: Text('Back to Incidents',
                     style: GoogleFonts.montserrat(
-                        fontSize: 14, fontWeight: FontWeight.w700)),
+                        fontSize: 14, fontWeight: FontWeight.w500)),
               ),
             ),
           ],
@@ -416,7 +416,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                         'Submit Report',
                         style: GoogleFonts.montserrat(
                           fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
               ),

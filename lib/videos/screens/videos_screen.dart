@@ -66,7 +66,7 @@ class _VideosScreenState extends State<VideosScreen> {
                   'Media',
                   style: GoogleFonts.montserrat(
                     fontSize: 28,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     color: _kDark,
                   ),
                 ),
@@ -174,7 +174,7 @@ class _StatTile extends StatelessWidget {
             figure.display,
             style: GoogleFonts.montserrat(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               color: _kYT,
             ),
           ),
@@ -350,7 +350,7 @@ class _TabItem extends StatelessWidget {
           label,
           style: GoogleFonts.montserrat(
             fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: FontWeight.w500,
             color: isSelected ? _kDark : _kSubtext,
           ),
         ),
@@ -546,7 +546,7 @@ class VideoListTile extends StatelessWidget {
                               'YouTube',
                               style: GoogleFonts.montserrat(
                                 fontSize: 9,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w500,
                                 color: Colors.white,
                               ),
                             ),
@@ -714,7 +714,7 @@ class _FilterSheet extends StatelessWidget {
                       Text('Filter by Category',
                           style: GoogleFonts.montserrat(
                               fontSize: 17,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: _kSheetDark)),
                       Obx(() => ctrl.selectedCategoryId.value != null
                           ? GestureDetector(
@@ -845,7 +845,7 @@ class _FilterOption extends StatelessWidget {
                 label,
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: FontWeight.w500,
                   color: isSelected ? _kBlue : const Color(0xFF111827),
                 ),
               ),

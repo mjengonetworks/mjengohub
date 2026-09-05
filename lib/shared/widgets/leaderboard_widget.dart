@@ -100,7 +100,7 @@ class _MetricLeaderboardCardState extends State<_MetricLeaderboardCard> {
             children: [
               Expanded(
                 child: Text(widget.title,
-                    style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                    style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               ),
               const SizedBox(width: 8),
               _ProfilesPagesToggle(showPages: _showPages, onChanged: (v) => setState(() => _showPages = v)),
@@ -125,7 +125,7 @@ class _MetricLeaderboardCardState extends State<_MetricLeaderboardCard> {
             onTap: () => Get.toNamed(AppRoutes.contributors),
             child: Center(
               child: Text('View More',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
             ),
           ),
         ],
@@ -151,7 +151,7 @@ class _ProfilesPagesToggle extends StatelessWidget {
             ),
             child: Text(label,
                 style: GoogleFonts.montserrat(
-                    fontSize: 10.5, fontWeight: FontWeight.w700, color: active ? Colors.white : AppColors.textSubtle)),
+                    fontSize: 10.5, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textSubtle)),
           ),
         );
     return Container(
@@ -188,7 +188,7 @@ class _LeaderboardRowTile extends StatelessWidget {
               width: 22,
               child: medal != null
                   ? Icon(Icons.emoji_events_rounded, color: medal, size: 18)
-                  : Text('$rank', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSubtle)),
+                  : Text('$rank', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
             ),
             ClipOval(
               child: SizedBox(
@@ -202,7 +202,7 @@ class _LeaderboardRowTile extends StatelessWidget {
               child: Text(row.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textDark)),
             ),
-            Text('${row.value}', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+            Text('${row.value}', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
           ],
         ),
       ),
@@ -259,7 +259,7 @@ class _MicroLeaderboardStripState extends State<MicroLeaderboardStrip> {
                 ),
                 const SizedBox(height: 6),
                 Text('View All Leaderboards →',
-                    style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                    style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
               ],
             ),
           ),
@@ -285,7 +285,7 @@ class _MicroEntry extends StatelessWidget {
       children: [
         Text(label, style: GoogleFonts.montserrat(fontSize: 9, color: AppColors.textSubtle)),
         Text(row!.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+            style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
       ],
     );
   }

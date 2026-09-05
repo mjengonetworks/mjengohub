@@ -64,7 +64,7 @@ class TermsConditionsScreen extends StatelessWidget {
             'Terms & Conditions',
             style: GoogleFonts.montserrat(
               fontSize: 20,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _primary,
             ),
           ),
@@ -90,7 +90,7 @@ class TermsConditionsScreen extends StatelessWidget {
             'MJENGO HUB',
             style: GoogleFonts.montserrat(
               fontSize: 10,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               letterSpacing: 1.6,
               color: _accent,
             ),
@@ -100,7 +100,7 @@ class TermsConditionsScreen extends StatelessWidget {
             'Terms & Conditions',
             style: GoogleFonts.montserrat(
               fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _primary,
               height: 1.2,
             ),
@@ -365,7 +365,7 @@ class TermsConditionsScreen extends StatelessWidget {
             title.toUpperCase(),
             style: GoogleFonts.montserrat(
               fontSize: 10.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               letterSpacing: 0.8,
               color: _primary,
             ),
@@ -399,7 +399,7 @@ class TermsConditionsScreen extends StatelessWidget {
           title,
           style: GoogleFonts.montserrat(
             fontSize: 12.5,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
             color: _primary,
           ),
         ),

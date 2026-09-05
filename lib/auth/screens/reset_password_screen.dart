@@ -84,7 +84,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               _emailSent ? 'Email\nSent!' : 'Forgot\nPassword?',
               style: GoogleFonts.montserrat(
                 fontSize: 36,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 color: _textDark,
                 height: 1.15,
               ),
@@ -286,7 +286,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               'Send Reset Link',
                               style: GoogleFonts.montserrat(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w500,
                                 color: Colors.white,
                               ),
                             ),
@@ -325,7 +325,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             'Link sent!',
             style: GoogleFonts.montserrat(
               fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _textDark,
             ),
           ),

@@ -293,7 +293,7 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 6),
-            child: Text(title, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.textSubtle, letterSpacing: 0.4)),
+            child: Text(title, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
           ),
           ...children,
         ],

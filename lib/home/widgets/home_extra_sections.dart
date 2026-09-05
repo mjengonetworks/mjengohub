@@ -4,6 +4,7 @@
 // (title-only), "Browse Projects by Category" (mixed public/private grid),
 // and "Follow Mjengo Hub" (Mjengo Networks preview + social cluster).
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -55,12 +56,13 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onSeeAll;
   final bool isDemo;
+  final String seeAllLabel;
 
-  const _SectionHeader({required this.title, this.onSeeAll, this.isDemo = false});
+  const _SectionHeader({required this.title, this.onSeeAll, this.isDemo = false, this.seeAllLabel = 'See All'});
 
   @override
   Widget build(BuildContext context) {
-    return shared.SectionHeader(title: title, onSeeAll: onSeeAll, isDemo: isDemo, seeAllLabel: 'See All');
+    return shared.SectionHeader(title: title, onSeeAll: onSeeAll, isDemo: isDemo, seeAllLabel: seeAllLabel);
   }
 }
 
@@ -106,7 +108,7 @@ class FeaturedArticlesAnalysisSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(7),
                     ),
                     child: Text('${i + 1}',
-                        style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.accentBlue)),
+                        style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -266,7 +268,7 @@ class _ProjectCategoryCard extends StatelessWidget {
                       ),
                       child: Text(
                         project.statusLabel.toUpperCase(),
-                        style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.4),
+                        style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
                       ),
                     ),
                   ),
@@ -279,7 +281,7 @@ class _ProjectCategoryCard extends StatelessWidget {
                 project.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textDark, height: 1.25),
+                style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textDark, height: 1.25),
               ),
             ),
           ],
@@ -354,7 +356,7 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
+                      Text(widget.title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white)),
                       const SizedBox(height: 4),
                       Text(widget.subtitle,
                           style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white.withValues(alpha: 0.92), height: 1.4)),
@@ -375,7 +377,7 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text(widget.ctaLabel,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               ),
             ),
           ],
@@ -451,15 +453,18 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
     });
   }
 
+  // Authentic brand silhouettes (FontAwesome Free) rather than generic
+  // Material shapes -- tiktok/telegram/other have no brand icon required by
+  // the spec, so those keep a plain Material glyph.
   static const Map<String, IconData> _iconFor = {
-    'youtube': Icons.smart_display_rounded,
-    'twitter': Icons.close_rounded,
+    'youtube': FontAwesomeIcons.youtube,
+    'twitter': FontAwesomeIcons.xTwitter,
     'tiktok': Icons.music_note_rounded,
-    'facebook': Icons.facebook_rounded,
-    'instagram': Icons.camera_alt_rounded,
-    'whatsapp': Icons.chat_rounded,
+    'facebook': FontAwesomeIcons.facebookF,
+    'instagram': FontAwesomeIcons.instagram,
+    'whatsapp': FontAwesomeIcons.whatsapp,
     'telegram': Icons.send_rounded,
-    'linkedin': Icons.business_center_rounded,
+    'linkedin': FontAwesomeIcons.linkedinIn,
     'other': Icons.link_rounded,
   };
 
@@ -508,7 +513,53 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
                 .toList(),
           ),
         ),
+        const SizedBox(height: 20),
+        const _NetworkSitesDirectory(),
       ],
+    );
+  }
+}
+
+/// The Mjengo Networks ecosystem's registered properties. Only these three
+/// are confirmed (the same URLs already used elsewhere in this app, e.g.
+/// HubScreen's ecosystem links) -- not fabricating additional sub-sites
+/// beyond what's actually established.
+class _NetworkSitesDirectory extends StatelessWidget {
+  const _NetworkSitesDirectory();
+
+  static const _sites = [
+    (label: 'Mjengo Hub', domain: 'mjengohub.co.ke', url: 'https://mjengohub.co.ke'),
+    (label: 'Share Barabara', domain: 'sharebarabara.co.ke', url: 'https://sharebarabara.co.ke'),
+    (label: 'Mjengo Networks', domain: 'mjengonetworks.co.ke', url: 'https://mjengonetworks.co.ke/'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Our Network', style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
+          const SizedBox(height: 8),
+          for (final site in _sites)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: GestureDetector(
+                onTap: () => _launchExternal(site.url),
+                child: Row(
+                  children: [
+                    const Icon(Icons.public, size: 14, color: AppColors.accentBlue),
+                    const SizedBox(width: 8),
+                    Text(site.label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                    const SizedBox(width: 6),
+                    Text(site.domain, style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle)),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -746,7 +797,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                     project.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
                   ),
                   if ((project.county ?? project.location) != null) ...[
                     const SizedBox(height: 3),
@@ -794,7 +845,7 @@ class _FeaturedProjectCard extends StatelessWidget {
         decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5)),
         child: Text(
           label,
-          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3),
+          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.3),
         ),
       );
 }
@@ -992,7 +1043,11 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: widget.title, onSeeAll: () => Get.to(() => const PrivateProjectsScreen())),
+        _SectionHeader(
+          title: widget.title,
+          onSeeAll: () => Get.to(() => const PrivateProjectsScreen()),
+          seeAllLabel: 'View All Private Projects',
+        ),
         const SizedBox(height: 4),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1079,7 +1134,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
             children: [
               const Text(
                 'Site Safety',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark),
               ),
               if (_isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
             ],
@@ -1144,7 +1199,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: color),
+          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: color),
         ),
       ),
     );
@@ -1223,7 +1278,7 @@ class _SafetyIncidentCard extends StatelessWidget {
                     incident.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark, height: 1.3),
+                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textDark, height: 1.3),
                   ),
                   if ((incident.county ?? incident.location) != null) ...[
                     const SizedBox(height: 4),
@@ -1256,7 +1311,7 @@ class _SafetyIncidentCard extends StatelessWidget {
         decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5)),
         child: Text(
           label,
-          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3),
+          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.3),
         ),
       );
 }
@@ -1364,7 +1419,7 @@ class MediaPreviewBanner extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Media Hub', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.headingSlate)),
+                    Text('Media Hub', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
                     const SizedBox(height: 2),
                     Text('Photos, videos and site coverage in one place',
                         style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
@@ -1466,7 +1521,7 @@ class _VideoCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(4)),
                         child: Text(video.duration!,
-                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
                       ),
                     ),
                 ],
@@ -1478,7 +1533,7 @@ class _VideoCard extends StatelessWidget {
                 video.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.3),
+                style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.3),
               ),
             ),
           ],
@@ -1574,10 +1629,10 @@ class _MerchCard extends StatelessWidget {
                   Text(product.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
                   const SizedBox(height: 2),
                   Text('KES ${product.price.toStringAsFixed(0)}',
-                      style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                      style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
                 ],
               ),
             ),
@@ -1724,7 +1779,7 @@ class _CommunitySectionState extends State<CommunitySection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Join Our Community', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+          Text('Join Our Community', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
           const SizedBox(height: 2),
           Text('This week\'s top contributors',
               style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white.withValues(alpha: 0.75))),
@@ -1752,7 +1807,7 @@ class _CommunitySectionState extends State<CommunitySection> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
               ),
               child: Text('Join Community →',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.headingSlate)),
+                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
             ),
           ),
         ],
@@ -1782,7 +1837,7 @@ class _ContributorAvatar extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+            style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
         Text('${row.value} pts',
             style: GoogleFonts.montserrat(fontSize: 9.5, color: Colors.white.withValues(alpha: 0.7))),
       ],

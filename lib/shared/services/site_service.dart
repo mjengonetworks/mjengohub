@@ -149,6 +149,29 @@ class SiteAlert {
       );
 }
 
+/// An admin-managed partner/ecosystem-stakeholder logo. There is a
+/// `partners` table server-side (`models.py`'s `Partner`: name/description/
+/// logo/website_url/sort_order) but, confirmed against the real api.py, no
+/// `/api/v1` route exposes it yet -- `getPartners()` below is written
+/// defensively against a plausible `site/partners` endpoint and simply
+/// returns an empty list (letting the caller fall back to placeholders)
+/// until the backend adds one.
+class Partner {
+  final int id;
+  final String name;
+  final String? logo;
+  final String? websiteUrl;
+
+  const Partner({required this.id, required this.name, this.logo, this.websiteUrl});
+
+  factory Partner.fromJson(Map<String, dynamic> j) => Partner(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        name: (j['name'] as String?) ?? '',
+        logo: j['logo'] as String?,
+        websiteUrl: j['website_url'] as String?,
+      );
+}
+
 class SiteService {
   BaseService get _api => Get.find<BaseService>();
 
@@ -164,12 +187,28 @@ class SiteService {
   Future<List<SocialLinkInfo>> getSocialLinks() async {
     // Return static social links to avoid failing network calls.
     return const [
-      SocialLinkInfo(platform: 'facebook', url: 'https://facebook.com/mjengohub'),
       SocialLinkInfo(platform: 'twitter', url: 'https://twitter.com/mjengohub'),
-      SocialLinkInfo(platform: 'instagram', url: 'https://instagram.com/mjengohub'),
       SocialLinkInfo(platform: 'linkedin', url: 'https://linkedin.com/company/mjengohub'),
+      SocialLinkInfo(platform: 'facebook', url: 'https://facebook.com/mjengohub'),
+      SocialLinkInfo(platform: 'instagram', url: 'https://instagram.com/mjengohub'),
       SocialLinkInfo(platform: 'youtube', url: 'https://youtube.com/@mjengohub'),
+      SocialLinkInfo(platform: 'whatsapp', url: 'https://whatsapp.com/channel/mjengohub'),
     ];
+  }
+
+  /// See the [Partner] class doc -- no live endpoint exists yet, so this
+  /// always resolves to `[]` today (the UI falls back to placeholder cards).
+  Future<List<Partner>> getPartners() async {
+    try {
+      final res = await _api.getRequest('site/partners');
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is List) return data.whereType<Map<String, dynamic>>().map(Partner.fromJson).toList();
+      }
+    } catch (e) {
+      print('❌ getPartners failed: $e');
+    }
+    return [];
   }
 
   /// Headline stat counters. [page] filters client-side on `page_location`

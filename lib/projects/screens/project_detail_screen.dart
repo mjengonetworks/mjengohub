@@ -158,7 +158,7 @@ class ProjectDetailScreen extends StatelessWidget {
                           project.statusLabel.toUpperCase(),
                           style: GoogleFonts.montserrat(
                             fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w500,
                             color: Colors.white,
                             letterSpacing: 0.6,
                           ),
@@ -204,7 +204,7 @@ class ProjectDetailScreen extends StatelessWidget {
                                 project.ratingDisplay!,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                   color: _kDark,
                                 ),
                               ),
@@ -222,7 +222,7 @@ class ProjectDetailScreen extends StatelessWidget {
                       project.title,
                       style: GoogleFonts.montserrat(
                         fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         color: _kDark,
                         height: 1.25,
                       ),
@@ -265,7 +265,7 @@ class ProjectDetailScreen extends StatelessWidget {
                                 '${project.progressPercent}%',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w500,
                                   color: _kBlue,
                                 ),
                               ),
@@ -693,7 +693,7 @@ class _ProjectActionChip extends StatelessWidget {
           children: [
             Icon(icon, size: 15, color: _kBlue),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: _kBlue)),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: _kBlue)),
           ],
         ),
       ),
@@ -807,7 +807,7 @@ class _RatingSheet extends StatelessWidget {
             ),
           ),
           Text('Rate This Project',
-              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: _kDark)),
+              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: _kDark)),
           const SizedBox(height: 16),
           Obx(() => Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -836,7 +836,7 @@ class _RatingSheet extends StatelessWidget {
                           '$rating',
                           style: GoogleFonts.montserrat(
                             fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                             color: selected ? Colors.white : _kSubtext,
                           ),
                         ),
@@ -878,7 +878,7 @@ class _ActionsCard extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
+        title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
         content: Text('Please sign in to your Mjengo Hub account to continue.',
             style: GoogleFonts.montserrat(fontSize: 13.5, color: _kSubtext)),
         actions: [
@@ -886,7 +886,7 @@ class _ActionsCard extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: _kBlue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             onPressed: () { Navigator.pop(ctx); Get.toNamed('/login'); },
-            child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -962,7 +962,7 @@ class _ActionChip extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: _kBlue),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: _kBlue)),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: _kBlue)),
           ],
         ),
       ),
@@ -997,7 +997,7 @@ class _SheetShell extends StatelessWidget {
                   decoration: BoxDecoration(color: _kDivider, borderRadius: BorderRadius.circular(2)),
                 ),
               ),
-              Text(title, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: _kDark)),
+              Text(title, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: _kDark)),
               const SizedBox(height: 16),
               child,
             ],
@@ -1125,7 +1125,7 @@ class _SuggestProgressSheetState extends State<_SuggestProgressSheet> {
                       width: 18, height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : Text('Submit Suggestion',
-                      style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
             ),
           ),
         ],
@@ -1207,7 +1207,7 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
               style: ElevatedButton.styleFrom(backgroundColor: _kBlue, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               child: _submitting
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Submit', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+                  : Text('Submit', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
             ),
           ),
         ],
@@ -1235,7 +1235,7 @@ class _InfoCard extends StatelessWidget {
             title,
             style: GoogleFonts.montserrat(
               fontSize: 15,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _kDark,
             ),
           ),
@@ -1306,13 +1306,13 @@ class _TeamStakeholdersCard extends StatelessWidget {
         children: [
           Text(
             'Project Team & Stakeholders',
-            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.headingSlate),
+            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate),
           ),
           const SizedBox(height: 14),
           for (final entry in byRole.entries) ...[
             Text(
               entry.key,
-              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.captionSlate, letterSpacing: 0.4),
+              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.captionSlate, letterSpacing: 0.4),
             ),
             const SizedBox(height: 6),
             Wrap(
@@ -1405,7 +1405,7 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
         children: [
           Text(
             'Related Articles & Coverage',
-            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.headingSlate),
+            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate),
           ),
           const SizedBox(height: 12),
           if (_loading)
@@ -1459,7 +1459,7 @@ class _RelatedArticleCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(color: AppColors.accentBlue, borderRadius: BorderRadius.circular(4)),
                         child: Text(article.category!.name.toUpperCase(),
-                            style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3)),
+                            style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.3)),
                       ),
                     ),
                 ],
@@ -1474,7 +1474,7 @@ class _RelatedArticleCard extends StatelessWidget {
                     article.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.3),
+                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.3),
                   ),
                   if (article.readTime != null) ...[
                     const SizedBox(height: 4),

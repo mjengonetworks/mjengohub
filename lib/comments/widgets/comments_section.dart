@@ -81,7 +81,7 @@ class _CommentsSectionState extends State<CommentsSection> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-        title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
+        title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
         content: Text(
           'Please sign in to your Mjengo Hub account to join the discussion.',
           style: GoogleFonts.montserrat(fontSize: 13.5, color: AppColors.textSubtle),
@@ -100,7 +100,7 @@ class _CommentsSectionState extends State<CommentsSection> {
               Navigator.pop(ctx);
               Get.toNamed(AppRoutes.login);
             },
-            child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -161,7 +161,7 @@ class _CommentsSectionState extends State<CommentsSection> {
           children: [
             Text(
               widget.title,
-              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textDark),
+              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark),
             ),
             const SizedBox(width: 6),
             Text('($_totalCount)', style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
@@ -324,7 +324,7 @@ class _CommentTile extends StatelessWidget {
                                 comment.authorName.isNotEmpty ? comment.authorName[0].toUpperCase() : '?',
                                 style: GoogleFonts.montserrat(
                                     fontSize: depth == 0 ? 12 : 10,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w500,
                                     color: AppColors.accentBlue),
                               )
                             : null,
@@ -340,7 +340,7 @@ class _CommentTile extends StatelessWidget {
                               runSpacing: 2,
                               children: [
                                 Text(comment.authorName,
-                                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                                 ReviewerLevelBadge(points: comment.authorPoints, small: true),
                               ],
                             ),
@@ -353,14 +353,14 @@ class _CommentTile extends StatelessWidget {
                                 _VoteButton(icon: Icons.arrow_upward_rounded, onTap: () => onVote(comment, true)),
                                 const SizedBox(width: 4),
                                 Text('${comment.netScore}',
-                                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.textSubtle)),
+                                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
                                 const SizedBox(width: 4),
                                 _VoteButton(icon: Icons.arrow_downward_rounded, onTap: () => onVote(comment, false)),
                                 const SizedBox(width: 12),
                                 GestureDetector(
                                   onTap: () => onReply(comment),
                                   child: Text('Reply',
-                                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
                                 ),
                               ],
                             ),

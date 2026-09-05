@@ -99,7 +99,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDark),
-        title: Text('Referrals', style: GoogleFonts.montserrat(color: AppColors.textDark, fontWeight: FontWeight.w700)),
+        title: Text('Referrals', style: GoogleFonts.montserrat(color: AppColors.textDark, fontWeight: FontWeight.w500)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.accentBlue))
@@ -142,7 +142,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                                     _info!.code.isNotEmpty ? _info!.code : '—',
                                     style: GoogleFonts.montserrat(
                                       fontSize: 26,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.white,
                                       letterSpacing: 1.2,
                                     ),
@@ -164,7 +164,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                                   url: _info!.shareUrl,
                                 ),
                                 icon: const Icon(Icons.share_rounded, size: 18, color: AppColors.primaryBlue),
-                                label: Text('Share invite link', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, color: AppColors.primaryBlue)),
+                                label: Text('Share invite link', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, color: AppColors.primaryBlue)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -198,7 +198,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('${_info!.totalReferred}', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                                  Text('${_info!.totalReferred}', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                                   Text('friends referred', style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
                                 ],
                               ),
@@ -210,7 +210,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                       const SizedBox(height: 24),
 
                       // ── Redeem a code ───────────────────────────────────────
-                      Text('Have a referral code?', style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                      Text('Have a referral code?', style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                       const SizedBox(height: 4),
                       Text(
                         'Enter a friend\'s code to link your account to their referral.',
@@ -241,7 +241,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                                       width: 18, height: 18,
                                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                     )
-                                  : Text('Redeem', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w700)),
+                                  : Text('Redeem', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
                             ),
                           ),
                         ],

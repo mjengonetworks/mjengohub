@@ -97,7 +97,7 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
           'Report infrastructure',
           style: GoogleFonts.montserrat(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),
         ),
@@ -169,7 +169,7 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
                 'Your details (optional)',
                 style: GoogleFonts.montserrat(
                   fontSize: 14.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textDark,
                 ),
               ),

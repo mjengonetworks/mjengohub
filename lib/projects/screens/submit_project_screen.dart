@@ -328,7 +328,7 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
           _isEditing ? 'Edit Project' : 'Submit a Project',
           style: GoogleFonts.montserrat(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),
         ),
@@ -475,14 +475,14 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
                     child: TextButton.icon(
                       onPressed: _pickOnMap,
                       icon: const Icon(Icons.map_rounded, size: 16),
-                      label: Text('Pick on map', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                      label: Text('Pick on map', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500)),
                     ),
                   ),
                   Expanded(
                     child: TextButton.icon(
                       onPressed: _useCurrentLocation,
                       icon: const Icon(Icons.my_location_rounded, size: 16),
-                      label: Text('Use current location', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                      label: Text('Use current location', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500)),
                     ),
                   ),
                 ],
@@ -545,7 +545,7 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
 
   Widget _sectionTitle(String text) => Text(
         text,
-        style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.textDark),
+        style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
       );
 }
 
@@ -618,11 +618,11 @@ class _MediaPickerRow extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(child: Text(label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark))),
+            Expanded(child: Text(label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark))),
             TextButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_photo_alternate_rounded, size: 16),
-              label: Text('Add', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700)),
+              label: Text('Add', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500)),
             ),
           ],
         ),
@@ -727,11 +727,11 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
               children: [
                 Text(
                   'Tap the map or search a location',
-                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(_picked),
-                  child: Text('Use this location', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
+                  child: Text('Use this location', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
                 ),
               ],
             ),

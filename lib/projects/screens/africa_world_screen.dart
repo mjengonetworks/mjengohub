@@ -85,7 +85,7 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Africa & World', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textDark)),
+        title: Text('Africa & World', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -125,7 +125,7 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text('All Entries in This Region',
-                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                 ),
                 const SizedBox(height: 10),
                 TrackerProjectsWrapGrid(

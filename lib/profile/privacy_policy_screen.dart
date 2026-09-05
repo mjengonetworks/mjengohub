@@ -158,7 +158,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             'Privacy Policy',
             style: GoogleFonts.montserrat(
               fontSize: 20,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _primary,
             ),
           ),
@@ -184,7 +184,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             'MJENGO HUB',
             style: GoogleFonts.montserrat(
               fontSize: 10,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               letterSpacing: 1.6,
               color: _accent,
             ),
@@ -194,7 +194,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             'Privacy Policy',
             style: GoogleFonts.montserrat(
               fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _primary,
               height: 1.2,
             ),
@@ -237,7 +237,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             title.toUpperCase(),
             style: GoogleFonts.montserrat(
               fontSize: 10.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               letterSpacing: 0.8,
               color: _primary,
             ),

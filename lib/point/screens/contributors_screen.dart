@@ -66,7 +66,7 @@ class _ContributorsScreenState extends State<ContributorsScreen> with SingleTick
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Top Contributors', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textDark)),
+        title: Text('Top Contributors', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
         bottom: TabBar(
           controller: _windowTab,
           labelColor: AppColors.accentBlue,
@@ -154,7 +154,7 @@ class _SegmentedToggle extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(color: active ? AppColors.accentBlue : Colors.transparent, borderRadius: BorderRadius.circular(999)),
             child: Text(label,
-                style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: active ? Colors.white : AppColors.textSubtle)),
+                style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textSubtle)),
           ),
         );
     return Container(
@@ -188,7 +188,7 @@ class _RankedRow extends StatelessWidget {
               width: 24,
               child: medal != null
                   ? Icon(Icons.emoji_events_rounded, color: medal, size: 20)
-                  : Text('$rank', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSubtle)),
+                  : Text('$rank', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
             ),
             ClipOval(
               child: SizedBox(width: 36, height: 36, child: NetImage(url: row.avatar, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F))),
@@ -196,9 +196,9 @@ class _RankedRow extends StatelessWidget {
           ],
         ),
       ),
-      title: Text(row.name, style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+      title: Text(row.name, style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
       trailing: Text('${row.value} ${isProjects ? "projects" : "pts"}',
-          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
     );
   }
 }

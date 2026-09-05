@@ -61,7 +61,7 @@ class SubmitProjectButton extends StatelessWidget {
             const Icon(Icons.add_business_rounded, color: Colors.white, size: 16),
             const SizedBox(width: 7),
             Text('Submit a Project',
-                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white)),
+                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: Colors.white)),
           ],
         ),
       ),
@@ -91,7 +91,7 @@ class PrimeBadge extends StatelessWidget {
             'MJENGO HUB PRIME',
             style: GoogleFonts.montserrat(
               fontSize: fontSize,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               color: Colors.white,
               letterSpacing: 0.3,
             ),
@@ -128,7 +128,7 @@ class ReviewerLevelBadge extends StatelessWidget {
             'Level ${level.level} · ${level.name}',
             style: GoogleFonts.montserrat(
               fontSize: small ? 9.5 : 11,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: AppColors.accentBlue,
             ),
           ),
@@ -161,7 +161,7 @@ class RoleBadge extends StatelessWidget {
         label,
         style: GoogleFonts.montserrat(
           fontSize: 10.5,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           color: Colors.white,
           letterSpacing: 0.2,
         ),
@@ -236,7 +236,7 @@ class _StoreButton extends StatelessWidget {
               label,
               style: GoogleFonts.montserrat(
                 fontSize: 12.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
             ),

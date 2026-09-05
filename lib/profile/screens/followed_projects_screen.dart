@@ -35,7 +35,7 @@ class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
         elevation: 0,
         foregroundColor: AppColors.textDark,
         title: Text('Followed Projects',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textDark)),
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
       ),
       body: ContentWidth(
         maxWidth: 700,
@@ -75,7 +75,7 @@ class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
                     title: Text(p.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                        style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                     subtitle: Text(p.county ?? p.location ?? p.statusLabel,
                         style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle)),
                     onTap: () => Get.to(() => ProjectDetailScreen(slug: p.slug), transition: Transition.cupertino),

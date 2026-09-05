@@ -32,7 +32,7 @@ class SocialShareModal {
                 'Share to',
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textDark,
                 ),
               ),

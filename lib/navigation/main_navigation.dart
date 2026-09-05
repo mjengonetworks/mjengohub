@@ -182,7 +182,7 @@ class _NavItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
                 fontSize: 10.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w500,
                 color: color,
               ),
             ),

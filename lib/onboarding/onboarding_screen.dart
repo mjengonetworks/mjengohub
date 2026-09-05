@@ -229,7 +229,7 @@ class _OnboardPageView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.montserrat(
                   fontSize: 26,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                   color: _textDark,
                   height: 1.2,
                 ),

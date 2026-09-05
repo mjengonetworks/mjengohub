@@ -82,7 +82,7 @@ class ProjectsScreen extends StatelessWidget {
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(
             'Submit',
-            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white),
           ),
         ),
         body: Column(
@@ -155,7 +155,7 @@ class ProjectsScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('All Projects',
-                          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: _kDark)),
+                          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: _kDark)),
                     ),
                     const SizedBox(height: 10),
                     _buildProjectsGrid(ctrl),
@@ -187,7 +187,7 @@ class ProjectsScreen extends StatelessWidget {
                   title,
                   style: GoogleFonts.montserrat(
                     fontSize: 20,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: _kDark,
                   ),
                 ),
@@ -365,7 +365,7 @@ class ProjectsScreen extends StatelessWidget {
             'Notable Projects',
             style: GoogleFonts.montserrat(
               fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _kDark,
             ),
           ),
@@ -466,7 +466,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: _kDark,
                         height: 1.3,
                       ),
@@ -570,7 +570,7 @@ class _ProjectListTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: _kDark,
                         height: 1.3,
                       ),
@@ -633,7 +633,7 @@ class _ProgressBar extends StatelessWidget {
             Text(label,
                 style: GoogleFonts.montserrat(
                     fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: _kBlue)),
           ],
         ),
@@ -679,7 +679,7 @@ class _StatusBadge extends StatelessWidget {
         Project.labelForStatus(status),
         style: GoogleFonts.montserrat(
           fontSize: 9.5,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           color: _color,
         ),
       ),
@@ -713,7 +713,7 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Buildings', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.captionSlate)),
+          child: Text('Buildings', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.captionSlate)),
         ),
         const SizedBox(height: 6),
         SizedBox(

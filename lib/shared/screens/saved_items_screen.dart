@@ -55,7 +55,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                   'Saved Bookmarks',
                   style: GoogleFonts.montserrat(
                     fontSize: 20,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: const Color(0xFF1A1A2E),
                   ),
                 ),
@@ -64,7 +64,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                   '${_bookmarks.length}',
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: const Color(0xFF2563EB),
                   ),
                 ),

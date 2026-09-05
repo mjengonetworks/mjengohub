@@ -65,7 +65,7 @@ class _MerchScreenState extends State<MerchScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text('Merch', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+        title: Text('Merch', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
       ),
       body: ScrollToTopFab(
         controller: _scrollController,
@@ -108,7 +108,7 @@ class _MerchScreenState extends State<MerchScreen> {
                       const SizedBox(height: 24),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text('Buyer Shoutouts', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                        child: Text('Buyer Shoutouts', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                       ),
                       const SizedBox(height: 10),
                       SizedBox(
@@ -156,17 +156,17 @@ class _ProductCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                 const SizedBox(height: 4),
                 Text('KSh ${product.price.toStringAsFixed(0)}',
-                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.accentBlue)),
+                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: product.isInStock ? onBuy : null,
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 8)),
-                    child: Text(product.isInStock ? 'Buy' : 'Out of stock', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    child: Text(product.isInStock ? 'Buy' : 'Out of stock', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500)),
                   ),
                 ),
               ],
@@ -199,7 +199,7 @@ class _ShoutoutCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(shoutout.userName ?? 'A buyer', maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               ),
             ],
           ),

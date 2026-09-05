@@ -27,7 +27,7 @@ class ComingSoonBadge extends StatelessWidget {
         'COMING SOON',
         style: GoogleFonts.montserrat(
           fontSize: 9,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: AppColors.textSubtle,
           letterSpacing: 0.3,
         ),
@@ -64,7 +64,7 @@ class ComingSoonPlaceholder extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textDark,
               ),
             ),

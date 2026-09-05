@@ -160,7 +160,7 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
           'Advertise with Us',
           style: GoogleFonts.montserrat(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),
         ),
@@ -184,7 +184,7 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
                 'Enquiry received',
                 style: GoogleFonts.montserrat(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textDark,
                 ),
               ),
@@ -206,7 +206,7 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
                     'Reference: $_reference',
                     style: GoogleFonts.montserrat(
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.primaryBlue,
                     ),
                   ),
@@ -436,7 +436,7 @@ class _PitchCard extends StatelessWidget {
                   title,
                   style: GoogleFonts.montserrat(
                     fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     color: titleColor,
                   ),
                 ),
@@ -483,7 +483,7 @@ class _CtaButton extends StatelessWidget {
               label,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: enabled ? AppColors.primaryBlue : AppColors.textSubtle,
               ),
             ),

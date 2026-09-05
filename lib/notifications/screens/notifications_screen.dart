@@ -145,7 +145,7 @@ class _Header extends StatelessWidget {
                   'Notifications',
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
                 ),
@@ -246,7 +246,7 @@ class _Header extends StatelessWidget {
         title: Text(
           'Clear all notifications?',
           style: GoogleFonts.montserrat(
-              fontSize: 15, fontWeight: FontWeight.w700, color: _textPri),
+              fontSize: 15, fontWeight: FontWeight.w500, color: _textPri),
         ),
         content: Text(
           'This will permanently remove all your notifications.',
@@ -266,7 +266,7 @@ class _Header extends StatelessWidget {
             },
             child: Text('Clear',
                 style: GoogleFonts.montserrat(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: const Color(0xFFEF4444))),
           ),
         ],
@@ -451,7 +451,7 @@ class _NotifCard extends StatelessWidget {
                                 fontSize: 13.5,
                                 fontWeight: notif.isRead
                                     ? FontWeight.w500
-                                    : FontWeight.w700,
+                                    : FontWeight.w500,
                                 color: _textPri,
                               ),
                             ),
@@ -551,7 +551,7 @@ class _EmptyState extends StatelessWidget {
               unreadOnly ? 'All caught up!' : 'No notifications yet',
               style: GoogleFonts.montserrat(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: _textPri,
               ),
             ),

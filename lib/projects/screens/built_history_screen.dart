@@ -88,7 +88,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Built History', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textDark)),
+        title: Text('Built History', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
       ),
       body: ScrollToTopFab(
         controller: _scrollController,
@@ -144,7 +144,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                 const SizedBox(height: 24),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('From the Archives', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                  child: Text('From the Archives', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -169,7 +169,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                               Padding(
                                 padding: const EdgeInsets.all(8),
                                 child: Text(a.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500)),
                               ),
                             ],
                           ),
@@ -189,7 +189,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text('All Built History Entries',
-                    style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                    style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               ),
               const SizedBox(height: 10),
               TrackerProjectsWrapGrid(
@@ -216,7 +216,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
             border: Border.all(color: selected ? AppColors.accentBlue : AppColors.divider),
           ),
           child: Text(label,
-              style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: selected ? Colors.white : AppColors.textSubtle)),
+              style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: selected ? Colors.white : AppColors.textSubtle)),
         ),
       );
 }

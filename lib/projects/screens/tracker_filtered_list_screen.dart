@@ -33,7 +33,7 @@ class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textDark)),
+        title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
       ),
       body: ContentWidth(
         maxWidth: 900,

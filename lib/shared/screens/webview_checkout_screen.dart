@@ -72,7 +72,7 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(widget.title,
-            style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.headingSlate)),
+            style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
       ),
       body: Stack(
         children: [

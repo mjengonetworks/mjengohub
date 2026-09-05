@@ -56,7 +56,7 @@ class SubmitArticleScreen extends StatefulWidget {
               child: const Icon(Icons.workspace_premium_rounded, color: AppColors.primeBadge, size: 28),
             ),
             const SizedBox(height: 16),
-            Text('Mjengo Hub Prime required', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+            Text('Mjengo Hub Prime required', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
             const SizedBox(height: 8),
             Text(
               'Article submissions are reserved for Prime members so we can keep editorial quality high. '
@@ -155,7 +155,7 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text('Submit an Article', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+        title: Text('Submit an Article', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
       ),
       body: ContentWidth(
         maxWidth: 700,

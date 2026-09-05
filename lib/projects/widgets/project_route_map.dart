@@ -82,7 +82,7 @@ class ProjectRouteMap extends StatelessWidget {
                   ),
                   child: Text(
                     'Total Route Length: ${project.routeLengthKm!.toStringAsFixed(1)} km',
-                    style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.headingSlate),
+                    style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.headingSlate),
                   ),
                 ),
               ),
@@ -127,7 +127,7 @@ class _WaypointDot extends StatelessWidget {
       ),
       child: Text(
         '$index',
-        style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w800, color: Colors.white),
+        style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w500, color: Colors.white),
       ),
     );
   }

@@ -150,7 +150,7 @@ class _ContactScreenState extends State<ContactScreen> {
             'Contact & Support',
             style: GoogleFonts.montserrat(
               fontSize: 20,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: _primary,
             ),
           ),
@@ -180,7 +180,7 @@ class _ContactScreenState extends State<ContactScreen> {
             'MJENGO HUB',
             style: GoogleFonts.montserrat(
               fontSize: 10,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               letterSpacing: 1.8,
               color: _accent,
             ),
@@ -190,7 +190,7 @@ class _ContactScreenState extends State<ContactScreen> {
             'Get in Touch',
             style: GoogleFonts.montserrat(
               fontSize: 24,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               color: Colors.white,
               height: 1.2,
             ),
@@ -275,7 +275,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 children: [
                   Text(title,
                       style: GoogleFonts.montserrat(
-                          fontSize: 13, fontWeight: FontWeight.w700, color: _primary)),
+                          fontSize: 13, fontWeight: FontWeight.w500, color: _primary)),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       style: GoogleFonts.montserrat(fontSize: 11, color: _secondary)),
@@ -330,7 +330,7 @@ class _ContactScreenState extends State<ContactScreen> {
           Text(value,
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
-                  fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                  fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
         ],
       ),
     );
@@ -364,7 +364,7 @@ class _ContactScreenState extends State<ContactScreen> {
         children: [
           Text('Follow Us',
               style: GoogleFonts.montserrat(
-                  fontSize: 13, fontWeight: FontWeight.w700, color: _primary)),
+                  fontSize: 13, fontWeight: FontWeight.w500, color: _primary)),
           const SizedBox(height: 4),
           Text('Stay updated with industry news and tips.',
               style: GoogleFonts.montserrat(fontSize: 11.5, color: _secondary)),
@@ -422,7 +422,7 @@ class _ContactScreenState extends State<ContactScreen> {
           children: [
             Text('Send Us a Message',
                 style: GoogleFonts.montserrat(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: _primary)),
+                    fontSize: 16, fontWeight: FontWeight.w500, color: _primary)),
             const SizedBox(height: 4),
             Text('We\'ll get back to you shortly.',
                 style: GoogleFonts.montserrat(fontSize: 12, color: _secondary)),
@@ -515,7 +515,7 @@ class _ContactScreenState extends State<ContactScreen> {
                     TextSpan(
                       text: '  *',
                       style: GoogleFonts.montserrat(
-                          color: _accent, fontWeight: FontWeight.w700),
+                          color: _accent, fontWeight: FontWeight.w500),
                     )
                   ]
                 : [],
@@ -578,7 +578,7 @@ class _ContactScreenState extends State<ContactScreen> {
               TextSpan(
                 text: '  *',
                 style: GoogleFonts.montserrat(
-                    color: _accent, fontWeight: FontWeight.w700),
+                    color: _accent, fontWeight: FontWeight.w500),
               )
             ],
           ),
@@ -644,7 +644,7 @@ class _ContactScreenState extends State<ContactScreen> {
         label: Text(
           _sending ? 'Sending…' : 'Send Message',
           style: GoogleFonts.montserrat(
-              fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+              fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: _accent,

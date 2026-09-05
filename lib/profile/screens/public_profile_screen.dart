@@ -46,7 +46,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Profile', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textDark)),
+        title: Text('Profile', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
       ),
       body: FutureBuilder<PublicProfile?>(
         future: _future,
@@ -130,7 +130,7 @@ class _Header extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 6,
                   children: [
-                    Text(profile.name, style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    Text(profile.name, style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                     if (profile.isVerified) const PrimeBadge(),
                     if (profile.role != null && profile.role!.toUpperCase() != 'USER') RoleBadge(role: profile.role!),
                   ],
@@ -177,7 +177,7 @@ class _LinkChip extends StatelessWidget {
           color: AppColors.accentBlue.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(label, style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+        child: Text(label, style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
       ),
     );
   }
@@ -192,7 +192,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text('$title ($count)', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+      child: Text('$title ($count)', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark)),
     );
   }
 }
@@ -209,7 +209,7 @@ class _ProjectRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(width: 44, height: 44, child: NetImage(url: project.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F))),
       ),
-      title: Text(project.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700)),
+      title: Text(project.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500)),
       subtitle: Text(project.statusLabel, style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
       onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
     );

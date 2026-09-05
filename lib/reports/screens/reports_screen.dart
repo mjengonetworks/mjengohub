@@ -96,7 +96,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 'Report Infrastructure Issues',
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textDark,
                 ),
               ),
@@ -112,7 +112,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 'Report',
                 style: GoogleFonts.montserrat(
                   fontSize: 13.5,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
               ),
@@ -228,7 +228,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 15,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: AppColors.textDark,
             ),
           ),
@@ -273,7 +273,7 @@ class _ReportCard extends StatelessWidget {
                     _titleCase(report.severity),
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       color: sevColor,
                     ),
                   ),
@@ -304,7 +304,7 @@ class _ReportCard extends StatelessWidget {
               report.title,
               style: GoogleFonts.montserrat(
                 fontSize: 14.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 height: 1.35,
                 color: AppColors.textDark,
               ),

@@ -48,12 +48,12 @@ class _PreviewSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+              Text(title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               if (onViewAll != null)
                 GestureDetector(
                   onTap: onViewAll,
                   child: Text('View All',
-                      style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                      style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
                 ),
             ],
           ),
@@ -96,7 +96,7 @@ class _RowTile extends StatelessWidget {
                   Text(title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       maxLines: 1,
@@ -169,7 +169,7 @@ class _EcosystemChip extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: AppColors.accentBlue),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
           ],
         ),
       ),
@@ -210,10 +210,10 @@ class _MyProjectSubmissionsRowState extends State<MyProjectSubmissionsRow> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text('My Project Submissions',
-                      style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                      style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                 ),
                 Text(count == null ? '…' : '$count',
-                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSubtle)),
+                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
                 const SizedBox(width: 4),
                 const Icon(Icons.chevron_right_rounded, color: Color(0xFF475569), size: 20),
               ],

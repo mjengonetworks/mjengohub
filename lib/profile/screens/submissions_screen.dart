@@ -67,7 +67,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
         foregroundColor: AppColors.textDark,
         title: Text(
           'My Submissions',
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textDark),
+          style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -151,7 +151,7 @@ class _MiniTile extends StatelessWidget {
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark),
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -174,7 +174,7 @@ class _MiniTile extends StatelessWidget {
 Widget _statusPill(String label, Color color) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-      child: Text(label, style: GoogleFonts.montserrat(fontSize: 9.5, fontWeight: FontWeight.w700, color: color)),
+      child: Text(label, style: GoogleFonts.montserrat(fontSize: 9.5, fontWeight: FontWeight.w500, color: color)),
     );
 
 // ── Articles ───────────────────────────────────────────────────────────────

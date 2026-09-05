@@ -148,7 +148,7 @@ class _Heading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-      child: Text(title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+      child: Text(title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
     );
   }
 }
@@ -189,12 +189,12 @@ class _CategoryRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text('${group.label} (${group.totalCount})',
-                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark)),
                 ),
                 if (group.totalCount > group.projects.length)
                   GestureDetector(
                     onTap: onViewMore,
-                    child: Text('View More', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                    child: Text('View More', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
                   ),
               ],
             ),
@@ -240,7 +240,7 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Most Viewed', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+              Text('Most Viewed', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
               _WindowToggle(
                 labels: widget.windows.map((w) => w.label).toList(),
                 index: _index,
@@ -270,7 +270,7 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
             padding: const EdgeInsets.only(left: 16, top: 8),
             child: GestureDetector(
               onTap: () => widget.onViewMore(window),
-              child: Text('View More', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+              child: Text('View More', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
             ),
           ),
         ],
@@ -305,7 +305,7 @@ class _WindowToggle extends StatelessWidget {
                 // "Past 48 Hours" wording is shown as the section context,
                 // this stays compact ("48h"/"7d"/"30d" abbreviated further).
                 labels[i].replaceAll('Past ', '').replaceAll(' Hours', 'h').replaceAll(' Days', 'd').replaceAll(' Month', '30d').replaceAll('1 30d', '30d'),
-                style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: active ? Colors.white : AppColors.textSubtle),
+                style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textSubtle),
               ),
             ),
           );
