@@ -81,28 +81,11 @@ class HubScreen extends StatelessWidget {
       route: AppRoutes.reports,
     ),
     _HubItem(
-      label: 'Services',
-      sub: 'Request construction services',
-      icon: Icons.handyman_rounded,
+      label: 'Submit a Project',
+      sub: 'Add a project to a tracker for review',
+      icon: Icons.add_business_rounded,
       color: AppColors.accentBlue,
-      route: AppRoutes.services,
-    ),
-    // Jobs and Tenders aren't standalone models — they're Article categories
-    // (GET articles?category=jobs / category=tenders), same as any other
-    // news category. These tiles just preset that filter on the News tab.
-    _HubItem(
-      label: 'Jobs',
-      sub: 'Construction industry job listings',
-      icon: Icons.work_outline_rounded,
-      color: AppColors.deepNavy,
-      categorySlug: 'jobs',
-    ),
-    _HubItem(
-      label: 'Tenders',
-      sub: 'Open tenders across the industry',
-      icon: Icons.request_quote_outlined,
-      color: AppColors.deepNavy,
-      categorySlug: 'tenders',
+      route: AppRoutes.submitProject,
     ),
     _HubItem(
       label: 'Top Contributors',
