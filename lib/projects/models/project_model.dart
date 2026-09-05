@@ -1,5 +1,22 @@
 // lib/projects/models/project_model.dart
+import 'package:latlong2/latlong.dart';
+
+import '../../news/models/article_model.dart';
+
 const String _kBase = 'https://mjengohub.co.ke';
+
+List<LatLng>? _parseRoute(dynamic v) {
+  if (v is! List) return null;
+  final points = <LatLng>[];
+  for (final entry in v) {
+    if (entry is List && entry.length >= 2) {
+      final lat = _parseCoord(entry[0]);
+      final lng = _parseCoord(entry[1]);
+      if (lat != null && lng != null) points.add(LatLng(lat, lng));
+    }
+  }
+  return points.isEmpty ? null : points;
+}
 
 double? _parseCoord(dynamic v) {
   if (v == null) return null;
@@ -276,6 +293,17 @@ class Project {
   final List<ProjectTeamMember> teamMembers;
   final bool isFollowing;
 
+  // Linear route mapping (roads/railways/pipelines) — defensive/dormant:
+  // confirmed absent from the live backend today, parsed only in case it's
+  // ever added (`is_linear` / `route_data`, an ordered [[lat,lng],...] list).
+  final bool isLinear;
+  final List<LatLng>? routeData;
+  final double? routeLengthKm;
+
+  // Bi-directional article linking — defensive/dormant, same reasoning:
+  // `related_articles` doesn't exist in the API response today.
+  final List<Article> relatedArticles;
+
   const Project({
     required this.id,
     required this.title,
@@ -325,6 +353,10 @@ class Project {
     this.editedBy,
     this.teamMembers = const [],
     this.isFollowing = false,
+    this.isLinear = false,
+    this.routeData,
+    this.routeLengthKm,
+    this.relatedArticles = const [],
   });
 
   factory Project.fromJson(Map<String, dynamic> j) => Project(
@@ -396,6 +428,14 @@ class Project {
                 .toList() ??
             [],
         isFollowing: (j['is_following'] as bool?) ?? false,
+        isLinear: (j['is_linear'] as bool?) ?? false,
+        routeData: _parseRoute(j['route_data']),
+        routeLengthKm: (j['route_length_km'] as num?)?.toDouble(),
+        relatedArticles: (j['related_articles'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(Article.fromJson)
+                .toList() ??
+            [],
       );
 
   /// Only [isFollowing] is ever patched client-side (optimistic follow
@@ -425,6 +465,8 @@ class Project {
         renovationTimeline: renovationTimeline, submittedBy: submittedBy,
         editedBy: editedBy, teamMembers: teamMembers,
         isFollowing: isFollowing ?? this.isFollowing,
+        isLinear: isLinear, routeData: routeData, routeLengthKm: routeLengthKm,
+        relatedArticles: relatedArticles,
       );
 
   List<ProjectMedia> get renderGallery => media.where((m) => m.isRender).toList();

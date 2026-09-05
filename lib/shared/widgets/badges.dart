@@ -170,43 +170,6 @@ class RoleBadge extends StatelessWidget {
   }
 }
 
-/// Inline "Add on Google" pill — the mobile equivalent of the website's
-/// Google Maps share trigger on a project's detail page.
-class AddOnGooglePill extends StatelessWidget {
-  final VoidCallback onTap;
-  const AddOnGooglePill({super.key, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.map_rounded, size: 13, color: Color(0xFF4285F4)),
-            const SizedBox(width: 5),
-            Text(
-              'Add on Google',
-              style: GoogleFonts.montserrat(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF334155),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Play Store / App Store footer buttons — launches the admin-configured
 /// store URLs (SiteSetting: footer_playstore_url / footer_appstore_url).
 /// No hardcoded "Coming Soon" — falls back silently if a link isn't set.

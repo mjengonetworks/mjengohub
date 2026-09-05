@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../news/models/article_model.dart';
+import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
+import '../../point/routes/app_routes.dart';
+import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
+import '../widgets/project_route_map.dart';
 import '../widgets/projects_map_view.dart';
 import 'post_update_screen.dart';
 import 'submit_project_screen.dart';
@@ -224,21 +228,16 @@ class ProjectDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 10,
-                      runSpacing: 6,
-                      children: [
-                        if (project.county != null || project.location != null)
-                          Text(
-                            '📍 ${project.county ?? project.location}',
-                            style: GoogleFonts.montserrat(
-                                fontSize: 13, color: _kSubtext),
-                          ),
-                        AddOnGooglePill(onTap: () => _openGoogleMaps(project)),
-                      ],
-                    ),
-                    if (project.hasCoordinates) ...[
+                    if (project.county != null || project.location != null)
+                      Text(
+                        '📍 ${project.county ?? project.location}',
+                        style: GoogleFonts.montserrat(
+                            fontSize: 13, color: _kSubtext),
+                      ),
+                    if (project.isLinear && (project.routeData?.length ?? 0) >= 2) ...[
+                      const SizedBox(height: 12),
+                      ProjectRouteMap(project: project),
+                    ] else if (project.hasCoordinates) ...[
                       const SizedBox(height: 12),
                       ProjectMiniMap(project: project),
                     ],
@@ -307,6 +306,13 @@ class ProjectDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // ── Project Team & Stakeholders (defensive — `team_members`
+              // isn't sent by the live backend yet, so this stays hidden
+              // until it is) ────────────────────────────────────────────
+              if (project.teamMembers.isNotEmpty) _TeamStakeholdersCard(project: project),
+
+              if (project.teamMembers.isNotEmpty) const SizedBox(height: 8),
+
               // ── Description ──────────────────────────────────────────────
               if (project.summary != null || project.description != null)
                 _buildDescriptionCard(project),
@@ -335,6 +341,13 @@ class ProjectDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // ── Related Articles & Coverage — falls back to a matching
+              // category feed when the project has no explicitly tagged
+              // articles (Spec 7) ─────────────────────────────────────────
+              RelatedArticlesSection(project: project),
+
+              const SizedBox(height: 8),
+
               // ── Suggest Edit / Report Content actions ───────────────────
               _ActionsCard(project: project),
 
@@ -359,13 +372,6 @@ class ProjectDetailScreen extends StatelessWidget {
     );
   }
 
-
-  Future<void> _openGoogleMaps(Project project) async {
-    final query = Uri.encodeComponent(
-        '${project.title} ${project.county ?? project.location ?? ''}'.trim());
-    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
 
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
@@ -1267,6 +1273,219 @@ class _DetailRow extends StatelessWidget {
                     color: _kDark)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Project Team & Stakeholders (Spec 4) ───────────────────────────────────
+//
+// Renders `project.teamMembers` (clients/developers, contractors, consultants
+// — anything the backend tags with a role), grouped by role, as sharp-corner
+// badges. Confirmed absent from the live API response today (`team_members`
+// is parsed by the model but the backend never sends it), so the caller only
+// mounts this when the list is non-empty — it stays completely dormant until
+// the backend starts populating it, rather than showing an empty card shell.
+class _TeamStakeholdersCard extends StatelessWidget {
+  final Project project;
+  const _TeamStakeholdersCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    final byRole = <String, List<ProjectTeamMember>>{};
+    for (final m in project.teamMembers) {
+      final role = m.role.isNotEmpty ? m.role : 'Team';
+      byRole.putIfAbsent(role, () => []).add(m);
+    }
+
+    return Container(
+      color: _kCard,
+      padding: _kCardPad,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Project Team & Stakeholders',
+            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.headingSlate),
+          ),
+          const SizedBox(height: 14),
+          for (final entry in byRole.entries) ...[
+            Text(
+              entry.key,
+              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.captionSlate, letterSpacing: 0.4),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: entry.value
+                  .map((m) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(AppRadius.sharp),
+                          border: Border.all(color: AppColors.borderSlate),
+                        ),
+                        child: Text(
+                          m.name,
+                          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal),
+                        ),
+                      ))
+                  .toList(),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Related Articles & Coverage (Spec 7) ───────────────────────────────────
+//
+// The backend has no article↔project link today (`related_articles` is
+// always absent), so this always falls back to a category-matched article
+// feed — mirroring BuiltHistoryScreen's existing "From the Archives" pattern
+// — which is real content and keeps this section from ever rendering empty.
+class RelatedArticlesSection extends StatefulWidget {
+  final Project project;
+  const RelatedArticlesSection({super.key, required this.project});
+
+  @override
+  State<RelatedArticlesSection> createState() => _RelatedArticlesSectionState();
+}
+
+class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
+  final _newsService = NewsApiService();
+  List<Article> _articles = const [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final tagged = widget.project.relatedArticles;
+    if (tagged.isNotEmpty) {
+      setState(() {
+        _articles = tagged;
+        _loading = false;
+      });
+      return;
+    }
+
+    // Fallback: recent articles in the closest matching category —
+    // Built History entries fall back to the 'built-history' article
+    // category, everything else falls back to a Buildings/Infrastructure
+    // split by project_type.
+    final categorySlug = widget.project.isBuiltHistory
+        ? 'built-history'
+        : widget.project.projectType == 'private_development'
+            ? 'buildings'
+            : 'infrastructure';
+    final results = await _newsService.getArticles(categorySlug: categorySlug, perPage: 4);
+    if (!mounted) return;
+    setState(() {
+      _articles = results;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _articles.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      color: _kCard,
+      padding: _kCardPad,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Related Articles & Coverage',
+            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.headingSlate),
+          ),
+          const SizedBox(height: 12),
+          if (_loading)
+            const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 2)))
+          else
+            SizedBox(
+              height: 168,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _articles.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, i) => _RelatedArticleCard(article: _articles[i]),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RelatedArticleCard extends StatelessWidget {
+  final Article article;
+  const _RelatedArticleCard({required this.article});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
+      child: Container(
+        width: 190,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          border: Border.all(color: AppColors.borderSlate),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NetImage(url: article.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                  if (article.category != null)
+                    Positioned(
+                      top: 6,
+                      left: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(color: AppColors.accentBlue, borderRadius: BorderRadius.circular(4)),
+                        child: Text(article.category!.name.toUpperCase(),
+                            style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    article.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.3),
+                  ),
+                  if (article.readTime != null) ...[
+                    const SizedBox(height: 4),
+                    Text('${article.readTime} min read',
+                        style: GoogleFonts.montserrat(fontSize: 10, color: AppColors.captionSlate)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

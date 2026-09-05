@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
+import '../../shared/theme/app_theme.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../widgets/tracker_dynamic_sections.dart';
@@ -19,6 +20,35 @@ const _kDark     = Color(0xFF1A1A2E);
 const _kSubtext  = Color(0xFF8888AA);
 const _kDivider  = Color(0xFFEEEEF5);
 const _kCard     = Colors.white;
+
+/// "Buildings" hierarchy (Spec 3) — client-side display/filter layer only.
+/// The backend has no category/subcategory column on `Project` at all today
+/// (confirmed: only a single free-text `project_type`), so this can't be a
+/// real server-side taxonomy. Matching is done by keyword against
+/// title/summary/location, which is best-effort, not authoritative.
+class BuildingsTaxonomy {
+  BuildingsTaxonomy._();
+
+  static const subcategories = ['Residential', 'Commercial', 'Mixed Development'];
+  static const types = ['Malls / Retail', 'Office Complex', 'Apartment Towers', 'Gated Community', 'Warehouses / Logistics'];
+
+  static const Map<String, List<String>> _keywords = {
+    'Residential': ['residential', 'housing', 'apartment', 'estate', 'homes'],
+    'Commercial': ['commercial', 'office', 'business park'],
+    'Mixed Development': ['mixed-use', 'mixed use', 'mixed development'],
+    'Malls / Retail': ['mall', 'retail', 'shopping'],
+    'Office Complex': ['office'],
+    'Apartment Towers': ['apartment', 'tower', 'flats'],
+    'Gated Community': ['gated', 'community'],
+    'Warehouses / Logistics': ['warehouse', 'logistics', 'industrial park'],
+  };
+
+  static bool matches(Project p, String label) {
+    final haystack = '${p.title} ${p.summary ?? ''} ${p.location ?? ''}'.toLowerCase();
+    final keywords = _keywords[label] ?? [label.toLowerCase()];
+    return keywords.any(haystack.contains);
+  }
+}
 
 class ProjectsScreen extends StatelessWidget {
   final String title;
@@ -112,6 +142,7 @@ class ProjectsScreen extends StatelessWidget {
                     _buildStatusChips(ctrl),
                     if (ctrl.availableCounties.isNotEmpty) _buildCountyChips(ctrl),
                     if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
+                    if (projectType == 'private_development') _BuildingsTaxonomyFilter(ctrl: ctrl),
 
                     if (ctrl.featuredProjects.isNotEmpty) _buildFeaturedSection(ctrl),
 
@@ -652,6 +683,76 @@ class _StatusBadge extends StatelessWidget {
           color: _color,
         ),
       ),
+    );
+  }
+}
+
+/// Buildings subcategory + type chip filter (Spec 3), Private Projects only.
+/// Purely client-side: selecting a chip filters the already-loaded
+/// `ctrl.projects` by keyword match (see `BuildingsTaxonomy.matches`) and
+/// shows a "Matching Buildings" preview strip — it does not call the API
+/// with a new query, since there's no server-side field to filter on.
+class _BuildingsTaxonomyFilter extends StatefulWidget {
+  final ProjectsController ctrl;
+  const _BuildingsTaxonomyFilter({required this.ctrl});
+
+  @override
+  State<_BuildingsTaxonomyFilter> createState() => _BuildingsTaxonomyFilterState();
+}
+
+class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
+  String? _selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final allChips = [...BuildingsTaxonomy.subcategories, ...BuildingsTaxonomy.types];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text('Buildings', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.captionSlate)),
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          height: 38,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: allChips.length + 1,
+            itemBuilder: (_, i) {
+              if (i == 0) {
+                return _FilterChip(label: 'All', selected: _selected == null, onTap: () => setState(() => _selected = null));
+              }
+              final label = allChips[i - 1];
+              return _FilterChip(label: label, selected: _selected == label, onTap: () => setState(() => _selected = label));
+            },
+          ),
+        ),
+        if (_selected != null)
+          Obx(() {
+            final matches = widget.ctrl.projects.where((p) => BuildingsTaxonomy.matches(p, _selected!)).toList();
+            if (matches.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Text('No loaded projects match "$_selected" yet.',
+                    style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.captionSlate)),
+              );
+            }
+            return SizedBox(
+              height: 200,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                itemCount: matches.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, i) => _FeaturedProjectCard(project: matches[i]),
+              ),
+            );
+          }),
+      ],
     );
   }
 }
