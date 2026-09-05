@@ -59,6 +59,7 @@ dependencies:
   open_location_code: ^1.0.1
   vsc_quill_delta_to_html: ^1.0.5
   flutter_quill_delta_from_html: ^1.5.3
+  app_links: ^6.3.2
 
 dev_dependencies:
   flutter_test:

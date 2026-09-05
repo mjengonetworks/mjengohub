@@ -27,6 +27,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Universal app deep linking (Spec 2): mjengohub.co.ke and
+                 app.mjengohub.co.ke article/project links open directly in
+                 the app. autoVerify requires an assetlinks.json hosted at
+                 https://<host>/.well-known/assetlinks.json on the website's
+                 own hosting — that file is a website-repo/hosting follow-up,
+                 not something this Flutter repo can provide. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="mjengohub.co.ke"/>
+                <data android:scheme="https" android:host="www.mjengohub.co.ke"/>
+                <data android:scheme="https" android:host="app.mjengohub.co.ke"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

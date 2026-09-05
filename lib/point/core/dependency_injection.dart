@@ -9,6 +9,7 @@ import '../../news/controllers/discover_controller.dart';
 import '../../videos/controllers/videos_controller.dart';
 import '../../notifications/controllers/notifications_controller.dart';
 import '../../shared/theme/theme_controller.dart';
+import '../../shared/services/deep_link_service.dart';
 import 'firebase_initializer.dart';
 
 
@@ -87,6 +88,18 @@ class DependencyInjection {
         print('✅ FCM initialized');
       } catch (e) {
         print('❌ FCM initialization failed: $e');
+      }
+    }
+
+    if (!kIsWeb) {
+      try {
+        print('🔗 Initializing DeepLinkService...');
+        final deepLinks = DeepLinkService();
+        Get.put(deepLinks, permanent: true);
+        await deepLinks.init();
+        print('✅ DeepLinkService initialized');
+      } catch (e) {
+        print('❌ DeepLinkService failed: $e');
       }
     }
 
