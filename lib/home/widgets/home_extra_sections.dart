@@ -10,9 +10,18 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../incidents/models/incident_model.dart';
 import '../../incidents/services/incidents_service.dart';
+import '../../merch/models/merch_model.dart';
+import '../../merch/screens/merch_screen.dart';
+import '../../merch/services/merch_service.dart';
+import '../../navigation/main_navigation.dart';
+import '../../news/controllers/discover_controller.dart';
 import '../../news/models/article_model.dart';
+import '../../news/screens/article_detail_screen.dart';
+import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
+import '../../point/models/contributors_model.dart';
 import '../../point/routes/app_routes.dart';
+import '../../point/services/contributors_service.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/africa_world_screen.dart';
 import '../../projects/screens/built_history_screen.dart';
@@ -24,6 +33,10 @@ import '../../shared/services/demo_seed_data.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/preview_data_badge.dart';
+import '../../shared/widgets/section_header.dart' as shared;
+import '../../videos/models/video_model.dart';
+import '../../videos/screens/video_player_screen.dart';
+import '../../videos/services/video_api_service.dart';
 
 /// Opens in an in-app browser (Custom Tabs / SFSafariViewController) rather
 /// than handing off to the system browser — matches X/Twitter's in-app link
@@ -35,39 +48,18 @@ Future<void> _launchExternal(String url) async {
 
 // ── Section header (shared look across the three sections) ──────────────────
 
+/// Thin wrapper kept so the ~10 call sites in this file don't need touching —
+/// delegates to the shared, sharp-styled `SectionHeader` (Spec 1/10).
 class _SectionHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onSeeAll;
-
-  /// True when the section below is showing fallback/demo data because the
-  /// live API returned nothing (network failure, host firewall 403, etc.).
   final bool isDemo;
 
   const _SectionHeader({required this.title, this.onSeeAll, this.isDemo = false});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Text(title,
-                  style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-              if (isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
-            ],
-          ),
-          if (onSeeAll != null)
-            GestureDetector(
-              onTap: onSeeAll,
-              child: Text('See All',
-                  style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF6B7280))),
-            ),
-        ],
-      ),
-    );
+    return shared.SectionHeader(title: title, onSeeAll: onSeeAll, isDemo: isDemo, seeAllLabel: 'See All');
   }
 }
 
@@ -590,7 +582,20 @@ class _SocialIcon extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class FeaturedProjectsSection extends StatefulWidget {
-  const FeaturedProjectsSection({super.key});
+  /// false = "Latest Infrastructure Projects" (unfiltered, newest first);
+  /// true = "Featured Public Projects" (featured=true cut). Both are the
+  /// same infrastructure tracker data, just a different slice — Spec 10
+  /// sections 5 and 17.
+  final bool featured;
+  final String title;
+  final String subtitle;
+
+  const FeaturedProjectsSection({
+    super.key,
+    this.featured = true,
+    this.title = 'Featured Infrastructure Projects',
+    this.subtitle = 'Roads, bridges and major public infrastructure tracked across Kenya',
+  });
 
   @override
   State<FeaturedProjectsSection> createState() => _FeaturedProjectsSectionState();
@@ -612,7 +617,12 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
     // Infrastructure only — Private Developments gets its own dedicated
     // showcase section (PrivateDevelopmentsShowcaseSection) further down the
     // homepage, so the two don't show overlapping cards.
-    final projects = await _service.getProjects(featured: true, projectType: 'infrastructure', perPage: 8);
+    var projects = await _service.getProjects(featured: widget.featured, projectType: 'infrastructure', perPage: 8);
+    // Spec 8: guaranteed fallback — an empty featured cut falls back to the
+    // general unfiltered list before resorting to demo data.
+    if (projects.isEmpty && widget.featured) {
+      projects = await _service.getProjects(projectType: 'infrastructure', perPage: 8);
+    }
     if (!mounted) return;
     if (projects.isEmpty) {
       setState(() {
@@ -636,7 +646,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Featured Infrastructure Projects',
+          title: widget.title,
           onSeeAll: () => Get.toNamed(AppRoutes.projects),
           isDemo: _isDemo,
         ),
@@ -644,7 +654,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Roads, bridges and major public infrastructure tracked across Kenya',
+            widget.subtitle,
             style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
           ),
         ),
@@ -668,7 +678,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
               : ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _projects.length,
+                  itemCount: _projects.take(4).length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => _FeaturedProjectCard(project: _projects[i]),
                 ),
@@ -810,12 +820,17 @@ class _BuiltHistoryPreviewSectionState extends State<BuiltHistoryPreviewSection>
   @override
   void initState() {
     super.initState();
-    _service.getProjects(isBuiltHistory: true, perPage: 8).then((p) {
-      if (!mounted) return;
-      setState(() {
-        _projects = p;
-        _loading = false;
-      });
+    _load();
+  }
+
+  Future<void> _load() async {
+    var p = await _service.getProjects(isBuiltHistory: true, perPage: 8);
+    // Spec 8: guaranteed fallback — never leave this module blank.
+    if (p.isEmpty) p = await _service.getProjects(perPage: 8);
+    if (!mounted) return;
+    setState(() {
+      _projects = p;
+      _loading = false;
     });
   }
 
@@ -876,12 +891,17 @@ class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
   @override
   void initState() {
     super.initState();
-    _service.getProjects(geoScope: 'global', perPage: 8).then((p) {
-      if (!mounted) return;
-      setState(() {
-        _projects = p;
-        _loading = false;
-      });
+    _load();
+  }
+
+  Future<void> _load() async {
+    var p = await _service.getProjects(geoScope: 'global', perPage: 8);
+    // Spec 8: guaranteed fallback — never leave this module blank.
+    if (p.isEmpty) p = await _service.getProjects(perPage: 8);
+    if (!mounted) return;
+    setState(() {
+      _projects = p;
+      _loading = false;
     });
   }
 
@@ -928,7 +948,13 @@ class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class PrivateDevelopmentsShowcaseSection extends StatefulWidget {
-  const PrivateDevelopmentsShowcaseSection({super.key});
+  /// Spec 10 sections 7 ("Latest Private Projects", unfiltered) and 19
+  /// ("Featured Private Projects", featured=true) — same tracker data,
+  /// different slice.
+  final bool featured;
+  final String title;
+
+  const PrivateDevelopmentsShowcaseSection({super.key, this.featured = false, this.title = 'Private Developments'});
 
   @override
   State<PrivateDevelopmentsShowcaseSection> createState() => _PrivateDevelopmentsShowcaseSectionState();
@@ -942,12 +968,20 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
   @override
   void initState() {
     super.initState();
-    _service.getProjects(projectType: 'private_development', perPage: 8).then((p) {
-      if (!mounted) return;
-      setState(() {
-        _projects = p;
-        _loading = false;
-      });
+    _load();
+  }
+
+  Future<void> _load() async {
+    var projects = await _service.getProjects(projectType: 'private_development', featured: widget.featured, perPage: 8);
+    // Spec 8: guaranteed fallback — an empty featured cut falls back to the
+    // general unfiltered list.
+    if (projects.isEmpty && widget.featured) {
+      projects = await _service.getProjects(projectType: 'private_development', perPage: 8);
+    }
+    if (!mounted) return;
+    setState(() {
+      _projects = projects;
+      _loading = false;
     });
   }
 
@@ -957,12 +991,12 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Private Developments', onSeeAll: () => Get.to(() => const PrivateProjectsScreen())),
+        _SectionHeader(title: widget.title, onSeeAll: () => Get.to(() => const PrivateProjectsScreen())),
         const SizedBox(height: 4),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Housing, commercial and mixed-use developments',
+            'Buildings — residential, commercial and mixed-use developments',
             style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
           ),
         ),
@@ -974,7 +1008,7 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
               : ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _projects.length,
+                  itemCount: _projects.take(4).length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => TrackerProjectCard(project: _projects[i]),
                 ),
@@ -1224,4 +1258,533 @@ class _SafetyIncidentCard extends StatelessWidget {
           style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.3),
         ),
       );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Browse Articles by Category — homepage pill bar (Spec 10 section 3).
+//  Tapping a pill switches to the Discover tab pre-filtered to that
+//  category, reusing DiscoverController.selectCategory exactly like the
+//  Discover screen's own _CategoryTabs.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class CategoryPillsBar extends StatefulWidget {
+  const CategoryPillsBar({super.key});
+
+  @override
+  State<CategoryPillsBar> createState() => _CategoryPillsBarState();
+}
+
+class _CategoryPillsBarState extends State<CategoryPillsBar> {
+  final _service = NewsApiService();
+  List<Category> _categories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getCategories().then((cats) {
+      if (mounted) setState(() => _categories = cats);
+    });
+  }
+
+  void _openCategory(String slug) {
+    if (Get.isRegistered<DiscoverController>()) {
+      Get.find<DiscoverController>().selectCategory(slug);
+    }
+    Get.find<MainNavController>().currentIndex.value = 2;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_categories.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _categories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          final cat = _categories[i];
+          return GestureDetector(
+            onTap: () => _openCategory(cat.slug),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+                border: Border.all(color: AppColors.borderSlate),
+              ),
+              child: Text(
+                cat.name,
+                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Media / YouTube — Spec 10 sections 11-12. There is no separate MediaScreen
+//  in this app; both slots point at the Videos tab, the closest existing
+//  equivalent (VideosService/VideosScreen).
+// ─────────────────────────────────────────────────────────────────────────────
+
+class MediaPreviewBanner extends StatelessWidget {
+  const MediaPreviewBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GestureDetector(
+        onTap: () => Get.find<MainNavController>().currentIndex.value = 3,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
+            border: Border.all(color: AppColors.borderSlate),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: AppColors.accentBlue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                child: const Icon(Icons.perm_media_outlined, color: AppColors.accentBlue, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Media Hub', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.headingSlate)),
+                    const SizedBox(height: 2),
+                    Text('Photos, videos and site coverage in one place',
+                        style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward, size: 16, color: AppColors.captionSlate),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class YoutubeCarouselSection extends StatefulWidget {
+  const YoutubeCarouselSection({super.key});
+
+  @override
+  State<YoutubeCarouselSection> createState() => _YoutubeCarouselSectionState();
+}
+
+class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
+  final _service = VideoApiService();
+  List<Video> _videos = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getVideos(perPage: 8).then((v) {
+      if (!mounted) return;
+      setState(() {
+        _videos = v;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _videos.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        shared.SectionHeader(
+          title: 'Mjengo Hub on YouTube',
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 3,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 168,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _videos.take(4).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _VideoCard(video: _videos[i]),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VideoCard extends StatelessWidget {
+  final Video video;
+  const _VideoCard({required this.video});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(() => VideoPlayerScreen(video: video)),
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          border: Border.all(color: AppColors.borderSlate),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NetImage(url: video.thumbnailUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF0F172A)),
+                  const Center(child: Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 36)),
+                  if (video.duration != null && video.duration!.isNotEmpty)
+                    Positioned(
+                      right: 6,
+                      bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(4)),
+                        child: Text(video.duration!,
+                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                video.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.3),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Merch preview — Spec 10 sections 15/20. Reuses MerchService, routes to
+//  the standalone MerchScreen ("Buy" happens there, not from the homepage).
+// ─────────────────────────────────────────────────────────────────────────────
+
+class MerchPreviewSection extends StatefulWidget {
+  final String title;
+  const MerchPreviewSection({super.key, this.title = 'Mjengo Hub Merch'});
+
+  @override
+  State<MerchPreviewSection> createState() => _MerchPreviewSectionState();
+}
+
+class _MerchPreviewSectionState extends State<MerchPreviewSection> {
+  final _service = MerchService();
+  List<MerchProduct> _products = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getProducts().then((p) {
+      if (!mounted) return;
+      setState(() {
+        _products = p;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _products.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        shared.SectionHeader(title: widget.title, onSeeAll: () => Get.to(() => const MerchScreen())),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 160,
+          child: _loading
+              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _products.take(4).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _MerchCard(product: _products[i]),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MerchCard extends StatelessWidget {
+  final MerchProduct product;
+  const _MerchCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(() => const MerchScreen()),
+      child: Container(
+        width: 130,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          border: Border.all(color: AppColors.borderSlate),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: NetImage(url: product.image, fit: BoxFit.cover, placeholderColor: const Color(0xFFF1F5F9)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+                  const SizedBox(height: 2),
+                  Text('KES ${product.price.toStringAsFixed(0)}',
+                      style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accentBlue)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  More News & Articles — Spec 10 sections 23/25 (Part 1/2), further
+//  pagination pages beyond what Breaking News + Featured Analysis already
+//  show, so the two parts don't repeat the same headlines.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class MoreNewsSection extends StatefulWidget {
+  final String title;
+  final int page;
+  const MoreNewsSection({super.key, required this.title, required this.page});
+
+  @override
+  State<MoreNewsSection> createState() => _MoreNewsSectionState();
+}
+
+class _MoreNewsSectionState extends State<MoreNewsSection> {
+  final _service = NewsApiService();
+  List<Article> _articles = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.getArticles(page: widget.page, perPage: 4).then((a) {
+      if (!mounted) return;
+      setState(() {
+        _articles = a;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _articles.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        shared.SectionHeader(
+          title: widget.title,
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+        ),
+        const SizedBox(height: 12),
+        if (_loading)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          )
+        else
+          for (int i = 0; i < _articles.length; i++) ...[
+            GestureDetector(
+              onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: _articles[i].slug),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.sharp),
+                      child: SizedBox(
+                        width: 68,
+                        height: 52,
+                        child: NetImage(url: _articles[i].imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF0F172A)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _articles[i].title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (i != _articles.length - 1)
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Divider(height: 1, color: AppColors.borderSlate)),
+          ],
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Join Our Community — Spec 10 section 26: top-3 weekly contributors +
+//  CTA to ContributorsScreen. Falls back to the all-time projects metric if
+//  the points metric has no rows this week, so the section is never blank
+//  whenever there's any contributor activity at all.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class CommunitySection extends StatefulWidget {
+  const CommunitySection({super.key});
+
+  @override
+  State<CommunitySection> createState() => _CommunitySectionState();
+}
+
+class _CommunitySectionState extends State<CommunitySection> {
+  final _service = ContributorsService();
+  List<LeaderboardRow> _top = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final boards = await _service.getContributors(limit: 3);
+    var top = boards.points.profiles;
+    if (top.isEmpty) top = boards.projects.profiles;
+    if (!mounted) return;
+    setState(() {
+      _top = top.take(3).toList();
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loading && _top.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.headingSlate,
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Join Our Community', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+          const SizedBox(height: 2),
+          Text('This week\'s top contributors',
+              style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white.withValues(alpha: 0.75))),
+          const SizedBox(height: 14),
+          if (_loading)
+            const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+          else
+            Row(
+              children: [
+                for (final row in _top) ...[
+                  Expanded(child: _ContributorAvatar(row: row)),
+                  if (row != _top.last) const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => Get.toNamed(AppRoutes.contributors),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                side: BorderSide.none,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
+              ),
+              child: Text('Join Community →',
+                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.headingSlate)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContributorAvatar extends StatelessWidget {
+  final LeaderboardRow row;
+  const _ContributorAvatar({required this.row});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ClipOval(
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: NetImage(url: row.avatar, fit: BoxFit.cover, placeholderColor: Colors.white.withValues(alpha: 0.15)),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(row.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+        Text('${row.value} pts',
+            style: GoogleFonts.montserrat(fontSize: 9.5, color: Colors.white.withValues(alpha: 0.7))),
+      ],
+    );
+  }
 }

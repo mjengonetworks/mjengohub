@@ -20,7 +20,10 @@ import '../point/routes/app_routes.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
 import '../shared/widgets/leaderboard_widget.dart';
+import '../shared/widgets/partners_carousel.dart';
 import '../shared/widgets/preview_data_badge.dart';
+import '../shared/widgets/scroll_to_top_fab.dart';
+import '../shared/widgets/section_header.dart';
 import 'widgets/home_extra_sections.dart';
 
 /// Opens a genuine external website in an in-app browser (Chrome Custom Tabs
@@ -34,8 +37,21 @@ Future<void> _launchExternalUrl(String url) async {
   if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,12 +66,15 @@ class HomeScreen extends StatelessWidget {
         if (ctrl.featuredArticles.isEmpty && ctrl.breakingNews.isEmpty) {
           return _errorState(ctrl);
         }
-        return _content(context, ctrl);
+        return ScrollToTopFab(
+          controller: _scrollController,
+          child: _content(context, ctrl),
+        );
       }),
     );
   }
 
-  // ── Main content ────────────────────────────────────────────────────────────
+  // ── Main content — Spec 10's exact 27-section sequence ─────────────────────
 
   Widget _content(BuildContext context, HomeNewsController ctrl) {
     // Hero scrolls away with the rest of the page (matches the website,
@@ -64,22 +83,13 @@ class HomeScreen extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: SingleChildScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section order mirrors the website homepage's actual flow
-            // (templates/homepage.html): Hero → latest news → banner ad
-            // → projects → videos → featured articles → site safety →
-            // Mjengo Networks, with app-only utilities pushed to the end
-            // rather than interrupting that flow up top.
-
-            // ── Featured hero: auto-playing photo carousel, 3:2 aspect
-            // ratio — matches the website's own .mj-hero mobile breakpoint
-            // exactly (static/css/main.css: "Shorter, more landscape aspect
-            // ratio than the old 4:3 -- brings the hero's footprint down
-            // closer to the other pages' hero sections instead of a tall
-            // dedicated photo slab"). ───────────────────────────────────────
+            // ── 1. Hero: auto-playing photo carousel, 3:2 aspect ratio,
+            // minimal sharp search input, no decorative clipart. ───────────
             AspectRatio(
               aspectRatio: 3 / 2,
               child: LayoutBuilder(
@@ -164,44 +174,48 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // Homepage section order below is deliberately interleaved
-            // rather than stacked monolithically by content type: platform
-            // sections (projects/articles/trackers) alternate with
-            // ecosystem cross-promotion banners and the two curated
-            // showcases (Built History, Africa & World), closing with a
-            // micro leaderboard and the remaining utility feed.
+            // ── 2. Latest Construction News (top 4 + Read More) ─────────────
+            const SizedBox(height: 18),
+            _breakingHeader(ctrl),
+            const SizedBox(height: 12),
+            SizedBox(height: 220, child: _breakingList(ctrl)),
 
-            // 2 — Mjengo Networks showcase banner
-            const SizedBox(height: 24),
+            // ── 3. Browse Articles by Category (directly beneath news) ──────
+            const SizedBox(height: 12),
+            const CategoryPillsBar(),
+
+            // ── 4. Partner Banner (Slot 1) ───────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: const AdBannerSlot(slotNumber: 1),
+            ),
+
+            // ── 5. Latest Infrastructure Projects ────────────────────────────
+            const FeaturedProjectsSection(
+              featured: false,
+              title: 'Latest Infrastructure Projects',
+              subtitle: 'Roads, bridges and major public infrastructure tracked across Kenya',
+            ),
+
+            // ── 6. Mjengo Networks preview card ──────────────────────────────
+            const SizedBox(height: 18),
             const MjengoNetworksBanner(),
 
-            // 3 — Latest News & Articles (Part 1) — immediately follows the
-            // Mjengo Networks banner
-            const SizedBox(height: 24),
-            _breakingHeader(ctrl),
-            const SizedBox(height: 14),
-            SizedBox(height: 220, child: _breakingList(ctrl)),
-            const SizedBox(height: 10),
-            const AdBannerSlot(),
+            // ── 7. Latest Private Projects ───────────────────────────────────
+            const SizedBox(height: 18),
+            const PrivateDevelopmentsShowcaseSection(featured: false, title: 'Latest Private Projects'),
 
-            // 4 — Featured Infrastructure Projects
-            const SizedBox(height: 24),
-            const FeaturedProjectsSection(),
+            // ── 8. Partner Banner (Slot 2) ───────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: const AdBannerSlot(slotNumber: 2),
+            ),
 
-            // 5 — Built History showcase preview
-            const SizedBox(height: 24),
-            const BuiltHistoryPreviewSection(),
-
-            // 6 — Share Barabara showcase banner
-            const SizedBox(height: 24),
+            // ── 9. Share Barabara preview card ───────────────────────────────
             const ShareBarabaraBanner(),
 
-            // 7 — Africa & World continental spotlight preview
-            const SizedBox(height: 24),
-            const AfricaWorldPreviewSection(),
-
-            // 8 — Extended Articles & Analysis (Part 2)
-            const SizedBox(height: 24),
+            // ── 10. Featured Articles & Analysis (top 3-4) ───────────────────
+            const SizedBox(height: 18),
             Obx(() {
               final articles = ctrl.featuredArticles.toList();
               return FeaturedArticlesAnalysisSection(
@@ -211,31 +225,91 @@ class HomeScreen extends StatelessWidget {
               );
             }),
 
-            // 9 — Private Developments showcase
-            const SizedBox(height: 24),
-            const PrivateDevelopmentsShowcaseSection(),
+            // ── 11. Media Page Preview ───────────────────────────────────────
+            const SizedBox(height: 18),
+            const MediaPreviewBanner(),
 
-            // 10 — Micro top-contributors leaderboard
-            const SizedBox(height: 24),
-            const MicroLeaderboardStrip(),
+            // ── 12. Mjengo Hub on YouTube ─────────────────────────────────────
+            const SizedBox(height: 18),
+            const YoutubeCarouselSection(),
 
-            // 11 — Site Safety strip + Partner With Us pitch card, back to
-            // back as one high-conversion closing pair (matches the
-            // website's Site Safety Preview immediately followed by the
-            // Advertise-with-Us strip near the foot of the page)
-            const SizedBox(height: 24),
+            // ── 13. Partner Banner (Slot 3) ──────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: const AdBannerSlot(slotNumber: 3),
+            ),
+
+            // ── 14. Africa & World Showcase ──────────────────────────────────
+            const AfricaWorldPreviewSection(),
+
+            // ── 15. Merch Page Preview (Slot 1) ──────────────────────────────
+            const SizedBox(height: 18),
+            const MerchPreviewSection(title: 'Merch Preview'),
+
+            // ── 16. Built History Showcase ───────────────────────────────────
+            const SizedBox(height: 18),
+            const BuiltHistoryPreviewSection(),
+
+            // ── 17. Featured Public Projects ─────────────────────────────────
+            const SizedBox(height: 18),
+            const FeaturedProjectsSection(
+              featured: true,
+              title: 'Featured Public Projects',
+              subtitle: 'Editor-picked public infrastructure making the biggest impact',
+            ),
+
+            // ── 18. Site Safety Page Preview ─────────────────────────────────
+            const SizedBox(height: 18),
             const SafetyIncidentsSection(),
 
+            // ── 19. Featured Private Projects ────────────────────────────────
+            const SizedBox(height: 18),
+            const PrivateDevelopmentsShowcaseSection(featured: true, title: 'Featured Private Projects'),
+
+            // ── 20. Mjengo Hub Merch Page Preview (Slot 2) ───────────────────
+            const SizedBox(height: 18),
+            const MerchPreviewSection(title: 'Mjengo Hub Merch'),
+
+            // ── 21. Partner Banner (Slot 4) ──────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: const AdBannerSlot(slotNumber: 4),
+            ),
+
+            // ── 22. Browse Projects by Category ──────────────────────────────
+            const BrowseProjectsByCategorySection(),
+
+            // ── 23. More News & Articles (Part 1) ────────────────────────────
+            const SizedBox(height: 18),
+            const MoreNewsSection(title: 'More News & Articles', page: 2),
+
+            // ── 24. Partner Banner (Slot 5) — between Part 1 and Part 2 ──────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: const AdBannerSlot(slotNumber: 5),
+            ),
+
+            // ── 25. More News & Articles (Part 2) ────────────────────────────
+            const MoreNewsSection(title: 'More News & Articles', page: 3),
+
+            // ── 26. Join Our Community ───────────────────────────────────────
+            const SizedBox(height: 18),
+            const CommunitySection(),
+
+            // ── 27. Our Partners Carousel ────────────────────────────────────
+            const SizedBox(height: 18),
+            const SectionHeader(title: 'Our Partners'),
+            const SizedBox(height: 10),
+            const PartnersCarousel(),
+
+            // ── App-only utilities below the 27-section sequence ─────────────
             const SizedBox(height: 20),
             const _PartnerWithUsBanner(),
 
-            // ── Explore Quick Actions (app-only shortcuts, no website
-            // equivalent — kept just above the footer) ───────────────────
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             const _ExploreSectionsWidget(),
 
-            // 12 — Footer & channel links
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             const SocialLinksGrid(),
 
             const SizedBox(height: 16),
@@ -245,52 +319,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ── Breaking News header ────────────────────────────────────────────────────
+  // ── Latest Construction News header ─────────────────────────────────────────
 
   Widget _breakingHeader(HomeNewsController ctrl) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Breaking News',
-                style: GoogleFonts.montserrat(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
-                ),
-              ),
-              Obx(() => ctrl.isShowingDemoData.value
-                  ? const Padding(
-                      padding: EdgeInsets.only(left: 8),
-                      child: PreviewDataBadge(),
-                    )
-                  : const SizedBox.shrink()),
-            ],
-          ),
-          GestureDetector(
-            onTap: () {
-              final navCtrl = Get.find<MainNavController>();
-              navCtrl.currentIndex.value = 2; // Discover
-            },
-            child: Text(
-              'More',
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF6B7280),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return Obx(() => SectionHeader(
+          title: 'Latest Construction News',
+          isDemo: ctrl.isShowingDemoData.value,
+          seeAllLabel: 'Read More',
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = 2,
+        ));
   }
 
-  // ── Breaking News horizontal list ───────────────────────────────────────────
+  // ── Latest Construction News horizontal list (capped at 4) ─────────────────
 
   Widget _breakingList(HomeNewsController ctrl) {
     return Obx(() {
@@ -299,17 +339,17 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'No breaking news at the moment.',
-            style: GoogleFonts.montserrat(
-                fontSize: 13, color: const Color(0xFF9CA3AF)),
+            style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.captionSlate),
           ),
         );
       }
+      final items = ctrl.breakingNews.take(4).toList();
       return ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: ctrl.breakingNews.length,
+        itemCount: items.length,
         itemBuilder: (_, i) {
-          final article = ctrl.breakingNews[i];
+          final article = items[i];
           return BreakingNewsCard(
             article: article,
             onTap: () => _openArticle(article),
@@ -325,12 +365,11 @@ class HomeScreen extends StatelessWidget {
   Widget _loadingState() {
     return Column(
       children: [
-        AspectRatio(aspectRatio: 3 / 2, child: Container(color: const Color(0xFF1F2937))),
+        AspectRatio(aspectRatio: 3 / 2, child: Container(color: AppColors.headingSlate)),
         const Expanded(
           child: Center(
             child: CircularProgressIndicator(
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.headingSlate),
               strokeWidth: 2,
             ),
           ),
@@ -348,22 +387,19 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded,
-                size: 52, color: Color(0xFFD1D5DB)),
+            const Icon(Icons.wifi_off_rounded, size: 52, color: AppColors.borderSlate),
             const SizedBox(height: 16),
             Text(
               ctrl.errorMessage.value.isNotEmpty
                   ? ctrl.errorMessage.value
                   : 'No content available right now. Pull to refresh.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                  fontSize: 14, color: const Color(0xFF6B7280)),
+              style: GoogleFonts.montserrat(fontSize: 14, color: AppColors.captionSlate),
             ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: ctrl.fetchHomeData,
-              child: Text('Retry',
-                  style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              child: Text('Retry', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -385,23 +421,23 @@ class HomeScreen extends StatelessWidget {
 class _ExploreSectionsWidget extends StatelessWidget {
   const _ExploreSectionsWidget();
 
-      static const _sections = [
-      _SectionData(
-        label: 'Projects',
-        icon: Icons.corporate_fare_rounded,
-        route: '/projects',
-      ),
-      _SectionData(
-        label: 'Saved',
-        icon: Icons.bookmark_rounded,
-        route: '/saved-items',
-      ),
-    ];
+  static const _sections = [
+    _SectionData(
+      label: 'Projects',
+      icon: Icons.corporate_fare_rounded,
+      route: '/projects',
+    ),
+    _SectionData(
+      label: 'Saved',
+      icon: Icons.bookmark_rounded,
+      route: '/saved-items',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: _sections
@@ -432,9 +468,8 @@ class _ExploreIconPill extends StatelessWidget {
   final _SectionData data;
   const _ExploreIconPill({required this.data});
 
-  static const _bubbleBg  = Color(0xFFEFF6FF);
-  static const _iconColor  = Color(0xFF2563EB);
-  static const _labelColor = Color(0xFF111827);
+  static const _bubbleBg = Color(0xFFEFF6FF);
+  static const _iconColor = Color(0xFF2563EB);
 
   Future<void> _handleTap() async {
     if (data.isExternal) {
@@ -456,7 +491,7 @@ class _ExploreIconPill extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               color: _bubbleBg,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.sharpLg),
             ),
             child: Icon(data.icon, color: _iconColor, size: 26),
           ),
@@ -469,7 +504,7 @@ class _ExploreIconPill extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: _labelColor,
+              color: AppColors.headingSlate,
             ),
           ),
         ],
@@ -526,8 +561,7 @@ class _HeroSlide extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  HERO HEADLINE + SEARCH CTA — matches the website's `.mj-hero-title` /
-//  `.mj-hero-search` copy and typography exactly (templates/homepage.html).
+//  HERO HEADLINE + SEARCH CTA — minimal sharp search input, no clipart.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _HeroHeadline extends StatelessWidget {
@@ -557,16 +591,16 @@ class _HeroHeadline extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
+              borderRadius: BorderRadius.circular(AppRadius.sharpLg),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.search_rounded, size: 17, color: Color(0xFF6B7280)),
+                const Icon(Icons.search, size: 17, color: AppColors.captionSlate),
                 const SizedBox(width: 8),
                 Text(
                   'Search articles, news, projects, safety incidents...',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF6B7280)),
+                  style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.captionSlate),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -597,14 +631,14 @@ class _PartnerWithUsBanner extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.deepNavy,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
           ),
           child: Row(
             children: [
               Container(
                 width: 42,
                 height: 42,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.sharp)),
                 child: const Icon(Icons.handshake_rounded, color: Colors.white, size: 22),
               ),
               const SizedBox(width: 12),
@@ -619,7 +653,7 @@ class _PartnerWithUsBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+              const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
             ],
           ),
         ),
