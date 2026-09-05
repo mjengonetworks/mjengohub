@@ -35,6 +35,17 @@ class AppColors {
   // Mjengo Hub Prime badge blue
   static const Color primeBadge = Color(0xFF2C5AA0);
 
+  // "Executive architectural" design-system pass: sharp-corner surfaces get
+  // a crisp 1px slate border instead of a shadow, and high-contrast slate
+  // text instead of the softer textDark/textSubtle pair above. Additive —
+  // textDark/textSubtle/divider stay as-is for the many existing screens
+  // that already rely on them; new/rebuilt UI (home screen sections, new
+  // Spec-1 widgets) uses these instead.
+  static const Color borderSlate = Color(0xFFE2E8F0);
+  static const Color headingSlate = Color(0xFF0F172A);
+  static const Color bodyCharcoal = Color(0xFF1E293B);
+  static const Color captionSlate = Color(0xFF475569);
+
   static const LinearGradient verifiedPillGradient = LinearGradient(
     colors: [primaryBlue, secondaryBlue],
     begin: Alignment.topLeft,
@@ -53,5 +64,11 @@ class AppRadius {
   static const double pill = 999;
   static const double card = 14;
   static const double chip = 8;
+
+  // Sharp architectural corners for the newer design-system pass — used by
+  // rebuilt home-screen sections and new Spec-1 widgets rather than the
+  // rounder `card`/`chip` values above, which existing screens keep using.
+  static const double sharp = 4;
+  static const double sharpLg = 6;
 }
 
