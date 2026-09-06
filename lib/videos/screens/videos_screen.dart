@@ -3,25 +3,26 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../home/widgets/home_extra_sections.dart' show SocialLinksGrid;
 import '../../news/widgets/net_image.dart';
 import '../../shared/services/site_service.dart';
+import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/leaderboard_widget.dart';
+import '../../shared/widgets/responsive.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 import '../controllers/videos_controller.dart';
 import '../models/video_model.dart';
 import 'video_player_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Design tokens — matches the rest of the app
+// Design tokens — sharp architectural system (Spec: no round over-styling,
+// no faint metadata colors).
 // ─────────────────────────────────────────────────────────────────────────────
-const _kBlue    = Color(0xFF2563EB);
-const _kDark    = Color(0xFF111827);
+const _kDark = Color(0xFF0F172A);
 const _kSubtext = Color(0xFF475569);
-const _kBg      = Color(0xFFF3F4F6);
-const _kDivider = Color(0xFFF3F4F6);
-const _kYT      = Color(0xFFFF0000);
+const _kBorder = Color(0xFFE2E8F0);
+const _kYT = Color(0xFFFF0000);
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  ROOT SCREEN
@@ -45,61 +46,126 @@ class _VideosScreenState extends State<VideosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl   = Get.find<VideosController>();
+    final ctrl = Get.find<VideosController>();
 
     return ScrollToTopFab(
       controller: _scrollController,
       child: Container(
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 12),
+        color: Colors.white,
+        child: ContentWidth(
+          maxWidth: 1100,
+          child: Obx(() {
+            if (ctrl.isLoading.value && ctrl.videos.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(_kDark)),
+              );
+            }
 
-          // ── Header ──────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Media',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w500,
-                    color: _kDark,
+            // Hero = first featured video if one exists, else the newest
+            // video overall; excluded from the grid below it so it isn't
+            // shown twice.
+            final hero = ctrl.featuredVideos.isNotEmpty
+                ? ctrl.featuredVideos.first
+                : (ctrl.videos.isNotEmpty ? ctrl.videos.first : null);
+            final gridVideos = hero == null ? ctrl.videos : ctrl.videos.where((v) => v.id != hero.id).toList();
+
+            return RefreshIndicator(
+              color: _kDark,
+              onRefresh: ctrl.refresh,
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Media', style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.w700, color: _kDark)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Watch the latest infrastructure updates, site walkthroughs, and project spotlights',
+                            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: _kSubtext, height: 1.4),
+                          ),
+                          const SizedBox(height: 14),
+                          const _YoutubeStatsRow(),
+                          const SizedBox(height: 14),
+                          _SearchBar(ctrl: ctrl),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Latest from @MjengoHubKE',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    color: _kSubtext,
+
+                  SliverToBoxAdapter(child: const SizedBox(height: 14)),
+                  SliverToBoxAdapter(child: _CategoryTabs(ctrl: ctrl)),
+
+                  if (hero != null) ...[
+                    SliverToBoxAdapter(child: const SizedBox(height: 18)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _FeaturedVideoSpotlight(video: hero, onTap: () => openVideo(context, hero)),
+                      ),
+                    ),
+                  ],
+
+                  SliverToBoxAdapter(child: const SizedBox(height: 22)),
+
+                  if (gridVideos.isEmpty && !ctrl.isLoading.value)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Text('No videos found.', style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext)),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: context.gridColumns,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: context.gridColumns == 1 ? 1.5 : 0.86,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (_, i) => VideoCard(video: gridVideos[i], onTap: () => openVideo(context, gridVideos[i])),
+                          childCount: gridVideos.length,
+                        ),
+                      ),
+                    ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Obx(() {
+                        if (ctrl.hasMore.value) {
+                          ctrl.loadMore();
+                          return const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(_kDark))),
+                          );
+                        }
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 12, bottom: 20),
+                          child: Column(
+                            children: [
+                              SocialLinksGrid(),
+                              SizedBox(height: 20),
+                              LeaderboardPreview(),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-
-                // ── Channel stats (mirrors templates/youtube.html's
-                // videos/subscribers/views tiles, via GET site/figures) ──
-                const _YoutubeStatsRow(),
-                const SizedBox(height: 14),
-
-                // ── Search bar ─────────────────────────────────────────
-                _SearchBar(ctrl: ctrl),
-                const SizedBox(height: 18),
-              ],
-            ),
-          ),
-
-          // ── Category tabs ─────────────────────────────────────────────
-          _CategoryTabs(ctrl: ctrl),
-          const SizedBox(height: 8),
-
-          // ── Video list ────────────────────────────────────────────────
-          Expanded(child: _VideoList(ctrl: ctrl, scrollController: _scrollController)),
-        ],
-      ),
+                ],
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -165,19 +231,13 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: _kBg,
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+        border: Border.all(color: _kBorder),
       ),
       child: Column(
         children: [
-          Text(
-            figure.display,
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: _kYT,
-            ),
-          ),
+          Text(figure.display, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: _kYT)),
           const SizedBox(height: 2),
           Text(
             figure.name ?? '',
@@ -193,7 +253,7 @@ class _StatTile extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  SEARCH BAR  (mirrors Discover's _SearchBar)
+//  SEARCH BAR
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _SearchBar extends StatelessWidget {
@@ -205,16 +265,15 @@ class _SearchBar extends StatelessWidget {
     return Container(
       height: 46,
       decoration: BoxDecoration(
-        color: _kBg,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+        border: Border.all(color: _kBorder),
       ),
       child: Row(
         children: [
           const SizedBox(width: 12),
-          const Icon(Icons.search_rounded, size: 20, color: _kSubtext),
+          const Icon(Icons.search, size: 20, color: _kSubtext),
           const SizedBox(width: 8),
-
-          // Text field
           Expanded(
             child: TextField(
               controller: ctrl.searchController,
@@ -223,16 +282,13 @@ class _SearchBar extends StatelessWidget {
               style: GoogleFonts.montserrat(fontSize: 14, color: _kDark),
               decoration: InputDecoration(
                 hintText: 'Search videos',
-                hintStyle:
-                    GoogleFonts.montserrat(fontSize: 14, color: const Color(0xFF475569)),
+                hintStyle: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
             ),
           ),
-
-          // Clear button
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: ctrl.searchController,
             builder: (_, val, __) => val.text.isNotEmpty
@@ -240,47 +296,11 @@ class _SearchBar extends StatelessWidget {
                     onTap: ctrl.clearSearch,
                     child: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Icon(Icons.close_rounded,
-                          size: 18, color: _kSubtext),
+                      child: Icon(Icons.close_rounded, size: 18, color: _kSubtext),
                     ),
                   )
-                : const SizedBox(width: 8),
+                : const SizedBox(width: 12),
           ),
-
-          // Divider
-          Container(height: 30, width: 1, color: const Color(0xFFE5E7EB)),
-
-          // Filter icon — shows purple dot when a category is active
-          Obx(() {
-            final active = ctrl.selectedCategoryId.value != null;
-            return GestureDetector(
-              onTap: () => _showFilterSheet(context, ctrl),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Icon(Icons.tune_rounded,
-                        size: 18,
-                        color: active ? _kBlue : const Color(0xFF374151)),
-                    if (active)
-                      Positioned(
-                        top: -3,
-                        right: -3,
-                        child: Container(
-                          width: 7,
-                          height: 7,
-                          decoration: const BoxDecoration(
-                            color: _kBlue,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ],
       ),
     );
@@ -288,7 +308,7 @@ class _SearchBar extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  CATEGORY TABS  (same underline style as Discover)
+//  CATEGORY FILTER PILLS — solid deep-slate active pill, bordered inactive
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _CategoryTabs extends StatelessWidget {
@@ -299,23 +319,25 @@ class _CategoryTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final cats = ctrl.categories;
-
       return SizedBox(
-        height: 42,
+        height: 38,
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           children: [
-            _TabItem(
-              label: 'All',
+            _PillTab(
+              label: 'All Media',
               isSelected: ctrl.selectedCategoryId.value == null,
               onTap: () => ctrl.selectCategory(null),
             ),
-            ...cats.map((c) => _TabItem(
-                  label: c.name,
-                  isSelected: ctrl.selectedCategoryId.value == c.id,
-                  onTap: () => ctrl.selectCategory(c.id),
-                )),
+            for (final c in cats) ...[
+              const SizedBox(width: 8),
+              _PillTab(
+                label: c.name,
+                isSelected: ctrl.selectedCategoryId.value == c.id,
+                onTap: () => ctrl.selectCategory(c.id),
+              ),
+            ],
           ],
         ),
       );
@@ -323,35 +345,31 @@ class _CategoryTabs extends StatelessWidget {
   }
 }
 
-class _TabItem extends StatelessWidget {
+class _PillTab extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  const _TabItem(
-      {required this.label, required this.isSelected, required this.onTap});
+  const _PillTab({required this.label, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(right: 24),
-        padding: const EdgeInsets.only(bottom: 6),
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected ? _kDark : Colors.transparent,
-              width: 2,
-            ),
-          ),
+          color: isSelected ? _kDark : Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          border: Border.all(color: isSelected ? _kDark : _kBorder),
         ),
         child: Text(
           label,
           style: GoogleFonts.montserrat(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: isSelected ? _kDark : _kSubtext,
+            color: isSelected ? Colors.white : const Color(0xFF334155),
           ),
         ),
       ),
@@ -360,498 +378,288 @@ class _TabItem extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  VIDEO LIST  (mirrors Discover's _ArticleList)
+//  FEATURED / HERO VIDEO SPOTLIGHT
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _VideoList extends StatelessWidget {
-  final VideosController ctrl;
-  final ScrollController scrollController;
-  const _VideoList({required this.ctrl, required this.scrollController});
+class _FeaturedVideoSpotlight extends StatelessWidget {
+  final Video video;
+  final VoidCallback onTap;
+  const _FeaturedVideoSpotlight({required this.video, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      // Loading with no content yet
-      if (ctrl.isLoading.value && ctrl.videos.isEmpty) {
-        return const Center(
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(_kDark),
-          ),
-        );
-      }
-
-      // Empty
-      if (ctrl.videos.isEmpty) {
-        return Center(
-          child: Text(
-            'No videos found.',
-            style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
-          ),
-        );
-      }
-
-      // List
-      return RefreshIndicator(
-        color: _kDark,
-        onRefresh: ctrl.refresh,
-        child: NotificationListener<ScrollNotification>(
-          onNotification: (n) {
-            if (n is ScrollEndNotification && n.metrics.extentAfter < 200) {
-              ctrl.loadMore();
-            }
-            return false;
-          },
-          child: ListView.separated(
-            controller: scrollController,
-            padding: const EdgeInsets.only(top: 4, bottom: 16),
-            // One trailing slot beyond the loaded videos: the load-more
-            // sentinel while more pages remain, or the weekly leaderboard
-            // preview once every video is loaded.
-            itemCount: ctrl.videos.length + 1,
-            separatorBuilder: (_, __) => const Divider(
-              height: 1,
-              indent: 20,
-              endIndent: 20,
-              color: _kDivider,
-            ),
-            itemBuilder: (_, i) {
-              if (i == ctrl.videos.length) {
-                if (ctrl.hasMore.value) {
-                  // load-more sentinel
-                  ctrl.loadMore();
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(_kDark),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NetImage(
+                    url: video.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF0F172A),
+                    placeholderIcon: Icons.videocam_rounded,
+                  ),
+                  Container(color: Colors.black.withValues(alpha: 0.12)),
+                  Center(
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      elevation: 4,
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.play_arrow_rounded, color: _kDark, size: 34),
                       ),
                     ),
-                  );
-                }
-                // Channel directory ("Follow Us Everywhere") + weekly
-                // leaderboard preview directly beneath it — every video is
-                // loaded, so this is genuinely the end of the list.
-                return const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Column(
-                    children: [
-                      SocialLinksGrid(),
-                      SizedBox(height: 20),
-                      LeaderboardPreview(),
-                    ],
                   ),
-                );
-              }
-              return VideoListTile(
-                video: ctrl.videos[i],
-                onTap: () => _openVideo(ctrl.videos[i]),
-              );
-            },
+                  if (video.duration != null)
+                    Positioned(
+                      right: 10,
+                      bottom: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(AppRadius.sharp),
+                        ),
+                        child: Text(video.duration!,
+                            style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
-      );
-    });
+        const SizedBox(height: 14),
+        if (video.category != null) ...[
+          _CategoryPill(video.category!.name),
+          const SizedBox(height: 10),
+        ],
+        Text(
+          video.title,
+          style: GoogleFonts.montserrat(fontSize: 21, fontWeight: FontWeight.w700, color: _kDark, height: 1.3),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.smart_display_rounded, size: 14, color: _kSubtext),
+            const SizedBox(width: 5),
+            Text('Mjengo Hub', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
+            if (video.publishedAt != null) ...[
+              Text('  ·  ', style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext)),
+              Text(_formatDate(video.publishedAt!), style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
+            ],
+          ],
+        ),
+        if (video.description.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            video.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: const Color(0xFF334155), height: 1.5),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _CategoryPill extends StatelessWidget {
+  final String label;
+  const _CategoryPill(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: _kDark, borderRadius: BorderRadius.circular(AppRadius.sharp)),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
+      ),
+    );
   }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  VIDEO LIST TILE  (mirrors ArticleListTile + YouTube icon)
+//  VIDEO GRID CARD
 // ═════════════════════════════════════════════════════════════════════════════
 
-class VideoListTile extends StatelessWidget {
+class VideoCard extends StatelessWidget {
   final Video video;
   final VoidCallback? onTap;
-
-  const VideoListTile({Key? key, required this.video, this.onTap})
-      : super(key: key);
+  const VideoCard({Key? key, required this.video, this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Thumbnail with overlays ──────────────────────────────────
-            _Thumbnail(video: video),
-            const SizedBox(width: 14),
-
-            // ── Text info ────────────────────────────────────────────────
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  // Title
-                  Text(
-                    video.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: _kDark,
-                      height: 1.35,
+                  NetImage(
+                    url: video.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF0F172A),
+                    placeholderIcon: Icons.videocam_rounded,
+                  ),
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.45), shape: BoxShape.circle),
+                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
                     ),
                   ),
-                  const SizedBox(height: 6),
-
-                  // Meta row: duration · views · YouTube icon
-                  Row(
-                    children: [
-                      // Duration
-                      if (video.duration != null) ...[
-                        const Icon(Icons.schedule_rounded,
-                            size: 12, color: _kSubtext),
-                        const SizedBox(width: 3),
-                        Text(
-                          video.duration!,
-                          style: GoogleFonts.montserrat(
-                              fontSize: 11.5, color: _kSubtext),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-
-                      // Views
-                      const Icon(Icons.remove_red_eye_outlined,
-                          size: 12, color: _kSubtext),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${_formatViews(video.viewCount)} views',
-                        style: GoogleFonts.montserrat(
-                            fontSize: 11.5, color: _kSubtext),
-                      ),
-
-                      const Spacer(),
-
-                      // YouTube icon badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                  if (video.duration != null)
+                    Positioned(
+                      right: 6,
+                      bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _kYT,
-                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(AppRadius.sharp),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.play_arrow_rounded,
-                                size: 11, color: Colors.white),
-                            const SizedBox(width: 2),
-                            Text(
-                              'YouTube',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Category chip (optional)
-                  if (video.category != null) ...[
-                    const SizedBox(height: 5),
-                    Text(
-                      video.category!.name,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        color: _kBlue,
-                        fontWeight: FontWeight.w600,
+                        child: Text(video.duration!,
+                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
                       ),
                     ),
-                  ],
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  THUMBNAIL  76×76 with play overlay + duration badge
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _Thumbnail extends StatelessWidget {
-  final Video video;
-  const _Thumbnail({required this.video});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: SizedBox(
-        width: 76,
-        height: 76,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Image
-            _buildImage(),
-
-            // Semi-dark overlay for legibility
-            Container(color: Colors.black.withValues(alpha: 0.10)),
-
-            // Play circle centre
-            Center(
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.play_arrow_rounded,
-                    color: Colors.white, size: 17),
-              ),
+          ),
+          const SizedBox(height: 8),
+          if (video.category != null) ...[
+            Text(
+              video.category!.name.toUpperCase(),
+              style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: _kSubtext, letterSpacing: 0.4),
             ),
-
-            // Duration badge — bottom-right
-            if (video.duration != null)
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: Text(
-                    video.duration!,
-                    style: GoogleFonts.montserrat(
-                        fontSize: 9,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
+            const SizedBox(height: 4),
           ],
-        ),
+          Text(
+            video.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w600, color: _kDark, height: 1.3),
+          ),
+          const SizedBox(height: 4),
+          if (video.publishedAt != null)
+            Text(
+              _formatDate(video.publishedAt!),
+              style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w400, color: _kSubtext),
+            ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildImage() {
-    return NetImage(
-      url: video.thumbnailUrl,
-      fit: BoxFit.cover,
-      placeholderColor: const Color(0xFFEEEEF5),
-      placeholderIcon: Icons.videocam_rounded,
-      placeholderIconColor: const Color(0xFFCCCCDD),
+// ═════════════════════════════════════════════════════════════════════════════
+//  PLAYBACK — full-screen on mobile/desktop app, inline modal on web (so we
+//  never boot the user out to a separate YouTube tab, and never touch
+//  CanvasKit's WebGL context directly -- youtube_player_iframe composes its
+//  own iframe as a platform view, same mechanism as net_image_html_web.dart).
+// ═════════════════════════════════════════════════════════════════════════════
+
+void openVideo(BuildContext context, Video video) {
+  if (kIsWeb) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.7),
+      builder: (_) => _VideoModal(video: video),
     );
+  } else {
+    Get.to(() => VideoPlayerScreen(video: video), transition: Transition.cupertino);
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-//  FILTER BOTTOM SHEET
-// ═════════════════════════════════════════════════════════════════════════════
+class _VideoModal extends StatefulWidget {
+  final Video video;
+  const _VideoModal({required this.video});
 
-void _showFilterSheet(BuildContext context, VideosController ctrl) {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
-    builder: (_) => _FilterSheet(ctrl: ctrl),
-  );
+  @override
+  State<_VideoModal> createState() => _VideoModalState();
 }
 
-class _FilterSheet extends StatelessWidget {
-  final VideosController ctrl;
-  const _FilterSheet({required this.ctrl});
+class _VideoModalState extends State<_VideoModal> {
+  late final YoutubePlayerController _controller;
 
-  static const _kSheetDark    = Color(0xFF111827);
-  static const _kSheetSubtext = Color(0xFF475569);
-  static const _kSheetDivider = Color(0xFFF3F4F6);
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: widget.video.youtubeId,
+      autoPlay: true,
+      params: const YoutubePlayerParams(mute: false, showControls: true, showFullscreenButton: true),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    final maxHeight   = MediaQuery.of(context).size.height * 0.75;
+    final width = MediaQuery.sizeOf(context).width;
+    final modalWidth = width > 900 ? 800.0 : width * 0.92;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: maxHeight),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
+    return Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+      child: SizedBox(
+        width: modalWidth,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Fixed header ───────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+              child: Row(
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+                  Expanded(
+                    child: Text(
+                      widget.video.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w600, color: _kDark),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Filter by Category',
-                          style: GoogleFonts.montserrat(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500,
-                              color: _kSheetDark)),
-                      Obx(() => ctrl.selectedCategoryId.value != null
-                          ? GestureDetector(
-                              onTap: () {
-                                ctrl.selectCategory(null);
-                                Navigator.pop(context);
-                              },
-                              child: Text('Clear',
-                                  style: GoogleFonts.montserrat(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: _kBlue)),
-                            )
-                          : const SizedBox.shrink()),
-                    ],
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: _kDark),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
-                  const SizedBox(height: 4),
-                  Text('Choose a topic to filter videos',
-                      style: GoogleFonts.montserrat(
-                          fontSize: 12.5, color: _kSheetSubtext)),
-                  const SizedBox(height: 16),
-                  const Divider(color: _kSheetDivider, height: 1),
                 ],
               ),
             ),
-
-            // ── Scrollable options ─────────────────────────────────────────
-            Flexible(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(24, 8, 24, bottomInset + 24),
-                child: Obx(() {
-                  final cats = ctrl.categories;
-                  return Column(
-                    children: [
-                      _FilterOption(
-                        label: 'All Categories',
-                        icon: Icons.grid_view_rounded,
-                        isSelected: ctrl.selectedCategoryId.value == null,
-                        onTap: () {
-                          ctrl.selectCategory(null);
-                          Navigator.pop(context);
-                        },
-                      ),
-                      if (cats.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Center(
-                            child: Text('No categories available',
-                                style: GoogleFonts.montserrat(
-                                    fontSize: 13, color: _kSheetSubtext)),
-                          ),
-                        )
-                      else
-                        ...cats.map((cat) => _FilterOption(
-                              label: cat.name,
-                              icon: _categoryIcon(cat.name),
-                              isSelected:
-                                  ctrl.selectedCategoryId.value == cat.id,
-                              onTap: () {
-                                ctrl.selectCategory(cat.id);
-                                Navigator.pop(context);
-                              },
-                            )),
-                    ],
-                  );
-                }),
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppRadius.sharpLg)),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: YoutubePlayer(controller: _controller),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _categoryIcon(String name) {
-    final s = name.toLowerCase();
-    if (s.contains('infrastructure') || s.contains('transport')) return Icons.account_balance_rounded;
-    if (s.contains('real') || s.contains('estate') || s.contains('property')) return Icons.home_work_rounded;
-    if (s.contains('safety') || s.contains('regulation')) return Icons.health_and_safety_rounded;
-    if (s.contains('material') || s.contains('technology')) return Icons.science_rounded;
-    if (s.contains('urban') || s.contains('planning')) return Icons.location_city_rounded;
-    if (s.contains('road') || s.contains('highway')) return Icons.add_road_rounded;
-    if (s.contains('government') || s.contains('policy')) return Icons.gavel_rounded;
-    if (s.contains('construction') || s.contains('project')) return Icons.construction_rounded;
-    if (s.contains('tip') || s.contains('guide')) return Icons.lightbulb_rounded;
-    return Icons.play_circle_outline_rounded;
-  }
-}
-
-class _FilterOption extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _FilterOption({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? _kBlue.withValues(alpha: 0.08) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? _kBlue : Colors.transparent,
-            width: 1.2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon,
-                size: 18,
-                color: isSelected ? _kBlue : const Color(0xFF475569)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? _kBlue : const Color(0xFF111827),
-                ),
-              ),
-            ),
-            if (isSelected)
-              const Icon(Icons.check_circle_rounded, size: 18, color: _kBlue),
           ],
         ),
       ),
@@ -863,26 +671,7 @@ class _FilterOption extends StatelessWidget {
 //  Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-void _openVideo(video) {
-  if (kIsWeb) {
-    _launchYouTube(video.youtubeUrl);
-  } else {
-    Get.to(
-      () => VideoPlayerScreen(video: video),
-      transition: Transition.cupertino,
-    );
-  }
-}
-
-Future<void> _launchYouTube(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-}
-
-String _formatViews(int views) {
-  if (views >= 1000000) return '${(views / 1000000).toStringAsFixed(1)}M';
-  if (views >= 1000) return '${(views / 1000).toStringAsFixed(1)}K';
-  return '$views';
+String _formatDate(DateTime dt) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
 }
