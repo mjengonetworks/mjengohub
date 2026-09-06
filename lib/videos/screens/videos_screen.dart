@@ -21,11 +21,17 @@ import 'video_player_screen.dart';
 const _kDark = Color(0xFF0F172A);
 const _kSubtext = Color(0xFF475569);
 const _kBorder = Color(0xFFE2E8F0);
+const _kYT = Color(0xFFFF0000);
 
 const int _kPageSize = 6;
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  ROOT SCREEN
+//  ROOT SCREEN — mirrors mjengohub-website's /media page structure: header,
+//  featured spotlight, YouTube grid (capped + "view more"), playlists strip,
+//  and the official-channels / community-leaderboard footer. The website's
+//  /media route has no podcast/audio-episode content (checked against
+//  application.py's media_page() + templates/media.html), so that section
+//  is intentionally omitted rather than fabricated.
 // ═════════════════════════════════════════════════════════════════════════════
 
 class VideosScreen extends StatefulWidget {
@@ -46,8 +52,8 @@ class _VideosScreenState extends State<VideosScreen> {
     super.dispose();
   }
 
-  Future<void> _handleViewMore(VideosController ctrl) async {
-    if (_visibleCount < ctrl.videos.length) {
+  Future<void> _handleViewMore(VideosController ctrl, int gridLength) async {
+    if (_visibleCount < gridLength) {
       setState(() => _visibleCount += _kPageSize);
       return;
     }
@@ -80,9 +86,16 @@ class _VideosScreenState extends State<VideosScreen> {
               _visibleCount = _kPageSize;
             }
 
-            final videos = ctrl.videos;
-            final visible = videos.take(_visibleCount).toList();
-            final canViewMore = _visibleCount < videos.length || ctrl.hasMore.value;
+            // Hero = first featured video if one exists, else the newest
+            // video overall; excluded from the grid below it so it isn't
+            // shown twice.
+            final hero = ctrl.featuredVideos.isNotEmpty
+                ? ctrl.featuredVideos.first
+                : (ctrl.videos.isNotEmpty ? ctrl.videos.first : null);
+            final gridVideos = hero == null ? ctrl.videos : ctrl.videos.where((v) => v.id != hero.id).toList();
+
+            final visible = gridVideos.take(_visibleCount).toList();
+            final canViewMore = _visibleCount < gridVideos.length || ctrl.hasMore.value;
 
             return RefreshIndicator(
               color: _kDark,
@@ -90,26 +103,41 @@ class _VideosScreenState extends State<VideosScreen> {
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
+                  // ── 1. Header & category filter ──────────────────────────
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Media', style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.w700, color: _kDark)),
+                          Text('Media Hub', style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.w700, color: _kDark)),
                           const SizedBox(height: 4),
                           Text(
-                            'Watch the latest infrastructure updates, site walkthroughs, and project spotlights',
+                            'Watch site walkthroughs, infrastructure updates, and industry interviews',
                             style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: _kSubtext, height: 1.4),
                           ),
                         ],
                       ),
                     ),
                   ),
-
                   SliverToBoxAdapter(child: const SizedBox(height: 16)),
                   SliverToBoxAdapter(child: _CategoryTabs(ctrl: ctrl)),
-                  SliverToBoxAdapter(child: const SizedBox(height: 20)),
+
+                  // ── 2. Featured spotlight ─────────────────────────────────
+                  if (hero != null) ...[
+                    SliverToBoxAdapter(child: const SizedBox(height: 20)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _FeaturedVideoSpotlight(video: hero, onTap: () => openVideo(context, hero)),
+                      ),
+                    ),
+                  ],
+
+                  // ── 3. YouTube grid, capped at 6 with a "view more" ──────
+                  SliverToBoxAdapter(child: const SizedBox(height: 28)),
+                  SliverToBoxAdapter(child: _SectionTitleRow(title: 'Latest Video Coverage')),
+                  SliverToBoxAdapter(child: const SizedBox(height: 14)),
 
                   if (visible.isEmpty && !ctrl.isLoading.value)
                     SliverToBoxAdapter(
@@ -137,21 +165,36 @@ class _VideosScreenState extends State<VideosScreen> {
                       ),
                     ),
 
+                  if (canViewMore)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                        child: _ViewMoreButton(
+                          isLoading: ctrl.isLoadingMore.value,
+                          onTap: () => _handleViewMore(ctrl, gridVideos.length),
+                        ),
+                      ),
+                    ),
+
+                  // ── 4. Secondary sections: playlists + official channels ──
+                  SliverToBoxAdapter(child: const SizedBox(height: 32)),
+                  SliverToBoxAdapter(child: _PlaylistsSection(ctrl: ctrl)),
+
+                  SliverToBoxAdapter(child: const SizedBox(height: 8)),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                      child: Column(
-                        children: [
-                          if (canViewMore) _ViewMoreButton(isLoading: ctrl.isLoadingMore.value, onTap: () => _handleViewMore(ctrl)),
-                          if (!canViewMore) ...[
-                            const SocialLinksGrid(),
-                            const SizedBox(height: 20),
-                            const LeaderboardPreview(),
-                          ],
-                        ],
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _kBorder),
+                          borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+                        ),
+                        child: const SocialLinksGrid(),
                       ),
                     ),
                   ),
+                  const SliverToBoxAdapter(child: LeaderboardPreview()),
                   const SliverToBoxAdapter(child: SizedBox(height: 20)),
                 ],
               ),
@@ -228,6 +271,167 @@ class _PillTab extends StatelessWidget {
             color: isSelected ? Colors.white : const Color(0xFF334155),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  FEATURED / HERO VIDEO SPOTLIGHT
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _FeaturedVideoSpotlight extends StatelessWidget {
+  final Video video;
+  final VoidCallback onTap;
+  const _FeaturedVideoSpotlight({required this.video, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NetImage(
+                    url: video.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF0F172A),
+                    placeholderIcon: Icons.videocam_rounded,
+                  ),
+                  Container(color: Colors.black.withValues(alpha: 0.12)),
+                  Center(
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      elevation: 4,
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.play_arrow_rounded, color: _kDark, size: 34),
+                      ),
+                    ),
+                  ),
+                  if (video.duration != null)
+                    Positioned(
+                      right: 10,
+                      bottom: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xCC000000),
+                          borderRadius: BorderRadius.circular(AppRadius.sharp),
+                        ),
+                        child: Text(video.duration!,
+                            style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (video.category != null) ...[
+          _CategoryPill(video.category!.name),
+          const SizedBox(height: 10),
+        ],
+        Text(
+          video.title,
+          style: GoogleFonts.montserrat(fontSize: 21, fontWeight: FontWeight.w700, color: _kDark, height: 1.3),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.smart_display_rounded, size: 14, color: _kSubtext),
+            const SizedBox(width: 5),
+            Text('Mjengo Hub', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
+            if (video.publishedAt != null) ...[
+              Text('  ·  ', style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext)),
+              Text(_formatDate(video.publishedAt!), style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
+            ],
+          ],
+        ),
+        if (video.description.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            video.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: const Color(0xFF334155), height: 1.5),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _CategoryPill extends StatelessWidget {
+  final String label;
+  const _CategoryPill(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: _kDark, borderRadius: BorderRadius.circular(AppRadius.sharp)),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  SECTION TITLE + YOUTUBE BADGE (for the "Latest Video Coverage" heading)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _SectionTitleRow extends StatelessWidget {
+  final String title;
+  const _SectionTitleRow({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Text(title, style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w700, color: _kDark)),
+          const SizedBox(width: 10),
+          const _YoutubeBadge(),
+        ],
+      ),
+    );
+  }
+}
+
+class _YoutubeBadge extends StatelessWidget {
+  const _YoutubeBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF1F1),
+        border: Border.all(color: const Color(0xFFFFD5D5)),
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.smart_display_rounded, size: 12, color: _kYT),
+          const SizedBox(width: 4),
+          Text('YOUTUBE', style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFFCC0000), letterSpacing: 0.5)),
+        ],
       ),
     );
   }
@@ -351,6 +555,106 @@ class VideoCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  SITE WALKTHROUGHS & PLAYLISTS — horizontal reel of curated video groupings
+//  (GET youtube/playlists), tapping a card filters the grid above to it.
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _PlaylistsSection extends StatelessWidget {
+  final VideosController ctrl;
+  const _PlaylistsSection({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final playlists = ctrl.playlists;
+      if (playlists.isEmpty) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text('Site Walkthroughs & Playlists', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w700, color: _kDark)),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 172,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: playlists.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, i) => _PlaylistCard(playlist: playlists[i], ctrl: ctrl),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+}
+
+class _PlaylistCard extends StatelessWidget {
+  final VideoPlaylist playlist;
+  final VideosController ctrl;
+  const _PlaylistCard({required this.playlist, required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final isSelected = ctrl.selectedPlaylistId.value == playlist.playlistId;
+      return GestureDetector(
+        onTap: () => ctrl.selectPlaylist(playlist.playlistId),
+        child: Container(
+          width: 220,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            border: Border.all(color: isSelected ? _kDark : _kBorder, width: isSelected ? 1.5 : 1),
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    NetImage(
+                      url: playlist.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      placeholderColor: const Color(0xFF0F172A),
+                      placeholderIcon: Icons.playlist_play_rounded,
+                    ),
+                    Positioned(
+                      right: 6,
+                      bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: const Color(0xCC000000), borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                        child: Text('${playlist.videoCount} videos',
+                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  playlist.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: _kDark, height: 1.3),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 
