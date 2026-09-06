@@ -22,6 +22,7 @@ import '../shared/widgets/badges.dart';
 import '../shared/widgets/leaderboard_widget.dart';
 import '../shared/widgets/partners_carousel.dart';
 import '../shared/widgets/preview_data_badge.dart';
+import '../shared/widgets/responsive.dart';
 import '../shared/widgets/scroll_to_top_fab.dart';
 import '../shared/widgets/section_header.dart';
 import 'widgets/home_extra_sections.dart';
@@ -82,7 +83,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // of staying pinned above a small scrollable remainder.
     return Container(
       color: Colors.white,
-      child: SingleChildScrollView(
+      child: ContentWidth(
+        maxWidth: 1100,
+        child: SingleChildScrollView(
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         child: Column(
@@ -314,6 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 16),
           ],
+        ),
         ),
       ),
     );

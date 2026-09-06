@@ -624,7 +624,7 @@ class _ProjectActionBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: _kCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _kDivider),
+        border: Border.all(color: canManage ? AppColors.headingSlate.withValues(alpha: 0.18) : _kDivider),
       ),
       child: canManage
           ? Column(
@@ -632,10 +632,20 @@ class _ProjectActionBar extends StatelessWidget {
               children: [
                 Row(
                   children: [
+                    Icon(Icons.shield_rounded, size: 13, color: AppColors.headingSlate),
+                    const SizedBox(width: 6),
+                    Text('ADMIN ACTIONS',
+                        style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate, letterSpacing: 0.6)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
                     Expanded(
                       child: _ProjectActionChip(
                         icon: Icons.add_comment_rounded,
                         label: 'Add an Update',
+                        dark: true,
                         onTap: () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: true)),
                       ),
                     ),
@@ -644,6 +654,7 @@ class _ProjectActionBar extends StatelessWidget {
                       child: _ProjectActionChip(
                         icon: Icons.edit_rounded,
                         label: 'Edit Project',
+                        dark: true,
                         onTap: () => Get.to(() => SubmitProjectScreen(existingProject: project)),
                       ),
                     ),
@@ -653,6 +664,7 @@ class _ProjectActionBar extends StatelessWidget {
                 Obx(() => _ProjectActionChip(
                       icon: Icons.visibility_off_rounded,
                       label: ctrl.publishToggling.value ? 'Working…' : 'Publish / Unpublish',
+                      dark: true,
                       onTap: ctrl.publishToggling.value ? null : ctrl.togglePublish,
                       fullWidth: true,
                     )),
@@ -673,10 +685,16 @@ class _ProjectActionChip extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final bool fullWidth;
-  const _ProjectActionChip({required this.icon, required this.label, required this.onTap, this.fullWidth = false});
+  /// Deep-slate architectural style for admin/editor/moderator-only actions,
+  /// distinct from the blue "Suggest an Update" chip regular users see.
+  final bool dark;
+  const _ProjectActionChip({required this.icon, required this.label, required this.onTap, this.fullWidth = false, this.dark = false});
 
   @override
   Widget build(BuildContext context) {
+    final fg = dark ? AppColors.headingSlate : _kBlue;
+    final bg = dark ? AppColors.headingSlate.withValues(alpha: 0.06) : _kBlue.withValues(alpha: 0.08);
+    final border = dark ? AppColors.headingSlate : _kBlue.withValues(alpha: 0.25);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -684,16 +702,16 @@ class _ProjectActionChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: _kBlue.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _kBlue.withValues(alpha: 0.25)),
+          color: bg,
+          borderRadius: BorderRadius.circular(dark ? AppRadius.sharp : 10),
+          border: Border.all(color: border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15, color: _kBlue),
+            Icon(icon, size: 15, color: fg),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: _kBlue)),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: fg)),
           ],
         ),
       ),

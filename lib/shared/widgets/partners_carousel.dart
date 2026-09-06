@@ -85,32 +85,56 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
   }
 }
 
-class _PartnerLogoCard extends StatelessWidget {
+// Standard luminance-weighted greyscale matrix — logos sit muted/grayscale
+// by default and snap to full color on hover (desktop/web only; touch
+// devices simply never trigger MouseRegion, so logos stay muted there).
+const List<double> _kGreyscaleMatrix = <double>[
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0, 0, 0, 1, 0,
+];
+
+class _PartnerLogoCard extends StatefulWidget {
   final Partner partner;
   final void Function(Partner) onTap;
   const _PartnerLogoCard({required this.partner, required this.onTap});
 
   @override
+  State<_PartnerLogoCard> createState() => _PartnerLogoCardState();
+}
+
+class _PartnerLogoCardState extends State<_PartnerLogoCard> {
+  bool _hovering = false;
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onTap(partner),
-      child: Container(
-        width: 132,
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.sharp),
-          border: Border.all(color: AppColors.borderSlate),
+    final hasLogo = widget.partner.logo != null && widget.partner.logo!.isNotEmpty;
+    final logo = NetImage(
+      url: widget.partner.logo,
+      fit: BoxFit.contain,
+      placeholderColor: Colors.transparent,
+      errorBuilder: (_) => _NameFallback(name: widget.partner.name),
+    );
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: () => widget.onTap(widget.partner),
+        child: Container(
+          width: 132,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
+            border: Border.all(color: _hovering ? AppColors.accentBlue : AppColors.borderSlate),
+          ),
+          child: hasLogo
+              ? (_hovering ? logo : ColorFiltered(colorFilter: const ColorFilter.matrix(_kGreyscaleMatrix), child: logo))
+              : _NameFallback(name: widget.partner.name),
         ),
-        child: (partner.logo != null && partner.logo!.isNotEmpty)
-            ? NetImage(
-                url: partner.logo,
-                fit: BoxFit.contain,
-                placeholderColor: Colors.transparent,
-                errorBuilder: (_) => _NameFallback(name: partner.name),
-              )
-            : _NameFallback(name: partner.name),
       ),
     );
   }
