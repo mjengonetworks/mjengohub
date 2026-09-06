@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../home/widgets/home_extra_sections.dart' show SocialLinksGrid;
 import '../../news/widgets/net_image.dart';
-import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/leaderboard_widget.dart';
 import '../../shared/widgets/responsive.dart';
@@ -22,7 +21,8 @@ import 'video_player_screen.dart';
 const _kDark = Color(0xFF0F172A);
 const _kSubtext = Color(0xFF475569);
 const _kBorder = Color(0xFFE2E8F0);
-const _kYT = Color(0xFFFF0000);
+
+const int _kPageSize = 6;
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  ROOT SCREEN
@@ -37,11 +37,24 @@ class VideosScreen extends StatefulWidget {
 
 class _VideosScreenState extends State<VideosScreen> {
   final _scrollController = ScrollController();
+  int _visibleCount = _kPageSize;
+  int? _lastCategoryId = -1; // sentinel so the first build doesn't "change"
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleViewMore(VideosController ctrl) async {
+    if (_visibleCount < ctrl.videos.length) {
+      setState(() => _visibleCount += _kPageSize);
+      return;
+    }
+    if (ctrl.hasMore.value) {
+      await ctrl.loadMore();
+      if (mounted) setState(() => _visibleCount += _kPageSize);
+    }
   }
 
   @override
@@ -61,13 +74,15 @@ class _VideosScreenState extends State<VideosScreen> {
               );
             }
 
-            // Hero = first featured video if one exists, else the newest
-            // video overall; excluded from the grid below it so it isn't
-            // shown twice.
-            final hero = ctrl.featuredVideos.isNotEmpty
-                ? ctrl.featuredVideos.first
-                : (ctrl.videos.isNotEmpty ? ctrl.videos.first : null);
-            final gridVideos = hero == null ? ctrl.videos : ctrl.videos.where((v) => v.id != hero.id).toList();
+            // Reset the visible-count cap whenever the active category changes.
+            if (_lastCategoryId != ctrl.selectedCategoryId.value) {
+              _lastCategoryId = ctrl.selectedCategoryId.value;
+              _visibleCount = _kPageSize;
+            }
+
+            final videos = ctrl.videos;
+            final visible = videos.take(_visibleCount).toList();
+            final canViewMore = _visibleCount < videos.length || ctrl.hasMore.value;
 
             return RefreshIndicator(
               color: _kDark,
@@ -87,31 +102,16 @@ class _VideosScreenState extends State<VideosScreen> {
                             'Watch the latest infrastructure updates, site walkthroughs, and project spotlights',
                             style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: _kSubtext, height: 1.4),
                           ),
-                          const SizedBox(height: 14),
-                          const _YoutubeStatsRow(),
-                          const SizedBox(height: 14),
-                          _SearchBar(ctrl: ctrl),
                         ],
                       ),
                     ),
                   ),
 
-                  SliverToBoxAdapter(child: const SizedBox(height: 14)),
+                  SliverToBoxAdapter(child: const SizedBox(height: 16)),
                   SliverToBoxAdapter(child: _CategoryTabs(ctrl: ctrl)),
+                  SliverToBoxAdapter(child: const SizedBox(height: 20)),
 
-                  if (hero != null) ...[
-                    SliverToBoxAdapter(child: const SizedBox(height: 18)),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _FeaturedVideoSpotlight(video: hero, onTap: () => openVideo(context, hero)),
-                      ),
-                    ),
-                  ],
-
-                  SliverToBoxAdapter(child: const SizedBox(height: 22)),
-
-                  if (gridVideos.isEmpty && !ctrl.isLoading.value)
+                  if (visible.isEmpty && !ctrl.isLoading.value)
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
@@ -131,177 +131,33 @@ class _VideosScreenState extends State<VideosScreen> {
                           childAspectRatio: context.gridColumns == 1 ? 1.5 : 0.86,
                         ),
                         delegate: SliverChildBuilderDelegate(
-                          (_, i) => VideoCard(video: gridVideos[i], onTap: () => openVideo(context, gridVideos[i])),
-                          childCount: gridVideos.length,
+                          (_, i) => VideoCard(video: visible[i], onTap: () => openVideo(context, visible[i])),
+                          childCount: visible.length,
                         ),
                       ),
                     ),
 
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Obx(() {
-                        if (ctrl.hasMore.value) {
-                          ctrl.loadMore();
-                          return const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Center(child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(_kDark))),
-                          );
-                        }
-                        return const Padding(
-                          padding: EdgeInsets.only(top: 12, bottom: 20),
-                          child: Column(
-                            children: [
-                              SocialLinksGrid(),
-                              SizedBox(height: 20),
-                              LeaderboardPreview(),
-                            ],
-                          ),
-                        );
-                      }),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: Column(
+                        children: [
+                          if (canViewMore) _ViewMoreButton(isLoading: ctrl.isLoadingMore.value, onTap: () => _handleViewMore(ctrl)),
+                          if (!canViewMore) ...[
+                            const SocialLinksGrid(),
+                            const SizedBox(height: 20),
+                            const LeaderboardPreview(),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
                 ],
               ),
             );
           }),
         ),
-      ),
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  CHANNEL STATS  (videos / subscribers / views, from GET site/figures)
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _YoutubeStatsRow extends StatefulWidget {
-  const _YoutubeStatsRow();
-
-  @override
-  State<_YoutubeStatsRow> createState() => _YoutubeStatsRowState();
-}
-
-class _YoutubeStatsRowState extends State<_YoutubeStatsRow> {
-  final _service = SiteService();
-  List<SiteFigure> _figures = const [];
-
-  @override
-  void initState() {
-    super.initState();
-    _service.getSiteFigures().then((figures) {
-      if (mounted) setState(() => _figures = figures);
-    });
-  }
-
-  SiteFigure? _byKey(String key) {
-    for (final f in _figures) {
-      if (f.key == key) return f;
-    }
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tiles = [
-      _byKey('youtube_videos'),
-      _byKey('youtube_subscribers'),
-      _byKey('youtube_views'),
-    ].whereType<SiteFigure>().toList();
-
-    if (tiles.isEmpty) return const SizedBox.shrink();
-
-    return Row(
-      children: [
-        for (int i = 0; i < tiles.length; i++) ...[
-          Expanded(child: _StatTile(figure: tiles[i])),
-          if (i != tiles.length - 1) const SizedBox(width: 10),
-        ],
-      ],
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  final SiteFigure figure;
-  const _StatTile({required this.figure});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(AppRadius.sharp),
-        border: Border.all(color: _kBorder),
-      ),
-      child: Column(
-        children: [
-          Text(figure.display, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: _kYT)),
-          const SizedBox(height: 2),
-          Text(
-            figure.name ?? '',
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 10, color: _kSubtext),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  SEARCH BAR
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _SearchBar extends StatelessWidget {
-  final VideosController ctrl;
-  const _SearchBar({required this.ctrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 46,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
-        border: Border.all(color: _kBorder),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 12),
-          const Icon(Icons.search, size: 20, color: _kSubtext),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: ctrl.searchController,
-              onSubmitted: ctrl.onSearchSubmit,
-              textInputAction: TextInputAction.search,
-              style: GoogleFonts.montserrat(fontSize: 14, color: _kDark),
-              decoration: InputDecoration(
-                hintText: 'Search videos',
-                hintStyle: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: ctrl.searchController,
-            builder: (_, val, __) => val.text.isNotEmpty
-                ? GestureDetector(
-                    onTap: ctrl.clearSearch,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Icon(Icons.close_rounded, size: 18, color: _kSubtext),
-                    ),
-                  )
-                : const SizedBox(width: 12),
-          ),
-        ],
       ),
     );
   }
@@ -360,7 +216,7 @@ class _PillTab extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? _kDark : Colors.white,
+          color: isSelected ? _kDark : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.sharp),
           border: Border.all(color: isSelected ? _kDark : _kBorder),
         ),
@@ -378,114 +234,39 @@ class _PillTab extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  FEATURED / HERO VIDEO SPOTLIGHT
+//  "VIEW MORE VIDEOS" BUTTON
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _FeaturedVideoSpotlight extends StatelessWidget {
-  final Video video;
+class _ViewMoreButton extends StatelessWidget {
+  final bool isLoading;
   final VoidCallback onTap;
-  const _FeaturedVideoSpotlight({required this.video, required this.onTap});
+  const _ViewMoreButton({required this.isLoading, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  NetImage(
-                    url: video.thumbnailUrl,
-                    fit: BoxFit.cover,
-                    placeholderColor: const Color(0xFF0F172A),
-                    placeholderIcon: Icons.videocam_rounded,
+    return SizedBox(
+      width: double.infinity,
+      child: Material(
+        color: _kDark,
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+        child: InkWell(
+          onTap: isLoading ? null : onTap,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          child: Container(
+            height: 46,
+            alignment: Alignment.center,
+            child: isLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                  )
+                : Text(
+                    'View More Videos',
+                    style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w600, color: Colors.white),
                   ),
-                  Container(color: Colors.black.withValues(alpha: 0.12)),
-                  Center(
-                    child: Material(
-                      color: Colors.white,
-                      shape: const CircleBorder(),
-                      elevation: 4,
-                      child: Container(
-                        width: 64,
-                        height: 64,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.play_arrow_rounded, color: _kDark, size: 34),
-                      ),
-                    ),
-                  ),
-                  if (video.duration != null)
-                    Positioned(
-                      right: 10,
-                      bottom: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(AppRadius.sharp),
-                        ),
-                        child: Text(video.duration!,
-                            style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white)),
-                      ),
-                    ),
-                ],
-              ),
-            ),
           ),
         ),
-        const SizedBox(height: 14),
-        if (video.category != null) ...[
-          _CategoryPill(video.category!.name),
-          const SizedBox(height: 10),
-        ],
-        Text(
-          video.title,
-          style: GoogleFonts.montserrat(fontSize: 21, fontWeight: FontWeight.w700, color: _kDark, height: 1.3),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.smart_display_rounded, size: 14, color: _kSubtext),
-            const SizedBox(width: 5),
-            Text('Mjengo Hub', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
-            if (video.publishedAt != null) ...[
-              Text('  ·  ', style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext)),
-              Text(_formatDate(video.publishedAt!), style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
-            ],
-          ],
-        ),
-        if (video.description.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Text(
-            video.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: const Color(0xFF334155), height: 1.5),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _CategoryPill extends StatelessWidget {
-  final String label;
-  const _CategoryPill(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: _kDark, borderRadius: BorderRadius.circular(AppRadius.sharp)),
-      child: Text(
-        label.toUpperCase(),
-        style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
       ),
     );
   }
@@ -536,11 +317,11 @@ class VideoCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.8),
+                          color: const Color(0xCC000000),
                           borderRadius: BorderRadius.circular(AppRadius.sharp),
                         ),
                         child: Text(video.duration!,
-                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
+                            style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
                       ),
                     ),
                 ],
@@ -551,7 +332,7 @@ class VideoCard extends StatelessWidget {
           if (video.category != null) ...[
             Text(
               video.category!.name.toUpperCase(),
-              style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: _kSubtext, letterSpacing: 0.4),
+              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: _kSubtext, letterSpacing: 0.4),
             ),
             const SizedBox(height: 4),
           ],

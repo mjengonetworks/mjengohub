@@ -313,8 +313,11 @@ and `/incidents`, which `/search` deliberately doesn't touch.
   that preset that filter on `DiscoverController` and switch to the News tab
   rather than pushing a route; don't build standalone Jobs/Tenders
   screens/services/models.
-- The Flutter SDK is not installed on the current dev machine, so
-  `flutter analyze` / `flutter build` can only be validated in CI.
+- The Flutter SDK is installed locally at `C:\src\flutter\bin` (add it to `PATH`
+  for the session, e.g. `export PATH="/c/src/flutter/bin:$PATH"` in Git Bash).
+  Going forward, always run `flutter analyze` and `flutter build web --release`
+  locally to verify 0 errors before committing and pushing — don't defer
+  verification to CI.
 - Every HTTP call logs full request/response (headers, body) via `print()` —
   expect verbose console output; this is intentional for now, not a stray debug
   leftover to "clean up" unless asked.
