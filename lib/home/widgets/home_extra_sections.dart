@@ -4,7 +4,6 @@
 // (title-only), "Browse Projects by Category" (mixed public/private grid),
 // and "Follow Mjengo Hub" (Mjengo Networks preview + social cluster).
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,6 +33,7 @@ import '../../projects/widgets/tracker_project_card.dart';
 import '../../shared/services/demo_seed_data.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/brand_icons.dart';
 import '../../shared/widgets/preview_data_badge.dart';
 import '../../shared/widgets/section_header.dart' as shared;
 import '../../videos/models/video_model.dart';
@@ -453,18 +453,21 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
     });
   }
 
-  // Authentic brand silhouettes (FontAwesome Free) rather than generic
-  // Material shapes -- tiktok/telegram/other have no brand icon required by
-  // the spec, so those keep a plain Material glyph.
-  static const Map<String, IconData> _iconFor = {
-    'youtube': FontAwesomeIcons.youtube,
-    'twitter': FontAwesomeIcons.xTwitter,
+  // Authentic hand-drawn brand silhouettes (see brand_icons.dart) for the 6
+  // platforms the spec calls out -- tiktok/telegram/other have no brand
+  // icon required by the spec, so those keep a plain Material glyph.
+  static const Map<String, BrandIcon> _brandFor = {
+    'youtube': BrandIcon.youtube,
+    'twitter': BrandIcon.x,
+    'facebook': BrandIcon.facebook,
+    'instagram': BrandIcon.instagram,
+    'whatsapp': BrandIcon.whatsapp,
+    'linkedin': BrandIcon.linkedin,
+  };
+
+  static const Map<String, IconData> _fallbackIconFor = {
     'tiktok': Icons.music_note_rounded,
-    'facebook': FontAwesomeIcons.facebookF,
-    'instagram': FontAwesomeIcons.instagram,
-    'whatsapp': FontAwesomeIcons.whatsapp,
     'telegram': Icons.send_rounded,
-    'linkedin': FontAwesomeIcons.linkedinIn,
     'other': Icons.link_rounded,
   };
 
@@ -505,7 +508,8 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
             runSpacing: 12,
             children: _links
                 .map((l) => _SocialIcon(
-                      icon: _iconFor[l.platform] ?? Icons.link_rounded,
+                      brand: _brandFor[l.platform],
+                      fallbackIcon: _fallbackIconFor[l.platform] ?? Icons.link_rounded,
                       color: _colorFor[l.platform] ?? AppColors.textSubtle,
                       url: l.url,
                       label: l.label?.isNotEmpty == true ? l.label! : (_labelFor[l.platform] ?? l.platform),
@@ -595,11 +599,12 @@ class _EcosystemIcon extends StatelessWidget {
 }
 
 class _SocialIcon extends StatelessWidget {
-  final IconData icon;
+  final BrandIcon? brand;
+  final IconData fallbackIcon;
   final Color color;
   final String url;
   final String label;
-  const _SocialIcon({required this.icon, required this.color, required this.url, required this.label});
+  const _SocialIcon({required this.brand, required this.fallbackIcon, required this.color, required this.url, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -611,11 +616,14 @@ class _SocialIcon extends StatelessWidget {
           Container(
             width: 46,
             height: 46,
+            alignment: Alignment.center,
             decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 21),
+            child: brand != null
+                ? BrandIconWidget(icon: brand!, color: color, size: 20)
+                : Icon(fallbackIcon, color: color, size: 21),
           ),
           const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.montserrat(fontSize: 9.5, color: AppColors.textSubtle, fontWeight: FontWeight.w600)),
+          Text(label, style: GoogleFonts.montserrat(fontSize: 9.5, color: AppColors.textSubtle, fontWeight: FontWeight.w500)),
         ],
       ),
     );
