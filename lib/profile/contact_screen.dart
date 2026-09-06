@@ -124,6 +124,8 @@ class _ContactScreenState extends State<ContactScreen> {
                   _socialCard(),
                   const SizedBox(height: 16),
                   _formCard(),
+                  const SizedBox(height: 16),
+                  _canonicalLink(),
                 ],
               ),
             ),
@@ -653,6 +655,24 @@ class _ContactScreenState extends State<ContactScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
+        ),
+      ),
+    );
+  }
+
+  Widget _canonicalLink() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        onPressed: () => _launch('https://mjengohub.co.ke/contact'),
+        style: TextButton.styleFrom(
+          foregroundColor: _secondary,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        ),
+        icon: const Icon(Icons.open_in_new_rounded, size: 14),
+        label: Text(
+          'View canonical version on mjengohub.co.ke',
+          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
         ),
       ),
     );

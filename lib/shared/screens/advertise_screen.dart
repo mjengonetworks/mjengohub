@@ -379,6 +379,25 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
             busy: _submitting,
             onPressed: _submit,
           ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () async {
+                final uri = Uri.parse('https://mjengohub.co.ke/advertise');
+                if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.textSubtle,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              ),
+              icon: const Icon(Icons.open_in_new_rounded, size: 14),
+              label: Text(
+                'View canonical version on mjengohub.co.ke',
+                style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
           const SizedBox(height: 20),
         ],
       ),

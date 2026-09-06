@@ -21,9 +21,12 @@ import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
+import 'cookie_policy_screen.dart';
 import 'contact_screen.dart';
 import '../news/screens/submit_article_screen.dart';
 import '../shared/screens/webview_checkout_screen.dart';
+import '../shared/screens/about_screen.dart';
+import '../shared/screens/support_us_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -143,6 +146,15 @@ class _SettingsView extends StatelessWidget {
                     builder: (_) => const _NewsletterSheet(),
                   ),
                 ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Legal ────────────────────────────────────────────────────
+            _SettingsGroup(
+              title: 'Legal',
+              rows: [
                 _GroupRowData(
                   icon: Icons.shield_outlined,
                   title: 'Privacy Policy',
@@ -154,7 +166,14 @@ class _SettingsView extends StatelessWidget {
                   icon: Icons.description_outlined,
                   title: 'Terms of Service',
                   onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const TermsConditionsScreen()),
+                    MaterialPageRoute(builder: (_) => const TermsScreen()),
+                  ),
+                ),
+                _GroupRowData(
+                  icon: Icons.cookie_outlined,
+                  title: 'Cookie Policy',
+                  onTap: () => Navigator.of(Get.context!).push(
+                    MaterialPageRoute(builder: (_) => const CookiePolicyScreen()),
                   ),
                 ),
               ],
@@ -174,9 +193,23 @@ class _SettingsView extends StatelessWidget {
                     onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'Get Verified', nextPath: '/verify')),
                   ),
                 _GroupRowData(
+                  icon: Icons.info_outline_rounded,
+                  title: 'About Us',
+                  onTap: () => Navigator.of(Get.context!).push(
+                    MaterialPageRoute(builder: (_) => const AboutScreen()),
+                  ),
+                ),
+                _GroupRowData(
                   icon: Icons.campaign_outlined,
                   title: 'Partner With Us',
                   onTap: () => Get.toNamed(AppRoutes.advertise),
+                ),
+                _GroupRowData(
+                  icon: Icons.favorite_border_rounded,
+                  title: 'Support Us',
+                  onTap: () => Navigator.of(Get.context!).push(
+                    MaterialPageRoute(builder: (_) => const SupportUsScreen()),
+                  ),
                 ),
                 _GroupRowData(
                   icon: Icons.help_outline_rounded,

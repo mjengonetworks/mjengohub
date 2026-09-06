@@ -825,7 +825,7 @@ class _TermsCheckbox extends StatelessWidget {
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       HapticFeedback.lightImpact();
-                      Get.to(() => const TermsConditionsScreen());
+                      Get.to(() => const TermsScreen());
                     },
                 ),
                 const TextSpan(text: ' and '),

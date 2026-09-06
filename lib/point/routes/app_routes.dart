@@ -29,6 +29,12 @@ import '../../profile/screens/public_profile_screen.dart';
 import '../../projects/screens/built_history_screen.dart';
 import '../../projects/screens/africa_world_screen.dart';
 import '../../merch/screens/merch_screen.dart';
+import '../../profile/privacy_policy_screen.dart';
+import '../../profile/terms_conditions_screen.dart';
+import '../../profile/cookie_policy_screen.dart';
+import '../../profile/contact_screen.dart';
+import '../../shared/screens/about_screen.dart';
+import '../../shared/screens/support_us_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -65,6 +71,14 @@ class AppRoutes {
   static const String builtHistory = '/built-history';
   static const String africaWorld = '/africa-world';
   static const String merch = '/merch';
+
+  // Legal & documentation screens
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsOfService = '/terms-of-service';
+  static const String cookiePolicy = '/cookie-policy';
+  static const String about = '/about';
+  static const String contact = '/contact';
+  static const String support = '/support';
 
   static List<GetPage> routes = [
     GetPage(name: splash,        page: () => const ModernSplashScreen()),
@@ -156,6 +170,14 @@ class AppRoutes {
     GetPage(name: builtHistory, page: () => const BuiltHistoryScreen()),
     GetPage(name: africaWorld, page: () => const AfricaWorldScreen()),
     GetPage(name: merch, page: () => const MerchScreen()),
+
+    // Legal & documentation screens
+    GetPage(name: privacyPolicy, page: () => const PrivacyPolicyScreen()),
+    GetPage(name: termsOfService, page: () => const TermsScreen()),
+    GetPage(name: cookiePolicy, page: () => const CookiePolicyScreen()),
+    GetPage(name: about, page: () => const AboutScreen()),
+    GetPage(name: contact, page: () => const ContactScreen()),
+    GetPage(name: support, page: () => const SupportUsScreen()),
   ];
 }
 

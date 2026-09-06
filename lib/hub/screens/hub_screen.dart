@@ -8,7 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../navigation/main_navigation.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../point/routes/app_routes.dart';
-import '../../profile/contact_screen.dart';
+import '../../shared/screens/about_screen.dart';
+import '../../shared/screens/support_us_screen.dart';
 import '../../shared/theme/app_theme.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -106,7 +107,14 @@ class HubScreen extends StatelessWidget {
       sub: 'Get in touch with the Mjengo Hub team',
       icon: Icons.info_outline_rounded,
       color: AppColors.deepNavy,
-      openScreen: _openContact,
+      openScreen: _openAbout,
+    ),
+    _HubItem(
+      label: 'Support Us',
+      sub: 'Help fund road safety and industry news',
+      icon: Icons.favorite_border_rounded,
+      color: AppColors.danger,
+      openScreen: _openSupport,
     ),
     _HubItem(
       label: 'Mjengo Networks',
@@ -126,7 +134,8 @@ class HubScreen extends StatelessWidget {
     ),
   ];
 
-  static void _openContact() => Get.to(() => const ContactScreen());
+  static void _openAbout() => Get.to(() => const AboutScreen());
+  static void _openSupport() => Get.to(() => const SupportUsScreen());
 
   @override
   Widget build(BuildContext context) {
