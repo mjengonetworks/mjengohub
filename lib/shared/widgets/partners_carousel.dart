@@ -3,9 +3,13 @@
 // Homepage section 27: a single-row, continuously auto-scrolling marquee of
 // partner/ecosystem-stakeholder logos. Fetches SiteService.getPartners() —
 // there's no live /api/v1 endpoint for this yet (see Partner's doc comment
-// in site_service.dart), so this always falls back to clearly-labeled
-// placeholder cards today, the same guaranteed-non-empty precedent used
-// elsewhere on the homepage (Built History, Africa & World, etc.).
+// in site_service.dart), so this starts from (and falls back to, if the
+// endpoint ever returns empty) the same real partner set the website's own
+// homepage hardcodes (templates/homepage.html's "Our Partners" marquee:
+// Associated Construction, ISM, Sogea), pulled from mjengohub.co.ke's own
+// static assets. This must never show generic "Partner 1"/"Partner 2"
+// placeholder boxes -- those looked broken and shipped genuine partners'
+// names nowhere.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -15,6 +19,27 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../news/widgets/net_image.dart';
 import '../services/site_service.dart';
 import '../theme/app_theme.dart';
+
+/// The website's real, always-on partner set (templates/homepage.html),
+/// hotlinked to its static assets so the app shows genuine logos even
+/// before/without a live `site/partners` API response.
+const List<Partner> kDefaultPartners = [
+  Partner(
+    id: -1,
+    name: 'Associated Construction',
+    logo: 'https://mjengohub.co.ke/static/images/partners/asociated-construction.jpg',
+  ),
+  Partner(
+    id: -2,
+    name: 'ISM',
+    logo: 'https://mjengohub.co.ke/static/images/partners/ism.webp',
+  ),
+  Partner(
+    id: -3,
+    name: 'Sogea',
+    logo: 'https://mjengohub.co.ke/static/images/partners/sogea.png',
+  ),
+];
 
 class PartnersCarousel extends StatefulWidget {
   const PartnersCarousel({super.key});
@@ -27,15 +52,14 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
   final _controller = ScrollController();
   final _service = SiteService();
   Timer? _timer;
-  List<Partner> _partners = [];
-  static const int _placeholderCount = 8;
+  List<Partner> _partners = kDefaultPartners;
 
   @override
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(milliseconds: 16), (_) => _tick());
     _service.getPartners().then((p) {
-      if (mounted) setState(() => _partners = p);
+      if (mounted && p.isNotEmpty) setState(() => _partners = p);
     });
   }
 
@@ -65,11 +89,12 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final useReal = _partners.isNotEmpty;
-    final itemCount = useReal ? _partners.length * 3 : _placeholderCount * 3;
+    // Tripled so the marquee always has enough width to scroll continuously
+    // even with as few as 3 partners.
+    final itemCount = _partners.length * 3;
 
     return SizedBox(
-      height: 72,
+      height: 80,
       child: ListView.separated(
         controller: _controller,
         scrollDirection: Axis.horizontal,
@@ -77,9 +102,7 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: itemCount,
         separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (_, i) => useReal
-            ? _PartnerLogoCard(partner: _partners[i % _partners.length], onTap: _openPartner)
-            : _PartnerCard(index: i % _placeholderCount),
+        itemBuilder: (_, i) => _PartnerLogoCard(partner: _partners[i % _partners.length], onTap: _openPartner),
       ),
     );
   }
@@ -123,9 +146,9 @@ class _PartnerLogoCardState extends State<_PartnerLogoCard> {
       child: GestureDetector(
         onTap: () => widget.onTap(widget.partner),
         child: Container(
-          width: 132,
+          width: 160,
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(AppRadius.sharp),
@@ -152,28 +175,6 @@ class _NameFallback extends StatelessWidget {
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.captionSlate),
-    );
-  }
-}
-
-class _PartnerCard extends StatelessWidget {
-  final int index;
-  const _PartnerCard({required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 132,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.sharp),
-        border: Border.all(color: AppColors.borderSlate),
-      ),
-      child: Text(
-        'Partner ${index + 1}',
-        style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.captionSlate),
-      ),
     );
   }
 }

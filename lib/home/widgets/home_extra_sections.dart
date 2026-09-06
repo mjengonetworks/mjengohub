@@ -911,7 +911,7 @@ class _BuiltHistoryPreviewSectionState extends State<BuiltHistoryPreviewSection>
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 190,
+          height: 204,
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : ListView.separated(
@@ -982,7 +982,7 @@ class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 190,
+          height: 204,
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : ListView.separated(
@@ -1066,7 +1066,7 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 190,
+          height: 204,
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : ListView.separated(
@@ -1590,7 +1590,7 @@ class _MerchPreviewSectionState extends State<MerchPreviewSection> {
         shared.SectionHeader(title: widget.title, onSeeAll: () => Get.to(() => const MerchScreen())),
         const SizedBox(height: 12),
         SizedBox(
-          height: 160,
+          height: 200,
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : ListView.separated(
@@ -1615,7 +1615,7 @@ class _MerchCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.to(() => const MerchScreen()),
       child: Container(
-        width: 130,
+        width: 140,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.sharp),
@@ -1624,23 +1624,26 @@ class _MerchCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             AspectRatio(
-              aspectRatio: 1,
+              aspectRatio: 1.15,
               child: NetImage(url: product.image, fit: BoxFit.cover, placeholderColor: const Color(0xFFF1F5F9)),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(product.name,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
-                  const SizedBox(height: 2),
+                      style: GoogleFonts.montserrat(
+                          fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.25)),
+                  const SizedBox(height: 4),
                   Text('KES ${product.price.toStringAsFixed(0)}',
-                      style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+                      style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
                 ],
               ),
             ),
