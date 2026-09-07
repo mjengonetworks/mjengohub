@@ -8,7 +8,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../auth/models/user_model.dart';
 import '../../comments/services/comments_service.dart';
@@ -21,14 +20,10 @@ import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../screens/followed_projects_screen.dart';
 import '../screens/submissions_screen.dart';
-
-Future<void> _launchExternal(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-}
 
 // ── Section chrome shared by every preview card below ───────────────────────
 
@@ -137,10 +132,10 @@ class EcosystemLinksRow extends StatelessWidget {
         runSpacing: 8,
         children: [
           if (mjengoUrl != null && mjengoUrl.isNotEmpty)
-            _EcosystemChip(label: 'Mjengo Networks', icon: Icons.hub_rounded, onTap: () => _launchExternal(mjengoUrl)),
+            _EcosystemChip(label: 'Mjengo Networks', icon: Icons.hub_rounded, onTap: () => LinkLauncher.openLink(context, mjengoUrl)),
           if (barabaraUrl != null && barabaraUrl.isNotEmpty)
             _EcosystemChip(
-                label: 'Share Barabara', icon: Icons.directions_car_filled_rounded, onTap: () => _launchExternal(barabaraUrl)),
+                label: 'Share Barabara', icon: Icons.directions_car_filled_rounded, onTap: () => LinkLauncher.openLink(context, barabaraUrl)),
         ],
       ),
     );

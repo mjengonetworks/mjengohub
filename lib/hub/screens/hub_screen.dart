@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../navigation/main_navigation.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/screens/about_screen.dart';
 import '../../shared/screens/support_us_screen.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -253,14 +253,9 @@ class _HubItem {
     this.openScreen,
   });
 
-  Future<void> open() async {
+  Future<void> open(BuildContext context) async {
     if (externalUrl != null) {
-      final uri = Uri.parse(externalUrl!);
-      // In-app browser (Custom Tabs / SFSafariViewController), not a
-      // system-browser hand-off — matches X/Twitter's in-app link behavior.
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-      }
+      await LinkLauncher.openLink(context, externalUrl!);
       return;
     }
     if (categorySlug != null) {
@@ -293,7 +288,7 @@ class _HubRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: item.open,
+      onTap: () => item.open(context),
       splashColor: item.color.withValues(alpha: 0.06),
       highlightColor: item.color.withValues(alpha: 0.04),
       child: Padding(
@@ -369,7 +364,7 @@ class _HubUtilityButton extends StatelessWidget {
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(AppRadius.sharp),
         child: InkWell(
-          onTap: item.open,
+          onTap: () => item.open(context),
           borderRadius: BorderRadius.circular(AppRadius.sharp),
           child: Container(
             decoration: BoxDecoration(

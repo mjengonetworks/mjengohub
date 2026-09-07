@@ -19,7 +19,17 @@ class WebviewCheckoutScreen extends StatefulWidget {
   final String title;
 
   /// Relative path on mjengohub.co.ke to open, e.g. '/merch' or '/verify'.
-  final String nextPath;
+  /// Exactly one of [nextPath] / [url] must be set.
+  final String? nextPath;
+
+  /// Full external URL to open instead of a mjengohub.co.ke-relative path —
+  /// used for Trinity (sister-app) links. Exactly one of [nextPath] / [url]
+  /// must be set.
+  final String? url;
+
+  /// Optional banner pinned above the WebView (e.g. the Trinity "Explore our
+  /// other apps" prompt).
+  final Widget? banner;
 
   /// Called with the current URL on every navigation — return true to pop
   /// this screen (e.g. once the URL reaches an order confirmation or
@@ -31,10 +41,12 @@ class WebviewCheckoutScreen extends StatefulWidget {
   const WebviewCheckoutScreen({
     super.key,
     required this.title,
-    required this.nextPath,
+    this.nextPath,
+    this.url,
+    this.banner,
     this.isSuccessUrl,
     this.onSuccess,
-  });
+  }) : assert((nextPath == null) != (url == null), 'Pass exactly one of nextPath or url');
 
   @override
   State<WebviewCheckoutScreen> createState() => _WebviewCheckoutScreenState();
@@ -48,6 +60,7 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
   @override
   void initState() {
     super.initState();
+    final target = widget.url ?? '$_baseUrl${widget.nextPath}';
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
@@ -60,7 +73,7 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
           }
         },
       ))
-      ..loadRequest(Uri.parse('$_baseUrl${widget.nextPath}'));
+      ..loadRequest(Uri.parse(target));
     _controller = controller;
   }
 
@@ -74,10 +87,17 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
         title: Text(widget.title,
             style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
       ),
-      body: Stack(
+      body: Column(
         children: [
-          if (_controller != null) WebViewWidget(controller: _controller!),
-          if (_loading) const Center(child: CircularProgressIndicator()),
+          if (widget.banner != null) widget.banner!,
+          Expanded(
+            child: Stack(
+              children: [
+                if (_controller != null) WebViewWidget(controller: _controller!),
+                if (_loading) const Center(child: CircularProgressIndicator()),
+              ],
+            ),
+          ),
         ],
       ),
     );

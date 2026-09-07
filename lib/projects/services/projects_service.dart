@@ -279,12 +279,43 @@ class ProjectsService {
         if (externalVideoUrl != null && externalVideoUrl.isNotEmpty) 'external_video_url': externalVideoUrl,
       });
       if (res.statusCode == 200 || res.statusCode == 201) {
-        return {'success': true, 'message': res.body?['message'] as String?};
+        final data = res.body?['data'];
+        return {
+          'success': true,
+          'message': res.body?['message'] as String?,
+          'updateId': data is Map<String, dynamic> ? data['id'] as int? : null,
+        };
       }
       return {'success': false, 'message': _errorMessage(res.body)};
     } catch (e) {
       print('ProjectsService.postProjectUpdate error: $e');
       return {'success': false, 'message': 'Could not submit update. Check your connection.'};
+    }
+  }
+
+  /// Best-effort photo attachment for a just-created update, mirroring
+  /// `IncidentsService.uploadIncidentImage`'s confirmed-live
+  /// `incidents/{id}/media` 1:1. `projects/{id}/updates/{id}/media` is
+  /// unconfirmed against the live backend — if it 404s, the update itself
+  /// has already posted successfully; this just silently no-ops, same as
+  /// every other secondary call in this app.
+  Future<bool> uploadUpdateMedia({
+    required int projectId,
+    required int updateId,
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    try {
+      final status = await _api.uploadFile(
+        'projects/$projectId/updates/$updateId/media',
+        bytes,
+        filename,
+        fieldName: 'image',
+      );
+      return status == 200 || status == 201;
+    } catch (e) {
+      print('ProjectsService.uploadUpdateMedia error: $e');
+      return false;
     }
   }
 

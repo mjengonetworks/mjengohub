@@ -6,7 +6,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../incidents/models/incident_model.dart';
 import '../../incidents/services/incidents_service.dart';
@@ -31,6 +30,7 @@ import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
 import '../../projects/widgets/tracker_project_card.dart';
 import '../../shared/services/demo_seed_data.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/services/site_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/brand_icons.dart';
@@ -39,14 +39,6 @@ import '../../shared/widgets/section_header.dart' as shared;
 import '../../videos/models/video_model.dart';
 import '../../videos/screens/video_player_screen.dart';
 import '../../videos/services/video_api_service.dart';
-
-/// Opens in an in-app browser (Custom Tabs / SFSafariViewController) rather
-/// than handing off to the system browser — matches X/Twitter's in-app link
-/// behavior, so the user never perceives leaving the app.
-Future<void> _launchExternal(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-}
 
 // ── Section header (shared look across the three sections) ──────────────────
 
@@ -369,7 +361,7 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () => _launchExternal(widget.url),
+                onPressed: () => LinkLauncher.openLink(context, widget.url),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 11),
@@ -550,7 +542,7 @@ class _NetworkSitesDirectory extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: GestureDetector(
-                onTap: () => _launchExternal(site.url),
+                onTap: () => LinkLauncher.openLink(context, site.url),
                 child: Row(
                   children: [
                     const Icon(Icons.public, size: 14, color: AppColors.accentBlue),
@@ -609,7 +601,7 @@ class _SocialIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _launchExternal(url),
+      onTap: () => LinkLauncher.openLink(context, url),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

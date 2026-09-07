@@ -9,9 +9,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../auth/controllers/mjengo_auth_controller.dart';
-import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/badges.dart';
+import '../../shared/widgets/guest_gate_sheet.dart';
 import '../models/comment_model.dart';
 import '../services/comments_service.dart';
 
@@ -73,38 +73,7 @@ class _CommentsSectionState extends State<CommentsSection> {
   bool get _isSignedIn => _auth?.isAuthenticated ?? false;
 
   void _requireAuthThen(VoidCallback action) {
-    if (_isSignedIn) {
-      action();
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-        title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
-        content: Text(
-          'Please sign in to your Mjengo Hub account to join the discussion.',
-          style: GoogleFonts.montserrat(fontSize: 13.5, color: AppColors.textSubtle),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.montserrat(color: AppColors.textSubtle)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentBlue,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              Get.toNamed(AppRoutes.login);
-            },
-            child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
-          ),
-        ],
-      ),
-    );
+    requireAuth(context, action, message: 'Sign in to join the discussion');
   }
 
   Future<void> _submit() async {

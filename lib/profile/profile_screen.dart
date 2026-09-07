@@ -193,6 +193,12 @@ class _SettingsView extends StatelessWidget {
                     onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'Get Verified', nextPath: '/verify')),
                   ),
                 _GroupRowData(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'My Purchases',
+                  subtitle: 'Prime, merch & credit pack history',
+                  onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'My Purchases', nextPath: '/account/purchases')),
+                ),
+                _GroupRowData(
                   icon: Icons.info_outline_rounded,
                   title: 'About Us',
                   onTap: () => Navigator.of(Get.context!).push(
@@ -233,6 +239,14 @@ class _SettingsView extends StatelessWidget {
                   titleColor: AppColors.danger,
                   iconColor: AppColors.danger,
                   onTap: onSignOut,
+                ),
+                _GroupRowData(
+                  icon: Icons.pause_circle_outline_rounded,
+                  title: 'Disable Account',
+                  subtitle: 'Temporarily deactivate your account',
+                  titleColor: AppColors.headingSlate,
+                  iconColor: AppColors.headingSlate,
+                  onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'Disable Account', nextPath: '/account/deactivate')),
                 ),
                 _GroupRowData(
                   icon: Icons.delete_outline_rounded,

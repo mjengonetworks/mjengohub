@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
 import '../../point/routes/app_routes.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../controllers/article_detail_controller.dart';
 import '../models/article_content_blocks.dart';
@@ -568,7 +568,7 @@ class _ArticleBlockWidget extends StatelessWidget {
                       : TextSpan(
                           text: s.text,
                           style: baseStyle.copyWith(color: AppColors.accentBlue, decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()..onTap = () => _openInlineLink(s.href!),
+                          recognizer: TapGestureRecognizer()..onTap = () => _openInlineLink(context, s.href!),
                         ))
                   .toList(),
             ),
@@ -581,17 +581,13 @@ class _ArticleBlockWidget extends StatelessWidget {
   /// the legacy `/article/<slug>` / `/news/<slug>` forms) navigate natively
   /// inside the app; anything else opens in the in-app browser, matching
   /// every other external link in this app.
-  void _openInlineLink(String href) {
+  void _openInlineLink(BuildContext context, String href) {
     final slug = _internalArticleSlug(href);
     if (slug != null) {
       Get.toNamed(AppRoutes.articleDetail, arguments: slug);
       return;
     }
-    final uri = Uri.tryParse(href);
-    if (uri == null) return;
-    canLaunchUrl(uri).then((ok) {
-      if (ok) launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-    });
+    LinkLauncher.openLink(context, href);
   }
 
   String? _internalArticleSlug(String href) {

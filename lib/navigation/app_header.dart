@@ -9,13 +9,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../auth/controllers/mjengo_auth_controller.dart';
 import '../news/widgets/net_image.dart';
 import '../notifications/controllers/notifications_controller.dart';
 import '../notifications/screens/notifications_screen.dart';
 import '../point/routes/app_routes.dart';
+import '../shared/services/link_launcher.dart';
 import '../shared/theme/app_theme.dart';
 import 'main_navigation.dart';
 
@@ -23,13 +23,6 @@ class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
 
   static const double _barHeight = 56;
-
-  // In-app browser, not a system-browser hand-off — matches X/Twitter's
-  // in-app link behavior, so the user never perceives leaving the app.
-  Future<void> _launchExternal(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-  }
 
   /// Jumps the bottom nav to [tabIndex] and, when called from a screen pushed
   /// on top of MainNavigation (e.g. ProjectsScreen), pops back to it first —
@@ -80,7 +73,7 @@ class AppHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 GestureDetector(
-                  onTap: () => _launchExternal('https://mjengohub.co.ke/verify'),
+                  onTap: () => LinkLauncher.openLink(context, 'https://mjengohub.co.ke/verify'),
                   child: const _VerifiedBadgeButton(),
                 ),
                 const SizedBox(width: 4),

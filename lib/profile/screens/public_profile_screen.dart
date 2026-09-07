@@ -7,24 +7,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../news/models/article_model.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/responsive.dart';
 import '../models/public_profile_model.dart';
 import '../services/public_profile_service.dart';
-
-Future<void> _launchExternal(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-}
 
 class PublicProfileScreen extends StatefulWidget {
   final int userId;
@@ -147,9 +142,9 @@ class _Header extends StatelessWidget {
                     spacing: 8,
                     children: [
                       if (profile.mjengoNetworksUrl?.isNotEmpty ?? false)
-                        _LinkChip(label: 'Mjengo Networks', onTap: () => _launchExternal(profile.mjengoNetworksUrl!)),
+                        _LinkChip(label: 'Mjengo Networks', onTap: () => LinkLauncher.openLink(context, profile.mjengoNetworksUrl!)),
                       if (profile.shareBarabaraUrl?.isNotEmpty ?? false)
-                        _LinkChip(label: 'Share Barabara', onTap: () => _launchExternal(profile.shareBarabaraUrl!)),
+                        _LinkChip(label: 'Share Barabara', onTap: () => LinkLauncher.openLink(context, profile.shareBarabaraUrl!)),
                     ],
                   ),
                 ],

@@ -20,11 +20,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../incidents/models/incident_model.dart';
 import '../../incidents/services/incidents_service.dart';
 import '../../navigation/app_header.dart';
+import '../../navigation/main_navigation.dart';
+import '../../news/controllers/discover_controller.dart';
 import '../../news/models/article_model.dart';
 import '../../news/services/news_api_service.dart';
 import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
+import '../../projects/screens/tracker_filtered_list_screen.dart';
 import '../../projects/services/projects_service.dart';
 import '../../reports/models/report_model.dart';
 import '../../service_catalog/models/service_model.dart';
@@ -82,10 +85,13 @@ class _SearchScreenState extends State<SearchScreen> {
   String _query = '';
   List<Article> _articles = [];
   List<Article> _news = [];
-  List<Project> _projects = [];
+  List<Project> _infraProjects = [];
+  List<Project> _privateProjects = [];
   List<Incident> _incidents = [];
   List<ServiceOffering> _services = [];
   List<InfrastructureReport> _reports = [];
+
+  static const int _kSectionCap = 3;
 
   @override
   void dispose() {
@@ -106,7 +112,8 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _articles = [];
         _news = [];
-        _projects = [];
+        _infraProjects = [];
+        _privateProjects = [];
         _incidents = [];
         _services = [];
         _reports = [];
@@ -158,7 +165,8 @@ class _SearchScreenState extends State<SearchScreen> {
       _news = _activeFilters.contains(_SearchCategory.news)
           ? allArticles.where((a) => a.isBreaking).toList()
           : [];
-      _projects = projectResults;
+      _infraProjects = projectResults.where((p) => p.projectType != 'private_development').toList();
+      _privateProjects = projectResults.where((p) => p.projectType == 'private_development').toList();
       _incidents = [...roadIncidents, ...siteIncidents];
       _services =
           _activeFilters.contains(_SearchCategory.services) ? unified.services : [];
@@ -182,7 +190,8 @@ class _SearchScreenState extends State<SearchScreen> {
   int get _totalResults =>
       _articles.length +
       _news.length +
-      _projects.length +
+      _infraProjects.length +
+      _privateProjects.length +
       _incidents.length +
       _services.length +
       _reports.length;
@@ -275,9 +284,17 @@ class _SearchScreenState extends State<SearchScreen> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
-        if (_articles.isNotEmpty) _section('Articles', _articles.map((a) => _ArticleRow(a)).toList()),
+        // Articles / Infrastructure Projects / Private Projects: capped to 3
+        // rows with a "View All" row when there's more — sections with zero
+        // results are omitted entirely (the `isNotEmpty` guards below), never
+        // shown as an empty container.
+        if (_articles.isNotEmpty)
+          _cappedSection('Articles', _articles, (a) => _ArticleRow(a), _viewAllArticles),
+        if (_infraProjects.isNotEmpty)
+          _cappedSection('Infrastructure Projects', _infraProjects, (p) => _ProjectRow(p), () => _viewAllProjects('infrastructure')),
+        if (_privateProjects.isNotEmpty)
+          _cappedSection('Private Projects', _privateProjects, (p) => _ProjectRow(p), () => _viewAllProjects('private_development')),
         if (_news.isNotEmpty) _section('News', _news.map((a) => _ArticleRow(a)).toList()),
-        if (_projects.isNotEmpty) _section('Projects', _projects.map((p) => _ProjectRow(p)).toList()),
         if (_incidents.isNotEmpty) _section('Safety Incidents', _incidents.map((i) => _IncidentRow(i)).toList()),
         if (_services.isNotEmpty) _section('Services', _services.map((s) => _ServiceRow(s)).toList()),
         if (_reports.isNotEmpty) _section('Reports', _reports.map((r) => _ReportRow(r)).toList()),
@@ -285,7 +302,36 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _section(String title, List<Widget> children) {
+  void _viewAllArticles() {
+    final discover = Get.find<DiscoverController>();
+    discover.searchController.text = _query;
+    discover.onSearchSubmit(_query);
+    Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+  }
+
+  void _viewAllProjects(String projectType) {
+    final title = projectType == 'infrastructure' ? 'Infrastructure Projects' : 'Private Projects';
+    Get.to(() => TrackerFilteredListScreen(
+          title: '$title · "$_query"',
+          fetcher: () => ProjectsService().getProjects(projectType: projectType, q: _query, perPage: 50),
+        ));
+  }
+
+  Widget _cappedSection<T>(String title, List<T> items, Widget Function(T) rowBuilder, VoidCallback onViewAll) {
+    final shown = items.take(_kSectionCap).toList();
+    return _section(
+      title,
+      shown.map(rowBuilder).toList(),
+      trailing: items.length > _kSectionCap
+          ? GestureDetector(
+              onTap: onViewAll,
+              child: Text('View All', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
+            )
+          : null,
+    );
+  }
+
+  Widget _section(String title, List<Widget> children, {Widget? trailing}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -293,7 +339,13 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 6),
-            child: Text(title, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(title, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
+                if (trailing != null) trailing,
+              ],
+            ),
           ),
           ...children,
         ],

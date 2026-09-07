@@ -15,6 +15,7 @@ import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/coming_soon.dart';
+import '../../shared/widgets/guest_gate_sheet.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
@@ -326,6 +327,18 @@ class ProjectDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // ── Documented Progress Updates — GET /projects/{id}/updates
+              // already exists in ProjectsService but was never rendered
+              // anywhere; this is that missing surface. Per-update upvotes
+              // and per-update threaded comments are scoped out: neither
+              // ProjectUpdate nor any service method exposes them, and
+              // there's no comment-resource type for updates — the
+              // project-level Discussion below stays the one discussion
+              // surface.
+              _ProgressUpdatesSection(project: project),
+
+              const SizedBox(height: 8),
+
               // ── Milestones ───────────────────────────────────────────────
               if (project.milestones.isNotEmpty)
                 _buildMilestonesCard(project),
@@ -373,6 +386,9 @@ class ProjectDetailScreen extends StatelessWidget {
   }
 
 
+  // Attribution (submitter/approving admin) is scoped out: submittedBy/
+  // editedBy are bare user ids with no name-resolution endpoint anywhere in
+  // this app, and there's no backend toggle for submitter-only display.
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
     if (project.contractor != null)
@@ -408,14 +424,10 @@ class ProjectDetailScreen extends StatelessWidget {
   }
 
   Widget _buildDescriptionCard(Project project) {
-    final text = project.summary ?? project.description ?? '';
+    final text = (project.summary ?? project.description ?? '').replaceAll(RegExp(r'<[^>]*>'), '').trim();
     return _InfoCard(
       title: 'About This Project',
-      child: Text(
-        text.replaceAll(RegExp(r'<[^>]*>'), '').trim(),
-        style: GoogleFonts.montserrat(
-            fontSize: 13.5, color: _kDark, height: 1.6),
-      ),
+      child: _ExpandableDescription(text: text),
     );
   }
 
@@ -615,8 +627,10 @@ class _ProjectActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Get.find<MjengoAuthController>();
-    if (!auth.isAuthenticated) return const SizedBox.shrink();
-    final canManage = auth.currentUser?.canManageProjects == true;
+    // Guests see the same "Suggest an Update" chip signed-in non-privileged
+    // users see, gated on tap via the guest-gate sheet, instead of the
+    // action bar disappearing entirely.
+    final canManage = auth.isAuthenticated && auth.currentUser?.canManageProjects == true;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -673,7 +687,11 @@ class _ProjectActionBar extends StatelessWidget {
           : _ProjectActionChip(
               icon: Icons.add_comment_outlined,
               label: 'Suggest an Update',
-              onTap: () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: false)),
+              onTap: () => requireAuth(
+                context,
+                () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: false)),
+                message: 'Sign in to submit project updates',
+              ),
               fullWidth: true,
             ),
     );
@@ -883,32 +901,8 @@ class _ActionsCard extends StatelessWidget {
   final Project project;
   const _ActionsCard({required this.project});
 
-  MjengoAuthController? get _auth {
-    try { return Get.find<MjengoAuthController>(); } catch (_) { return null; }
-  }
-
   void _requireAuth(BuildContext context, VoidCallback action) {
-    if (_auth?.isAuthenticated ?? false) {
-      action();
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Sign in required', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
-        content: Text('Please sign in to your Mjengo Hub account to continue.',
-            style: GoogleFonts.montserrat(fontSize: 13.5, color: _kSubtext)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: GoogleFonts.montserrat(color: _kSubtext))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: _kBlue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-            onPressed: () { Navigator.pop(ctx); Get.toNamed('/login'); },
-            child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
-          ),
-        ],
-      ),
-    );
+    requireAuth(context, action, message: 'Sign in to suggest an edit or progress update');
   }
 
   @override
@@ -1235,6 +1229,154 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
 }
 
 // ── Shared layout widgets ──────────────────────────────────────────────────────
+
+/// Truncates [text] to ~300 words with a "Continue Reading" expander when
+/// longer; shows the full text as-is when already within the cap.
+class _ExpandableDescription extends StatefulWidget {
+  final String text;
+  const _ExpandableDescription({required this.text});
+
+  @override
+  State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<_ExpandableDescription> {
+  static const int _kWordCap = 300;
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = widget.text.split(RegExp(r'\s+'));
+    final overLimit = words.length > _kWordCap;
+    final shown = (_expanded || !overLimit) ? widget.text : '${words.take(_kWordCap).join(' ')}…';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(shown, style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark, height: 1.6)),
+        if (overLimit) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Text(
+              _expanded ? 'Show less' : 'Continue Reading',
+              style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.headingSlate),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Renders `GET /projects/{id}/updates` chronologically. Hides itself
+/// entirely (no empty-state card) when there are no approved updates yet.
+class _ProgressUpdatesSection extends StatefulWidget {
+  final Project project;
+  const _ProgressUpdatesSection({required this.project});
+
+  @override
+  State<_ProgressUpdatesSection> createState() => _ProgressUpdatesSectionState();
+}
+
+class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
+  final _service = ProjectsService();
+  List<ProjectUpdate> _updates = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final result = await _service.getProjectUpdates(widget.project.id);
+    if (!mounted) return;
+    setState(() {
+      _updates = result;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading || _updates.isEmpty) return const SizedBox.shrink();
+
+    return _InfoCard(
+      title: 'Progress Updates',
+      child: Column(
+        children: [
+          for (int i = 0; i < _updates.length; i++) ...[
+            if (i > 0) const Divider(height: 24, thickness: 0.8, color: _kDivider),
+            _ProgressUpdateCard(update: _updates[i]),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressUpdateCard extends StatelessWidget {
+  final ProjectUpdate update;
+  const _ProgressUpdateCard({required this.update});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: AppColors.borderSlate,
+              backgroundImage: (update.authorAvatar != null && update.authorAvatar!.isNotEmpty)
+                  ? NetworkImage(update.authorAvatar!)
+                  : null,
+              child: (update.authorAvatar == null || update.authorAvatar!.isEmpty)
+                  ? const Icon(Icons.person_rounded, size: 14, color: _kSubtext)
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                update.authorName ?? 'Mjengo Hub',
+                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: _kDark),
+              ),
+            ),
+            if (update.createdAt != null)
+              Text(update.createdAt!.split('T').first, style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(update.content, style: GoogleFonts.montserrat(fontSize: 13, color: _kDark, height: 1.5)),
+        if (update.media.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 64,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: update.media.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              itemBuilder: (_, i) => ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.sharp),
+                child: update.media[i].mediaType == 'image'
+                    ? NetImage(url: update.media[i].url, width: 64, height: 64, fit: BoxFit.cover, placeholderColor: _kDivider)
+                    : Container(
+                        width: 64,
+                        height: 64,
+                        color: _kDark,
+                        child: const Icon(Icons.play_circle_fill_rounded, color: Colors.white54, size: 24),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
 
 class _InfoCard extends StatelessWidget {
   final String title;

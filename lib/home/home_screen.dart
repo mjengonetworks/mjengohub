@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../news/controllers/home_news_controller.dart';
 import '../news/models/article_model.dart';
@@ -17,6 +16,7 @@ import '../news/widgets/breaking_news_card.dart';
 import '../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../news/widgets/net_image.dart';
 import '../point/routes/app_routes.dart';
+import '../shared/services/link_launcher.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
 import '../shared/widgets/leaderboard_widget.dart';
@@ -26,17 +26,6 @@ import '../shared/widgets/responsive.dart';
 import '../shared/widgets/scroll_to_top_fab.dart';
 import '../shared/widgets/section_header.dart';
 import 'widgets/home_extra_sections.dart';
-
-/// Opens a genuine external website in an in-app browser (Chrome Custom Tabs
-/// on Android, SFSafariViewController on iOS) instead of handing off to the
-/// system browser — the user never perceives leaving the app, matching how
-/// X/Twitter's own in-app links behave. Native app hand-offs (Maps, the app
-/// stores, share intents, YouTube) intentionally don't go through this —
-/// those are genuinely better served by their own native app.
-Future<void> _launchExternalUrl(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -475,9 +464,9 @@ class _ExploreIconPill extends StatelessWidget {
   static const _bubbleBg = Color(0xFFEFF6FF);
   static const _iconColor = Color(0xFF2563EB);
 
-  Future<void> _handleTap() async {
+  Future<void> _handleTap(BuildContext context) async {
     if (data.isExternal) {
-      await _launchExternalUrl(data.route);
+      await LinkLauncher.openLink(context, data.route);
     } else {
       Get.toNamed(data.route);
     }
@@ -486,7 +475,7 @@ class _ExploreIconPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _handleTap,
+      onTap: () => _handleTap(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

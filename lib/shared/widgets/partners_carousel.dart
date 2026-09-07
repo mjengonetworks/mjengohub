@@ -14,9 +14,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../news/widgets/net_image.dart';
+import '../services/link_launcher.dart';
 import '../services/site_service.dart';
 import '../theme/app_theme.dart';
 
@@ -81,10 +81,7 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
   Future<void> _openPartner(Partner p) async {
     final url = p.websiteUrl;
     if (url == null || url.isEmpty) return;
-    final uri = Uri.tryParse(url);
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-    }
+    await LinkLauncher.openLink(context, url);
   }
 
   @override
