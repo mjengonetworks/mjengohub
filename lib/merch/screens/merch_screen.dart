@@ -25,12 +25,41 @@ class MerchScreen extends StatefulWidget {
   State<MerchScreen> createState() => _MerchScreenState();
 }
 
+enum _PlatformFilter { all, mjengohub, sharebarabara, mjengonetworks }
+
+extension on _PlatformFilter {
+  String get label {
+    switch (this) {
+      case _PlatformFilter.all: return 'All';
+      case _PlatformFilter.mjengohub: return 'Mjengo Hub';
+      case _PlatformFilter.sharebarabara: return 'Share Barabara';
+      case _PlatformFilter.mjengonetworks: return 'Mjengo Networks';
+    }
+  }
+
+  String? get platformKey {
+    switch (this) {
+      case _PlatformFilter.all: return null;
+      case _PlatformFilter.mjengohub: return 'mjengohub';
+      case _PlatformFilter.sharebarabara: return 'sharebarabara';
+      case _PlatformFilter.mjengonetworks: return 'mjengonetworks';
+    }
+  }
+}
+
 class _MerchScreenState extends State<MerchScreen> {
   final _service = MerchService();
   final _scrollController = ScrollController();
   List<MerchProduct> _products = [];
   List<MerchShoutout> _shoutouts = [];
   bool _loading = true;
+  _PlatformFilter _platformFilter = _PlatformFilter.all;
+
+  List<MerchProduct> get _filteredProducts {
+    final key = _platformFilter.platformKey;
+    if (key == null) return _products;
+    return _products.where((p) => p.platform == key).toList();
+  }
 
   @override
   void initState() {
@@ -67,7 +96,37 @@ class _MerchScreenState extends State<MerchScreen> {
         elevation: 0,
         title: Text('Merch', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
       ),
-      body: ScrollToTopFab(
+      body: Column(
+        children: [
+          // ── Trinity platform filter bar — sticky above the scrollable
+          // catalog. Backed by MerchProduct.platform, which the live API
+          // doesn't send today (every product defaults to 'mjengohub'), so
+          // the Share Barabara / Mjengo Networks tabs are real but show an
+          // empty catalog until the backend stocks products for them.
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: SizedBox(
+              height: 32,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: _PlatformFilter.values
+                    .map((f) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _PlatformTab(
+                            label: f.label,
+                            selected: _platformFilter == f,
+                            onTap: () => setState(() => _platformFilter = f),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.divider),
+          Expanded(
+            child: ScrollToTopFab(
         controller: _scrollController,
         child: ContentWidth(
         maxWidth: 900,
@@ -79,11 +138,16 @@ class _MerchScreenState extends State<MerchScreen> {
                   controller: _scrollController,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   children: [
-                    if (_products.isEmpty)
+                    if (_filteredProducts.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                         child: Center(
-                          child: Text('No merch available right now.', style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
+                          child: Text(
+                            _platformFilter == _PlatformFilter.all
+                                ? 'No merch available right now.'
+                                : 'No ${_platformFilter.label} merch yet.',
+                            style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
+                          ),
                         ),
                       )
                     else
@@ -98,8 +162,8 @@ class _MerchScreenState extends State<MerchScreen> {
                             mainAxisSpacing: 12,
                             childAspectRatio: 0.72,
                           ),
-                          itemCount: _products.length,
-                          itemBuilder: (_, i) => _ProductCard(product: _products[i], onBuy: _openCheckout),
+                          itemCount: _filteredProducts.length,
+                          itemBuilder: (_, i) => _ProductCard(product: _filteredProducts[i], onBuy: _openCheckout),
                         ),
                       ),
 
@@ -131,6 +195,37 @@ class _MerchScreenState extends State<MerchScreen> {
                 ),
               ),
       ),
+      ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlatformTab extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _PlatformTab({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.headingSlate : Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: selected ? AppColors.headingSlate : AppColors.borderSlate),
+        ),
+        child: Text(label,
+            style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: selected ? Colors.white : AppColors.captionSlate)),
       ),
     );
   }

@@ -14,6 +14,16 @@ class MerchProduct {
   final String? image;
   final bool isInStock;
 
+  /// Trinity platform this product belongs to: 'mjengohub' /
+  /// 'sharebarabara' / 'mjengonetworks'. Not sent by the live
+  /// `GET merch/products` today — every sampled product comes back with no
+  /// `platform` key at all, and the catalog is 100% Mjengo Hub-branded items
+  /// (pen/jacket/t-shirt/hoodie), so this defaults to 'mjengohub' rather
+  /// than guessing from the name/description. The Share Barabara / Mjengo
+  /// Networks filter tabs are real UI, just backed by an empty catalog
+  /// until the backend actually stocks products for those platforms.
+  final String platform;
+
   const MerchProduct({
     required this.id,
     required this.name,
@@ -22,6 +32,7 @@ class MerchProduct {
     required this.price,
     this.image,
     required this.isInStock,
+    this.platform = 'mjengohub',
   });
 
   factory MerchProduct.fromJson(Map<String, dynamic> j) => MerchProduct(
@@ -32,6 +43,7 @@ class MerchProduct {
         price: (j['price'] as num?)?.toDouble() ?? 0,
         image: j['image'] as String?,
         isInStock: j['is_in_stock'] as bool? ?? false,
+        platform: (j['platform'] as String?) ?? 'mjengohub',
       );
 }
 

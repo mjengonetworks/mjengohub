@@ -995,37 +995,65 @@ class _SectionLabel extends StatelessWidget {
 class _DarkModeToggle extends StatelessWidget {
   const _DarkModeToggle();
 
+  static const _options = [
+    (AppThemePreference.system, 'System Default'),
+    (AppThemePreference.light, 'Light'),
+    (AppThemePreference.dark, 'Dark'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final theme = Get.find<ThemeController>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Dark Mode',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: _textPri,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Applies immediately and is remembered on this device.',
-                  style: GoogleFonts.montserrat(fontSize: 11.5, color: _textSec),
-                ),
-              ],
+          Text(
+            'Appearance',
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _textPri,
             ),
           ),
-          Obx(() => Switch(
-                value: theme.isDarkMode,
-                activeColor: _blue,
-                onChanged: theme.setDarkMode,
+          const SizedBox(height: 2),
+          Text(
+            'Applies immediately and is remembered on this device.',
+            style: GoogleFonts.montserrat(fontSize: 11.5, color: _textSec),
+          ),
+          const SizedBox(height: 10),
+          Obx(() => Row(
+                children: _options.map((o) {
+                  final (pref, label) = o;
+                  final selected = theme.preference == pref;
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: pref == AppThemePreference.dark ? 0 : 8),
+                      child: GestureDetector(
+                        onTap: () => theme.setPreference(pref),
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(vertical: 9),
+                          decoration: BoxDecoration(
+                            color: selected ? _blue : Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: selected ? _blue : const Color(0xFFE2E8F0)),
+                          ),
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: selected ? Colors.white : _textSec,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               )),
         ],
       ),

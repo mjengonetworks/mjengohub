@@ -190,6 +190,50 @@ class ProjectTeamMember {
       );
 }
 
+/// Official project documents (PDFs/reports/planning approvals), admin-
+/// managed via a "Documents" tab on the website's project edit form (per
+/// project_detail.html: "Project Documents: official PDFs/reports/planning
+/// approvals..."). Confirmed live and admin-manageable on the website, but
+/// no sampled `GET projects/{slug}` response includes a `documents` key at
+/// all today (unlike `media`/`milestones`/`team_members`, which are always
+/// sent as `[]` even when empty) — this stays dormant, like
+/// [ProjectTeamMember] before it, until the JSON API starts sending it.
+class ProjectDocument {
+  final int id;
+  final String fileName;
+  final String filePath;
+  final String? source;
+  final String? description;
+
+  const ProjectDocument({
+    required this.id,
+    required this.fileName,
+    required this.filePath,
+    this.source,
+    this.description,
+  });
+
+  factory ProjectDocument.fromJson(Map<String, dynamic> j) => ProjectDocument(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        fileName: (j['file_name'] as String?) ?? (j['title'] as String?) ?? 'Document',
+        filePath: (j['file_path'] as String?) ?? (j['url'] as String?) ?? '',
+        source: j['source'] as String?,
+        description: j['description'] as String?,
+      );
+
+  String get url {
+    if (filePath.startsWith('http')) return filePath;
+    return '$_kBase/static/$filePath';
+  }
+
+  /// PDF/DOC/XLS/etc, uppercased from the file extension, for a badge.
+  String get fileType {
+    final dot = fileName.lastIndexOf('.');
+    if (dot == -1 || dot == fileName.length - 1) return 'FILE';
+    return fileName.substring(dot + 1).toUpperCase();
+  }
+}
+
 /// A crowdsourced progress update — `_update_dict` in api.py. Auto-approved
 /// when posted by MODERATOR/EDITOR/ADMIN, otherwise lands in the review
 /// queue (`isApproved=false`) until an admin approves it.
@@ -295,6 +339,7 @@ class Project {
   final int? submittedBy;
   final int? editedBy;
   final List<ProjectTeamMember> teamMembers;
+  final List<ProjectDocument> documents;
   final bool isFollowing;
 
   // Linear route mapping (roads/railways/pipelines) — defensive/dormant:
@@ -357,6 +402,7 @@ class Project {
     this.submittedBy,
     this.editedBy,
     this.teamMembers = const [],
+    this.documents = const [],
     this.isFollowing = false,
     this.isLinear = false,
     this.routeData,
@@ -433,6 +479,11 @@ class Project {
                 .map(ProjectTeamMember.fromJson)
                 .toList() ??
             [],
+        documents: (j['documents'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(ProjectDocument.fromJson)
+                .toList() ??
+            [],
         isFollowing: (j['is_following'] as bool?) ?? false,
         isLinear: (j['is_linear'] as bool?) ?? false,
         routeData: _parseRoute(j['route_data']),
@@ -469,7 +520,7 @@ class Project {
         originalArchitect: originalArchitect,
         commissioningAuthority: commissioningAuthority,
         renovationTimeline: renovationTimeline, submittedBy: submittedBy,
-        editedBy: editedBy, teamMembers: teamMembers,
+        editedBy: editedBy, teamMembers: teamMembers, documents: documents,
         isFollowing: isFollowing ?? this.isFollowing,
         isLinear: isLinear, routeData: routeData, routeLengthKm: routeLengthKm,
         relatedArticles: relatedArticles,

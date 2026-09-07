@@ -271,18 +271,18 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── 22. Browse Projects by Category ──────────────────────────────
             const BrowseProjectsByCategorySection(),
 
-            // ── 23. More News & Articles (Part 1) ────────────────────────────
+            // ── 23. More News & Articles — was split into two paginated
+            // "Part 1"/"Part 2" blocks with the same heading, back to back;
+            // the website has exactly one "More News & Articles" section, so
+            // this collapses back to one ────────────────────────────────
             const SizedBox(height: 18),
             const MoreNewsSection(title: 'More News & Articles', page: 2),
 
-            // ── 24. Partner Banner (Slot 5) — between Part 1 and Part 2 ──────
+            // ── 24. Partner Banner (Slot 5) ───────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: const AdBannerSlot(slotNumber: 5),
             ),
-
-            // ── 25. More News & Articles (Part 2) ────────────────────────────
-            const MoreNewsSection(title: 'More News & Articles', page: 3),
 
             // ── 26. Join Our Community ───────────────────────────────────────
             const SizedBox(height: 18),

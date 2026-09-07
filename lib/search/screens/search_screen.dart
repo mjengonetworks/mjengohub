@@ -289,11 +289,11 @@ class _SearchScreenState extends State<SearchScreen> {
         // results are omitted entirely (the `isNotEmpty` guards below), never
         // shown as an empty container.
         if (_articles.isNotEmpty)
-          _cappedSection('Articles', _articles, (a) => _ArticleRow(a), _viewAllArticles),
+          _cappedSection('Articles', _articles, (a) => _ArticleRow(a), _viewAllArticles, buttonLabel: 'Read More'),
         if (_infraProjects.isNotEmpty)
-          _cappedSection('Infrastructure Projects', _infraProjects, (p) => _ProjectRow(p), () => _viewAllProjects('infrastructure')),
+          _cappedSection('Infrastructure Projects', _infraProjects, (p) => _ProjectRow(p), () => _viewAllProjects('infrastructure'), buttonLabel: 'View More'),
         if (_privateProjects.isNotEmpty)
-          _cappedSection('Private Projects', _privateProjects, (p) => _ProjectRow(p), () => _viewAllProjects('private_development')),
+          _cappedSection('Private Projects', _privateProjects, (p) => _ProjectRow(p), () => _viewAllProjects('private_development'), buttonLabel: 'View More'),
         if (_news.isNotEmpty) _section('News', _news.map((a) => _ArticleRow(a)).toList()),
         if (_incidents.isNotEmpty) _section('Safety Incidents', _incidents.map((i) => _IncidentRow(i)).toList()),
         if (_services.isNotEmpty) _section('Services', _services.map((s) => _ServiceRow(s)).toList()),
@@ -317,7 +317,7 @@ class _SearchScreenState extends State<SearchScreen> {
         ));
   }
 
-  Widget _cappedSection<T>(String title, List<T> items, Widget Function(T) rowBuilder, VoidCallback onViewAll) {
+  Widget _cappedSection<T>(String title, List<T> items, Widget Function(T) rowBuilder, VoidCallback onViewAll, {required String buttonLabel}) {
     final shown = items.take(_kSectionCap).toList();
     return _section(
       title,
@@ -325,7 +325,7 @@ class _SearchScreenState extends State<SearchScreen> {
       trailing: items.length > _kSectionCap
           ? GestureDetector(
               onTap: onViewAll,
-              child: Text('View All', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
+              child: Text(buttonLabel, style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
             )
           : null,
     );

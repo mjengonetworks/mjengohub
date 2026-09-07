@@ -111,7 +111,12 @@ class _ArticleBodyState extends State<_ArticleBody> {
 
   void _shareArticle() {
     final url = 'https://mjengohub.co.ke/news/${widget.article.slug}';
-    SocialShareModal.show(context, title: 'Read this on Mjengo Hub: "${widget.article.title}"', url: url);
+    SocialShareModal.show(
+      context,
+      title: 'Read this on Mjengo Hub: "${widget.article.title}"',
+      url: url,
+      summary: widget.article.summary,
+    );
   }
 
   @override

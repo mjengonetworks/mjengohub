@@ -12,6 +12,7 @@ import '../../news/models/article_model.dart';
 import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/slugify.dart';
 import '../../shared/widgets/badges.dart';
@@ -118,6 +119,7 @@ class ProjectDetailScreen extends StatelessWidget {
                   context,
                   title: 'Check out ${project.title} on Mjengo Hub:',
                   url: projectUrl,
+                  summary: project.summary,
                 );
               },
               child: Container(
@@ -187,18 +189,15 @@ class ProjectDetailScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        if (project.client != null)
+                        // Matches the website hero's own meta row (🏗 +
+                        // contractor, plain text, not a link there either —
+                        // the full stakeholder list with tappable entity
+                        // links lives in the Project Details card below).
+                        if (project.contractor != null)
                           Expanded(
-                            child: GestureDetector(
-                              onTap: () => _openEntity(project.client!.name, project.client!.slug),
-                              child: Text(project.client!.name,
-                                  style: GoogleFonts.montserrat(
-                                      fontSize: 11,
-                                      color: _kSubtext,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: _kSubtext),
-                                  overflow: TextOverflow.ellipsis),
-                            ),
+                            child: Text('🏗 ${project.contractor!}',
+                                style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
+                                overflow: TextOverflow.ellipsis),
                           )
                         else
                           const Spacer(),
@@ -303,13 +302,37 @@ class ProjectDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // ── Quick Facts strip — surfaces the fields buried lower in
+              // the fact table (est. completion, budget) plus the project
+              // type, right under the hero, for mobile scannability. The
+              // website itself keeps these only in the "Project Details"
+              // table further down; there's no separate `sector`/`category`
+              // field in the API, so project_type ('Infrastructure' /
+              // 'Private Development') stands in for it here. ────────────
+              _QuickFactsStrip(project: project),
+
+              const SizedBox(height: 8),
+
               // ── Admin action bar (Admin/Editor/Moderator) or "Suggest an
               // Update" entry point (everyone else, signed in) ───────────
               _ProjectActionBar(project: project, ctrl: ctrl),
 
               const SizedBox(height: 8),
 
-              // ── Details card (primary section) ─────────────────────────
+              // ── Project Summary — short admin-editable teaser, matching
+              // the website's own "Project Summary" card (kept distinct
+              // from the fuller Project Overview below it — the website
+              // shows both, not one replacing the other) ──────────────────
+              if ((project.summary ?? '').isNotEmpty) ...[
+                _buildSummaryCard(project),
+                const SizedBox(height: 8),
+              ],
+
+              // ── Project Details: stakeholders (Client/Developer,
+              // Contractor, Consultant, Financier) + dates/budget, one
+              // scannable fact table — mirrors the website's own "Project
+              // Details" table, deliberately ahead of the longform
+              // Overview below it ──────────────────────────────────────
               _buildDetailsCard(project),
 
               const SizedBox(height: 8),
@@ -321,18 +344,50 @@ class ProjectDetailScreen extends StatelessWidget {
 
               if (project.teamMembers.isNotEmpty) const SizedBox(height: 8),
 
-              // ── Description ──────────────────────────────────────────────
-              if (project.summary != null || project.description != null)
+              // ── Project Overview — the longform description, matching
+              // the website's "Project Overview" heading (was "About This
+              // Project") ──────────────────────────────────────────────
+              if ((project.descriptionOverview ?? project.description) != null)
                 _buildDescriptionCard(project),
 
               const SizedBox(height: 8),
 
               // ── Renders (architectural impressions) — directly below the
-              // summary/description, ahead of milestones/photos ───────────
+              // Overview, ahead of documents/photos/milestones ───────────
               if (project.renderGallery.isNotEmpty)
                 _buildGalleryCard('Architectural Renders & Visualizations', project.renderGallery),
 
               const SizedBox(height: 8),
+
+              // ── Project Documents — official PDFs/reports/planning
+              // approvals. Real, admin-manageable website feature (per
+              // project_detail.html), but no sampled API response includes
+              // a `documents` key today, so this stays dormant until the
+              // backend starts sending it, same as Team & Stakeholders
+              // above ──────────────────────────────────────────────────
+              if (project.documents.isNotEmpty) ...[
+                _DocumentsCard(project: project),
+                const SizedBox(height: 8),
+              ],
+
+              // ── Featured Project Photos & Videos — real on-site progress
+              // documentation ───────────────────────────────────────────
+              if (project.media.isNotEmpty)
+                _buildGalleryCard(
+                  'Featured Project Photos & Videos',
+                  project.renderGallery.isNotEmpty ? project.progressGallery : project.media,
+                ),
+
+              const SizedBox(height: 8),
+
+              // ── Milestones, then Documented Progress, then Discussion —
+              // grouped together as the page's final section, matching the
+              // website's fixed section order (milestones timeline first,
+              // then crowdsourced dated updates, then comments) ──────────
+              if (project.milestones.isNotEmpty) ...[
+                _buildMilestonesCard(project),
+                const SizedBox(height: 8),
+              ],
 
               // ── Documented Progress Updates — GET /projects/{id}/updates
               // already exists in ProjectsService but was never rendered
@@ -343,21 +398,6 @@ class ProjectDetailScreen extends StatelessWidget {
               // project-level Discussion below stays the one discussion
               // surface.
               _ProgressUpdatesSection(project: project),
-
-              const SizedBox(height: 8),
-
-              // ── Milestones ───────────────────────────────────────────────
-              if (project.milestones.isNotEmpty)
-                _buildMilestonesCard(project),
-
-              const SizedBox(height: 8),
-
-              // ── Media / progress photos ──────────────────────────────────
-              if (project.media.isNotEmpty)
-                _buildGalleryCard(
-                  'Photos & Media',
-                  project.renderGallery.isNotEmpty ? project.progressGallery : project.media,
-                ),
 
               const SizedBox(height: 8),
 
@@ -409,6 +449,11 @@ class ProjectDetailScreen extends StatelessWidget {
   // this app, and there's no backend toggle for submitter-only display.
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
+    if (project.client != null)
+      rows.add(_DetailRow(
+          project.projectType == 'private_development' ? 'Developer' : 'Client',
+          project.client!.name,
+          onTap: () => _openEntity(project.client!.name, project.client!.slug)));
     if (project.contractor != null)
       rows.add(_DetailRow('Contractor', project.contractor!,
           onTap: () => _openEntity(project.contractor!)));
@@ -446,10 +491,39 @@ class ProjectDetailScreen extends StatelessWidget {
     return 'KSh $buf';
   }
 
+  /// Short admin-editable teaser (`project.summary`), always shown in full —
+  /// distinct from the longer Overview below it, matching the website's own
+  /// "Project Summary" card (light accent background, no truncation).
+  Widget _buildSummaryCard(Project project) {
+    return Container(
+      color: const Color(0xFFF8FAFC),
+      padding: _kCardPad,
+      decoration: const BoxDecoration(
+        border: Border(left: BorderSide(color: AppColors.headingSlate, width: 4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Project Summary',
+              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+          const SizedBox(height: 8),
+          Text(
+            project.summary!.replaceAll(RegExp(r'<[^>]*>'), '').trim(),
+            style: GoogleFonts.montserrat(fontSize: 13.5, height: 1.6, color: _kDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The full longform description — matches the website's "Project
+  /// Overview" heading (this card was previously titled "About This
+  /// Project" and conflated summary+description, dropping the description
+  /// entirely whenever a summary was present).
   Widget _buildDescriptionCard(Project project) {
-    final text = (project.summary ?? project.description ?? '').replaceAll(RegExp(r'<[^>]*>'), '').trim();
+    final text = (project.descriptionOverview ?? project.description ?? '').replaceAll(RegExp(r'<[^>]*>'), '').trim();
     return _InfoCard(
-      title: 'About This Project',
+      title: 'Project Overview',
       child: _ExpandableDescription(text: text),
     );
   }
@@ -1438,13 +1512,24 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueText = Text(value,
-        style: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: onTap != null ? _kBlue : _kDark,
-            decoration: onTap != null ? TextDecoration.underline : null,
-            decorationColor: _kBlue));
+    // Tappable stakeholder values render as a small bordered chip — matches
+    // the website's own `.pd-chip` treatment for Contractor/Status links.
+    final valueWidget = onTap == null
+        ? Text(value,
+            style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: _kDark))
+        : GestureDetector(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.borderSlate),
+                borderRadius: BorderRadius.circular(AppRadius.chip),
+              ),
+              child: Text(value,
+                  style: GoogleFonts.montserrat(
+                      fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
+            ),
+          );
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -1456,11 +1541,7 @@ class _DetailRow extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                     fontSize: 12, color: _kSubtext)),
           ),
-          Expanded(
-            child: onTap == null
-                ? valueText
-                : GestureDetector(onTap: onTap, child: valueText),
-          ),
+          Expanded(child: valueWidget),
         ],
       ),
     );
@@ -1524,6 +1605,146 @@ class _TeamStakeholdersCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Quick Facts strip — compact stat chips under the hero ──────────────────
+//
+// There's no `sector`/`category` field on Project — project_type
+// ('infrastructure' / 'private_development') stands in for it. Hidden
+// entirely when none of the three facts are present rather than showing an
+// empty shell.
+class _QuickFactsStrip extends StatelessWidget {
+  final Project project;
+  const _QuickFactsStrip({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    final facts = <(String, String)>[
+      (project.projectType == 'private_development' ? 'Private Development' : 'Infrastructure', 'sector'),
+      if (project.status != 'completed' && project.expectedEndDate != null)
+        (_fmtFactDate(project.expectedEndDate!), 'Est. Completion'),
+      if (project.status == 'completed' && project.actualEndDate != null)
+        (_fmtFactDate(project.actualEndDate!), 'Completed'),
+      if (project.contractValue != null) (_fmtFactCurrency(project.contractValue!), 'Budget'),
+    ];
+
+    return Container(
+      color: _kCard,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: facts.map((f) {
+          final (value, label) = f;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              border: Border.all(color: AppColors.borderSlate),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(value,
+                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
+                const SizedBox(height: 2),
+                Text(label,
+                    style: GoogleFonts.montserrat(fontSize: 10, color: AppColors.captionSlate, letterSpacing: 0.3)),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  static String _fmtFactDate(String iso) {
+    try {
+      final d = DateTime.parse(iso);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${months[d.month - 1]} ${d.year}';
+    } catch (_) {
+      return iso;
+    }
+  }
+
+  static String _fmtFactCurrency(double value) {
+    final s = value.toStringAsFixed(0);
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return 'KSh $buf';
+  }
+}
+
+// ── Project Documents — dormant until the API sends `documents` ───────────
+class _DocumentsCard extends StatelessWidget {
+  final Project project;
+  const _DocumentsCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      padding: _kCardPad,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Project Documents',
+              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+          const SizedBox(height: 12),
+          ...project.documents.map((doc) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: InkWell(
+                  onTap: () => LinkLauncher.openLink(context, doc.url),
+                  borderRadius: BorderRadius.circular(AppRadius.sharp),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.borderSlate),
+                      borderRadius: BorderRadius.circular(AppRadius.sharp),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.headingSlate,
+                            borderRadius: BorderRadius.circular(AppRadius.sharp),
+                          ),
+                          child: Text(doc.fileType,
+                              style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(doc.fileName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal)),
+                              if ((doc.source ?? '').isNotEmpty)
+                                Text(doc.source!,
+                                    style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.captionSlate)),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.download_rounded, size: 16, color: AppColors.captionSlate),
+                      ],
+                    ),
+                  ),
+                ),
+              )),
         ],
       ),
     );

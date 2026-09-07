@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'point/core/firebase_initializer.dart';
 import 'point/core/dependency_injection.dart';
 import 'point/routes/app_routes.dart';
+import 'shared/theme/app_theme.dart';
 import 'shared/theme/theme_controller.dart';
 
 
@@ -48,8 +49,27 @@ class MyApp extends StatelessWidget {
           theme: lightBase.copyWith(
             textTheme: GoogleFonts.montserratTextTheme(lightBase.textTheme),
           ),
+          // Slate palette matching the website's footer aesthetic — not
+          // pure black, so typography/icons/card boundaries stay legible.
+          // Note: this sets the *default* Material theme (dialogs, base
+          // scaffold/card colors, switches, ...); most screens in this
+          // codebase hardcode AppColors.*/Colors.white rather than reading
+          // Theme.of(context), so they won't visually follow this yet.
           darkTheme: darkBase.copyWith(
             textTheme: GoogleFonts.montserratTextTheme(darkBase.textTheme),
+            scaffoldBackgroundColor: AppColorsDark.background,
+            canvasColor: AppColorsDark.background,
+            cardColor: AppColorsDark.card,
+            dividerColor: AppColorsDark.border,
+            colorScheme: darkBase.colorScheme.copyWith(
+              surface: AppColorsDark.surface,
+              onSurface: AppColorsDark.bodyText,
+            ),
+            appBarTheme: darkBase.appBarTheme.copyWith(
+              backgroundColor: AppColorsDark.surface,
+              foregroundColor: AppColorsDark.headingText,
+              surfaceTintColor: AppColorsDark.surface,
+            ),
           ),
           themeMode: theme.themeMode,
           getPages: AppRoutes.routes,

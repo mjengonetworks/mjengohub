@@ -1647,9 +1647,11 @@ class _MerchCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  More News & Articles — Spec 10 sections 23/25 (Part 1/2), further
-//  pagination pages beyond what Breaking News + Featured Analysis already
-//  show, so the two parts don't repeat the same headlines.
+//  More News & Articles — Spec 10 section 23. Was rendered twice back to
+//  back ("Part 1"/"Part 2", pages 2 and 3) with the identical heading; the
+//  website has exactly one "More News & Articles" section, so this is now
+//  mounted once, a further pagination page beyond what Breaking News +
+//  Featured Analysis already show.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class MoreNewsSection extends StatefulWidget {

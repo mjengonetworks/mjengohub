@@ -64,6 +64,30 @@ class AppColors {
   );
 }
 
+/// Dark-mode palette, based on the website's own footer slate treatment
+/// (deep navy slate base, `#1E293B` elevated cards, `#334155` borders) — not
+/// pure black, so typography/icons/badges/card boundaries stay legible.
+///
+/// This is infrastructure, not a completed app-wide dark mode: `ThemeData`
+/// (`main.dart`'s `darkTheme`) is wired to these tokens so default Material
+/// widgets (dialogs, switches, the base scaffold/card colors) respond
+/// correctly to [ThemeController]'s Dark setting, but the large majority of
+/// screens in this codebase hardcode `AppColors.*`/`Colors.white` rather
+/// than reading `Theme.of(context)`, so most screens will not visually
+/// change yet — converting every screen to theme-aware colors is a much
+/// larger follow-up, out of scope here.
+class AppColorsDark {
+  AppColorsDark._();
+
+  static const Color background = Color(0xFF0B1120);
+  static const Color surface = Color(0xFF0F172A);
+  static const Color card = Color(0xFF1E293B);
+  static const Color border = Color(0xFF334155);
+  static const Color headingText = Color(0xFFF8FAFC);
+  static const Color bodyText = Color(0xFFF8FAFC);
+  static const Color secondaryText = Color(0xFF94A3B8);
+}
+
 class AppRadius {
   AppRadius._();
   static const double pill = 999;
