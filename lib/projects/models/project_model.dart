@@ -245,6 +245,10 @@ class Project {
   final ProjectClient? client;
   final String? contractor;
   final String? consultant;
+  // Sent by the backend as a plain string (like contractor/consultant) but
+  // was previously dropped by this model — added so _buildDetailsCard can
+  // surface it.
+  final String? financier;
   final int progressPercent;
   final String status;
 
@@ -317,6 +321,7 @@ class Project {
     this.client,
     this.contractor,
     this.consultant,
+    this.financier,
     required this.progressPercent,
     required this.status,
     this.projectType = 'infrastructure',
@@ -376,6 +381,7 @@ class Project {
             : null,
         contractor: j['contractor'] as String?,
         consultant: j['consultant'] as String?,
+        financier: j['financier'] as String?,
         progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
         status: (j['status'] as String?) ?? 'ongoing',
         projectType: (j['project_type'] as String?) ?? 'infrastructure',
@@ -446,7 +452,7 @@ class Project {
         id: id, title: title, slug: slug, summary: summary,
         description: description, location: location, county: county,
         latitude: latitude, longitude: longitude, client: client,
-        contractor: contractor, consultant: consultant,
+        contractor: contractor, consultant: consultant, financier: financier,
         progressPercent: progressPercent, status: status,
         projectType: projectType, featuredImage: featuredImage,
         isFeatured: isFeatured, averageRating: averageRating,

@@ -13,6 +13,7 @@ import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/utils/slugify.dart';
 import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/guest_gate_sheet.dart';
@@ -188,10 +189,16 @@ class ProjectDetailScreen extends StatelessWidget {
                       children: [
                         if (project.client != null)
                           Expanded(
-                            child: Text(project.client!.name,
-                                style: GoogleFonts.montserrat(
-                                    fontSize: 11, color: _kSubtext),
-                                overflow: TextOverflow.ellipsis),
+                            child: GestureDetector(
+                              onTap: () => _openEntity(project.client!.name, project.client!.slug),
+                              child: Text(project.client!.name,
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 11,
+                                      color: _kSubtext,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: _kSubtext),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
                           )
                         else
                           const Spacer(),
@@ -386,15 +393,31 @@ class ProjectDetailScreen extends StatelessWidget {
   }
 
 
+  /// Client always has a real entity slug (ProjectClient.slug); Contractor/
+  /// Consultant/Financier are plain free-text strings on Project with no
+  /// entity linkage, so their taps guess a slug via slugify() — see
+  /// entities/screens/entity_profile_screen.dart for how a miss is handled.
+  void _openEntity(String name, [String? realSlug]) {
+    Get.toNamed(AppRoutes.entityProfile, arguments: {
+      'slug': realSlug ?? slugify(name),
+      'fallbackName': name,
+    });
+  }
+
   // Attribution (submitter/approving admin) is scoped out: submittedBy/
   // editedBy are bare user ids with no name-resolution endpoint anywhere in
   // this app, and there's no backend toggle for submitter-only display.
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
     if (project.contractor != null)
-      rows.add(_DetailRow('Contractor', project.contractor!));
+      rows.add(_DetailRow('Contractor', project.contractor!,
+          onTap: () => _openEntity(project.contractor!)));
     if (project.consultant != null)
-      rows.add(_DetailRow('Consultant', project.consultant!));
+      rows.add(_DetailRow('Consultant', project.consultant!,
+          onTap: () => _openEntity(project.consultant!)));
+    if (project.financier != null)
+      rows.add(_DetailRow('Financier', project.financier!,
+          onTap: () => _openEntity(project.financier!)));
     if (project.contractValue != null)
       rows.add(_DetailRow('Contract Value', _fmtCurrency(project.contractValue!)));
     if (project.startDate != null)
@@ -1410,10 +1433,18 @@ class _InfoCard extends StatelessWidget {
 class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
-  const _DetailRow(this.label, this.value);
+  final VoidCallback? onTap;
+  const _DetailRow(this.label, this.value, {this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final valueText = Text(value,
+        style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: onTap != null ? _kBlue : _kDark,
+            decoration: onTap != null ? TextDecoration.underline : null,
+            decorationColor: _kBlue));
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -1426,11 +1457,9 @@ class _DetailRow extends StatelessWidget {
                     fontSize: 12, color: _kSubtext)),
           ),
           Expanded(
-            child: Text(value,
-                style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _kDark)),
+            child: onTap == null
+                ? valueText
+                : GestureDetector(onTap: onTap, child: valueText),
           ),
         ],
       ),

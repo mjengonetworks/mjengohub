@@ -35,6 +35,7 @@ import '../../profile/cookie_policy_screen.dart';
 import '../../profile/contact_screen.dart';
 import '../../shared/screens/about_screen.dart';
 import '../../shared/screens/support_us_screen.dart';
+import '../../entities/screens/entity_profile_screen.dart';
 
 class AppRoutes {
   static const String splash         = '/splash';
@@ -71,6 +72,7 @@ class AppRoutes {
   static const String builtHistory = '/built-history';
   static const String africaWorld = '/africa-world';
   static const String merch = '/merch';
+  static const String entityProfile = '/entity';
 
   // Legal & documentation screens
   static const String privacyPolicy = '/privacy-policy';
@@ -170,6 +172,22 @@ class AppRoutes {
     GetPage(name: builtHistory, page: () => const BuiltHistoryScreen()),
     GetPage(name: africaWorld, page: () => const AfricaWorldScreen()),
     GetPage(name: merch, page: () => const MerchScreen()),
+
+    // Stakeholder profiles (GET entities/{slug}) — Client/Contractor/
+    // Consultant/Financier tap targets on ProjectDetailScreen.
+    GetPage(
+      name: entityProfile,
+      page: () {
+        final args = Get.arguments;
+        if (args is Map) {
+          return EntityProfileScreen(
+            slug: args['slug'] as String? ?? '',
+            fallbackName: args['fallbackName'] as String?,
+          );
+        }
+        return EntityProfileScreen(slug: args is String ? args : '');
+      },
+    ),
 
     // Legal & documentation screens
     GetPage(name: privacyPolicy, page: () => const PrivacyPolicyScreen()),
