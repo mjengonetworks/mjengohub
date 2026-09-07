@@ -193,11 +193,10 @@ class ProjectTeamMember {
 /// Official project documents (PDFs/reports/planning approvals), admin-
 /// managed via a "Documents" tab on the website's project edit form (per
 /// project_detail.html: "Project Documents: official PDFs/reports/planning
-/// approvals..."). Confirmed live and admin-manageable on the website, but
-/// no sampled `GET projects/{slug}` response includes a `documents` key at
-/// all today (unlike `media`/`milestones`/`team_members`, which are always
-/// sent as `[]` even when empty) — this stays dormant, like
-/// [ProjectTeamMember] before it, until the JSON API starts sending it.
+/// approvals..."). Confirmed live as of the `documents` field going out on
+/// `GET projects/{slug}` — sent as `[]` on every sampled project today (no
+/// rows seeded yet), same shape family as `media`/`milestones`/
+/// `team_members`.
 class ProjectDocument {
   final int id;
   final String fileName;
@@ -216,7 +215,10 @@ class ProjectDocument {
   factory ProjectDocument.fromJson(Map<String, dynamic> j) => ProjectDocument(
         id: (j['id'] as num?)?.toInt() ?? 0,
         fileName: (j['file_name'] as String?) ?? (j['title'] as String?) ?? 'Document',
-        filePath: (j['file_path'] as String?) ?? (j['url'] as String?) ?? '',
+        filePath: (j['file_url'] as String?) ??
+            (j['file_path'] as String?) ??
+            (j['url'] as String?) ??
+            '',
         source: j['source'] as String?,
         description: j['description'] as String?,
       );
@@ -232,6 +234,116 @@ class ProjectDocument {
     if (dot == -1 || dot == fileName.length - 1) return 'FILE';
     return fileName.substring(dot + 1).toUpperCase();
   }
+}
+
+/// A financial backer of the project — `GET projects/{slug}`'s `financiers`
+/// array. Unlike `Project.financier` (the older plain-text field, kept for
+/// projects that haven't been migrated), each entry here always carries a
+/// real entity slug so it can push straight to `EntityProfileScreen` with no
+/// slugify() guessing.
+class ProjectFinancier {
+  final String name;
+  final String slug;
+  final String? fundingType;
+  final num? sharePercentage;
+
+  /// Sent as either a JSON number or a decimal string (same Numeric-column
+  /// pattern as `Project.latitude`/`longitude`) — kept as `dynamic` and
+  /// normalized in [contributionDisplay].
+  final dynamic contributionAmount;
+
+  const ProjectFinancier({
+    required this.name,
+    required this.slug,
+    this.fundingType,
+    this.sharePercentage,
+    this.contributionAmount,
+  });
+
+  factory ProjectFinancier.fromJson(Map<String, dynamic> j) => ProjectFinancier(
+        name: (j['name'] as String?) ?? '',
+        slug: (j['slug'] as String?) ?? '',
+        fundingType: j['funding_type'] as String?,
+        sharePercentage: j['share_percentage'] as num?,
+        contributionAmount: j['contribution_amount'],
+      );
+
+  String? get contributionDisplay {
+    final v = contributionAmount;
+    final amount = v is num ? v.toDouble() : (v is String ? double.tryParse(v) : null);
+    if (amount == null) return null;
+    final s = amount.toStringAsFixed(0);
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return 'KSh $buf';
+  }
+}
+
+/// One row of `GET projects/{slug}`'s `stakeholders` array — a real
+/// entity-linked stakeholder (contractor/consultant/financier/etc.), with
+/// consortium support: several stakeholders sharing the same
+/// [consortiumName] are joint partners on that role, with at most one
+/// flagged [isConsortiumLead].
+class ProjectStakeholder {
+  final String name;
+  final String? slug;
+  final String? role;
+  final bool isConsortiumLead;
+  final String? consortiumName;
+
+  const ProjectStakeholder({
+    required this.name,
+    this.slug,
+    this.role,
+    this.isConsortiumLead = false,
+    this.consortiumName,
+  });
+
+  factory ProjectStakeholder.fromJson(Map<String, dynamic> j) => ProjectStakeholder(
+        name: (j['name'] as String?) ?? '',
+        slug: j['slug'] as String?,
+        role: j['role'] as String?,
+        isConsortiumLead: (j['is_consortium_lead'] as bool?) ?? false,
+        consortiumName: j['consortium_name'] as String?,
+      );
+}
+
+/// Who submitted and who approved/published this project — `attribution` on
+/// `GET projects/{slug}`. The live API currently sends `submitter_name` /
+/// `submitter_type` rather than `is_anonymous` / `submitted_by`; both shapes
+/// are tolerated here so this doesn't silently break if the naming changes.
+class ProjectAttribution {
+  final bool isAnonymous;
+  final String? submittedBy;
+  final String? publishedBy;
+
+  const ProjectAttribution({
+    this.isAnonymous = false,
+    this.submittedBy,
+    this.publishedBy,
+  });
+
+  factory ProjectAttribution.fromJson(Map<String, dynamic> j) {
+    final submitterName =
+        (j['submitted_by'] as String?) ?? (j['submitter_name'] as String?);
+    final submitterType = j['submitter_type'] as String?;
+    final isAnonymousRaw = j['is_anonymous'];
+    final bool anonymous = isAnonymousRaw is bool
+        ? isAnonymousRaw
+        : submitterType != null
+            ? submitterType == 'anonymous'
+            : (submitterName == null || submitterName.trim().isEmpty);
+    return ProjectAttribution(
+      isAnonymous: anonymous,
+      submittedBy: anonymous ? null : submitterName,
+      publishedBy: j['published_by'] as String?,
+    );
+  }
+
+  bool get hasContent => isAnonymous || submittedBy != null || publishedBy != null;
 }
 
 /// A crowdsourced progress update — `_update_dict` in api.py. Auto-approved
@@ -340,6 +452,9 @@ class Project {
   final int? editedBy;
   final List<ProjectTeamMember> teamMembers;
   final List<ProjectDocument> documents;
+  final List<ProjectFinancier> financiers;
+  final List<ProjectStakeholder> stakeholders;
+  final ProjectAttribution? attribution;
   final bool isFollowing;
 
   // Linear route mapping (roads/railways/pipelines) — defensive/dormant:
@@ -403,6 +518,9 @@ class Project {
     this.editedBy,
     this.teamMembers = const [],
     this.documents = const [],
+    this.financiers = const [],
+    this.stakeholders = const [],
+    this.attribution,
     this.isFollowing = false,
     this.isLinear = false,
     this.routeData,
@@ -484,6 +602,19 @@ class Project {
                 .map(ProjectDocument.fromJson)
                 .toList() ??
             [],
+        financiers: (j['financiers'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(ProjectFinancier.fromJson)
+                .toList() ??
+            [],
+        stakeholders: (j['stakeholders'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(ProjectStakeholder.fromJson)
+                .toList() ??
+            [],
+        attribution: j['attribution'] != null
+            ? ProjectAttribution.fromJson(j['attribution'] as Map<String, dynamic>)
+            : null,
         isFollowing: (j['is_following'] as bool?) ?? false,
         isLinear: (j['is_linear'] as bool?) ?? false,
         routeData: _parseRoute(j['route_data']),
@@ -521,6 +652,7 @@ class Project {
         commissioningAuthority: commissioningAuthority,
         renovationTimeline: renovationTimeline, submittedBy: submittedBy,
         editedBy: editedBy, teamMembers: teamMembers, documents: documents,
+        financiers: financiers, stakeholders: stakeholders, attribution: attribution,
         isFollowing: isFollowing ?? this.isFollowing,
         isLinear: isLinear, routeData: routeData, routeLengthKm: routeLengthKm,
         relatedArticles: relatedArticles,

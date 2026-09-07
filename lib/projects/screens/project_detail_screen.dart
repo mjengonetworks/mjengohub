@@ -344,6 +344,23 @@ class ProjectDetailScreen extends StatelessWidget {
 
               if (project.teamMembers.isNotEmpty) const SizedBox(height: 8),
 
+              // ── Entity-linked stakeholders, with consortium grouping —
+              // distinct from `_TeamStakeholdersCard` above (`team_members`),
+              // this is the newer `stakeholders` array where each entry
+              // carries a real entity slug ─────────────────────────────
+              if (project.stakeholders.isNotEmpty) ...[
+                _StakeholdersCard(project: project, onTapEntity: _openEntity),
+                const SizedBox(height: 8),
+              ],
+
+              // ── Financiers — funding partners with real entity slugs,
+              // separate from the older plain-text `project.financier` field
+              // surfaced in Project Details above ──────────────────────────
+              if (project.financiers.isNotEmpty) ...[
+                _FinanciersCard(project: project, onTapEntity: _openEntity),
+                const SizedBox(height: 8),
+              ],
+
               // ── Project Overview — the longform description, matching
               // the website's "Project Overview" heading (was "About This
               // Project") ──────────────────────────────────────────────
@@ -360,11 +377,9 @@ class ProjectDetailScreen extends StatelessWidget {
               const SizedBox(height: 8),
 
               // ── Project Documents — official PDFs/reports/planning
-              // approvals. Real, admin-manageable website feature (per
-              // project_detail.html), but no sampled API response includes
-              // a `documents` key today, so this stays dormant until the
-              // backend starts sending it, same as Team & Stakeholders
-              // above ──────────────────────────────────────────────────
+              // approvals, admin-manageable on the website. Hidden until a
+              // project actually has rows, same pattern as the entity
+              // sections above ──────────────────────────────────────────
               if (project.documents.isNotEmpty) ...[
                 _DocumentsCard(project: project),
                 const SizedBox(height: 8),
@@ -412,6 +427,15 @@ class ProjectDetailScreen extends StatelessWidget {
               _ActionsCard(project: project),
 
               const SizedBox(height: 8),
+
+              // ── Attribution — who submitted / published this project.
+              // Hidden entirely when the backend has nothing to say (no
+              // submitter, no publisher) rather than showing an empty
+              // banner ─────────────────────────────────────────────────
+              if (project.attribution?.hasContent == true) ...[
+                _AttributionBanner(attribution: project.attribution!),
+                const SizedBox(height: 8),
+              ],
 
               // ── Discussion ───────────────────────────────────────────────
               Container(
@@ -1604,6 +1628,221 @@ class _TeamStakeholdersCard extends StatelessWidget {
                   .toList(),
             ),
             const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Small pill badge shared by the financiers/stakeholders cards ──────────
+class _Badge extends StatelessWidget {
+  final String label;
+  final bool filled;
+  const _Badge({required this.label, this.filled = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: filled ? AppColors.headingSlate : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.chip),
+        border: Border.all(color: AppColors.headingSlate),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.montserrat(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+          color: filled ? Colors.white : AppColors.headingSlate,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Financiers — `project.financiers`, each with a real entity slug ───────
+class _FinanciersCard extends StatelessWidget {
+  final Project project;
+  final void Function(String name, [String? realSlug]) onTapEntity;
+  const _FinanciersCard({required this.project, required this.onTapEntity});
+
+  @override
+  Widget build(BuildContext context) {
+    return _InfoCard(
+      title: 'Financiers',
+      child: Column(
+        children: project.financiers.map((f) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: InkWell(
+              onTap: () => onTapEntity(f.name, f.slug),
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.borderSlate),
+                  borderRadius: BorderRadius.circular(AppRadius.sharp),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(f.name,
+                              style: GoogleFonts.montserrat(
+                                  fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal)),
+                          if (f.contributionDisplay != null) ...[
+                            const SizedBox(height: 2),
+                            Text(f.contributionDisplay!,
+                                style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      alignment: WrapAlignment.end,
+                      children: [
+                        if ((f.fundingType ?? '').isNotEmpty) _Badge(label: f.fundingType!),
+                        if (f.sharePercentage != null) _Badge(label: '${f.sharePercentage}%', filled: true),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// ── Entity-linked stakeholders, grouped into consortium cards when several
+// share a `consortiumName` — separate from `_TeamStakeholdersCard` above
+// (`team_members`), which has no slug/consortium concept ──────────────────
+class _StakeholdersCard extends StatelessWidget {
+  final Project project;
+  final void Function(String name, [String? realSlug]) onTapEntity;
+  const _StakeholdersCard({required this.project, required this.onTapEntity});
+
+  @override
+  Widget build(BuildContext context) {
+    final consortiums = <String, List<ProjectStakeholder>>{};
+    final solo = <ProjectStakeholder>[];
+    for (final s in project.stakeholders) {
+      final name = s.consortiumName;
+      if (name != null && name.isNotEmpty) {
+        consortiums.putIfAbsent(name, () => []).add(s);
+      } else {
+        solo.add(s);
+      }
+    }
+
+    return _InfoCard(
+      title: 'Stakeholders',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final entry in consortiums.entries)
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _kBg,
+                borderRadius: BorderRadius.circular(AppRadius.sharp),
+                border: Border.all(color: AppColors.borderSlate),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(entry.key,
+                      style: GoogleFonts.montserrat(
+                          fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.headingSlate, letterSpacing: 0.3)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: entry.value
+                        .map((s) => _StakeholderChip(stakeholder: s, onTap: () => onTapEntity(s.name, s.slug)))
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
+          if (solo.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children:
+                  solo.map((s) => _StakeholderChip(stakeholder: s, onTap: () => onTapEntity(s.name, s.slug))).toList(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StakeholderChip extends StatelessWidget {
+  final ProjectStakeholder stakeholder;
+  final VoidCallback onTap;
+  const _StakeholderChip({required this.stakeholder, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          border: Border.all(color: AppColors.borderSlate),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(stakeholder.name,
+                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal)),
+            if (stakeholder.isConsortiumLead) ...[
+              const SizedBox(width: 6),
+              const _Badge(label: 'LEAD', filled: true),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Attribution — submitter/publisher banner, hidden when neither is set ──
+class _AttributionBanner extends StatelessWidget {
+  final ProjectAttribution attribution;
+  const _AttributionBanner({required this.attribution});
+
+  @override
+  Widget build(BuildContext context) {
+    final submittedText = attribution.isAnonymous
+        ? 'Submitted Anonymously'
+        : (attribution.submittedBy != null ? 'Submitted by ${attribution.submittedBy}' : null);
+
+    return Container(
+      color: _kCard,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (submittedText != null)
+            Text(submittedText, style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext)),
+          if (attribution.publishedBy != null) ...[
+            if (submittedText != null) const SizedBox(height: 4),
+            Text('Published by ${attribution.publishedBy}',
+                style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext)),
           ],
         ],
       ),
