@@ -22,7 +22,7 @@ class MainNavigation extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF0F4FF),
+        backgroundColor: AppColors.canvas,
         body: Column(
           children: [
             const AppHeader(),
@@ -94,20 +94,14 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColors.divider)),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 68,
           child: Row(
             children: List.generate(
               _items.length,
@@ -153,7 +147,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? AppColors.accentBlue : AppColors.textSubtle;
+    final color = isSelected ? AppColors.primaryBlue : const Color(0xFF94A3B8);
 
     return Expanded(
       child: GestureDetector(
@@ -164,27 +158,31 @@ class _NavItem extends StatelessWidget {
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.accentBlue.withValues(alpha: 0.12) : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
+              height: 28,
+              alignment: Alignment.center,
               child: Icon(
                 isSelected ? data.activeIcon : data.inactiveIcon,
                 color: color,
                 size: 22,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             Text(
               data.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
                 fontSize: 10.5,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: color,
               ),
+            ),
+            const SizedBox(height: 3),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(color: isSelected ? AppColors.primaryBlue : Colors.transparent, shape: BoxShape.circle),
             ),
           ],
         ),

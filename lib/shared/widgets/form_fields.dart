@@ -13,26 +13,26 @@ InputDecoration appInputDecoration(String hint) => InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.canvas,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.divider),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.divider),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.accentBlue, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.danger, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
       ),
       errorStyle: GoogleFonts.montserrat(fontSize: 11, color: AppColors.danger),
@@ -110,17 +110,89 @@ class AppDropdown<T> extends StatelessWidget {
   final String hint;
 
   @override
-  Widget build(BuildContext context) => DropdownButtonFormField<T>(
-        value: value,
-        isExpanded: true,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSubtle),
-        style: GoogleFonts.montserrat(fontSize: 13.5, color: AppColors.textDark),
-        decoration: appInputDecoration(hint),
-        items: items
-            .map((e) => DropdownMenuItem<T>(value: e, child: Text(labelOf(e))))
-            .toList(),
-        onChanged: onChanged,
+  Widget build(BuildContext context) => InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () async {
+          final selected = await showModalBottomSheet<T>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => _SelectionSheet<T>(items: items, value: value, labelOf: labelOf, hint: hint),
+          );
+          if (selected != null) onChanged(selected);
+        },
+        child: InputDecorator(
+          decoration: appInputDecoration(hint),
+          child: Row(
+            children: [
+              Expanded(child: Text(value == null ? hint : labelOf(value as T), style: GoogleFonts.montserrat(fontSize: 13.5, color: value == null ? AppColors.textSubtle : AppColors.textDark))),
+              const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSubtle),
+            ],
+          ),
+        ),
       );
+}
+
+class _SelectionSheet<T> extends StatefulWidget {
+  const _SelectionSheet({required this.items, required this.value, required this.labelOf, required this.hint});
+  final List<T> items;
+  final T? value;
+  final String Function(T) labelOf;
+  final String hint;
+
+  @override
+  State<_SelectionSheet<T>> createState() => _SelectionSheetState<T>();
+}
+
+class _SelectionSheetState<T> extends State<_SelectionSheet<T>> {
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = widget.items.where((item) => widget.labelOf(item).toLowerCase().contains(_search.text.toLowerCase())).toList();
+    return SafeArea(
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 640),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(4)))),
+            const SizedBox(height: 18),
+            Text(widget.hint, style: GoogleFonts.montserrat(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+            const SizedBox(height: 14),
+            TextField(controller: _search, onChanged: (_) => setState(() {}), decoration: appInputDecoration('Search options').copyWith(prefixIcon: const Icon(Icons.search_rounded, size: 19))),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                itemBuilder: (_, index) {
+                  final item = filtered[index];
+                  final selected = item == widget.value;
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(widget.labelOf(item), style: GoogleFonts.montserrat(fontSize: 14, fontWeight: selected ? FontWeight.w600 : FontWeight.w400, color: AppColors.bodyCharcoal)),
+                    trailing: selected ? const Icon(Icons.check_rounded, color: AppColors.accentBlue) : null,
+                    onTap: () => Navigator.pop(context, item),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Full-width primary action button with a built-in busy state.

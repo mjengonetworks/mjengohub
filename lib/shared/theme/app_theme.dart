@@ -1,14 +1,12 @@
 // lib/shared/theme/app_theme.dart
 //
-// Central design tokens ported from the MjengoHub website's static/css/main.css
-// (brand blue #4A90E2 -> #357abd, pill CTA shapes, badge palette) so the
-// Flutter app and the web platform read as the same product.
+// Central design tokens for the native Mjengo Hub product experience.
 import 'package:flutter/material.dart';
 
 class AppColors {
   // Compatibility aliases
-  static const Color primary = Color(0xFF2563EB);
-  static const Color accent = Color(0xFF2563EB);
+  static const Color primary = Color(0xFF0F2E4D);
+  static const Color accent = Color(0xFF0284C7);
   // Was 0xFF8888AA (a washed-out lavender-gray) -- raised to slate-600 for
   // legible secondary/caption text app-wide. Same value as captionSlate
   // below; kept as a separate token since callers already reference both
@@ -18,24 +16,27 @@ class AppColors {
   AppColors._();
 
   // Brand blue — matches --primary-blue / --secondary-blue in main.css
-  static const Color primaryBlue = Color(0xFF4A90E2);
-  static const Color secondaryBlue = Color(0xFF357ABD);
-  static const Color darkBlue = Color(0xFF2968A3);
-  static const Color deepNavy = Color(0xFF2C3E50);
+  static const Color primaryBlue = Color(0xFF0F2E4D);
+  static const Color secondaryBlue = Color(0xFF0A2540);
+  static const Color darkBlue = Color(0xFF0A2540);
+  static const Color deepNavy = Color(0xFF0A2540);
 
   // App accent (existing in-app blue, kept for continuity with current screens)
-  static const Color accentBlue = Color(0xFF2563EB);
+  static const Color accentBlue = Color(0xFF0284C7);
 
   static const Color surface = Colors.white;
-  static const Color background = Color(0xFFF0F4FF);
-  static const Color textDark = Color(0xFF1A1A2E);
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color textDark = Color(0xFF0F172A);
   // Was 0xFF8888AA -- see textLight's comment above, same fix.
   static const Color textSubtle = Color(0xFF475569);
-  static const Color divider = Color(0xFFEEEEF5);
+  static const Color divider = Color(0xFFE2E8F0);
 
   static const Color success = Color(0xFF16A34A);
   static const Color warning = Color(0xFFF59E0B);
   static const Color danger = Color(0xFFDC2626);
+  static const Color roadAmber = Color(0xFFD97706);
+  static const Color canvas = Color(0xFFF8FAFC);
+  static const Color mutedCanvas = Color(0xFFF1F5F9);
 
   // Mjengo Hub Prime badge blue
   static const Color primeBadge = Color(0xFF2C5AA0);
@@ -49,7 +50,7 @@ class AppColors {
   static const Color borderSlate = Color(0xFFE2E8F0);
   static const Color headingSlate = Color(0xFF0F172A);
   static const Color bodyCharcoal = Color(0xFF1E293B);
-  static const Color captionSlate = Color(0xFF475569);
+  static const Color captionSlate = Color(0xFF64748B);
 
   static const LinearGradient verifiedPillGradient = LinearGradient(
     colors: [primaryBlue, secondaryBlue],
@@ -91,8 +92,8 @@ class AppColorsDark {
 class AppRadius {
   AppRadius._();
   static const double pill = 999;
-  static const double card = 14;
-  static const double chip = 8;
+  static const double card = 16;
+  static const double chip = 10;
 
   // Sharp architectural corners for the newer design-system pass — used by
   // rebuilt home-screen sections and new Spec-1 widgets rather than the

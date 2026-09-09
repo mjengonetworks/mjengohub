@@ -22,7 +22,7 @@ import 'main_navigation.dart';
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
 
-  static const double _barHeight = 56;
+  static const double _barHeight = 64;
 
   /// Jumps the bottom nav to [tabIndex] and, when called from a screen pushed
   /// on top of MainNavigation (e.g. ProjectsScreen), pops back to it first —
@@ -39,8 +39,8 @@ class AppHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFEEEEF5), width: 0.8)),
+        color: AppColors.canvas,
+        border: Border(bottom: BorderSide(color: AppColors.divider, width: 1)),
       ),
       child: SafeArea(
         bottom: false,
@@ -53,13 +53,36 @@ class AppHeader extends StatelessWidget {
                 // ── Brand: logo only, routes home (mirrors the website's
                 // nav-brand, which is the logo image with no adjacent
                 // wordmark text) ────────────────────────────────────────────
-                Expanded(
+                SizedBox(
+                  width: 112,
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => _goToTab(0),
-                      child: Image.asset('assets/mjengo_hub_logo.png', height: 34),
+                      child: Image.asset('assets/mjengo_hub_logo.png', height: 30),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Get.toNamed(AppRoutes.search),
+                    child: Container(
+                      height: 38,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.mutedCanvas,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 18),
+                          const SizedBox(width: 8),
+                          Text('Search Mjengo Hub', style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -67,11 +90,6 @@ class AppHeader extends StatelessWidget {
                 const SizedBox(width: 8),
 
                 // ── Far-right actions: search, verify, notifications, profile
-                GestureDetector(
-                  onTap: () => Get.toNamed(AppRoutes.search),
-                  child: const _HeaderIconButton(icon: Icons.search_rounded),
-                ),
-                const SizedBox(width: 4),
                 GestureDetector(
                   onTap: () => LinkLauncher.openLink(context, 'https://mjengohub.co.ke/verify'),
                   child: const _VerifiedBadgeButton(),
@@ -101,7 +119,13 @@ class _HeaderIconButton extends StatelessWidget {
       width: 38,
       height: 38,
       alignment: Alignment.center,
-      child: Icon(icon, color: AppColors.textDark, size: 21),
+      child: Container(
+        width: 36,
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: AppColors.mutedCanvas, borderRadius: BorderRadius.circular(12)),
+        child: Icon(icon, color: AppColors.primaryBlue, size: 19),
+      ),
     );
   }
 }

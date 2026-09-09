@@ -32,9 +32,9 @@ class TrackerProjectCard extends StatelessWidget {
         width: width,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.borderSlate),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -61,7 +61,7 @@ class TrackerProjectCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -69,7 +69,7 @@ class TrackerProjectCard extends StatelessWidget {
                     project.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
+                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.headingSlate, height: 1.3),
                   ),
                   if ((project.county ?? project.location ?? project.country) != null) ...[
                     const SizedBox(height: 3),
