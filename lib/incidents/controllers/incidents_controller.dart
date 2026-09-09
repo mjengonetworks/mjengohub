@@ -17,6 +17,7 @@ class IncidentsController extends GetxController {
   final selectedSeverity = ''.obs;
   final searchQuery = ''.obs;
   final countyFilter = ''.obs;
+  final regionalScope = 'Kenya'.obs;
 
   int _page = 1;
   bool _hasMore = true;
@@ -40,6 +41,7 @@ class IncidentsController extends GetxController {
         type: incidentType,
         severity: selectedSeverity.value,
         county: countyFilter.value,
+        regionalScope: regionalScope.value,
         q: searchQuery.value,
         page: 1,
       ),
@@ -55,11 +57,13 @@ class IncidentsController extends GetxController {
     String? severity,
     String? county,
     String? q,
+    String? regionalScope,
   }) async {
     // Only update values that were explicitly passed — preserves other filters
     if (severity != null) selectedSeverity.value = severity;
-    if (county != null)   countyFilter.value     = county;
-    if (q != null)        searchQuery.value       = q;
+    if (county != null) countyFilter.value = county;
+    if (q != null) searchQuery.value = q;
+    if (regionalScope != null) this.regionalScope.value = regionalScope;
     await fetchAll();
   }
 
@@ -71,6 +75,7 @@ class IncidentsController extends GetxController {
       type: incidentType,
       severity: selectedSeverity.value,
       county: countyFilter.value,
+      regionalScope: regionalScope.value,
       q: searchQuery.value,
       page: _page,
     );

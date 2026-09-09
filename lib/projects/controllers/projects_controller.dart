@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
+import '../../shared/data/kenya_counties.dart';
 
 class ProjectsController extends GetxController {
   final _service = ProjectsService();
@@ -21,7 +22,24 @@ class ProjectsController extends GetxController {
   final selectedStatus = ''.obs;
   final selectedClientSlug = ''.obs;
   final selectedCounty = ''.obs;
+  final selectedCounties = <String>[].obs;
   final searchQuery = ''.obs;
+  final selectedCostTier = ''.obs;
+
+  double? get costMin => switch (selectedCostTier.value) {
+    '100M-500M' => 100000000,
+    '500M-1B' => 500000000,
+    '1B-5B' => 1000000000,
+    '5B+' => 5000000000,
+    _ => selectedCostTier.value == '<100M' ? 0 : null,
+  };
+  double? get costMax => switch (selectedCostTier.value) {
+    '<100M' => 100000000,
+    '100M-500M' => 500000000,
+    '500M-1B' => 1000000000,
+    '1B-5B' => 5000000000,
+    _ => null,
+  };
 
   int _page = 1;
   bool _hasMore = true;
@@ -37,12 +55,7 @@ class ProjectsController extends GetxController {
   /// website is only queryable server-side. Derive it from whatever
   /// projects are already loaded instead of hardcoding Kenya's 47 counties.
   List<String> get availableCounties {
-    final set = <String>{};
-    for (final p in projects) {
-      if (p.county != null && p.county!.isNotEmpty) set.add(p.county!);
-    }
-    final list = set.toList()..sort();
-    return list;
+    return List<String>.from(kKenyaCounties);
   }
 
   Future<void> fetchAll() async {
@@ -52,12 +65,19 @@ class ProjectsController extends GetxController {
     _hasMore = true;
 
     final results = await Future.wait([
-      _service.getProjects(projectType: projectType, featured: true, perPage: 4),
+      _service.getProjects(
+        projectType: projectType,
+        featured: true,
+        perPage: 4,
+      ),
       _service.getProjects(
         projectType: projectType,
         status: selectedStatus.value,
         clientSlug: selectedClientSlug.value,
         county: selectedCounty.value,
+        counties: selectedCounties,
+        costMin: costMin,
+        costMax: costMax,
         q: searchQuery.value,
         page: 1,
       ),
@@ -85,6 +105,11 @@ class ProjectsController extends GetxController {
     await fetchAll();
   }
 
+  Future<void> applyCountySelection(List<String> counties) async {
+    selectedCounties.assignAll(counties);
+    await applyFilters(county: counties.length == 1 ? counties.first : '');
+  }
+
   Future<void> loadMore() async {
     if (!_hasMore || _isFetchingMore) return;
     _isFetchingMore = true;
@@ -94,6 +119,9 @@ class ProjectsController extends GetxController {
       status: selectedStatus.value,
       clientSlug: selectedClientSlug.value,
       county: selectedCounty.value,
+      counties: selectedCounties,
+      costMin: costMin,
+      costMax: costMax,
       q: searchQuery.value,
       page: _page,
     );
@@ -147,7 +175,11 @@ class ProjectDetailController extends GetxController {
     final result = await _service.setFollowing(current.id, next);
     if (result == null) {
       project.value = current.copyWith(isFollowing: current.isFollowing);
-      Get.snackbar('Error', 'Could not update follow status. Please try again.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Could not update follow status. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
     followLoading.value = false;
   }
@@ -167,9 +199,17 @@ class ProjectDetailController extends GetxController {
     final result = await _service.togglePublish(current.id);
     publishToggling.value = false;
     if (result != null) {
-      Get.snackbar('Done', result ? 'Project published' : 'Project unpublished', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Done',
+        result ? 'Project published' : 'Project unpublished',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } else {
-      Get.snackbar('Error', 'Could not update publish status.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Could not update publish status.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 

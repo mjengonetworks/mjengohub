@@ -2,6 +2,7 @@
 import 'package:latlong2/latlong.dart';
 
 import '../../news/models/article_model.dart';
+import '../../auth/models/user_model.dart';
 
 const String _kBase = 'https://mjengohub.co.ke';
 
@@ -45,13 +46,13 @@ class ProjectClient {
   });
 
   factory ProjectClient.fromJson(Map<String, dynamic> j) => ProjectClient(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        name: (j['name'] as String?) ?? '',
-        slug: (j['slug'] as String?) ?? '',
-        logo: j['logo'] as String?,
-        clientType: j['client_type'] as String?,
-        websiteUrl: j['website_url'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    name: (j['name'] as String?) ?? '',
+    slug: (j['slug'] as String?) ?? '',
+    logo: j['logo'] as String?,
+    clientType: j['client_type'] as String?,
+    websiteUrl: j['website_url'] as String?,
+  );
 
   String? get logoUrl {
     if (logo == null || logo!.isEmpty) return null;
@@ -74,7 +75,8 @@ class ProjectClientDetail {
     this.projectCount = 0,
   });
 
-  factory ProjectClientDetail.fromJson(Map<String, dynamic> j) => ProjectClientDetail(
+  factory ProjectClientDetail.fromJson(Map<String, dynamic> j) =>
+      ProjectClientDetail(
         client: ProjectClient.fromJson(j),
         description: j['description'] as String?,
         projectCount: (j['project_count'] as num?)?.toInt() ?? 0,
@@ -112,19 +114,20 @@ class ProjectMilestone {
   });
 
   factory ProjectMilestone.fromJson(Map<String, dynamic> j) => ProjectMilestone(
-        id: (j['id'] as num).toInt(),
-        title: (j['title'] as String?) ?? '',
-        description: j['description'] as String?,
-        milestoneDate: j['milestone_date'] as String?,
-        milestoneType: j['milestone_type'] as String?,
-        isAchieved: (j['is_achieved'] as bool?) ?? false,
-        sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
-        media: (j['media'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectMedia.fromJson)
-                .toList() ??
-            [],
-      );
+    id: (j['id'] as num).toInt(),
+    title: (j['title'] as String?) ?? '',
+    description: j['description'] as String?,
+    milestoneDate: j['milestone_date'] as String?,
+    milestoneType: j['milestone_type'] as String?,
+    isAchieved: (j['is_achieved'] as bool?) ?? false,
+    sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
+    media:
+        (j['media'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectMedia.fromJson)
+            .toList() ??
+        [],
+  );
 }
 
 class ProjectMedia {
@@ -154,15 +157,15 @@ class ProjectMedia {
   });
 
   factory ProjectMedia.fromJson(Map<String, dynamic> j) => ProjectMedia(
-        id: (j['id'] as num).toInt(),
-        filePath: (j['file_path'] as String?) ?? '',
-        mediaType: (j['media_type'] as String?) ?? 'image',
-        caption: j['caption'] as String?,
-        credit: j['credit'] as String?,
-        monthYear: j['month_year'] as String?,
-        isFeatured: (j['is_featured'] as bool?) ?? false,
-        mediaKind: (j['media_kind'] as String?) ?? 'progress',
-      );
+    id: (j['id'] as num).toInt(),
+    filePath: (j['file_path'] as String?) ?? '',
+    mediaType: (j['media_type'] as String?) ?? 'image',
+    caption: j['caption'] as String?,
+    credit: j['credit'] as String?,
+    monthYear: j['month_year'] as String?,
+    isFeatured: (j['is_featured'] as bool?) ?? false,
+    mediaKind: (j['media_kind'] as String?) ?? 'progress',
+  );
 
   bool get isRender => mediaKind == 'render';
 
@@ -180,9 +183,15 @@ class ProjectTeamMember {
   final String name;
   final String? url;
 
-  const ProjectTeamMember({required this.id, required this.role, required this.name, this.url});
+  const ProjectTeamMember({
+    required this.id,
+    required this.role,
+    required this.name,
+    this.url,
+  });
 
-  factory ProjectTeamMember.fromJson(Map<String, dynamic> j) => ProjectTeamMember(
+  factory ProjectTeamMember.fromJson(Map<String, dynamic> j) =>
+      ProjectTeamMember(
         id: (j['id'] as num?)?.toInt() ?? 0,
         role: (j['role'] as String?) ?? '',
         name: (j['name'] as String?) ?? '',
@@ -213,15 +222,17 @@ class ProjectDocument {
   });
 
   factory ProjectDocument.fromJson(Map<String, dynamic> j) => ProjectDocument(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        fileName: (j['file_name'] as String?) ?? (j['title'] as String?) ?? 'Document',
-        filePath: (j['file_url'] as String?) ??
-            (j['file_path'] as String?) ??
-            (j['url'] as String?) ??
-            '',
-        source: j['source'] as String?,
-        description: j['description'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    fileName:
+        (j['file_name'] as String?) ?? (j['title'] as String?) ?? 'Document',
+    filePath:
+        (j['file_url'] as String?) ??
+        (j['file_path'] as String?) ??
+        (j['url'] as String?) ??
+        '',
+    source: j['source'] as String?,
+    description: j['description'] as String?,
+  );
 
   String get url {
     if (filePath.startsWith('http')) return filePath;
@@ -261,16 +272,18 @@ class ProjectFinancier {
   });
 
   factory ProjectFinancier.fromJson(Map<String, dynamic> j) => ProjectFinancier(
-        name: (j['name'] as String?) ?? '',
-        slug: (j['slug'] as String?) ?? '',
-        fundingType: j['funding_type'] as String?,
-        sharePercentage: j['share_percentage'] as num?,
-        contributionAmount: j['contribution_amount'],
-      );
+    name: (j['name'] as String?) ?? '',
+    slug: (j['slug'] as String?) ?? '',
+    fundingType: j['funding_type'] as String?,
+    sharePercentage: _parseCoord(j['share_percentage'] ?? j['share']),
+    contributionAmount: j['contribution_amount'],
+  );
 
   String? get contributionDisplay {
     final v = contributionAmount;
-    final amount = v is num ? v.toDouble() : (v is String ? double.tryParse(v) : null);
+    final amount = v is num
+        ? v.toDouble()
+        : (v is String ? double.tryParse(v) : null);
     if (amount == null) return null;
     final s = amount.toStringAsFixed(0);
     final buf = StringBuffer();
@@ -302,7 +315,8 @@ class ProjectStakeholder {
     this.consortiumName,
   });
 
-  factory ProjectStakeholder.fromJson(Map<String, dynamic> j) => ProjectStakeholder(
+  factory ProjectStakeholder.fromJson(Map<String, dynamic> j) =>
+      ProjectStakeholder(
         name: (j['name'] as String?) ?? '',
         slug: j['slug'] as String?,
         role: j['role'] as String?,
@@ -334,8 +348,8 @@ class ProjectAttribution {
     final bool anonymous = isAnonymousRaw is bool
         ? isAnonymousRaw
         : submitterType != null
-            ? submitterType == 'anonymous'
-            : (submitterName == null || submitterName.trim().isEmpty);
+        ? submitterType == 'anonymous'
+        : (submitterName == null || submitterName.trim().isEmpty);
     return ProjectAttribution(
       isAnonymous: anonymous,
       submittedBy: anonymous ? null : submitterName,
@@ -343,7 +357,8 @@ class ProjectAttribution {
     );
   }
 
-  bool get hasContent => isAnonymous || submittedBy != null || publishedBy != null;
+  bool get hasContent =>
+      isAnonymous || submittedBy != null || publishedBy != null;
 }
 
 /// A crowdsourced progress update — `_update_dict` in api.py. Auto-approved
@@ -375,17 +390,22 @@ class ProjectUpdate {
   });
 
   factory ProjectUpdate.fromJson(Map<String, dynamic> j) => ProjectUpdate(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        projectId: (j['project_id'] as num?)?.toInt() ?? 0,
-        userId: (j['user_id'] as num?)?.toInt() ?? 0,
-        authorName: j['author_name'] as String?,
-        authorAvatar: j['author_avatar'] as String?,
-        content: (j['content'] as String?) ?? '',
-        externalVideoUrl: j['external_video_url'] as String?,
-        isApproved: j['is_approved'] as bool? ?? true,
-        media: (j['media'] as List?)?.whereType<Map<String, dynamic>>().map(ProjectMedia.fromJson).toList() ?? [],
-        createdAt: j['created_at'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    projectId: (j['project_id'] as num?)?.toInt() ?? 0,
+    userId: (j['user_id'] as num?)?.toInt() ?? 0,
+    authorName: j['author_name'] as String?,
+    authorAvatar: j['author_avatar'] as String?,
+    content: (j['content'] as String?) ?? '',
+    externalVideoUrl: j['external_video_url'] as String?,
+    isApproved: j['is_approved'] as bool? ?? true,
+    media:
+        (j['media'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectMedia.fromJson)
+            .toList() ??
+        [],
+    createdAt: j['created_at'] as String?,
+  );
 }
 
 class Project {
@@ -396,6 +416,7 @@ class Project {
   final String? description;
   final String? location;
   final String? county;
+  final List<String> additionalCounties;
   final double? latitude;
   final double? longitude;
   final ProjectClient? client;
@@ -419,6 +440,15 @@ class Project {
   final double? averageRating;
   final int ratingCount;
   final int viewCount;
+  final double? costKes;
+  final double? costUsdValue;
+  final List<String> clients;
+  final List<String> contractors;
+  final List<String> consortiumMembers;
+  final Map<String, String> mediaSources;
+  final UserProfileSummary? submittedByProfile;
+  final UserProfileSummary? publishedByProfile;
+  final bool isAnonymousSubmission;
   final String? startDate;
   final String? expectedEndDate;
   final String? createdAt;
@@ -448,7 +478,7 @@ class Project {
   final String? originalArchitect;
   final String? commissioningAuthority;
   final String? renovationTimeline;
-  final int? submittedBy;
+  final int? submittedById;
   final int? editedBy;
   final List<ProjectTeamMember> teamMembers;
   final List<ProjectDocument> documents;
@@ -476,6 +506,7 @@ class Project {
     this.description,
     this.location,
     this.county,
+    this.additionalCounties = const [],
     this.latitude,
     this.longitude,
     this.client,
@@ -490,6 +521,15 @@ class Project {
     this.averageRating,
     required this.ratingCount,
     required this.viewCount,
+    this.costKes,
+    this.costUsdValue,
+    this.clients = const [],
+    this.contractors = const [],
+    this.consortiumMembers = const [],
+    this.mediaSources = const {},
+    this.submittedByProfile,
+    this.publishedByProfile,
+    this.isAnonymousSubmission = false,
     this.startDate,
     this.expectedEndDate,
     this.createdAt,
@@ -514,7 +554,7 @@ class Project {
     this.originalArchitect,
     this.commissioningAuthority,
     this.renovationTimeline,
-    this.submittedBy,
+    this.submittedById,
     this.editedBy,
     this.teamMembers = const [],
     this.documents = const [],
@@ -529,139 +569,237 @@ class Project {
   });
 
   factory Project.fromJson(Map<String, dynamic> j) => Project(
-        id: (j['id'] as num).toInt(),
-        title: (j['title'] as String?) ?? '',
-        slug: (j['slug'] as String?) ?? '',
-        summary: j['summary'] as String?,
-        description: j['description'] as String?,
-        location: j['location'] as String?,
-        county: j['county'] as String?,
-        // The backend serializes these as decimal strings (e.g. "-1.21360000",
-        // from a SQLAlchemy Numeric column), not JSON numbers — tolerate both.
-        latitude: _parseCoord(j['latitude']),
-        longitude: _parseCoord(j['longitude']),
-        client: j['client'] != null
-            ? ProjectClient.fromJson(j['client'] as Map<String, dynamic>)
-            : null,
-        contractor: j['contractor'] as String?,
-        consultant: j['consultant'] as String?,
-        financier: j['financier'] as String?,
-        progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
-        status: (j['status'] as String?) ?? 'ongoing',
-        projectType: (j['project_type'] as String?) ?? 'infrastructure',
-        featuredImage: j['featured_image'] as String?,
-        isFeatured: (j['is_featured'] as bool?) ?? false,
-        averageRating: (j['average_rating'] as num?)?.toDouble(),
-        ratingCount: (j['rating_count'] as num?)?.toInt() ?? 0,
-        viewCount: (j['view_count'] as num?)?.toInt() ?? 0,
-        startDate: j['start_date'] as String?,
-        expectedEndDate: j['expected_end_date'] as String?,
-        createdAt: j['created_at'] as String?,
-        contractValue: (j['contract_value'] as num?)?.toDouble(),
-        actualEndDate: j['actual_end_date'] as String?,
-        milestones: (j['milestones'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectMilestone.fromJson)
-                .toList() ??
-            [],
-        media: (j['media'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectMedia.fromJson)
-                .toList() ??
-            [],
-        featuredMedia: (j['featured_media'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectMedia.fromJson)
-                .toList() ??
-            [],
-        plusCode: j['plus_code'] as String?,
-        isLegacy: (j['is_legacy'] as bool?) ?? false,
-        isProjectOfWeek: (j['is_project_of_week'] as bool?) ?? false,
-        isBuiltHistory: (j['is_built_history'] as bool?) ?? false,
-        heritageCategory: j['heritage_category'] as String?,
-        ownershipType: j['ownership_type'] as String?,
-        completionDecade: j['completion_decade'] as String?,
-        geoScope: (j['geo_scope'] as String?) ?? 'local',
-        region: j['region'] as String?,
-        country: j['country'] as String?,
-        upvoteCount: (j['upvote_count'] as num?)?.toInt() ?? 0,
-        downvoteCount: (j['downvote_count'] as num?)?.toInt() ?? 0,
-        descriptionOverview: j['description_overview'] as String?,
-        originalArchitect: j['original_architect'] as String?,
-        commissioningAuthority: j['commissioning_authority'] as String?,
-        renovationTimeline: j['renovation_timeline'] as String?,
-        submittedBy: (j['submitted_by'] as num?)?.toInt(),
-        editedBy: (j['edited_by'] as num?)?.toInt(),
-        teamMembers: (j['team_members'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectTeamMember.fromJson)
-                .toList() ??
-            [],
-        documents: (j['documents'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectDocument.fromJson)
-                .toList() ??
-            [],
-        financiers: (j['financiers'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectFinancier.fromJson)
-                .toList() ??
-            [],
-        stakeholders: (j['stakeholders'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ProjectStakeholder.fromJson)
-                .toList() ??
-            [],
-        attribution: j['attribution'] != null
-            ? ProjectAttribution.fromJson(j['attribution'] as Map<String, dynamic>)
-            : null,
-        isFollowing: (j['is_following'] as bool?) ?? false,
-        isLinear: (j['is_linear'] as bool?) ?? false,
-        routeData: _parseRoute(j['route_data']),
-        routeLengthKm: (j['route_length_km'] as num?)?.toDouble(),
-        relatedArticles: (j['related_articles'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(Article.fromJson)
-                .toList() ??
-            [],
-      );
+    id: (j['id'] as num).toInt(),
+    title: (j['title'] as String?) ?? '',
+    slug: (j['slug'] as String?) ?? '',
+    summary: j['summary'] as String?,
+    description: j['description'] as String?,
+    location: j['location'] as String?,
+    county: j['county'] as String?,
+    additionalCounties:
+        (j['additional_counties'] as List?)?.whereType<String>().toList() ??
+        const [],
+    // The backend serializes these as decimal strings (e.g. "-1.21360000",
+    // from a SQLAlchemy Numeric column), not JSON numbers — tolerate both.
+    latitude: _parseCoord(j['latitude']),
+    longitude: _parseCoord(j['longitude']),
+    client: j['client'] != null
+        ? ProjectClient.fromJson(j['client'] as Map<String, dynamic>)
+        : null,
+    contractor: j['contractor'] as String?,
+    consultant: j['consultant'] as String?,
+    financier: j['financier'] as String?,
+    progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
+    status: (j['status'] as String?) ?? 'ongoing',
+    projectType: (j['project_type'] as String?) ?? 'infrastructure',
+    featuredImage: j['featured_image'] as String?,
+    isFeatured: (j['is_featured'] as bool?) ?? false,
+    averageRating: (j['average_rating'] as num?)?.toDouble(),
+    ratingCount: (j['rating_count'] as num?)?.toInt() ?? 0,
+    viewCount: (j['view_count'] as num?)?.toInt() ?? 0,
+    costKes: _parseCoord(j['cost_kes'] ?? j['contract_value'] ?? j['cost']),
+    costUsdValue: _parseCoord(j['cost_usd']),
+    clients:
+        (j['clients'] as List?)
+            ?.map(
+              (v) => v is Map ? (v['name']?.toString() ?? '') : v.toString(),
+            )
+            .where((v) => v.isNotEmpty)
+            .toList() ??
+        const [],
+    contractors:
+        (j['contractors'] as List?)
+            ?.map(
+              (v) => v is Map ? (v['name']?.toString() ?? '') : v.toString(),
+            )
+            .where((v) => v.isNotEmpty)
+            .toList() ??
+        const [],
+    consortiumMembers:
+        (j['consortium_members'] as List?)?.map((v) => v.toString()).toList() ??
+        const [],
+    mediaSources:
+        (j['media_sources'] as Map?)?.map(
+          (k, v) => MapEntry(k.toString(), v.toString()),
+        ) ??
+        const {},
+    submittedByProfile: j['submitted_by'] is Map
+        ? UserProfileSummary.fromJson(j['submitted_by'])
+        : null,
+    publishedByProfile: j['published_by'] is Map
+        ? UserProfileSummary.fromJson(j['published_by'])
+        : null,
+    isAnonymousSubmission:
+        (j['is_anonymous_submission'] as bool?) ??
+        (j['is_anonymous'] as bool?) ??
+        false,
+    startDate: j['start_date'] as String?,
+    expectedEndDate: j['expected_end_date'] as String?,
+    createdAt: j['created_at'] as String?,
+    contractValue: (j['contract_value'] as num?)?.toDouble(),
+    actualEndDate: j['actual_end_date'] as String?,
+    milestones:
+        (j['milestones'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectMilestone.fromJson)
+            .toList() ??
+        [],
+    media:
+        (j['media'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectMedia.fromJson)
+            .toList() ??
+        [],
+    featuredMedia:
+        (j['featured_media'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectMedia.fromJson)
+            .toList() ??
+        [],
+    plusCode: j['plus_code'] as String?,
+    isLegacy: (j['is_legacy'] as bool?) ?? false,
+    isProjectOfWeek: (j['is_project_of_week'] as bool?) ?? false,
+    isBuiltHistory: (j['is_built_history'] as bool?) ?? false,
+    heritageCategory: j['heritage_category'] as String?,
+    ownershipType: j['ownership_type'] as String?,
+    completionDecade: j['completion_decade'] as String?,
+    geoScope: (j['geo_scope'] as String?) ?? 'local',
+    region: j['region'] as String?,
+    country: j['country'] as String?,
+    upvoteCount: (j['upvote_count'] as num?)?.toInt() ?? 0,
+    downvoteCount: (j['downvote_count'] as num?)?.toInt() ?? 0,
+    descriptionOverview: j['description_overview'] as String?,
+    originalArchitect: j['original_architect'] as String?,
+    commissioningAuthority: j['commissioning_authority'] as String?,
+    renovationTimeline: j['renovation_timeline'] as String?,
+    submittedById: (j['submitted_by'] as num?)?.toInt(),
+    editedBy: (j['edited_by'] as num?)?.toInt(),
+    teamMembers:
+        (j['team_members'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectTeamMember.fromJson)
+            .toList() ??
+        [],
+    documents:
+        (j['documents'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectDocument.fromJson)
+            .toList() ??
+        [],
+    financiers:
+        (j['financiers'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectFinancier.fromJson)
+            .toList() ??
+        [],
+    stakeholders:
+        (j['stakeholders'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ProjectStakeholder.fromJson)
+            .toList() ??
+        [],
+    attribution: j['attribution'] != null
+        ? ProjectAttribution.fromJson(j['attribution'] as Map<String, dynamic>)
+        : null,
+    isFollowing: (j['is_following'] as bool?) ?? false,
+    isLinear: (j['is_linear'] as bool?) ?? false,
+    routeData: _parseRoute(j['route_coordinates'] ?? j['route_data']),
+    routeLengthKm: (j['route_length_km'] as num?)?.toDouble(),
+    relatedArticles:
+        (j['related_articles'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(Article.fromJson)
+            .toList() ??
+        [],
+  );
 
   /// Only [isFollowing] is ever patched client-side (optimistic follow
   /// toggle) — every other field stays a direct copy so the currently
   /// displayed detail (media, milestones, team members, ...) never
   /// disappears from an unrelated local update.
   Project copyWith({bool? isFollowing}) => Project(
-        id: id, title: title, slug: slug, summary: summary,
-        description: description, location: location, county: county,
-        latitude: latitude, longitude: longitude, client: client,
-        contractor: contractor, consultant: consultant, financier: financier,
-        progressPercent: progressPercent, status: status,
-        projectType: projectType, featuredImage: featuredImage,
-        isFeatured: isFeatured, averageRating: averageRating,
-        ratingCount: ratingCount, viewCount: viewCount,
-        startDate: startDate, expectedEndDate: expectedEndDate,
-        createdAt: createdAt, plusCode: plusCode, isLegacy: isLegacy,
-        isProjectOfWeek: isProjectOfWeek, isBuiltHistory: isBuiltHistory,
-        heritageCategory: heritageCategory, ownershipType: ownershipType,
-        completionDecade: completionDecade, geoScope: geoScope,
-        region: region, country: country, upvoteCount: upvoteCount,
-        downvoteCount: downvoteCount, contractValue: contractValue,
-        actualEndDate: actualEndDate, milestones: milestones, media: media,
-        featuredMedia: featuredMedia, descriptionOverview: descriptionOverview,
-        originalArchitect: originalArchitect,
-        commissioningAuthority: commissioningAuthority,
-        renovationTimeline: renovationTimeline, submittedBy: submittedBy,
-        editedBy: editedBy, teamMembers: teamMembers, documents: documents,
-        financiers: financiers, stakeholders: stakeholders, attribution: attribution,
-        isFollowing: isFollowing ?? this.isFollowing,
-        isLinear: isLinear, routeData: routeData, routeLengthKm: routeLengthKm,
-        relatedArticles: relatedArticles,
-      );
+    id: id,
+    title: title,
+    slug: slug,
+    summary: summary,
+    description: description,
+    location: location,
+    county: county,
+    additionalCounties: additionalCounties,
+    latitude: latitude,
+    longitude: longitude,
+    client: client,
+    contractor: contractor,
+    consultant: consultant,
+    financier: financier,
+    progressPercent: progressPercent,
+    status: status,
+    projectType: projectType,
+    featuredImage: featuredImage,
+    isFeatured: isFeatured,
+    averageRating: averageRating,
+    ratingCount: ratingCount,
+    viewCount: viewCount,
+    costKes: costKes,
+    costUsdValue: costUsdValue,
+    clients: clients,
+    contractors: contractors,
+    consortiumMembers: consortiumMembers,
+    mediaSources: mediaSources,
+    submittedByProfile: submittedByProfile,
+    publishedByProfile: publishedByProfile,
+    isAnonymousSubmission: isAnonymousSubmission,
+    startDate: startDate,
+    expectedEndDate: expectedEndDate,
+    createdAt: createdAt,
+    plusCode: plusCode,
+    isLegacy: isLegacy,
+    isProjectOfWeek: isProjectOfWeek,
+    isBuiltHistory: isBuiltHistory,
+    heritageCategory: heritageCategory,
+    ownershipType: ownershipType,
+    completionDecade: completionDecade,
+    geoScope: geoScope,
+    region: region,
+    country: country,
+    upvoteCount: upvoteCount,
+    downvoteCount: downvoteCount,
+    contractValue: contractValue,
+    actualEndDate: actualEndDate,
+    milestones: milestones,
+    media: media,
+    featuredMedia: featuredMedia,
+    descriptionOverview: descriptionOverview,
+    originalArchitect: originalArchitect,
+    commissioningAuthority: commissioningAuthority,
+    renovationTimeline: renovationTimeline,
+    submittedById: submittedById,
+    editedBy: editedBy,
+    teamMembers: teamMembers,
+    documents: documents,
+    financiers: financiers,
+    stakeholders: stakeholders,
+    attribution: attribution,
+    isFollowing: isFollowing ?? this.isFollowing,
+    isLinear: isLinear,
+    routeData: routeData,
+    routeLengthKm: routeLengthKm,
+    relatedArticles: relatedArticles,
+  );
 
-  List<ProjectMedia> get renderGallery => media.where((m) => m.isRender).toList();
-  List<ProjectMedia> get progressGallery => media.where((m) => !m.isRender).toList();
+  List<ProjectMedia> get renderGallery =>
+      media.where((m) => m.isRender).toList();
+  List<ProjectMedia> get progressGallery =>
+      media.where((m) => !m.isRender).toList();
 
   bool get hasCoordinates => latitude != null && longitude != null;
+  List<LatLng>? get routeCoordinates => routeData;
+  int get views => viewCount;
+  double? get costUsd =>
+      costUsdValue ?? (costKes == null ? null : costKes! / 129.5);
+  double? get computedCostUsd => costUsd;
+  UserProfileSummary? get submittedBy => submittedByProfile;
+  UserProfileSummary? get publishedBy => publishedByProfile;
 
   String? get imageUrl {
     if (featuredImage == null || featuredImage!.isEmpty) return null;
@@ -679,13 +817,20 @@ class Project {
   /// instance on hand.
   static String labelForStatus(String status) {
     switch (status) {
-      case 'planned': return 'Planned';
-      case 'ongoing': return 'Ongoing';
-      case 'completed': return 'Completed';
-      case 'commissioned': return 'Commissioned';
-      case 'stalled': return 'Stalled';
-      case 'cancelled': return 'Cancelled';
-      default: return status;
+      case 'planned':
+        return 'Planned';
+      case 'ongoing':
+        return 'Ongoing';
+      case 'completed':
+        return 'Completed';
+      case 'commissioned':
+        return 'Commissioned';
+      case 'stalled':
+        return 'Stalled';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
     }
   }
 

@@ -38,33 +38,33 @@ import '../../shared/screens/support_us_screen.dart';
 import '../../entities/screens/entity_profile_screen.dart';
 
 class AppRoutes {
-  static const String splash         = '/splash';
-  static const String onboarding     = '/onboarding';
-  static const String login          = '/login';
-  static const String signup         = '/signup';
-  static const String resetPassword  = '/reset-password';
-  static const String home           = '/home';
-  static const String articleDetail  = '/article';
+  static const String splash = '/splash';
+  static const String onboarding = '/onboarding';
+  static const String login = '/login';
+  static const String signup = '/signup';
+  static const String resetPassword = '/reset-password';
+  static const String home = '/home';
+  static const String articleDetail = '/article';
 
   // New sections
-  static const String projects        = '/projects';
-  static const String projectDetail   = '/project';
-  static const String submitProject   = '/submit-project';
-  static const String siteSafety      = '/site-safety';
-  static const String incidentDetail  = '/incident';
+  static const String projects = '/projects';
+  static const String projectDetail = '/project';
+  static const String submitProject = '/submit-project';
+  static const String siteSafety = '/site-safety';
+  static const String incidentDetail = '/incident';
   static const String privateProjects = '/private-projects';
-  static const String search          = '/search';
-  static const String referral        = '/referral';
+  static const String search = '/search';
+  static const String referral = '/referral';
   static const String pointsBreakdown = '/points';
-  static const String submissions     = '/submissions';
+  static const String submissions = '/submissions';
 
   // Website-parity sections backed by api.py endpoints that the app
   // previously didn't consume at all.
-  static const String services        = '/services';
-  static const String serviceDetail   = '/service';
-  static const String reports         = '/reports';
-  static const String reportDetail    = '/report';
-  static const String submitReport    = '/submit-report';
+  static const String services = '/services';
+  static const String serviceDetail = '/service';
+  static const String reports = '/reports';
+  static const String reportDetail = '/report';
+  static const String submitReport = '/submit-report';
   static const String advertise = '/advertise';
   static const String savedItems = '/saved-items';
   static const String contributors = '/contributors';
@@ -83,16 +83,16 @@ class AppRoutes {
   static const String support = '/support';
 
   static List<GetPage> routes = [
-    GetPage(name: splash,        page: () => const ModernSplashScreen()),
-    GetPage(name: onboarding,    page: () => const OnboardingScreen()),
-    GetPage(name: login,         page: () => const LoginScreen()),
-    GetPage(name: signup,        page: () => const LoginScreen(startOnSignUp: true)),
+    GetPage(name: splash, page: () => const ModernSplashScreen()),
+    GetPage(name: onboarding, page: () => const OnboardingScreen()),
+    GetPage(name: login, page: () => const LoginScreen()),
+    GetPage(name: signup, page: () => const LoginScreen(startOnSignUp: true)),
     GetPage(name: resetPassword, page: () => const ResetPasswordScreen()),
-    GetPage(name: home,          page: () => const MainNavigation()),
+    GetPage(name: home, page: () => const MainNavigation()),
     GetPage(name: articleDetail, page: () => const ArticleDetailScreen()),
 
     // Projects
-    GetPage(name: projects,       page: () => const ProjectsScreen()),
+    GetPage(name: projects, page: () => const ProjectsScreen()),
     GetPage(
       name: projectDetail,
       page: () {
@@ -168,7 +168,7 @@ class AppRoutes {
     ),
 
     // Trackers with no separate submit flow (Built History / Africa & World
-    // are filtered views over the same Project rows), merch
+    // are filtered views over the same Project rows)
     GetPage(name: builtHistory, page: () => const BuiltHistoryScreen()),
     GetPage(name: africaWorld, page: () => const AfricaWorldScreen()),
     GetPage(name: merch, page: () => const MerchScreen()),
@@ -198,4 +198,3 @@ class AppRoutes {
     GetPage(name: support, page: () => const SupportUsScreen()),
   ];
 }
-

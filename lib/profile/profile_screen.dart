@@ -21,7 +21,6 @@ import 'account_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
-import 'cookie_policy_screen.dart';
 import 'contact_screen.dart';
 import '../news/screens/submit_article_screen.dart';
 import '../shared/screens/webview_checkout_screen.dart';
@@ -34,11 +33,13 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Get.find<MjengoAuthController>();
-    return Obx(() => _SettingsView(
-          user: auth.currentUser,
-          auth: auth,
-          onSignOut: auth.signOut,
-        ));
+    return Obx(
+      () => _SettingsView(
+        user: auth.currentUser,
+        auth: auth,
+        onSignOut: auth.signOut,
+      ),
+    );
   }
 }
 
@@ -66,208 +67,231 @@ class _SettingsView extends StatelessWidget {
         child: ContentWidth(
           maxWidth: 700,
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Cover + avatar + name + Edit Profile action ────────────────
-            _ProfileHeader(user: user, auth: auth, topPad: 0),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Cover + avatar + name + Edit Profile action ────────────────
+              _ProfileHeader(user: user, auth: auth, topPad: 0),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _PointsSummaryCard(user: user),
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _PointsSummaryCard(user: user),
+              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // ── Referral: compact discreet row, not a hero banner ──────────
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: _ReferralCompactTile(),
-            ),
+              // ── Referral: compact discreet row, not a hero banner ──────────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _ReferralCompactTile(),
+              ),
 
-            const SizedBox(height: 28),
+              const SizedBox(height: 28),
 
-            // ── My Activity ─────────────────────────────────────────────
-            _SettingsGroup(
-              title: 'My Activity',
-              rows: [
-                _GroupRowData(
-                  icon: Icons.bookmark_outline_rounded,
-                  title: 'Bookmarks & Saved Items',
-                  subtitle: 'Bookmarked articles and saved projects',
-                  onTap: () => Get.toNamed(AppRoutes.savedItems),
-                ),
-                _GroupRowData(
-                  icon: Icons.inbox_outlined,
-                  title: 'My Submissions',
-                  subtitle: 'Articles, projects, incidents & comments',
-                  onTap: () => Get.toNamed(AppRoutes.submissions),
-                ),
-                _GroupRowData(
-                  icon: Icons.edit_note_rounded,
-                  title: 'Submit an Article',
-                  subtitle: 'Prime members can submit for editorial review',
-                  onTap: () => SubmitArticleScreen.open(context),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Account ──────────────────────────────────────────────────
-            _SettingsGroup(
-              title: 'Account',
-              rows: [
-                _GroupRowData(
-                  icon: Icons.notifications_none_rounded,
-                  title: 'Notification Preferences',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                  ),
-                ),
-                _GroupRowData(
-                  icon: Icons.lock_outline_rounded,
-                  title: 'Change Password',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const AccountScreen()),
-                  ),
-                ),
-                _GroupRowData(
-                  icon: Icons.mail_outline_rounded,
-                  title: 'Email Newsletter',
-                  onTap: () => showModalBottomSheet<void>(
-                    context: Get.context!,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.white,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-                    ),
-                    builder: (_) => const _NewsletterSheet(),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Legal ────────────────────────────────────────────────────
-            _SettingsGroup(
-              title: 'Legal',
-              rows: [
-                _GroupRowData(
-                  icon: Icons.shield_outlined,
-                  title: 'Privacy Policy',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
-                  ),
-                ),
-                _GroupRowData(
-                  icon: Icons.description_outlined,
-                  title: 'Terms of Service',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const TermsScreen()),
-                  ),
-                ),
-                _GroupRowData(
-                  icon: Icons.cookie_outlined,
-                  title: 'Cookie Policy',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const CookiePolicyScreen()),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Ecosystem & Support ─────────────────────────────────────
-            _SettingsGroup(
-              title: 'Ecosystem & Support',
-              rows: [
-                if (user?.isPrime != true)
+              // ── My Activity ─────────────────────────────────────────────
+              _SettingsGroup(
+                title: 'My Activity',
+                rows: [
                   _GroupRowData(
-                    icon: Icons.workspace_premium_outlined,
-                    title: 'Get Verified',
-                    subtitle: 'Apply for Mjengo Hub Prime',
-                    onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'Get Verified', nextPath: '/verify')),
+                    icon: Icons.bookmark_outline_rounded,
+                    title: 'Bookmarks & Saved Items',
+                    subtitle: 'Bookmarked articles and saved projects',
+                    onTap: () => Get.toNamed(AppRoutes.savedItems),
                   ),
-                _GroupRowData(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'My Purchases',
-                  subtitle: 'Prime, merch & credit pack history',
-                  onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'My Purchases', nextPath: '/account/purchases')),
-                ),
-                _GroupRowData(
-                  icon: Icons.info_outline_rounded,
-                  title: 'About Us',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const AboutScreen()),
+                  _GroupRowData(
+                    icon: Icons.inbox_outlined,
+                    title: 'My Submissions',
+                    subtitle: 'Articles, projects, incidents & comments',
+                    onTap: () => Get.toNamed(AppRoutes.submissions),
                   ),
-                ),
-                _GroupRowData(
-                  icon: Icons.campaign_outlined,
-                  title: 'Partner With Us',
-                  onTap: () => Get.toNamed(AppRoutes.advertise),
-                ),
-                _GroupRowData(
-                  icon: Icons.favorite_border_rounded,
-                  title: 'Support Us',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const SupportUsScreen()),
+                  _GroupRowData(
+                    icon: Icons.edit_note_rounded,
+                    title: 'Submit an Article',
+                    subtitle: 'Prime members can submit for editorial review',
+                    onTap: () => SubmitArticleScreen.open(context),
                   ),
-                ),
-                _GroupRowData(
-                  icon: Icons.help_outline_rounded,
-                  title: 'Help & Support',
-                  onTap: () => Navigator.of(Get.context!).push(
-                    MaterialPageRoute(builder: (_) => const ContactScreen()),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Account ──────────────────────────────────────────────────
+              _SettingsGroup(
+                title: 'Account',
+                rows: [
+                  _GroupRowData(
+                    icon: Icons.notifications_none_rounded,
+                    title: 'Notification Preferences',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  _GroupRowData(
+                    icon: Icons.lock_outline_rounded,
+                    title: 'Change Password',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(builder: (_) => const AccountScreen()),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.mail_outline_rounded,
+                    title: 'Email Newsletter',
+                    onTap: () => showModalBottomSheet<void>(
+                      context: Get.context!,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(18),
+                        ),
+                      ),
+                      builder: (_) => const _NewsletterSheet(),
+                    ),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // ── Session ──────────────────────────────────────────────────
-            _SettingsGroup(
-              title: 'Session',
-              rows: [
-                _GroupRowData(
-                  icon: Icons.logout_rounded,
-                  title: 'Log Out',
-                  titleColor: AppColors.danger,
-                  iconColor: AppColors.danger,
-                  onTap: onSignOut,
-                ),
-                _GroupRowData(
-                  icon: Icons.pause_circle_outline_rounded,
-                  title: 'Disable Account',
-                  subtitle: 'Temporarily deactivate your account',
-                  titleColor: AppColors.headingSlate,
-                  iconColor: AppColors.headingSlate,
-                  onTap: () => Get.to(() => const WebviewCheckoutScreen(title: 'Disable Account', nextPath: '/account/deactivate')),
-                ),
-                _GroupRowData(
-                  icon: Icons.delete_outline_rounded,
-                  title: 'Delete Account',
-                  titleColor: AppColors.danger,
-                  iconColor: AppColors.danger,
-                  onTap: () => _showDeleteAccountInfo(context),
-                ),
-              ],
-            ),
+              // ── Legal ────────────────────────────────────────────────────
+              _SettingsGroup(
+                title: 'About & Legal',
+                rows: [
+                  _GroupRowData(
+                    icon: Icons.info_outline_rounded,
+                    title: 'About Mjengo Hub',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(builder: (_) => const AboutScreen()),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.shield_outlined,
+                    title: 'Privacy Policy',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PrivacyPolicyScreen(),
+                      ),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.description_outlined,
+                    title: 'Terms of Service',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(builder: (_) => const TermsScreen()),
+                    ),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 28),
+              const SizedBox(height: 20),
 
-            // ── Get the app (store buttons, section 8 parity) ─────────────
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: _GetTheAppSection(),
-            ),
+              // ── Ecosystem & Support ─────────────────────────────────────
+              _SettingsGroup(
+                title: 'Ecosystem & Support',
+                rows: [
+                  if (user?.isPrime != true)
+                    _GroupRowData(
+                      icon: Icons.workspace_premium_outlined,
+                      title: 'Get Verified',
+                      subtitle: 'Apply for Mjengo Hub Prime',
+                      onTap: () => Get.to(
+                        () => const WebviewCheckoutScreen(
+                          title: 'Get Verified',
+                          nextPath: '/verify',
+                        ),
+                      ),
+                    ),
+                  _GroupRowData(
+                    icon: Icons.receipt_long_outlined,
+                    title: 'My Purchases',
+                    subtitle: 'Prime and credit pack history',
+                    onTap: () => Get.to(
+                      () => const WebviewCheckoutScreen(
+                        title: 'My Purchases',
+                        nextPath: '/account/purchases',
+                      ),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.info_outline_rounded,
+                    title: 'About Us',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(builder: (_) => const AboutScreen()),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.campaign_outlined,
+                    title: 'Partner With Us',
+                    onTap: () => Get.toNamed(AppRoutes.advertise),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.favorite_border_rounded,
+                    title: 'Support Us',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SupportUsScreen(),
+                      ),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.help_outline_rounded,
+                    title: 'Help & Support',
+                    onTap: () => Navigator.of(Get.context!).push(
+                      MaterialPageRoute(builder: (_) => const ContactScreen()),
+                    ),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 32),
-          ],
+              const SizedBox(height: 20),
+
+              // ── Session ──────────────────────────────────────────────────
+              _SettingsGroup(
+                title: 'Session',
+                rows: [
+                  _GroupRowData(
+                    icon: Icons.logout_rounded,
+                    title: 'Log Out',
+                    titleColor: AppColors.danger,
+                    iconColor: AppColors.danger,
+                    onTap: onSignOut,
+                  ),
+                  _GroupRowData(
+                    icon: Icons.pause_circle_outline_rounded,
+                    title: 'Disable Account',
+                    subtitle: 'Temporarily deactivate your account',
+                    titleColor: AppColors.headingSlate,
+                    iconColor: AppColors.headingSlate,
+                    onTap: () => Get.to(
+                      () => const WebviewCheckoutScreen(
+                        title: 'Disable Account',
+                        nextPath: '/account/deactivate',
+                      ),
+                    ),
+                  ),
+                  _GroupRowData(
+                    icon: Icons.delete_outline_rounded,
+                    title: 'Delete Account',
+                    titleColor: AppColors.danger,
+                    iconColor: AppColors.danger,
+                    onTap: () => _showDeleteAccountInfo(context),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Get the app (store buttons, section 8 parity) ─────────────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _GetTheAppSection(),
+              ),
+
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
@@ -284,18 +308,28 @@ class _SettingsView extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-        title: Text('Delete Account', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+        ),
+        title: Text(
+          'Delete Account',
+          style: GoogleFonts.montserrat(fontWeight: FontWeight.w500),
+        ),
         content: Text(
           'Self-service account deletion isn\'t available in the app yet. Contact support and we\'ll take care of it.',
           style: GoogleFonts.montserrat(fontSize: 13.5, height: 1.4),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ContactScreen()));
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ContactScreen()));
             },
             child: const Text('Contact Support'),
           ),
@@ -356,7 +390,11 @@ class _ProfileHeader extends StatefulWidget {
   final UserModel? user;
   final MjengoAuthController auth;
   final double topPad;
-  const _ProfileHeader({required this.user, required this.auth, required this.topPad});
+  const _ProfileHeader({
+    required this.user,
+    required this.auth,
+    required this.topPad,
+  });
 
   @override
   State<_ProfileHeader> createState() => _ProfileHeaderState();
@@ -392,13 +430,17 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
         : await auth.uploadAvatar(bytes, picked.name);
 
     if (!mounted) return;
-    setState(() => isCover ? _uploadingCover = false : _uploadingAvatar = false);
+    setState(
+      () => isCover ? _uploadingCover = false : _uploadingAvatar = false,
+    );
 
     Get.snackbar(
       ok ? 'Success' : 'Error',
       ok
           ? (isCover ? 'Cover photo updated' : 'Profile photo updated')
-          : (auth.errorMessage.isNotEmpty ? auth.errorMessage : 'Failed to upload photo'),
+          : (auth.errorMessage.isNotEmpty
+                ? auth.errorMessage
+                : 'Failed to upload photo'),
       backgroundColor: ok ? const Color(0xFF22C55E) : AppColors.danger,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
@@ -418,13 +460,25 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
           children: [
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded, color: AppColors.accentBlue),
-              title: Text('Camera', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              leading: const Icon(
+                Icons.camera_alt_rounded,
+                color: AppColors.accentBlue,
+              ),
+              title: Text(
+                'Camera',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded, color: AppColors.accentBlue),
-              title: Text('Photo Library', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              leading: const Icon(
+                Icons.photo_library_rounded,
+                color: AppColors.accentBlue,
+              ),
+              title: Text(
+                'Photo Library',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             const SizedBox(height: 8),
@@ -442,12 +496,15 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
     final rawSubtitle = (user?.bio != null && user!.bio!.isNotEmpty)
         ? user!.bio!
         : (user?.company != null && user!.company!.isNotEmpty)
-            ? user!.company!
-            : (user?.email ?? '');
-    final subtitle = rawSubtitle.contains('@') ? _maskEmail(rawSubtitle) : rawSubtitle;
+        ? user!.company!
+        : (user?.email ?? '');
+    final subtitle = rawSubtitle.contains('@')
+        ? _maskEmail(rawSubtitle)
+        : rawSubtitle;
     final initials = user?.initials ?? '?';
     final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
-    final hasCover = user?.coverImageUrl != null && user!.coverImageUrl!.isNotEmpty;
+    final hasCover =
+        user?.coverImageUrl != null && user!.coverImageUrl!.isNotEmpty;
     final points = user?.points ?? 0;
 
     return Column(
@@ -466,7 +523,10 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                 decoration: BoxDecoration(
                   gradient: hasCover ? null : AppColors.verifiedPillGradient,
                   image: hasCover
-                      ? DecorationImage(image: NetworkImage(user!.coverImageUrl!), fit: BoxFit.cover)
+                      ? DecorationImage(
+                          image: NetworkImage(user!.coverImageUrl!),
+                          fit: BoxFit.cover,
+                        )
                       : null,
                 ),
                 child: Align(
@@ -483,9 +543,16 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                           ? const SizedBox(
                               width: 15,
                               height: 15,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
-                          : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 15),
+                          : const Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                              size: 15,
+                            ),
                     ),
                   ),
                 ),
@@ -504,7 +571,10 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _SettingsView._bg,
-                    border: Border.all(color: AppColors.textDark, width: _ringWidth),
+                    border: Border.all(
+                      color: AppColors.textDark,
+                      width: _ringWidth,
+                    ),
                   ),
                   padding: EdgeInsets.all(_ringGap),
                   child: Container(
@@ -535,15 +605,25 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                             decoration: BoxDecoration(
                               color: AppColors.textDark,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
                             ),
                             child: _uploadingAvatar
                                 ? const SizedBox(
                                     width: 11,
                                     height: 11,
-                                    child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.white),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1.5,
+                                      color: Colors.white,
+                                    ),
                                   )
-                                : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 11),
+                                : const Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: Colors.white,
+                                    size: 11,
+                                  ),
                           ),
                         ),
                       ],
@@ -602,7 +682,10 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                   MaterialPageRoute(builder: (_) => const AccountScreen()),
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppRadius.sharpLg),
@@ -611,10 +694,20 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.edit_outlined, size: 14, color: AppColors.captionSlate),
+                      const Icon(
+                        Icons.edit_outlined,
+                        size: 14,
+                        color: AppColors.captionSlate,
+                      ),
                       const SizedBox(width: 6),
-                      Text('Edit Profile',
-                          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.captionSlate)),
+                      Text(
+                        'Edit Profile',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.captionSlate,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -635,21 +728,22 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
         ? '*' * local.length
         : '${local[0]}${'*' * (local.length - 1)}';
     final d = domain[0];
-    final maskedDomain =
-        d.length <= 2 ? '*' * d.length : '${d[0]}${'*' * (d.length - 1)}';
+    final maskedDomain = d.length <= 2
+        ? '*' * d.length
+        : '${d[0]}${'*' * (d.length - 1)}';
     return '$maskedLocal@$maskedDomain.${domain.sublist(1).join('.')}';
   }
 
   Widget _initialsWidget(String initials) => Center(
-        child: Text(
-          initials,
-          style: GoogleFonts.montserrat(
-            fontSize: 26,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-      );
+    child: Text(
+      initials,
+      style: GoogleFonts.montserrat(
+        fontSize: 26,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+      ),
+    ),
+  );
 }
 
 // ── Points summary card ─────────────────────────────────────────────────────
@@ -673,7 +767,11 @@ class _PointsSummaryCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.sharpLg),
           boxShadow: [
-            BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3)),
+            BoxShadow(
+              color: AppColors.accentBlue.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
         child: Column(
@@ -686,11 +784,28 @@ class _PointsSummaryCard extends StatelessWidget {
                 color: AppColors.accentBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(11),
               ),
-              child: const Icon(Icons.emoji_events_rounded, color: AppColors.accentBlue, size: 20),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                color: AppColors.accentBlue,
+                size: 20,
+              ),
             ),
             const SizedBox(height: 10),
-            Text('$total', style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-            Text('points', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+            Text(
+              '$total',
+              style: GoogleFonts.montserrat(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+              ),
+            ),
+            Text(
+              'points',
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                color: AppColors.textSubtle,
+              ),
+            ),
           ],
         ),
       ),
@@ -751,17 +866,33 @@ class _ReferralCompactTileState extends State<_ReferralCompactTile> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.card_giftcard_outlined, size: 18, color: AppColors.captionSlate),
+            const Icon(
+              Icons.card_giftcard_outlined,
+              size: 18,
+              color: AppColors.captionSlate,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Invite Colleagues & Earn Points',
-                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+                  Text(
+                    'Invite Colleagues & Earn Points',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.headingSlate,
+                    ),
+                  ),
                   if (_info?.code.isNotEmpty == true)
-                    Text(_info!.code,
-                        style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.captionSlate, letterSpacing: 0.4)),
+                    Text(
+                      _info!.code,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        color: AppColors.captionSlate,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -775,7 +906,11 @@ class _ReferralCompactTileState extends State<_ReferralCompactTile> {
                     borderRadius: BorderRadius.circular(AppRadius.sharp),
                     border: Border.all(color: AppColors.borderSlate),
                   ),
-                  child: const Icon(Icons.copy_rounded, size: 14, color: AppColors.captionSlate),
+                  child: const Icon(
+                    Icons.copy_rounded,
+                    size: 14,
+                    color: AppColors.captionSlate,
+                  ),
                 ),
               ),
           ],
@@ -823,7 +958,12 @@ class _SettingsGroup extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8, left: 2),
             child: Text(
               title.toUpperCase(),
-              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.captionSlate, letterSpacing: 0.6),
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.captionSlate,
+                letterSpacing: 0.6,
+              ),
             ),
           ),
           Container(
@@ -837,7 +977,8 @@ class _SettingsGroup extends StatelessWidget {
               children: [
                 for (int i = 0; i < rows.length; i++) ...[
                   _GroupRow(data: rows[i]),
-                  if (i != rows.length - 1) const Divider(height: 1, color: AppColors.borderSlate),
+                  if (i != rows.length - 1)
+                    const Divider(height: 1, color: AppColors.borderSlate),
                 ],
               ],
             ),
@@ -860,7 +1001,11 @@ class _GroupRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [
-            Icon(data.icon, size: 19, color: data.iconColor ?? AppColors.captionSlate),
+            Icon(
+              data.icon,
+              size: 19,
+              color: data.iconColor ?? AppColors.captionSlate,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -868,16 +1013,30 @@ class _GroupRow extends StatelessWidget {
                 children: [
                   Text(
                     data.title,
-                    style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w600, color: data.titleColor ?? AppColors.headingSlate),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: data.titleColor ?? AppColors.headingSlate,
+                    ),
                   ),
                   if (data.subtitle != null) ...[
                     const SizedBox(height: 2),
-                    Text(data.subtitle!, style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.captionSlate)),
+                    Text(
+                      data.subtitle!,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        color: AppColors.captionSlate,
+                      ),
+                    ),
                   ],
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 19, color: AppColors.captionSlate),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 19,
+              color: AppColors.captionSlate,
+            ),
           ],
         ),
       ),
@@ -924,7 +1083,8 @@ class _NewsletterSheetState extends State<_NewsletterSheet> {
     Navigator.of(context).pop();
     Get.snackbar(
       ok ? 'Subscribed' : 'Could not subscribe',
-      res['message'] as String? ?? (ok ? 'You are on the list.' : 'Please try again.'),
+      res['message'] as String? ??
+          (ok ? 'You are on the list.' : 'Please try again.'),
       backgroundColor: ok ? AppColors.success : AppColors.danger,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
@@ -959,7 +1119,10 @@ class _NewsletterSheetState extends State<_NewsletterSheet> {
               const SizedBox(height: 4),
               Text(
                 'Construction news, safety alerts and product updates in your inbox.',
-                style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  color: AppColors.textSubtle,
+                ),
               ),
               const SizedBox(height: 18),
 

@@ -14,17 +14,28 @@ import '../widgets/responsive.dart';
 import 'advertise_screen.dart';
 import 'support_us_screen.dart';
 import '../../profile/contact_screen.dart';
+import '../../constants/legal_texts.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({Key? key}) : super(key: key);
 
   static const _trackers = [
-    ('Infrastructure Tracker', "Kenya's roads, bridges & public infrastructure projects"),
-    ('Private Developments', 'Commercial & residential developments across the country'),
-    ('Built History', "Kenya's architectural & infrastructure heritage"),
-    ('Africa & World', 'Landmark projects across the continent and beyond'),
-    ('Site Safety', 'A database of construction-site safety incidents'),
-    ('Merch', 'Mjengo Hub branded gear'),
+    (
+      'Infrastructure Megaprojects',
+      "Roads, bridges and public infrastructure across Kenya",
+    ),
+    (
+      'Private Developments',
+      'Commercial & residential developments across the country',
+    ),
+    (
+      'Site Safety & Incident Tracker',
+      'Public-interest construction and site-safety reporting',
+    ),
+    (
+      'Built History & Heritage',
+      "Kenya's architectural and infrastructure heritage",
+    ),
   ];
 
   @override
@@ -38,8 +49,12 @@ class AboutScreen extends StatelessWidget {
         foregroundColor: AppColors.headingSlate,
         titleSpacing: 0,
         title: Text(
-          'About Us',
-          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.headingSlate),
+          'About Mjengo Hub',
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.headingSlate,
+          ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -55,20 +70,50 @@ class AboutScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.deepNavy,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'MJENGO NETWORKS ENTERPRISE',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: .7,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Text(
-                  'Mjengo Hub',
-                  style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.2),
+                  LegalTexts.aboutCompanyTitle,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.headingSlate,
+                    height: 1.2,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   "Kenya's leading construction industry platform — news and expert analysis, "
                   'live Infrastructure and Private Developments trackers, road and site safety, '
                   'and a community for professionals and the public alike.',
-                  style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w400, color: AppColors.bodyCharcoal, height: 1.55),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.bodyCharcoal,
+                    height: 1.55,
+                  ),
                 ),
                 const SizedBox(height: 28),
 
-                _heading('What We Cover'),
+                _heading('Core Mission'),
                 const SizedBox(height: 12),
                 for (final t in _trackers) _trackerRow(t.$1, t.$2),
 
@@ -81,7 +126,11 @@ class AboutScreen extends StatelessWidget {
                   'and contribute to Mshikamano, our mental-health support space for industry '
                   'professionals. Verified contributions earn points and reviewer standing through our '
                   'gamification system.',
-                  style: GoogleFonts.montserrat(fontSize: 14.5, color: AppColors.bodyCharcoal, height: 1.55),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14.5,
+                    color: AppColors.bodyCharcoal,
+                    height: 1.55,
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -93,10 +142,12 @@ class AboutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.sharp),
                   ),
                   child: Text(
-                    'Tracker data and cost indices on Mjengo Hub are published for journalistic and '
-                    'informational purposes only. They are not legal or engineering certifications, and '
-                    'not a guarantee relating to tender procurement or contract award.',
-                    style: GoogleFonts.montserrat(fontSize: 14.5, color: AppColors.bodyCharcoal, height: 1.55),
+                    LegalTexts.disclaimer,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14.5,
+                      color: AppColors.bodyCharcoal,
+                      height: 1.55,
+                    ),
                   ),
                 ),
 
@@ -106,7 +157,11 @@ class AboutScreen extends StatelessWidget {
                 Text(
                   'Mjengo Hub is operated by Mjengo Networks Limited, a company registered in Nairobi, '
                   'Kenya.',
-                  style: GoogleFonts.montserrat(fontSize: 14.5, color: AppColors.bodyCharcoal, height: 1.55),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14.5,
+                    color: AppColors.bodyCharcoal,
+                    height: 1.55,
+                  ),
                 ),
 
                 const SizedBox(height: 28),
@@ -126,7 +181,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     _linkButton(
                       icon: Icons.mail_outline_rounded,
-                      label: 'Contact Us',
+                      label: 'Submit Project Data / Tip',
                       onTap: () => Get.to(() => const ContactScreen()),
                     ),
                   ],
@@ -137,7 +192,10 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'mjengohub.co.ke/about',
-                  style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.captionSlate),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: AppColors.captionSlate,
+                  ),
                 ),
               ],
             ),
@@ -148,36 +206,61 @@ class AboutScreen extends StatelessWidget {
   }
 
   Widget _heading(String text) => Text(
-        text,
-        style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.headingSlate),
-      );
+    text,
+    style: GoogleFonts.montserrat(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: AppColors.headingSlate,
+    ),
+  );
 
   Widget _trackerRow(String title, String subtitle) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 6, right: 10),
-              width: 4,
-              height: 4,
-              decoration: const BoxDecoration(color: AppColors.captionSlate, shape: BoxShape.circle),
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.captionSlate, height: 1.4)),
-                ],
-              ),
-            ),
-          ],
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 6, right: 10),
+          width: 4,
+          height: 4,
+          decoration: const BoxDecoration(
+            color: AppColors.captionSlate,
+            shape: BoxShape.circle,
+          ),
         ),
-      );
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.montserrat(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.headingSlate,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  color: AppColors.captionSlate,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 
-  Widget _linkButton({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _linkButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -192,7 +275,14 @@ class AboutScreen extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: AppColors.captionSlate),
             const SizedBox(width: 8),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.headingSlate,
+              ),
+            ),
           ],
         ),
       ),

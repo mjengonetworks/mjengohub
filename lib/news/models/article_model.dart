@@ -62,11 +62,13 @@ class ArticleCategory {
   final int id;
   final String name;
   final String slug;
+  final ArticleCategory? parent;
 
   const ArticleCategory({
     required this.id,
     required this.name,
     required this.slug,
+    this.parent,
   });
 
   factory ArticleCategory.fromJson(Map<String, dynamic> json) {
@@ -74,6 +76,9 @@ class ArticleCategory {
       id: (json['id'] as num).toInt(),
       name: (json['name'] as String?) ?? '',
       slug: (json['slug'] as String?) ?? '',
+      parent: json['parent'] is Map
+          ? ArticleCategory.fromJson(json['parent'] as Map<String, dynamic>)
+          : null,
     );
   }
 }
@@ -91,6 +96,7 @@ class Article {
   final int? readTime;
   final String? publishedAt;
   final ArticleCategory? category;
+  final List<ArticleCategory> categories;
   final ArticleAuthor? author;
   // Detail-only fields
   final String? content;
@@ -121,6 +127,7 @@ class Article {
     this.readTime,
     this.publishedAt,
     this.category,
+    this.categories = const [],
     this.author,
     this.content,
     this.featuredImageCaption,
@@ -157,11 +164,16 @@ class Article {
       isFeatured: (json['is_featured'] as bool?) ?? false,
       isBreaking: (json['is_breaking'] as bool?) ?? false,
       viewCount: (json['view_count'] as num?)?.toInt() ?? 0,
+      categories:
+          (json['categories'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(ArticleCategory.fromJson)
+              .toList() ??
+          const [],
       readTime: (json['read_time'] as num?)?.toInt(),
       publishedAt: json['published_at'] as String?,
       category: json['category'] != null
-          ? ArticleCategory.fromJson(
-              json['category'] as Map<String, dynamic>)
+          ? ArticleCategory.fromJson(json['category'] as Map<String, dynamic>)
           : null,
       author: json['author'] != null
           ? ArticleAuthor.fromJson(json['author'] as Map<String, dynamic>)
@@ -174,7 +186,9 @@ class Article {
       mapCenter: _parseLatLng(json['map_center']),
       mapRoute: _parseRoute(json['map_route']),
       taggedProject: json['tagged_project'] != null
-          ? ArticleTaggedProject.fromJson(json['tagged_project'] as Map<String, dynamic>)
+          ? ArticleTaggedProject.fromJson(
+              json['tagged_project'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -214,6 +228,8 @@ class Article {
     return viewCount.toString();
   }
 
+  int get views => viewCount;
+
   /// Strip HTML tags from content for plain-text rendering, preserving
   /// paragraph breaks. Block-level closing tags become blank lines (and
   /// `<br>` a single line break) *before* the remaining tags are stripped —
@@ -223,7 +239,10 @@ class Article {
     if (content == null) return '';
     return content!
         .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
-        .replaceAll(RegExp(r'</(p|div|li|h[1-6])>', caseSensitive: false), '\n\n')
+        .replaceAll(
+          RegExp(r'</(p|div|li|h[1-6])>', caseSensitive: false),
+          '\n\n',
+        )
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .replaceAll(RegExp(r'&nbsp;'), ' ')
         .replaceAll(RegExp(r'&amp;'), '&')

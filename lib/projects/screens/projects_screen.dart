@@ -14,12 +14,12 @@ import '../widgets/tracker_dynamic_sections.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import 'project_detail_screen.dart';
 
-const _kBlue     = Color(0xFF2563EB);
-const _kBg       = Color(0xFFF0F4FF);
-const _kDark     = Color(0xFF1A1A2E);
-const _kSubtext  = Color(0xFF8888AA);
-const _kDivider  = Color(0xFFEEEEF5);
-const _kCard     = Colors.white;
+const _kBlue = Color(0xFF2563EB);
+const _kBg = Color(0xFFF0F4FF);
+const _kDark = Color(0xFF1A1A2E);
+const _kSubtext = Color(0xFF8888AA);
+const _kDivider = Color(0xFFEEEEF5);
+const _kCard = Colors.white;
 
 /// "Buildings" hierarchy (Spec 3) — client-side display/filter layer only.
 /// The backend has no category/subcategory column on `Project` at all today
@@ -29,8 +29,18 @@ const _kCard     = Colors.white;
 class BuildingsTaxonomy {
   BuildingsTaxonomy._();
 
-  static const subcategories = ['Residential', 'Commercial', 'Mixed Development'];
-  static const types = ['Malls / Retail', 'Office Complex', 'Apartment Towers', 'Gated Community', 'Warehouses / Logistics'];
+  static const subcategories = [
+    'Residential',
+    'Commercial',
+    'Mixed Development',
+  ];
+  static const types = [
+    'Malls / Retail',
+    'Office Complex',
+    'Apartment Towers',
+    'Gated Community',
+    'Warehouses / Logistics',
+  ];
 
   static const Map<String, List<String>> _keywords = {
     'Residential': ['residential', 'housing', 'apartment', 'estate', 'homes'],
@@ -44,7 +54,8 @@ class BuildingsTaxonomy {
   };
 
   static bool matches(Project p, String label) {
-    final haystack = '${p.title} ${p.summary ?? ''} ${p.location ?? ''}'.toLowerCase();
+    final haystack = '${p.title} ${p.summary ?? ''} ${p.location ?? ''}'
+        .toLowerCase();
     final keywords = _keywords[label] ?? [label.toLowerCase()];
     return keywords.any(haystack.contains);
   }
@@ -67,7 +78,10 @@ class ProjectsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(ProjectsController(projectType: projectType), tag: projectType);
+    final ctrl = Get.put(
+      ProjectsController(projectType: projectType),
+      tag: projectType,
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -76,13 +90,20 @@ class ProjectsScreen extends StatelessWidget {
         floatingActionButton: FloatingActionButton.extended(
           backgroundColor: _kBlue,
           onPressed: () async {
-            final submitted = await Get.toNamed(AppRoutes.submitProject, arguments: projectType);
+            final submitted = await Get.toNamed(
+              AppRoutes.submitProject,
+              arguments: projectType,
+            );
             if (submitted == true) ctrl.fetchAll();
           },
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(
             'Submit',
-            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white),
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
         ),
         body: Column(
@@ -126,41 +147,53 @@ class ProjectsScreen extends StatelessWidget {
               }
               return false;
             },
-            child: Obx(() => ListView(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  children: [
-                    // 1. Top interactive live map — the very first scrollable
-                    // item, directly beneath the app bar. Color-coded status
-                    // pins, tap-to-preview bottom sheet. Never gated behind a
-                    // toggle and never pushed below other content.
-                    const SizedBox(height: 12),
-                    TrackerLiveMap(projects: ctrl.projects, loading: false),
-                    const SizedBox(height: 12),
+            child: Obx(
+              () => ListView(
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  // 1. Top interactive live map — the very first scrollable
+                  // item, directly beneath the app bar. Color-coded status
+                  // pins, tap-to-preview bottom sheet. Never gated behind a
+                  // toggle and never pushed below other content.
+                  const SizedBox(height: 12),
+                  TrackerLiveMap(projects: ctrl.projects, loading: false),
+                  const SizedBox(height: 12),
 
-                    // 2. Dedicated tracker control — status/county/client
-                    // filter chips.
-                    _buildStatusChips(ctrl),
-                    if (ctrl.availableCounties.isNotEmpty) _buildCountyChips(ctrl),
-                    if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
-                    if (projectType == 'private_development') _BuildingsTaxonomyFilter(ctrl: ctrl),
+                  // 2. Dedicated tracker control — status/county/client
+                  // filter chips.
+                  _buildStatusChips(ctrl),
+                  _buildCostChips(ctrl),
+                  if (ctrl.availableCounties.isNotEmpty)
+                    _buildCountyChips(ctrl),
+                  if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
+                  if (projectType == 'private_development')
+                    _BuildingsTaxonomyFilter(ctrl: ctrl),
 
-                    if (ctrl.featuredProjects.isNotEmpty) _buildFeaturedSection(ctrl),
+                  if (ctrl.featuredProjects.isNotEmpty)
+                    _buildFeaturedSection(ctrl),
 
-                    // 3-5. Browse by Category / Most Viewed / By Status
-                    const SizedBox(height: 12),
-                    TrackerDynamicSections(projectType: ctrl.projectType),
+                  // 3-5. Browse by Category / Most Viewed / By Status
+                  const SizedBox(height: 12),
+                  TrackerDynamicSections(projectType: ctrl.projectType),
 
-                    // 6. All projects grid (paginated list feed)
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('All Projects',
-                          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: _kDark)),
+                  // 6. All projects grid (paginated list feed)
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'All Projects',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: _kDark,
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    _buildProjectsGrid(ctrl),
-                  ],
-                )),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildProjectsGrid(ctrl),
+                ],
+              ),
+            ),
           ),
         ),
       ],
@@ -178,8 +211,11 @@ class ProjectsScreen extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () => Get.back(),
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 20, color: _kDark),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: _kDark,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -212,14 +248,21 @@ class ProjectsScreen extends StatelessWidget {
               style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
               decoration: InputDecoration(
                 hintText: 'Search projects…',
-                hintStyle:
-                    GoogleFonts.montserrat(fontSize: 13, color: _kSubtext),
-                prefixIcon:
-                    const Icon(Icons.search_rounded, color: _kSubtext, size: 20),
+                hintStyle: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  color: _kSubtext,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: _kSubtext,
+                  size: 20,
+                ),
                 filled: true,
                 fillColor: _kBg,
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: const BorderSide(color: _kDivider),
@@ -319,37 +362,99 @@ class ProjectsScreen extends StatelessWidget {
   Widget _buildCountyChips(ProjectsController ctrl) {
     final counties = ctrl.availableCounties;
     return Container(
-      height: 42,
+      height: 52,
       color: _kCard,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        itemCount: counties.length + 1,
-        itemBuilder: (_, i) {
-          if (i == 0) {
-            return _FilterChip(
-              label: 'All Counties',
-              selected: ctrl.selectedCounty.value.isEmpty,
-              onTap: () => ctrl.applyFilters(
-                status: ctrl.selectedStatus.value,
-                clientSlug: ctrl.selectedClientSlug.value,
-                county: '',
-                q: ctrl.searchQuery.value,
+        child: OutlinedButton.icon(
+          icon: const Icon(Icons.location_on_outlined, size: 17),
+          label: Text(
+            ctrl.selectedCounties.isEmpty
+                ? 'All Counties (47)'
+                : '${ctrl.selectedCounties.length} counties selected',
+          ),
+          onPressed: () async {
+            final selected = ctrl.selectedCounties.toSet();
+            await showModalBottomSheet<void>(
+              context: Get.context!,
+              isScrollControlled: true,
+              builder: (context) => StatefulBuilder(
+                builder: (context, setSheetState) => SafeArea(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * .75,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          title: const Text('Select counties'),
+                          trailing: Text('${selected.length}/47'),
+                        ),
+                        Expanded(
+                          child: ListView(
+                            children: [
+                              for (final county in counties)
+                                CheckboxListTile(
+                                  title: Text(county),
+                                  value: selected.contains(county),
+                                  onChanged: (value) => setSheetState(
+                                    () => value == true
+                                        ? selected.add(county)
+                                        : selected.remove(county),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                ctrl.applyCountySelection(selected.toList());
+                              },
+                              child: const Text('Apply counties'),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             );
-          }
-          final county = counties[i - 1];
-          return _FilterChip(
-            label: county,
-            selected: ctrl.selectedCounty.value == county,
-            onTap: () => ctrl.applyFilters(
-              status: ctrl.selectedStatus.value,
-              clientSlug: ctrl.selectedClientSlug.value,
-              county: county,
-              q: ctrl.searchQuery.value,
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCostChips(ProjectsController ctrl) {
+    const tiers = ['<100M', '100M-500M', '500M-1B', '1B-5B', '5B+'];
+    return SizedBox(
+      height: 42,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        children: [
+          _FilterChip(
+            label: 'All Costs',
+            selected: ctrl.selectedCostTier.value.isEmpty,
+            onTap: () {
+              ctrl.selectedCostTier.value = '';
+              ctrl.fetchAll();
+            },
+          ),
+          for (final tier in tiers)
+            _FilterChip(
+              label: tier == '<100M' ? 'Under 100M' : tier,
+              selected: ctrl.selectedCostTier.value == tier,
+              onTap: () {
+                ctrl.selectedCostTier.value = tier;
+                ctrl.fetchAll();
+              },
             ),
-          );
-        },
+        ],
       ),
     );
   }
@@ -432,15 +537,19 @@ class _FeaturedProjectCard extends StatelessWidget {
           border: Border.all(color: _kDivider),
           boxShadow: const [
             BoxShadow(
-                color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))
+              color: Color(0x06000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(14)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: NetImage(
@@ -476,12 +585,15 @@ class _FeaturedProjectCard extends StatelessWidget {
                       Text(
                         '📍 ${project.county ?? project.location}',
                         style: GoogleFonts.montserrat(
-                            fontSize: 10.5, color: _kSubtext),
+                          fontSize: 10.5,
+                          color: _kSubtext,
+                        ),
                       ),
                     const Spacer(),
                     _ProgressBar(
-                        value: project.progressPercent / 100,
-                        label: '${project.progressPercent}%'),
+                      value: project.progressPercent / 100,
+                      label: '${project.progressPercent}%',
+                    ),
                   ],
                 ),
               ),
@@ -491,7 +603,6 @@ class _FeaturedProjectCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ── Project list tile (main list) ─────────────────────────────────────────────
@@ -515,7 +626,10 @@ class _ProjectListTile extends StatelessWidget {
           border: Border.all(color: _kDivider),
           boxShadow: const [
             BoxShadow(
-                color: Color(0x05000000), blurRadius: 6, offset: Offset(0, 2))
+              color: Color(0x05000000),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
           ],
         ),
         child: Row(
@@ -556,7 +670,9 @@ class _ProjectListTile extends StatelessWidget {
                             child: Text(
                               project.client!.name,
                               style: GoogleFonts.montserrat(
-                                  fontSize: 10, color: _kSubtext),
+                                fontSize: 10,
+                                color: _kSubtext,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -580,19 +696,24 @@ class _ProjectListTile extends StatelessWidget {
                       Text(
                         '📍 ${project.county ?? project.location}',
                         style: GoogleFonts.montserrat(
-                            fontSize: 11, color: _kSubtext),
+                          fontSize: 11,
+                          color: _kSubtext,
+                        ),
                       ),
                     ],
                     const SizedBox(height: 8),
                     _ProgressBar(
-                        value: project.progressPercent / 100,
-                        label: '${project.progressPercent}% complete'),
+                      value: project.progressPercent / 100,
+                      label: '${project.progressPercent}% complete',
+                    ),
                     if (project.averageRating != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         '⭐ ${project.ratingDisplay} (${project.ratingCount} ratings)',
                         style: GoogleFonts.montserrat(
-                            fontSize: 10.5, color: _kSubtext),
+                          fontSize: 10.5,
+                          color: _kSubtext,
+                        ),
                       ),
                     ],
                   ],
@@ -601,15 +722,17 @@ class _ProjectListTile extends StatelessWidget {
             ),
             const Padding(
               padding: EdgeInsets.only(right: 12, top: 12),
-              child: Icon(Icons.chevron_right_rounded,
-                  color: _kSubtext, size: 20),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                color: _kSubtext,
+                size: 20,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 }
 
 // ── Shared widgets ─────────────────────────────────────────────────────────────
@@ -627,14 +750,18 @@ class _ProgressBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Progress',
-                style: GoogleFonts.montserrat(
-                    fontSize: 10, color: _kSubtext)),
-            Text(label,
-                style: GoogleFonts.montserrat(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: _kBlue)),
+            Text(
+              'Progress',
+              style: GoogleFonts.montserrat(fontSize: 10, color: _kSubtext),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: _kBlue,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 3),
@@ -658,12 +785,17 @@ class _StatusBadge extends StatelessWidget {
 
   Color get _color {
     switch (status) {
-      case 'completed': return const Color(0xFF16A34A);
-      case 'ongoing': return _kBlue;
-      case 'planned': return const Color(0xFFF59E0B);
+      case 'completed':
+        return const Color(0xFF16A34A);
+      case 'ongoing':
+        return _kBlue;
+      case 'planned':
+        return const Color(0xFFF59E0B);
       case 'stalled':
-      case 'cancelled': return const Color(0xFFDC2626);
-      default: return _kSubtext;
+      case 'cancelled':
+        return const Color(0xFFDC2626);
+      default:
+        return _kSubtext;
     }
   }
 
@@ -697,7 +829,8 @@ class _BuildingsTaxonomyFilter extends StatefulWidget {
   const _BuildingsTaxonomyFilter({required this.ctrl});
 
   @override
-  State<_BuildingsTaxonomyFilter> createState() => _BuildingsTaxonomyFilterState();
+  State<_BuildingsTaxonomyFilter> createState() =>
+      _BuildingsTaxonomyFilterState();
 }
 
 class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
@@ -705,7 +838,10 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
 
   @override
   Widget build(BuildContext context) {
-    final allChips = [...BuildingsTaxonomy.subcategories, ...BuildingsTaxonomy.types];
+    final allChips = [
+      ...BuildingsTaxonomy.subcategories,
+      ...BuildingsTaxonomy.types,
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -713,7 +849,14 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Buildings', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.captionSlate)),
+          child: Text(
+            'Buildings',
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.captionSlate,
+            ),
+          ),
         ),
         const SizedBox(height: 6),
         SizedBox(
@@ -724,21 +867,36 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
             itemCount: allChips.length + 1,
             itemBuilder: (_, i) {
               if (i == 0) {
-                return _FilterChip(label: 'All', selected: _selected == null, onTap: () => setState(() => _selected = null));
+                return _FilterChip(
+                  label: 'All',
+                  selected: _selected == null,
+                  onTap: () => setState(() => _selected = null),
+                );
               }
               final label = allChips[i - 1];
-              return _FilterChip(label: label, selected: _selected == label, onTap: () => setState(() => _selected = label));
+              return _FilterChip(
+                label: label,
+                selected: _selected == label,
+                onTap: () => setState(() => _selected = label),
+              );
             },
           ),
         ),
         if (_selected != null)
           Obx(() {
-            final matches = widget.ctrl.projects.where((p) => BuildingsTaxonomy.matches(p, _selected!)).toList();
+            final matches = widget.ctrl.projects
+                .where((p) => BuildingsTaxonomy.matches(p, _selected!))
+                .toList();
             if (matches.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: Text('No loaded projects match "$_selected" yet.',
-                    style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.captionSlate)),
+                child: Text(
+                  'No loaded projects match "$_selected" yet.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: AppColors.captionSlate,
+                  ),
+                ),
               );
             }
             return SizedBox(
@@ -748,7 +906,8 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 itemCount: matches.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (_, i) => _FeaturedProjectCard(project: matches[i]),
+                itemBuilder: (_, i) =>
+                    _FeaturedProjectCard(project: matches[i]),
               ),
             );
           }),
@@ -761,8 +920,11 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _FilterChip(
-      {required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -775,9 +937,7 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? _kBlue : _kBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? _kBlue : _kDivider,
-          ),
+          border: Border.all(color: selected ? _kBlue : _kDivider),
         ),
         child: Text(
           label,

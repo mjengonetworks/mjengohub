@@ -10,17 +10,24 @@ class ProjectsService {
   Future<List<Project>> getProjects({
     String? status,
     String? county,
+    List<String>? counties,
+    double? costMin,
+    double? costMax,
     String? clientSlug,
     String? q,
     bool featured = false,
+
     /// 'infrastructure' or 'private_development' — matches `Project.project_type`.
     /// Left unset to fetch across both (used nowhere in-app today; every
     /// caller passes one explicitly so the two trackers never mix rows).
     String? projectType,
+
     /// True for the Built History archive (`Project.is_built_history`).
     bool? isBuiltHistory,
+
     /// 'global' for the Africa & World showcase (`Project.geo_scope`).
     String? geoScope,
+
     /// East Africa/Africa/Europe/Asia/North America/South America/Oceania —
     /// Africa & World's category dimension (there's no separate "sector"
     /// taxonomy for this tracker server-side, only region).
@@ -33,23 +40,31 @@ class ProjectsService {
     int perPage = 12,
   }) async {
     try {
-      final query = <String, dynamic>{
-        'page': '$page',
-        'per_page': '$perPage',
-      };
+      final query = <String, dynamic>{'page': '$page', 'per_page': '$perPage'};
       if (status != null && status.isNotEmpty) query['status'] = status;
       if (county != null && county.isNotEmpty) query['county'] = county;
-      if (clientSlug != null && clientSlug.isNotEmpty) query['client'] = clientSlug;
+      if (counties != null && counties.isNotEmpty)
+        query['counties'] = counties.join(',');
+      if (costMin != null) query['cost_min'] = '$costMin';
+      if (costMax != null) query['cost_max'] = '$costMax';
+      if (clientSlug != null && clientSlug.isNotEmpty)
+        query['client'] = clientSlug;
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
-      if (projectType != null && projectType.isNotEmpty) query['project_type'] = projectType;
+      if (projectType != null && projectType.isNotEmpty)
+        query['project_type'] = projectType;
       if (isBuiltHistory != null) query['is_built_history'] = '$isBuiltHistory';
-      if (geoScope != null && geoScope.isNotEmpty) query['geo_scope'] = geoScope;
+      if (geoScope != null && geoScope.isNotEmpty)
+        query['geo_scope'] = geoScope;
       if (region != null && region.isNotEmpty) query['region'] = region;
-      if (heritageCategory != null && heritageCategory.isNotEmpty) query['heritage_category'] = heritageCategory;
-      if (ownershipType != null && ownershipType.isNotEmpty) query['ownership_type'] = ownershipType;
-      if (completionDecade != null && completionDecade.isNotEmpty) query['completion_decade'] = completionDecade;
-      if (categorySlug != null && categorySlug.isNotEmpty) query['category'] = categorySlug;
+      if (heritageCategory != null && heritageCategory.isNotEmpty)
+        query['heritage_category'] = heritageCategory;
+      if (ownershipType != null && ownershipType.isNotEmpty)
+        query['ownership_type'] = ownershipType;
+      if (completionDecade != null && completionDecade.isNotEmpty)
+        query['completion_decade'] = completionDecade;
+      if (categorySlug != null && categorySlug.isNotEmpty)
+        query['category'] = categorySlug;
 
       final res = await _api.getRequest('projects', query: query);
       if (res.statusCode == 200 && res.body != null) {
@@ -103,10 +118,9 @@ class ProjectsService {
 
   Future<bool> rateProject(int projectId, int rating) async {
     try {
-      final res = await _api.postRequest(
-        'projects/$projectId/rate',
-        {'rating': rating},
-      );
+      final res = await _api.postRequest('projects/$projectId/rate', {
+        'rating': rating,
+      });
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
       print('ProjectsService.rateProject error: $e');
@@ -150,12 +164,13 @@ class ProjectsService {
     String? reason,
   }) async {
     try {
-      final res = await _api.postRequest('projects/$projectId/suggest-progress', {
-        'proposed_percent': proposedPercent,
-        if (name != null) 'name': name,
-        if (email != null) 'email': email,
-        if (reason != null) 'reason': reason,
-      });
+      final res = await _api
+          .postRequest('projects/$projectId/suggest-progress', {
+            'proposed_percent': proposedPercent,
+            if (name != null) 'name': name,
+            if (email != null) 'email': email,
+            if (reason != null) 'reason': reason,
+          });
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
       print('ProjectsService.suggestProgress error: $e');
@@ -176,14 +191,18 @@ class ProjectsService {
         return {
           'success': true,
           'id': body is Map ? body['id'] : null,
-          'message': (body is Map ? body['message'] as String? : null) ??
+          'message':
+              (body is Map ? body['message'] as String? : null) ??
               'Project submitted for admin review',
         };
       }
       return {'success': false, 'message': _errorMessage(res.body)};
     } catch (e) {
       print('ProjectsService.submitProject error: $e');
-      return {'success': false, 'message': 'Could not submit project. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not submit project. Check your connection.',
+      };
     }
   }
 
@@ -192,10 +211,17 @@ class ProjectsService {
   /// public `getProjects()` above.
   Future<List<Project>> getMyProjects({int page = 1, int perPage = 20}) async {
     try {
-      final res = await _api.getRequest('auth/me/projects', query: {'page': '$page', 'per_page': '$perPage'});
+      final res = await _api.getRequest(
+        'auth/me/projects',
+        query: {'page': '$page', 'per_page': '$perPage'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(Project.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(Project.fromJson)
+              .toList();
       }
       return [];
     } catch (e) {
@@ -205,12 +231,22 @@ class ProjectsService {
   }
 
   /// Projects the signed-in user follows — `GET /auth/me/followed-projects`.
-  Future<List<Project>> getFollowedProjects({int page = 1, int perPage = 20}) async {
+  Future<List<Project>> getFollowedProjects({
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
-      final res = await _api.getRequest('auth/me/followed-projects', query: {'page': '$page', 'per_page': '$perPage'});
+      final res = await _api.getRequest(
+        'auth/me/followed-projects',
+        query: {'page': '$page', 'per_page': '$perPage'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(Project.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(Project.fromJson)
+              .toList();
       }
       return [];
     } catch (e) {
@@ -239,7 +275,10 @@ class ProjectsService {
   /// Full project edit — MODERATOR/EDITOR/ADMIN only server-side
   /// (`PUT /projects/{id}`), distinct from the user-facing suggest-edit
   /// review queue above.
-  Future<Map<String, dynamic>> updateProject(int projectId, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateProject(
+    int projectId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       final res = await _api.putRequest('projects/$projectId', data);
       if (res.statusCode == 200) {
@@ -248,15 +287,22 @@ class ProjectsService {
       return {'success': false, 'message': _errorMessage(res.body)};
     } catch (e) {
       print('ProjectsService.updateProject error: $e');
-      return {'success': false, 'message': 'Could not update project. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not update project. Check your connection.',
+      };
     }
   }
 
   /// Toggles is_published — MODERATOR/EDITOR/ADMIN only server-side.
   Future<bool?> togglePublish(int projectId) async {
     try {
-      final res = await _api.putRequest('projects/$projectId/publish-toggle', {});
-      if (res.statusCode == 200) return res.body?['data']?['is_published'] as bool?;
+      final res = await _api.putRequest(
+        'projects/$projectId/publish-toggle',
+        {},
+      );
+      if (res.statusCode == 200)
+        return res.body?['data']?['is_published'] as bool?;
       return null;
     } catch (e) {
       print('ProjectsService.togglePublish error: $e');
@@ -276,7 +322,8 @@ class ProjectsService {
     try {
       final res = await _api.postRequest('projects/$projectId/updates', {
         'content': content,
-        if (externalVideoUrl != null && externalVideoUrl.isNotEmpty) 'external_video_url': externalVideoUrl,
+        if (externalVideoUrl != null && externalVideoUrl.isNotEmpty)
+          'external_video_url': externalVideoUrl,
       });
       if (res.statusCode == 200 || res.statusCode == 201) {
         final data = res.body?['data'];
@@ -289,7 +336,10 @@ class ProjectsService {
       return {'success': false, 'message': _errorMessage(res.body)};
     } catch (e) {
       print('ProjectsService.postProjectUpdate error: $e');
-      return {'success': false, 'message': 'Could not submit update. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not submit update. Check your connection.',
+      };
     }
   }
 
@@ -320,12 +370,23 @@ class ProjectsService {
   }
 
   /// Approved progress updates for a project — `GET /projects/{id}/updates`.
-  Future<List<ProjectUpdate>> getProjectUpdates(int projectId, {int page = 1, int perPage = 20}) async {
+  Future<List<ProjectUpdate>> getProjectUpdates(
+    int projectId, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
-      final res = await _api.getRequest('projects/$projectId/updates', query: {'page': '$page', 'per_page': '$perPage'});
+      final res = await _api.getRequest(
+        'projects/$projectId/updates',
+        query: {'page': '$page', 'per_page': '$perPage'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(ProjectUpdate.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(ProjectUpdate.fromJson)
+              .toList();
       }
       return [];
     } catch (e) {
@@ -337,7 +398,10 @@ class ProjectsService {
   /// Approves a pending update — MODERATOR/EDITOR/ADMIN only server-side.
   Future<bool> approveProjectUpdate(int projectId, int updateId) async {
     try {
-      final res = await _api.postRequest('projects/$projectId/updates/$updateId/approve', {});
+      final res = await _api.postRequest(
+        'projects/$projectId/updates/$updateId/approve',
+        {},
+      );
       return res.statusCode == 200;
     } catch (e) {
       print('ProjectsService.approveProjectUpdate error: $e');
@@ -376,6 +440,7 @@ class ProjectsService {
     String? projectType,
     bool? isBuiltHistory,
     String? geoScope,
+
     /// Raises the Most Viewed section's per-window cap above the default 3
     /// — used for that section's "View More" (Category/Status "View More"
     /// use a normal paginated `getProjects` call instead; only Most Viewed
@@ -388,7 +453,10 @@ class ProjectsService {
       if (isBuiltHistory == true) query['is_built_history'] = 'true';
       if (geoScope != null) query['geo_scope'] = geoScope;
 
-      final res = await _api.getRequest('projects/tracker-sections', query: query);
+      final res = await _api.getRequest(
+        'projects/tracker-sections',
+        query: query,
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
         if (data is Map<String, dynamic>) return TrackerSections.fromJson(data);
@@ -414,7 +482,8 @@ class ProjectsService {
       final res = await _api.getRequest('clients/$slug');
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is Map<String, dynamic>) return ProjectClientDetail.fromJson(data);
+        if (data is Map<String, dynamic>)
+          return ProjectClientDetail.fromJson(data);
       }
       return null;
     } catch (e) {
@@ -459,7 +528,8 @@ class ProjectsService {
   }) async {
     try {
       final query = <String, dynamic>{};
-      if (monthYear != null && monthYear.isNotEmpty) query['month_year'] = monthYear;
+      if (monthYear != null && monthYear.isNotEmpty)
+        query['month_year'] = monthYear;
       if (milestoneId != null) query['milestone_id'] = '$milestoneId';
       if (mediaType != null && mediaType.isNotEmpty) query['type'] = mediaType;
 

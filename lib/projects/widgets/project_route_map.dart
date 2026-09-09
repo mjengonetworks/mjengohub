@@ -37,8 +37,13 @@ class ProjectRouteMap extends StatelessWidget {
           children: [
             FlutterMap(
               options: MapOptions(
-                initialCameraFit: CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(28)),
-                interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag),
+                initialCameraFit: CameraFit.bounds(
+                  bounds: bounds,
+                  padding: const EdgeInsets.all(28),
+                ),
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                ),
               ),
               children: [
                 TileLayer(
@@ -47,7 +52,11 @@ class ProjectRouteMap extends StatelessWidget {
                 ),
                 PolylineLayer(
                   polylines: [
-                    Polyline(points: points, strokeWidth: 4, color: AppColors.accentBlue),
+                    Polyline(
+                      points: points,
+                      strokeWidth: 5,
+                      color: const Color(0xFFD97706),
+                    ),
                   ],
                 ),
                 MarkerLayer(
@@ -59,12 +68,30 @@ class ProjectRouteMap extends StatelessWidget {
                         height: 16,
                         child: _WaypointDot(index: i + 1),
                       ),
-                    Marker(point: start, width: 30, height: 30, child: const _RoutePin(color: AppColors.success, icon: Icons.trip_origin)),
-                    Marker(point: end, width: 30, height: 30, child: const _RoutePin(color: AppColors.danger, icon: Icons.flag_rounded)),
+                    Marker(
+                      point: start,
+                      width: 30,
+                      height: 30,
+                      child: const _RoutePin(
+                        color: AppColors.success,
+                        icon: Icons.trip_origin,
+                      ),
+                    ),
+                    Marker(
+                      point: end,
+                      width: 30,
+                      height: 30,
+                      child: const _RoutePin(
+                        color: AppColors.danger,
+                        icon: Icons.flag_rounded,
+                      ),
+                    ),
                   ],
                 ),
                 const RichAttributionWidget(
-                  attributions: [TextSourceAttribution('OpenStreetMap contributors')],
+                  attributions: [
+                    TextSourceAttribution('OpenStreetMap contributors'),
+                  ],
                 ),
               ],
             ),
@@ -73,16 +100,29 @@ class ProjectRouteMap extends StatelessWidget {
                 left: 10,
                 top: 10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppRadius.sharp),
                     border: Border.all(color: AppColors.borderSlate),
-                    boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 6, offset: Offset(0, 2))],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x1A000000),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     'Total Route Length: ${project.routeLengthKm!.toStringAsFixed(1)} km',
-                    style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.headingSlate),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.headingSlate,
+                    ),
                   ),
                 ),
               ),
@@ -105,7 +145,13 @@ class _RoutePin extends StatelessWidget {
         color: color,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2.5),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Icon(icon, color: Colors.white, size: 16),
     );
@@ -127,7 +173,11 @@ class _WaypointDot extends StatelessWidget {
       ),
       child: Text(
         '$index',
-        style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w500, color: Colors.white),
+        style: GoogleFonts.montserrat(
+          fontSize: 8,
+          fontWeight: FontWeight.w500,
+          color: Colors.white,
+        ),
       ),
     );
   }

@@ -11,6 +11,7 @@ class IncidentsService {
     required String type,
     String? severity,
     String? county,
+    String? regionalScope,
     String? q,
     bool featured = false,
     int page = 1,
@@ -24,6 +25,8 @@ class IncidentsService {
       };
       if (severity != null && severity.isNotEmpty) query['severity'] = severity;
       if (county != null && county.isNotEmpty) query['county'] = county;
+      if (regionalScope != null && regionalScope.isNotEmpty)
+        query['regional_scope'] = regionalScope;
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
 
@@ -45,12 +48,22 @@ class IncidentsService {
   }
 
   /// Incidents the signed-in user reported — `GET /auth/me/incidents`.
-  Future<List<Incident>> getMyIncidents({int page = 1, int perPage = 20}) async {
+  Future<List<Incident>> getMyIncidents({
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
-      final res = await _api.getRequest('auth/me/incidents', query: {'page': '$page', 'per_page': '$perPage'});
+      final res = await _api.getRequest(
+        'auth/me/incidents',
+        query: {'page': '$page', 'per_page': '$perPage'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(Incident.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(Incident.fromJson)
+              .toList();
       }
       return [];
     } catch (e) {
@@ -120,7 +133,8 @@ class IncidentsService {
         if (lessonsLearned != null && lessonsLearned.isNotEmpty)
           'lessons_learned': lessonsLearned,
       });
-      if ((res.statusCode == 200 || res.statusCode == 201) && res.body != null) {
+      if ((res.statusCode == 200 || res.statusCode == 201) &&
+          res.body != null) {
         final data = res.body['data'];
         if (data is Map<String, dynamic>) return data['id'] as int?;
       }

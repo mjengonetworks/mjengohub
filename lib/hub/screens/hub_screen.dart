@@ -23,8 +23,8 @@ class HubScreen extends StatelessWidget {
   static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
 
   // Order matches the website's header menu exactly (Spec: Infrastructure
-  // Tracker, Private Projects, Built History, Africa & World, Site Safety,
-  // Merch). Everything else the app also exposes here lives in
+  // Tracker, Private Projects, Built History, Africa & World, and Site Safety.
+  // Everything else the app also exposes here lives in
   // [_utilityItems] instead, grouped below a divider.
   static const _items = [
     _HubItem(
@@ -61,13 +61,6 @@ class HubScreen extends StatelessWidget {
       icon: Icons.engineering_rounded,
       color: AppColors.warning,
       route: AppRoutes.siteSafety,
-    ),
-    _HubItem(
-      label: 'Merch',
-      sub: 'Mjengo Hub branded gear',
-      icon: Icons.shopping_bag_rounded,
-      color: AppColors.primeBadge,
-      route: AppRoutes.merch,
     ),
   ];
 
@@ -186,7 +179,12 @@ class HubScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                     child: Row(
                       children: [
-                        const Expanded(child: Divider(color: AppColors.borderSlate, height: 1)),
+                        const Expanded(
+                          child: Divider(
+                            color: AppColors.borderSlate,
+                            height: 1,
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
@@ -199,7 +197,12 @@ class HubScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Expanded(child: Divider(color: AppColors.borderSlate, height: 1)),
+                        const Expanded(
+                          child: Divider(
+                            color: AppColors.borderSlate,
+                            height: 1,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -207,7 +210,8 @@ class HubScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       children: [
-                        for (final item in _utilityItems) _HubUtilityButton(item: item),
+                        for (final item in _utilityItems)
+                          _HubUtilityButton(item: item),
                       ],
                     ),
                   ),
@@ -263,7 +267,8 @@ class _HubItem {
         Get.find<DiscoverController>().selectCategory(categorySlug!);
       } catch (_) {}
       try {
-        Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+        Get.find<MainNavController>().currentIndex.value =
+            MainNavController.tabNews;
       } catch (_) {}
       return;
     }
@@ -335,7 +340,9 @@ class _HubRow extends StatelessWidget {
 
             // Chevron / external-link indicator
             Icon(
-              item.externalUrl != null ? Icons.open_in_new_rounded : Icons.chevron_right_rounded,
+              item.externalUrl != null
+                  ? Icons.open_in_new_rounded
+                  : Icons.chevron_right_rounded,
               color: AppColors.textSubtle,
               size: item.externalUrl != null ? 18 : 22,
             ),
@@ -380,17 +387,31 @@ class _HubUtilityButton extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.label,
-                          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
-                      Text(item.sub,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.captionSlate)),
+                      Text(
+                        item.label,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.headingSlate,
+                        ),
+                      ),
+                      Text(
+                        item.sub,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.captionSlate,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 Icon(
-                  item.externalUrl != null ? Icons.open_in_new_rounded : Icons.chevron_right_rounded,
+                  item.externalUrl != null
+                      ? Icons.open_in_new_rounded
+                      : Icons.chevron_right_rounded,
                   color: AppColors.captionSlate,
                   size: 16,
                 ),

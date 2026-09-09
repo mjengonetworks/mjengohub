@@ -23,13 +23,19 @@ const LatLng kKenyaMapCenter = LatLng(-1.286389, 36.817223);
 
 Color statusMarkerColor(String status) {
   switch (status) {
-    case 'ongoing': return AppColors.accentBlue;
-    case 'completed': return AppColors.success;
-    case 'commissioned': return const Color(0xFF10B981); // emerald
-    case 'planned': return const Color(0xFF9333EA); // purple
+    case 'ongoing':
+      return AppColors.accentBlue;
+    case 'completed':
+      return AppColors.success;
+    case 'commissioned':
+      return const Color(0xFF10B981); // emerald
+    case 'planned':
+      return const Color(0xFF9333EA); // purple
     case 'stalled':
-    case 'cancelled': return AppColors.danger;
-    default: return AppColors.textSubtle;
+    case 'cancelled':
+      return AppColors.danger;
+    default:
+      return AppColors.textSubtle;
   }
 }
 
@@ -42,7 +48,10 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
     builder: (_) => Padding(
       padding: const EdgeInsets.all(16),
       child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -53,15 +62,32 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  NetImage(url: project.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholderColor: const Color(0xFF1E3A5F)),
+                  NetImage(
+                    url: project.imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    placeholderColor: const Color(0xFF1E3A5F),
+                  ),
                   Positioned(
                     top: 10,
                     left: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                      decoration: BoxDecoration(color: statusMarkerColor(project.status), borderRadius: BorderRadius.circular(999)),
-                      child: Text(project.statusLabel.toUpperCase(),
-                          style: GoogleFonts.montserrat(fontSize: 9.5, fontWeight: FontWeight.w500, color: Colors.white)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusMarkerColor(project.status),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        project.statusLabel.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -72,19 +98,39 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(project.title,
-                      maxLines: 2, overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                  if ((project.county ?? project.location ?? project.country) != null) ...[
+                  Text(
+                    project.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  if ((project.county ?? project.location ?? project.country) !=
+                      null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.place_outlined, size: 13, color: AppColors.textSubtle),
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 13,
+                          color: AppColors.textSubtle,
+                        ),
                         const SizedBox(width: 3),
                         Expanded(
-                          child: Text(project.county ?? project.location ?? project.country!,
-                              maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
+                          child: Text(
+                            project.county ??
+                                project.location ??
+                                project.country!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              color: AppColors.textSubtle,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -95,15 +141,26 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino);
+                        Get.to(
+                          () => ProjectDetailScreen(slug: project.slug),
+                          transition: Transition.cupertino,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentBlue,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      child: Text('View Details', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(
+                        'View Details',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -135,7 +192,11 @@ class ProjectsMapView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.map_outlined, size: 44, color: AppColors.textSubtle),
+              const Icon(
+                Icons.map_outlined,
+                size: 44,
+                color: AppColors.textSubtle,
+              ),
               const SizedBox(height: 12),
               Text(
                 'None of these projects have map coordinates yet.',
@@ -148,13 +209,18 @@ class ProjectsMapView extends StatelessWidget {
       );
     }
 
-    final points = located.map((p) => LatLng(p.latitude!, p.longitude!)).toList();
+    final points = located
+        .map((p) => LatLng(p.latitude!, p.longitude!))
+        .toList();
     final bounds = LatLngBounds.fromPoints(points);
 
     return FlutterMap(
       options: MapOptions(
         initialCameraFit: located.length > 1
-            ? CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(40))
+            ? CameraFit.bounds(
+                bounds: bounds,
+                padding: const EdgeInsets.all(40),
+              )
             : null,
         initialCenter: located.length == 1 ? points.first : kKenyaMapCenter,
         initialZoom: located.length == 1 ? 14 : 6,
@@ -164,20 +230,31 @@ class ProjectsMapView extends StatelessWidget {
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'ke.co.mjengohub.app',
         ),
+        PolylineLayer(
+          polylines: [
+            for (final project in located)
+              if ((project.routeCoordinates?.length ?? 0) >= 2)
+                Polyline(
+                  points: project.routeCoordinates!,
+                  strokeWidth: 5,
+                  color: const Color(0xFFD97706),
+                ),
+          ],
+        ),
         MarkerLayer(
           markers: located
-              .map((p) => Marker(
-                    point: LatLng(p.latitude!, p.longitude!),
-                    width: 34,
-                    height: 34,
-                    child: _ProjectPin(project: p),
-                  ))
+              .map(
+                (p) => Marker(
+                  point: LatLng(p.latitude!, p.longitude!),
+                  width: 34,
+                  height: 34,
+                  child: _ProjectPin(project: p),
+                ),
+              )
               .toList(),
         ),
         const RichAttributionWidget(
-          attributions: [
-            TextSourceAttribution('OpenStreetMap contributors'),
-          ],
+          attributions: [TextSourceAttribution('OpenStreetMap contributors')],
         ),
       ],
     );
@@ -190,7 +267,7 @@ class _ProjectPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = statusMarkerColor(project.status);
+    const color = Color(0xFF0F2E4D);
     return GestureDetector(
       onTap: () => showProjectPreviewSheet(context, project),
       child: Tooltip(
@@ -201,7 +278,11 @@ class _ProjectPin extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2.5),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4, offset: const Offset(0, 2)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
           child: const Icon(Icons.location_on, color: Colors.white, size: 18),

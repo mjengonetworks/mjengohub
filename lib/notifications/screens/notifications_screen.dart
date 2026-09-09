@@ -8,32 +8,41 @@ import '../../navigation/app_header.dart';
 import '../../shared/theme/app_theme.dart';
 import '../controllers/notifications_controller.dart';
 import '../models/notification_model.dart';
+import '../models/notification_preferences.dart';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const _blue     = Color(0xFF2563EB);
+const _blue = Color(0xFF2563EB);
 const _blueDark = Color(0xFF1D4ED8);
-const _bg       = Color(0xFFF0F4FF);
-const _surface  = Colors.white;
-const _textPri  = Color(0xFF1A1A2E);
-const _textSec  = Color(0xFF475569);
-const _divider  = Color(0xFFEEEEF5);
+const _bg = Color(0xFFF0F4FF);
+const _surface = Colors.white;
+const _textPri = Color(0xFF1A1A2E);
+const _textSec = Color(0xFF475569);
+const _divider = Color(0xFFEEEEF5);
 
 // ── Type colours ─────────────────────────────────────────────────────────────
 Color _typeColor(String type) {
   switch (type) {
-    case 'success': return const Color(0xFF22C55E);
-    case 'warning': return const Color(0xFFF59E0B);
-    case 'error':   return const Color(0xFFEF4444);
-    default:        return _blue;
+    case 'success':
+      return const Color(0xFF22C55E);
+    case 'warning':
+      return const Color(0xFFF59E0B);
+    case 'error':
+      return const Color(0xFFEF4444);
+    default:
+      return _blue;
   }
 }
 
 IconData _typeIcon(String type) {
   switch (type) {
-    case 'success': return Icons.check_circle_rounded;
-    case 'warning': return Icons.warning_amber_rounded;
-    case 'error':   return Icons.error_rounded;
-    default:        return Icons.notifications_rounded;
+    case 'success':
+      return Icons.check_circle_rounded;
+    case 'warning':
+      return Icons.warning_amber_rounded;
+    case 'error':
+      return Icons.error_rounded;
+    default:
+      return Icons.notifications_rounded;
   }
 }
 
@@ -55,7 +64,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   @override
   void initState() {
     super.initState();
-    _ctrl    = Get.find<NotificationsController>();
+    _ctrl = Get.find<NotificationsController>();
     _tabCtrl = TabController(length: 2, vsync: this);
 
     // Infinite scroll
@@ -84,6 +93,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           children: [
             const AppHeader(),
             _Header(ctrl: _ctrl),
+            const _PreferencePanel(),
             _TabRow(controller: _tabCtrl),
             Expanded(
               child: TabBarView(
@@ -91,12 +101,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _NotifList(
-                    ctrl      : _ctrl,
+                    ctrl: _ctrl,
                     scrollCtrl: _scrollCtrl,
                     unreadOnly: false,
                   ),
                   _NotifList(
-                    ctrl      : _ctrl,
+                    ctrl: _ctrl,
                     scrollCtrl: ScrollController(),
                     unreadOnly: true,
                   ),
@@ -108,6 +118,90 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       ),
     );
   }
+}
+
+class _PreferencePanel extends StatefulWidget {
+  const _PreferencePanel();
+
+  @override
+  State<_PreferencePanel> createState() => _PreferencePanelState();
+}
+
+class _PreferencePanelState extends State<_PreferencePanel> {
+  NotificationPreferences preferences = const NotificationPreferences();
+
+  void _set(NotificationPreferences next) => setState(() => preferences = next);
+
+  @override
+  Widget build(BuildContext context) {
+    return ExpansionTile(
+      backgroundColor: Colors.white,
+      collapsedBackgroundColor: Colors.white,
+      title: const Text(
+        'Push notification settings',
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+      subtitle: const Text('Choose the updates you want to receive'),
+      children: [
+        _toggle(
+          'Master push notifications',
+          preferences.pushEnabled,
+          (v) => _set(
+            NotificationPreferences(
+              pushEnabled: v,
+              infrastructureProjects: preferences.infrastructureProjects,
+              safetyIncidents: preferences.safetyIncidents,
+              editorialArticles: preferences.editorialArticles,
+            ),
+          ),
+        ),
+        _toggle(
+          'Infrastructure and road projects',
+          preferences.infrastructureProjects,
+          (v) => _set(
+            NotificationPreferences(
+              pushEnabled: preferences.pushEnabled,
+              infrastructureProjects: v,
+              safetyIncidents: preferences.safetyIncidents,
+              editorialArticles: preferences.editorialArticles,
+            ),
+          ),
+        ),
+        _toggle(
+          'Safety incidents',
+          preferences.safetyIncidents,
+          (v) => _set(
+            NotificationPreferences(
+              pushEnabled: preferences.pushEnabled,
+              infrastructureProjects: preferences.infrastructureProjects,
+              safetyIncidents: v,
+              editorialArticles: preferences.editorialArticles,
+            ),
+          ),
+        ),
+        _toggle(
+          'Editorial articles',
+          preferences.editorialArticles,
+          (v) => _set(
+            NotificationPreferences(
+              pushEnabled: preferences.pushEnabled,
+              infrastructureProjects: preferences.infrastructureProjects,
+              safetyIncidents: preferences.safetyIncidents,
+              editorialArticles: v,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _toggle(String label, bool value, ValueChanged<bool> onChanged) =>
+      SwitchListTile.adaptive(
+        title: Text(label),
+        value: value,
+        activeColor: _blue,
+        onChanged: onChanged,
+      );
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -135,8 +229,11 @@ class _Header extends StatelessWidget {
             children: [
               // Back
               IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 onPressed: () => Get.back(),
               ),
               // Title
@@ -156,7 +253,10 @@ class _Header extends StatelessWidget {
                 if (c == 0) return const SizedBox.shrink();
                 return Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.22),
                     borderRadius: BorderRadius.circular(20),
@@ -172,29 +272,34 @@ class _Header extends StatelessWidget {
                 );
               }),
               // Menu
-              Obx(() => ctrl.notifications.isEmpty
-                  ? const SizedBox.shrink()
-                  : PopupMenuButton<_MenuAction>(
-                      icon: const Icon(Icons.more_vert_rounded,
-                          color: Colors.white),
-                      color: _surface,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      onSelected: (a) => _onAction(a),
-                      itemBuilder: (_) => [
-                        _menuItem(
-                          _MenuAction.markAll,
-                          Icons.done_all_rounded,
-                          'Mark all as read',
+              Obx(
+                () => ctrl.notifications.isEmpty
+                    ? const SizedBox.shrink()
+                    : PopupMenuButton<_MenuAction>(
+                        icon: const Icon(
+                          Icons.more_vert_rounded,
+                          color: Colors.white,
                         ),
-                        _menuItem(
-                          _MenuAction.clearAll,
-                          Icons.delete_sweep_rounded,
-                          'Clear all',
-                          isDestructive: true,
+                        color: _surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
-                    )),
+                        onSelected: (a) => _onAction(a),
+                        itemBuilder: (_) => [
+                          _menuItem(
+                            _MenuAction.markAll,
+                            Icons.done_all_rounded,
+                            'Mark all as read',
+                          ),
+                          _menuItem(
+                            _MenuAction.clearAll,
+                            Icons.delete_sweep_rounded,
+                            'Clear all',
+                            isDestructive: true,
+                          ),
+                        ],
+                      ),
+              ),
             ],
           ),
         ),
@@ -242,11 +347,16 @@ class _Header extends StatelessWidget {
   void _confirmClear() {
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+        ),
         title: Text(
           'Clear all notifications?',
           style: GoogleFonts.montserrat(
-              fontSize: 15, fontWeight: FontWeight.w500, color: _textPri),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: _textPri,
+          ),
         ),
         content: Text(
           'This will permanently remove all your notifications.',
@@ -255,19 +365,26 @@ class _Header extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Cancel',
-                style: GoogleFonts.montserrat(
-                    fontWeight: FontWeight.w600, color: _textSec)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600,
+                color: _textSec,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
               Get.back();
               ctrl.clearAll();
             },
-            child: Text('Clear',
-                style: GoogleFonts.montserrat(
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFFEF4444))),
+            child: Text(
+              'Clear',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFEF4444),
+              ),
+            ),
           ),
         ],
       ),
@@ -294,9 +411,13 @@ class _TabRow extends StatelessWidget {
         indicatorColor: _blue,
         indicatorWeight: 2.5,
         labelStyle: GoogleFonts.montserrat(
-            fontSize: 13, fontWeight: FontWeight.w600),
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
         unselectedLabelStyle: GoogleFonts.montserrat(
-            fontSize: 13, fontWeight: FontWeight.w500),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
         tabs: const [
           Tab(text: 'All'),
           Tab(text: 'Unread'),
@@ -324,10 +445,7 @@ class _NotifList extends StatelessWidget {
     return Obx(() {
       if (ctrl.isLoading.value) {
         return const Center(
-          child: CircularProgressIndicator(
-            strokeWidth: 2.5,
-            color: _blue,
-          ),
+          child: CircularProgressIndicator(strokeWidth: 2.5, color: _blue),
         );
       }
 
@@ -343,7 +461,8 @@ class _NotifList extends StatelessWidget {
         child: ListView.builder(
           controller: scrollCtrl,
           physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics()),
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: items.length + (ctrl.hasMore.value ? 1 : 0),
           itemBuilder: (_, i) {
@@ -355,7 +474,9 @@ class _NotifList extends StatelessWidget {
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _blue),
+                      strokeWidth: 2,
+                      color: _blue,
+                    ),
                   ),
                 ),
               );
@@ -379,7 +500,7 @@ class _NotifCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _typeColor(notif.type);
-    final icon  = _typeIcon(notif.type);
+    final icon = _typeIcon(notif.type);
 
     return Dismissible(
       key: ValueKey(notif.id),
@@ -392,8 +513,11 @@ class _NotifCard extends StatelessWidget {
           color: const Color(0xFFEF4444),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.delete_outline_rounded,
-            color: Colors.white, size: 24),
+        child: const Icon(
+          Icons.delete_outline_rounded,
+          color: Colors.white,
+          size: 24,
+        ),
       ),
       confirmDismiss: (_) async {
         HapticFeedback.mediumImpact();
@@ -463,7 +587,9 @@ class _NotifCard extends StatelessWidget {
                               height: 8,
                               margin: const EdgeInsets.only(left: 6, top: 2),
                               decoration: BoxDecoration(
-                                  color: color, shape: BoxShape.circle),
+                                color: color,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                         ],
                       ),
@@ -481,8 +607,11 @@ class _NotifCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.access_time_rounded,
-                              size: 11, color: _textSec.withValues(alpha: 0.7)),
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 11,
+                            color: _textSec.withValues(alpha: 0.7),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             _relativeTime(notif.createdAt),
@@ -507,12 +636,12 @@ class _NotifCard extends StatelessWidget {
   String _relativeTime(DateTime? dt) {
     if (dt == null) return '';
     final diff = DateTime.now().difference(dt);
-    if (diff.inSeconds  < 60)  return 'Just now';
-    if (diff.inMinutes  < 60)  return '${diff.inMinutes}m ago';
-    if (diff.inHours    < 24)  return '${diff.inHours}h ago';
-    if (diff.inDays     < 7)   return '${diff.inDays}d ago';
-    if (diff.inDays     < 30)  return '${(diff.inDays / 7).floor()}w ago';
-    if (diff.inDays     < 365) return '${(diff.inDays / 30).floor()}mo ago';
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
+    if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}mo ago';
     return '${(diff.inDays / 365).floor()}y ago';
   }
 }

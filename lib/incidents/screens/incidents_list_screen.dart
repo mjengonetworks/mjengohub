@@ -15,9 +15,9 @@ import 'report_incident_screen.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens — mirrors Videos / Discover screens
 // ─────────────────────────────────────────────────────────────────────────────
-const _kDark    = Color(0xFF111827);
+const _kDark = Color(0xFF111827);
 const _kSubtext = Color(0xFF475569);
-const _kBg      = Color(0xFFF3F4F6);
+const _kBg = Color(0xFFF3F4F6);
 const _kDivider = Color(0xFFF3F4F6);
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -27,24 +27,22 @@ const _kDivider = Color(0xFFF3F4F6);
 class IncidentsListScreen extends StatelessWidget {
   final String incidentType;
   const IncidentsListScreen({Key? key, required this.incidentType})
-      : super(key: key);
+    : super(key: key);
 
   bool get _isRoad => incidentType == 'road_safety';
 
   Color get _accent =>
       _isRoad ? const Color(0xFFDC2626) : const Color(0xFFF97316);
 
-  String get _title =>
-      _isRoad ? 'Share Barabara' : 'Site Safety';
+  String get _title => _isRoad ? 'Share Barabara' : 'Site Safety';
 
-  String get _subtitle =>
-      _isRoad
-          ? 'Learning from road accidents across Kenya'
-          : 'Construction site incident database';
+  String get _subtitle => _isRoad
+      ? 'Learning from road accidents across Kenya'
+      : 'Construction site incident database';
 
   @override
   Widget build(BuildContext context) {
-    final tag  = 'incidents_$incidentType';
+    final tag = 'incidents_$incidentType';
     final ctrl = Get.put(IncidentsController(incidentType), tag: tag);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -63,7 +61,9 @@ class IncidentsListScreen extends StatelessWidget {
           label: Text(
             'Report Incident',
             style: GoogleFonts.montserrat(
-                fontSize: 13, fontWeight: FontWeight.w500),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         body: Column(
@@ -91,9 +91,10 @@ class IncidentsListScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              color: _kDark,
-                              size: 16),
+                            Icons.arrow_back_ios_new_rounded,
+                            color: _kDark,
+                            size: 16,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -111,7 +112,9 @@ class IncidentsListScreen extends StatelessWidget {
                           Text(
                             _subtitle,
                             style: GoogleFonts.montserrat(
-                                fontSize: 11, color: _kSubtext),
+                              fontSize: 11,
+                              color: _kSubtext,
+                            ),
                           ),
                         ],
                       ),
@@ -121,6 +124,32 @@ class IncidentsListScreen extends StatelessWidget {
 
                   // ── Search bar (matches Videos screen) ──────────────────
                   _SearchBar(ctrl: ctrl, accent: _accent),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 34,
+                    child: Obx(
+                      () => ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          for (final scope in const [
+                            'Kenya',
+                            'East Africa',
+                            'Africa',
+                            'World',
+                          ])
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ChoiceChip(
+                                label: Text(scope),
+                                selected: ctrl.regionalScope.value == scope,
+                                onSelected: (_) =>
+                                    ctrl.applyFilters(regionalScope: scope),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 4),
                 ],
               ),
@@ -145,20 +174,18 @@ class IncidentsListScreen extends StatelessWidget {
                   return const Center(
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(_kDark),
+                      valueColor: AlwaysStoppedAnimation<Color>(_kDark),
                     ),
                   );
                 }
                 // Snapshot RxList → plain List so child widgets
                 // don't read reactive state outside Obx scope.
                 final featured = ctrl.featuredIncidents.toList();
-                final all      = ctrl.incidents.toList();
+                final all = ctrl.incidents.toList();
                 return NotificationListener<ScrollNotification>(
                   onNotification: (n) {
                     if (n is ScrollEndNotification &&
-                        n.metrics.pixels >=
-                            n.metrics.maxScrollExtent - 200) {
+                        n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
                       ctrl.loadMore();
                     }
                     return false;
@@ -167,10 +194,8 @@ class IncidentsListScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8, bottom: 100),
                     children: [
                       if (featured.isNotEmpty)
-                        _FeaturedSection(
-                            incidents: featured, accent: _accent),
-                      _IncidentList(
-                          incidents: all, accent: _accent),
+                        _FeaturedSection(incidents: featured, accent: _accent),
+                      _IncidentList(incidents: all, accent: _accent),
                     ],
                   ),
                 );
@@ -202,8 +227,7 @@ class _SearchBarState extends State<_SearchBar> {
   @override
   void initState() {
     super.initState();
-    _textCtrl = TextEditingController(
-        text: widget.ctrl.searchQuery.value);
+    _textCtrl = TextEditingController(text: widget.ctrl.searchQuery.value);
   }
 
   @override
@@ -245,7 +269,9 @@ class _SearchBarState extends State<_SearchBar> {
               decoration: InputDecoration(
                 hintText: 'Search incidents…',
                 hintStyle: GoogleFonts.montserrat(
-                    fontSize: 14, color: const Color(0xFF475569)),
+                  fontSize: 14,
+                  color: const Color(0xFF475569),
+                ),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -260,8 +286,11 @@ class _SearchBarState extends State<_SearchBar> {
                     onTap: _clear,
                     child: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Icon(Icons.close_rounded,
-                          size: 18, color: _kSubtext),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: _kSubtext,
+                      ),
                     ),
                   )
                 : const SizedBox(width: 12),
@@ -311,10 +340,11 @@ class _TabItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  const _TabItem(
-      {required this.label,
-      required this.isSelected,
-      required this.onTap});
+  const _TabItem({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -336,8 +366,7 @@ class _TabItem extends StatelessWidget {
           label,
           style: GoogleFonts.montserrat(
             fontSize: 14,
-            fontWeight:
-                isSelected ? FontWeight.w500 : FontWeight.w500,
+            fontWeight: isSelected ? FontWeight.w500 : FontWeight.w500,
             color: isSelected ? _kDark : _kSubtext,
           ),
         ),
@@ -376,8 +405,11 @@ class _CrisisBanner extends StatelessWidget {
                 color: const Color(0xFFFFE4E6),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.phone_rounded,
-                  color: Color(0xFFDC2626), size: 16),
+              child: const Icon(
+                Icons.phone_rounded,
+                color: Color(0xFFDC2626),
+                size: 16,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -395,7 +427,9 @@ class _CrisisBanner extends StatelessWidget {
                   Text(
                     'Befrienders Kenya · +254 722 178 177  |  999 / 112',
                     style: GoogleFonts.montserrat(
-                        fontSize: 11.5, color: const Color(0xFF475569)),
+                      fontSize: 11.5,
+                      color: const Color(0xFF475569),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -444,15 +478,12 @@ class _FeaturedSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: incidents.length,
-            itemBuilder: (_, i) => _FeaturedCard(
-              incident: incidents[i],
-              accent: accent,
-            ),
+            itemBuilder: (_, i) =>
+                _FeaturedCard(incident: incidents[i], accent: accent),
           ),
         ),
         const SizedBox(height: 20),
-        const Divider(
-            height: 1, indent: 20, endIndent: 20, color: _kDivider),
+        const Divider(height: 1, indent: 20, endIndent: 20, color: _kDivider),
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -474,8 +505,7 @@ class _FeaturedSection extends StatelessWidget {
 class _FeaturedCard extends StatelessWidget {
   final Incident incident;
   final Color accent;
-  const _FeaturedCard(
-      {required this.incident, required this.accent});
+  const _FeaturedCard({required this.incident, required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -493,9 +523,10 @@ class _FeaturedCard extends StatelessWidget {
           border: Border.all(color: _kDivider),
           boxShadow: const [
             BoxShadow(
-                color: Color(0x06000000),
-                blurRadius: 8,
-                offset: Offset(0, 3))
+              color: Color(0x06000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
           ],
         ),
         child: Column(
@@ -503,7 +534,8 @@ class _FeaturedCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(14)),
+                top: Radius.circular(14),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: NetImage(
@@ -542,7 +574,9 @@ class _FeaturedCard extends StatelessWidget {
                     Text(
                       '📍 ${incident.county ?? incident.location ?? ''}',
                       style: GoogleFonts.montserrat(
-                          fontSize: 10, color: _kSubtext),
+                        fontSize: 10,
+                        color: _kSubtext,
+                      ),
                     ),
                   ],
                 ),
@@ -553,7 +587,6 @@ class _FeaturedCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -573,8 +606,7 @@ class _IncidentList extends StatelessWidget {
         child: Center(
           child: Text(
             'No incidents found.',
-            style: GoogleFonts.montserrat(
-                fontSize: 14, color: _kSubtext),
+            style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
           ),
         ),
       );
@@ -584,8 +616,8 @@ class _IncidentList extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: incidents.length,
-      separatorBuilder: (_, __) => const Divider(
-          height: 1, indent: 20, endIndent: 20, color: _kDivider),
+      separatorBuilder: (_, __) =>
+          const Divider(height: 1, indent: 20, endIndent: 20, color: _kDivider),
       itemBuilder: (_, i) =>
           _IncidentTile(incident: incidents[i], accent: accent),
     );
@@ -595,8 +627,7 @@ class _IncidentList extends StatelessWidget {
 class _IncidentTile extends StatelessWidget {
   final Incident incident;
   final Color accent;
-  const _IncidentTile(
-      {required this.incident, required this.accent});
+  const _IncidentTile({required this.incident, required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -607,8 +638,7 @@ class _IncidentTile extends StatelessWidget {
       ),
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -645,7 +675,9 @@ class _IncidentTile extends StatelessWidget {
                       Text(
                         incident.formattedDate,
                         style: GoogleFonts.montserrat(
-                            fontSize: 11, color: _kSubtext),
+                          fontSize: 11,
+                          color: _kSubtext,
+                        ),
                       ),
                     ],
                   ),
@@ -665,13 +697,14 @@ class _IncidentTile extends StatelessWidget {
                   ),
 
                   // Location
-                  if (incident.county != null ||
-                      incident.location != null) ...[
+                  if (incident.county != null || incident.location != null) ...[
                     const SizedBox(height: 3),
                     Text(
                       '📍 ${incident.county ?? incident.location}',
                       style: GoogleFonts.montserrat(
-                          fontSize: 11.5, color: _kSubtext),
+                        fontSize: 11.5,
+                        color: _kSubtext,
+                      ),
                     ),
                   ],
 
@@ -683,8 +716,7 @@ class _IncidentTile extends StatelessWidget {
                       children: [
                         if (incident.casualties != null)
                           _StatChip(
-                            label:
-                                '${incident.casualties} fatalities',
+                            label: '${incident.casualties} fatalities',
                             color: const Color(0xFFDC2626),
                           ),
                         if (incident.injuries != null) ...[
@@ -705,7 +737,6 @@ class _IncidentTile extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -718,11 +749,16 @@ class _SeverityBadge extends StatelessWidget {
 
   Color get _color {
     switch (severity) {
-      case 'fatal':    return const Color(0xFF7F1D1D);
-      case 'serious':  return const Color(0xFFDC2626);
-      case 'moderate': return const Color(0xFFF97316);
-      case 'minor':    return const Color(0xFF22C55E);
-      default:         return _kSubtext;
+      case 'fatal':
+        return const Color(0xFF7F1D1D);
+      case 'serious':
+        return const Color(0xFFDC2626);
+      case 'moderate':
+        return const Color(0xFFF97316);
+      case 'minor':
+        return const Color(0xFF22C55E);
+      default:
+        return _kSubtext;
     }
   }
 

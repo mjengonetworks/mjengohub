@@ -11,6 +11,38 @@
 // than left to look like live state. `UserValidator` went with it (also unused).
 import '../../point/models/points_models.dart';
 
+/// Compact user identity embedded in project attribution payloads.
+class UserProfileSummary {
+  final String id;
+  final String name;
+  final String? slug;
+  final String? avatarUrl;
+
+  const UserProfileSummary({
+    required this.id,
+    required this.name,
+    this.slug,
+    this.avatarUrl,
+  });
+
+  factory UserProfileSummary.fromJson(dynamic value) {
+    if (value is String || value is num) {
+      return UserProfileSummary(id: value.toString(), name: value.toString());
+    }
+    final json = value is Map
+        ? Map<String, dynamic>.from(value)
+        : <String, dynamic>{};
+    return UserProfileSummary(
+      id: json['id']?.toString() ?? '',
+      name:
+          (json['name'] as String?) ?? (json['display_name'] as String?) ?? '',
+      slug: json['slug'] as String?,
+      avatarUrl:
+          (json['avatar_url'] as String?) ?? (json['profile_image'] as String?),
+    );
+  }
+}
+
 class UserModel {
   /// Backend `id`, stringified. Named `uid` for continuity with the screens
   /// that already read it.
@@ -46,6 +78,9 @@ class UserModel {
   /// Admin-granted "verified" flag — the underlying field for Mjengo Hub
   /// Prime. Paired with [verificationExpiresAt] for paid subscriptions.
   final bool isVerified;
+  final bool isEmailVerified;
+  final bool isPhoneVerified;
+  final int level;
   final DateTime? verificationExpiresAt;
 
   /// Optional self-service links to the user's own profile on Mjengo Hub's
@@ -74,6 +109,9 @@ class UserModel {
     this.referralCode,
     this.referredById,
     this.isVerified = false,
+    this.isEmailVerified = false,
+    this.isPhoneVerified = false,
+    this.level = 1,
     this.verificationExpiresAt,
     this.mjengoNetworksUrl,
     this.shareBarabaraUrl,
@@ -82,53 +120,65 @@ class UserModel {
   /// Parses api.py's `_user_dict`. Also used for the `shared_preferences`
   /// user cache, which stores that same JSON verbatim.
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        uid: json['id']?.toString() ?? '',
-        email: json['email'] as String?,
-        displayName: (json['display_name'] as String?) ?? (json['name'] as String?),
-        firstName: json['first_name'] as String?,
-        lastName: json['last_name'] as String?,
-        phoneNumber: json['phone'] as String?,
-        photoURL: json['profile_image'] as String?,
-        coverImageUrl: json['cover_image'] as String?,
-        bio: json['bio'] as String?,
-        location: json['location'] as String?,
-        company: json['company'] as String?,
-        role: json['role']?.toString(),
-        // Not part of `_user_dict`; defaulted so existing UI copy still works.
-        provider: json['provider'] as String? ?? 'email',
-        isActive: json['is_active'] as bool? ?? true,
-        points: (json['points'] as num?)?.toInt() ?? 0,
-        referralCode: json['referral_code'] as String?,
-        referredById: json['referred_by_id']?.toString(),
-        isVerified: json['is_verified'] as bool? ?? false,
-        verificationExpiresAt: _parseDate(json['verification_expires_at']),
-        mjengoNetworksUrl: json['mjengo_networks_url'] as String?,
-        shareBarabaraUrl: json['share_barabara_url'] as String?,
-        createdAt: _parseDate(json['created_at']) ?? _parseDate(json['joined_at']),
-      );
+    uid: json['id']?.toString() ?? '',
+    email: json['email'] as String?,
+    displayName: (json['display_name'] as String?) ?? (json['name'] as String?),
+    firstName: json['first_name'] as String?,
+    lastName: json['last_name'] as String?,
+    phoneNumber: json['phone'] as String?,
+    photoURL: json['profile_image'] as String?,
+    coverImageUrl: json['cover_image'] as String?,
+    bio: json['bio'] as String?,
+    location: json['location'] as String?,
+    company: json['company'] as String?,
+    role: json['role']?.toString(),
+    // Not part of `_user_dict`; defaulted so existing UI copy still works.
+    provider: json['provider'] as String? ?? 'email',
+    isActive: json['is_active'] as bool? ?? true,
+    points: (json['points'] as num?)?.toInt() ?? 0,
+    referralCode: json['referral_code'] as String?,
+    referredById: json['referred_by_id']?.toString(),
+    isVerified: json['is_verified'] as bool? ?? false,
+    isEmailVerified:
+        (json['is_email_verified'] as bool?) ??
+        (json['email_verified'] as bool?) ??
+        false,
+    isPhoneVerified:
+        (json['is_phone_verified'] as bool?) ??
+        (json['phone_verified'] as bool?) ??
+        false,
+    level: (json['level'] as num?)?.toInt() ?? 1,
+    verificationExpiresAt: _parseDate(json['verification_expires_at']),
+    mjengoNetworksUrl: json['mjengo_networks_url'] as String?,
+    shareBarabaraUrl: json['share_barabara_url'] as String?,
+    createdAt: _parseDate(json['created_at']) ?? _parseDate(json['joined_at']),
+  );
 
   /// Serialises back to the API's snake_case shape.
   Map<String, dynamic> toJson() => {
-        'id': uid,
-        'email': email,
-        'first_name': firstName,
-        'last_name': lastName,
-        'phone': phoneNumber,
-        'profile_image': photoURL,
-        'cover_image': coverImageUrl,
-        'bio': bio,
-        'location': location,
-        'company': company,
-        'role': role,
-        'points': points,
-        'referral_code': referralCode,
-        'referred_by_id': referredById,
-        'is_verified': isVerified,
-        'verification_expires_at': verificationExpiresAt?.toIso8601String(),
-        'mjengo_networks_url': mjengoNetworksUrl,
-        'share_barabara_url': shareBarabaraUrl,
-        'created_at': createdAt?.toIso8601String(),
-      };
+    'id': uid,
+    'email': email,
+    'first_name': firstName,
+    'last_name': lastName,
+    'phone': phoneNumber,
+    'profile_image': photoURL,
+    'cover_image': coverImageUrl,
+    'bio': bio,
+    'location': location,
+    'company': company,
+    'role': role,
+    'points': points,
+    'referral_code': referralCode,
+    'referred_by_id': referredById,
+    'is_verified': isVerified,
+    'is_email_verified': isEmailVerified,
+    'is_phone_verified': isPhoneVerified,
+    'level': level,
+    'verification_expires_at': verificationExpiresAt?.toIso8601String(),
+    'mjengo_networks_url': mjengoNetworksUrl,
+    'share_barabara_url': shareBarabaraUrl,
+    'created_at': createdAt?.toIso8601String(),
+  };
 
   UserModel copyWith({
     String? uid,
@@ -150,39 +200,47 @@ class UserModel {
     String? referralCode,
     String? referredById,
     bool? isVerified,
+    bool? isEmailVerified,
+    bool? isPhoneVerified,
+    int? level,
     DateTime? verificationExpiresAt,
     String? mjengoNetworksUrl,
     String? shareBarabaraUrl,
-  }) =>
-      UserModel(
-        uid: uid ?? this.uid,
-        email: email ?? this.email,
-        displayName: displayName ?? this.displayName,
-        firstName: firstName ?? this.firstName,
-        lastName: lastName ?? this.lastName,
-        phoneNumber: phoneNumber ?? this.phoneNumber,
-        photoURL: photoURL ?? this.photoURL,
-        coverImageUrl: coverImageUrl ?? this.coverImageUrl,
-        bio: bio ?? this.bio,
-        location: location ?? this.location,
-        company: company ?? this.company,
-        role: role ?? this.role,
-        provider: provider ?? this.provider,
-        createdAt: createdAt ?? this.createdAt,
-        isActive: isActive ?? this.isActive,
-        points: points ?? this.points,
-        referralCode: referralCode ?? this.referralCode,
-        referredById: referredById ?? this.referredById,
-        isVerified: isVerified ?? this.isVerified,
-        verificationExpiresAt: verificationExpiresAt ?? this.verificationExpiresAt,
-        mjengoNetworksUrl: mjengoNetworksUrl ?? this.mjengoNetworksUrl,
-        shareBarabaraUrl: shareBarabaraUrl ?? this.shareBarabaraUrl,
-      );
+  }) => UserModel(
+    uid: uid ?? this.uid,
+    email: email ?? this.email,
+    displayName: displayName ?? this.displayName,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
+    phoneNumber: phoneNumber ?? this.phoneNumber,
+    photoURL: photoURL ?? this.photoURL,
+    coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+    bio: bio ?? this.bio,
+    location: location ?? this.location,
+    company: company ?? this.company,
+    role: role ?? this.role,
+    provider: provider ?? this.provider,
+    createdAt: createdAt ?? this.createdAt,
+    isActive: isActive ?? this.isActive,
+    points: points ?? this.points,
+    referralCode: referralCode ?? this.referralCode,
+    referredById: referredById ?? this.referredById,
+    isVerified: isVerified ?? this.isVerified,
+    isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+    isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+    level: level ?? this.level,
+    verificationExpiresAt: verificationExpiresAt ?? this.verificationExpiresAt,
+    mjengoNetworksUrl: mjengoNetworksUrl ?? this.mjengoNetworksUrl,
+    shareBarabaraUrl: shareBarabaraUrl ?? this.shareBarabaraUrl,
+  );
 
   // ── Computed helpers ───────────────────────────────────────────────────────
 
   String get initials {
-    if (firstName != null && firstName!.isNotEmpty && lastName != null && lastName!.isNotEmpty) {
+    if (firstName != null &&
+        firstName!.isNotEmpty &&
+        lastName != null &&
+        lastName!.isNotEmpty) {
       return '${firstName![0]}${lastName![0]}'.toUpperCase();
     }
     if (displayName != null && displayName!.isNotEmpty) {
@@ -192,14 +250,16 @@ class UserModel {
       }
       return names[0][0].toUpperCase();
     }
-    if (firstName != null && firstName!.isNotEmpty) return firstName![0].toUpperCase();
+    if (firstName != null && firstName!.isNotEmpty)
+      return firstName![0].toUpperCase();
     if (email != null && email!.isNotEmpty) return email![0].toUpperCase();
     return '?';
   }
 
   String get displayNameOrFallback {
     if (displayName != null && displayName!.isNotEmpty) return displayName!;
-    if (firstName != null && lastName != null) return '$firstName $lastName'.trim();
+    if (firstName != null && lastName != null)
+      return '$firstName $lastName'.trim();
     if (firstName != null) return firstName!;
     if (email != null) return email!;
     if (phoneNumber != null) return phoneNumber!;
@@ -207,7 +267,8 @@ class UserModel {
   }
 
   String? get fullName {
-    if (firstName != null && lastName != null) return '$firstName $lastName'.trim();
+    if (firstName != null && lastName != null)
+      return '$firstName $lastName'.trim();
     return displayName ?? firstName;
   }
 
