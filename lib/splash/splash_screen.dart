@@ -18,6 +18,7 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
   late AnimationController _logoController;
   late Animation<double> _logoScale;
   late Animation<double> _logoOpacity;
+  bool _navigated = false;
 
   static const Color _brandPrimary = Colors.white;
 
@@ -105,6 +106,8 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
   }
 
   void _navigateBasedOnState() {
+    if (!mounted || _navigated) return;
+
     String targetRoute = AppRoutes.login;
 
     try {
@@ -121,22 +124,30 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
       targetRoute = AppRoutes.login;
     }
 
-    // Navigate in a separate try-catch so a navigation failure doesn't silently swallow the error
-    try {
-      print('Navigating to: $targetRoute');
-      Get.offAllNamed(targetRoute);
-    } catch (e) {
-      print('Navigation error to $targetRoute: $e');
-      // Last resort: use the navigator directly
+    // Only navigate once, and wait until the current frame has finished
+    // before changing routes. This avoids Navigator._debugLocked during the
+    // splash route's initial build.
+    _navigated = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       try {
-        Navigator.of(Get.context!).pushNamedAndRemoveUntil(
-          targetRoute,
-          (route) => false,
-        );
-      } catch (e2) {
-        print('Fallback navigation also failed: $e2');
+        print('Navigating to: $targetRoute');
+        Get.offAllNamed(targetRoute);
+      } catch (e) {
+        print('Navigation error to $targetRoute: $e');
+        // Last resort: use the mounted splash context directly.
+        try {
+          if (!mounted) return;
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            targetRoute,
+            (route) => false,
+          );
+        } catch (e2) {
+          print('Fallback navigation also failed: $e2');
+        }
       }
-    }
+    });
   }
 
   @override

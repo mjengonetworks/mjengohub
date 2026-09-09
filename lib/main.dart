@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
             canvasColor: AppColors.canvas,
             cardColor: AppColors.surface,
             dividerColor: AppColors.divider,
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               color: AppColors.surface,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
