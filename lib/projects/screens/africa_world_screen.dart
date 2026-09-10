@@ -11,12 +11,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../news/widgets/net_image.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/responsive.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
+import '../widgets/projects_map_view.dart' show kAfricaMapCenter;
 import '../widgets/tracker_dynamic_sections.dart';
+import '../widgets/tracker_hero_carousel.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
@@ -48,11 +49,15 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
 
   static final _regionKeys = _kRegions.keys.toList();
 
-  /// First loaded entry's photo backs the hero strip — there's no dedicated
-  /// "featured pan-African project" endpoint, same pragmatic fallback used
-  /// by BuiltHistoryScreen's hero strip.
-  String? get _heroImageUrl =>
-      _projects.isNotEmpty ? _projects.first.imageUrl : null;
+  /// Top 5 loaded entries' photos rotate through the hero carousel — there's
+  /// no dedicated "featured pan-African project" endpoint, same pragmatic
+  /// fallback used by BuiltHistoryScreen's hero carousel.
+  List<String> get _heroImageUrls => _projects
+      .map((p) => p.imageUrl)
+      .whereType<String>()
+      .toSet()
+      .take(5)
+      .toList();
 
   @override
   void initState() {
@@ -131,13 +136,24 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _AfricaWorldHeroStrip(imageUrl: _heroImageUrl),
+                  TrackerHeroCarousel(
+                    title: 'Africa & World Mega Projects',
+                    subtitle:
+                        'Tracking landmark mega-developments, engineering '
+                        'marvels, and iconic architectural builds across '
+                        'Africa and around the globe.',
+                    imageUrls: _heroImageUrls,
+                  ),
                   const SizedBox(height: 16),
 
                   // 1. Top interactive live map — the very first scrollable
                   // item, directly beneath the app bar (continent tabs live
                   // in the app bar itself). Never gated behind a toggle.
-                  TrackerLiveMap(projects: _projects, loading: _loading),
+                  TrackerLiveMap(
+                    projects: _projects,
+                    loading: _loading,
+                    defaultCenter: kAfricaMapCenter,
+                  ),
                   const SizedBox(height: 24),
 
                   // 3-5. Browse by Category / Most Viewed / By Status
@@ -168,75 +184,6 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Slim 150px hero strip, matching BuiltHistoryScreen's _HeroStrip — kept
-/// local rather than shared since the two trackers' copy/imagery differ and
-/// there's no third caller to justify extracting a shared widget yet.
-class _AfricaWorldHeroStrip extends StatelessWidget {
-  final String? imageUrl;
-  const _AfricaWorldHeroStrip({required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          height: 150,
-          width: double.infinity,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              NetImage(
-                url: imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholderColor: AppColors.deepNavy,
-              ),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Color(0xDE000000), Color(0x8A000000)],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Africa & World Mega Projects',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Cross-border transport corridors, energy grids, '
-                      'and global engineering',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ),
       ),

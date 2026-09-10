@@ -506,19 +506,22 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
   // Fallback-only placeholders, used solely if the backend's admin-managed
   // SocialLink table (`/api/v1/site/social-links`) has no active rows yet.
   static const List<SocialLinkInfo> _fallbackLinks = [
-    SocialLinkInfo(platform: 'youtube', url: 'https://youtube.com/@mjengohub'),
-    SocialLinkInfo(platform: 'twitter', url: 'https://x.com/mjengohub'),
-    SocialLinkInfo(platform: 'tiktok', url: 'https://tiktok.com/@mjengohub'),
+    SocialLinkInfo(
+      platform: 'linkedin',
+      url: 'https://www.linkedin.com/in/mjengohub',
+    ),
     SocialLinkInfo(platform: 'facebook', url: 'https://facebook.com/mjengohub'),
+    SocialLinkInfo(platform: 'twitter', url: 'https://x.com/mjengohub'),
     SocialLinkInfo(
       platform: 'instagram',
       url: 'https://instagram.com/mjengohub',
     ),
+    SocialLinkInfo(platform: 'youtube', url: 'https://youtube.com/@mjengohub'),
+    SocialLinkInfo(platform: 'tiktok', url: 'https://tiktok.com/@mjengohub'),
     SocialLinkInfo(
       platform: 'whatsapp',
       url: 'https://whatsapp.com/channel/mjengohub',
     ),
-    SocialLinkInfo(platform: 'telegram', url: 'https://t.me/mjengohub'),
   ];
 
   final _service = SiteService();
@@ -578,30 +581,34 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader(title: 'Follow Mjengo Hub'),
-        const SizedBox(height: 12),
+        const _SectionHeader(title: 'Follow Us'),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: _links
-                .map(
-                  (l) => _SocialIcon(
-                    brand: _brandFor[l.platform],
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                for (var i = 0; i < _links.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 12),
+                  _SocialIcon(
+                    brand: _brandFor[_links[i].platform],
                     fallbackIcon:
-                        _fallbackIconFor[l.platform] ?? Icons.link_rounded,
-                    color: _colorFor[l.platform] ?? AppColors.textSubtle,
-                    url: l.url,
-                    label: l.label?.isNotEmpty == true
-                        ? l.label!
-                        : (_labelFor[l.platform] ?? l.platform),
+                        _fallbackIconFor[_links[i].platform] ??
+                        Icons.link_rounded,
+                    color:
+                        _colorFor[_links[i].platform] ?? AppColors.textSubtle,
+                    url: _links[i].url,
+                    label: _links[i].label?.isNotEmpty == true
+                        ? _links[i].label!
+                        : (_labelFor[_links[i].platform] ?? _links[i].platform),
                   ),
-                )
-                .toList(),
+                ],
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
         const _NetworkSitesDirectory(),
       ],
     );
@@ -1801,10 +1808,8 @@ class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : Column(
                   children: [
-                    for (final video in _videos.take(4)) ...[
+                    for (final video in _videos.take(4))
                       _VideoCard(video: video),
-                      const SizedBox(height: 12),
-                    ],
                   ],
                 ),
         ),
@@ -1823,9 +1828,10 @@ class _VideoCard extends StatelessWidget {
       onTap: () => Get.to(() => VideoPlayerScreen(video: video)),
       child: Container(
         width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.sharp),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColors.borderSlate),
         ),
         clipBehavior: Clip.antiAlias,

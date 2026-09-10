@@ -416,7 +416,7 @@ class _ContactScreenState extends State<ContactScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         color: _surface,
         borderRadius: BorderRadius.circular(14),
@@ -425,26 +425,29 @@ class _ContactScreenState extends State<ContactScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Follow Us',
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: _primary,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Text(
+              'Follow Us',
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: _primary,
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Stay updated with industry news and tips.',
-            style: GoogleFonts.montserrat(fontSize: 11.5, color: _secondary),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: socials
-                .map((s) => _socialChip(s.$1, s.$2, s.$3))
-                .toList(),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Row(
+              children: [
+                for (var i = 0; i < socials.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 12),
+                  _socialChip(socials[i].$1, socials[i].$2, socials[i].$3),
+                ],
+              ],
+            ),
           ),
         ],
       ),

@@ -1,10 +1,13 @@
 // lib/projects/screens/projects_screen.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../navigation/app_header.dart';
+import '../../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
@@ -12,6 +15,7 @@ import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
+import '../widgets/tracker_map_grid_section.dart';
 import 'project_detail_screen.dart';
 
 const _kBlue = Color(0xFF2563EB);
@@ -272,12 +276,15 @@ class ProjectsScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
-                    // 1. Top interactive live map — the very first scrollable
-                    // item, directly beneath the app bar. Color-coded status
-                    // pins, tap-to-preview bottom sheet. Never gated behind a
-                    // toggle and never pushed below other content.
                     const SizedBox(height: 12),
                     _buildHeroBanner(ctrl),
+                    const SizedBox(height: 16),
+                    // Interactive live map — color-coded status pins,
+                    // tap-to-preview bottom sheet. Always rendered (see
+                    // TrackerLiveMap/ProjectsMapView), never unmounted when
+                    // the current filter matches zero pins.
+                    TrackerLiveMap(projects: ctrl.projects, loading: false),
+                    const SizedBox(height: 16),
                     _buildFeaturedStrip(ctrl),
                     _buildFilterControls(context, ctrl),
                     _buildActiveEntityFilters(ctrl),
@@ -422,13 +429,22 @@ class ProjectsScreen extends StatelessWidget {
     return Obx(() {
       // Filtered views (a tapped client/contractor/etc.) must never show a
       // global featured project's photo — it reads as unrelated content.
-      // Fall back to the first row of the already-filtered result set.
-      String? bgUrl;
+      // Fall back to the already-filtered result set's top rows.
+      List<String> bgUrls;
       if (ctrl.hasEntityFilter) {
-        bgUrl = ctrl.projects.isNotEmpty ? ctrl.projects.first.imageUrl : null;
+        bgUrls = ctrl.projects
+            .map((p) => p.imageUrl)
+            .whereType<String>()
+            .take(5)
+            .toList();
       } else {
         final featured = ctrl.projects.where((p) => p.isFeatured).toList();
-        bgUrl = featured.isNotEmpty ? featured.first.imageUrl : null;
+        final source = featured.isNotEmpty ? featured : ctrl.projects;
+        bgUrls = source
+            .map((p) => p.imageUrl)
+            .whereType<String>()
+            .take(5)
+            .toList();
       }
 
       return Padding(
@@ -441,13 +457,9 @@ class ProjectsScreen extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                NetImage(
-                  url: bgUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
+                _HeroCarouselBackground(
+                  imageUrls: bgUrls,
                   placeholderColor: _kDark,
-                  errorBuilder: (_) => Container(color: _kDark),
                 ),
                 DecoratedBox(
                   decoration: const BoxDecoration(
@@ -644,11 +656,11 @@ class ProjectsScreen extends StatelessWidget {
               ctrl.applyFilters(county: '');
             },
           ),
-        if (ctrl.selectedTypology.value.isNotEmpty)
+        if (ctrl.selectedTypologies.isNotEmpty)
           (
             'Typology',
-            ctrl.selectedTypology.value,
-            () => ctrl.selectedTypology.value = '',
+            ctrl.selectedTypologies.join(', '),
+            () => ctrl.selectedTypologies.clear(),
           ),
       ];
       if (active.isEmpty) return const SizedBox.shrink();
@@ -860,12 +872,20 @@ class ProjectsScreen extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       children: [
         _LabeledFilterButton(
-          label: 'Typology',
-          value: ctrl.selectedTypology.value.isEmpty
+          label: 'Category / Typology',
+          value: ctrl.selectedTypologies.isEmpty
               ? 'All Typologies'
-              : ctrl.selectedTypology.value,
+              : '${ctrl.selectedTypologies.length} selected',
           icon: Icons.apartment_outlined,
           onTap: () => _showTypologySheet(context, ctrl),
+        ),
+        _LabeledFilterButton(
+          label: 'National or County',
+          value: ctrl.selectedCounties.isEmpty
+              ? 'All Kenya'
+              : '${ctrl.selectedCounties.length} selected',
+          icon: Icons.location_on_outlined,
+          onTap: () => _showCountySheet(context, ctrl),
         ),
         _LabeledFilterButton(
           label: 'Status',
@@ -884,14 +904,6 @@ class ProjectsScreen extends StatelessWidget {
             selected: ctrl.selectedStatus.value,
             onSelected: (value) => ctrl.applyFilters(status: value),
           ),
-        ),
-        _LabeledFilterButton(
-          label: 'County',
-          value: ctrl.selectedCounties.isEmpty
-              ? 'All 47 Counties'
-              : '${ctrl.selectedCounties.length} selected',
-          icon: Icons.location_on_outlined,
-          onTap: () => _showCountySheet(context, ctrl),
         ),
         _LabeledFilterButton(
           label: 'Developer / Client',
@@ -995,13 +1007,13 @@ class ProjectsScreen extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => _SearchableSelectSheet(
+      builder: (sheetContext) => _MultiSelectChipSheet(
         title: 'Select Typology',
         options: options,
-        selected: ctrl.selectedTypology.value,
-        onSelected: (value) {
+        selected: ctrl.selectedTypologies.toSet(),
+        onApply: (values) {
           Navigator.pop(sheetContext);
-          ctrl.selectedTypology.value = value;
+          ctrl.selectedTypologies.assignAll(values);
         },
       ),
     );
@@ -1120,12 +1132,13 @@ class ProjectsScreen extends StatelessWidget {
   }
 
   Widget _buildProjectsGrid(ProjectsController ctrl) {
-    final visible = ctrl.selectedTypology.value.isEmpty
+    final visible = ctrl.selectedTypologies.isEmpty
         ? ctrl.projects
         : ctrl.projects
               .where(
-                (p) =>
-                    BuildingsTaxonomy.matches(p, ctrl.selectedTypology.value),
+                (p) => ctrl.selectedTypologies.any(
+                  (t) => BuildingsTaxonomy.matches(p, t),
+                ),
               )
               .toList();
     if (visible.isEmpty) {
@@ -1144,6 +1157,97 @@ class ProjectsScreen extends StatelessWidget {
       child: Column(
         children: visible.map((p) => _ProjectListTile(project: p)).toList(),
       ),
+    );
+  }
+}
+
+/// Rotating hero background — the "standardized dynamic hero carousel"
+/// shared across every tracker screen, wired here to the top loaded
+/// featured/filtered project images with the same slim clamped indicator
+/// lines used on the homepage hero (PageDotIndicator) and by
+/// TrackerHeroCarousel. Kept local (rather than reusing TrackerHeroCarousel
+/// itself) since this hero also carries CTA buttons + a dynamic title/
+/// subtitle overlay that TrackerHeroCarousel doesn't support.
+class _HeroCarouselBackground extends StatefulWidget {
+  final List<String> imageUrls;
+  final Color placeholderColor;
+  const _HeroCarouselBackground({
+    required this.imageUrls,
+    required this.placeholderColor,
+  });
+
+  @override
+  State<_HeroCarouselBackground> createState() =>
+      _HeroCarouselBackgroundState();
+}
+
+class _HeroCarouselBackgroundState extends State<_HeroCarouselBackground> {
+  final _controller = PageController();
+  int _index = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _armAutoplay();
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeroCarouselBackground old) {
+    super.didUpdateWidget(old);
+    if (old.imageUrls.length != widget.imageUrls.length) {
+      _index = 0;
+      _armAutoplay();
+    }
+  }
+
+  void _armAutoplay() {
+    _timer?.cancel();
+    if (widget.imageUrls.length <= 1) return;
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_controller.hasClients) return;
+      final next = (_index + 1) % widget.imageUrls.length;
+      _controller.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final images = widget.imageUrls.isEmpty ? [null] : widget.imageUrls;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          controller: _controller,
+          itemCount: images.length,
+          onPageChanged: (i) => setState(() => _index = i),
+          itemBuilder: (_, i) => NetImage(
+            url: images[i],
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            placeholderColor: widget.placeholderColor,
+            errorBuilder: (_) => Container(color: widget.placeholderColor),
+          ),
+        ),
+        if (images.length > 1)
+          Positioned(
+            top: 16,
+            right: 16,
+            child: PageDotIndicator(count: images.length, current: _index),
+          ),
+      ],
     );
   }
 }
@@ -2095,6 +2199,92 @@ class _FreeTextFilterSheetState extends State<_FreeTextFilterSheet> {
                 const Spacer(),
                 FilledButton(
                   onPressed: () => widget.onApply(_controller.text.trim()),
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Multi-select bottom sheet using selectable chips with a checkmark on the
+/// active state — Private Projects' Typology/Category facet (client-side
+/// OR-matched, see BuildingsTaxonomy) rather than the checkbox-list style
+/// `_SearchableMultiSelectSheet` already used for County.
+class _MultiSelectChipSheet extends StatefulWidget {
+  final String title;
+  final List<String> options;
+  final Set<String> selected;
+  final ValueChanged<List<String>> onApply;
+
+  const _MultiSelectChipSheet({
+    required this.title,
+    required this.options,
+    required this.selected,
+    required this.onApply,
+  });
+
+  @override
+  State<_MultiSelectChipSheet> createState() => _MultiSelectChipSheetState();
+}
+
+class _MultiSelectChipSheetState extends State<_MultiSelectChipSheet> {
+  late final Set<String> _selected = {...widget.selected};
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Text('${_selected.length} selected'),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: widget.options.map((option) {
+                final active = _selected.contains(option);
+                return FilterChip(
+                  label: Text(option),
+                  selected: active,
+                  showCheckmark: true,
+                  onSelected: (value) => setState(() {
+                    if (value) {
+                      _selected.add(option);
+                    } else {
+                      _selected.remove(option);
+                    }
+                  }),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                if (_selected.isNotEmpty)
+                  TextButton(
+                    onPressed: () => setState(_selected.clear),
+                    child: const Text('Clear'),
+                  ),
+                const Spacer(),
+                FilledButton(
+                  onPressed: () => widget.onApply(_selected.toList()),
                   child: const Text('Apply'),
                 ),
               ],

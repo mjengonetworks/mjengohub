@@ -58,12 +58,12 @@ class ProjectsController extends GetxController {
   /// and write [selectedStatus] directly instead.
   final selectedSort = ''.obs;
 
-  /// Private Projects' "Typology / Category" filter facet. There is no
-  /// server-side typology column on `Project` (only the free-text
-  /// `project_type`), so — same as `BuildingsTaxonomy` — this is matched
-  /// client-side against already-loaded rows rather than sent as a query
-  /// param. See [ProjectsScreen.filteredProjects].
-  final selectedTypology = ''.obs;
+  /// Private Projects' "Typology / Category" filter facet — multi-select
+  /// (OR-matched). There is no server-side typology column on `Project`
+  /// (only the free-text `project_type`), so — same as `BuildingsTaxonomy`
+  /// — this is matched client-side against already-loaded rows rather than
+  /// sent as a query param. See ProjectsScreen's `_buildProjectsGrid`.
+  final selectedTypologies = <String>[].obs;
 
   static const sectorOptions = <String>[
     'Transport',
@@ -117,7 +117,7 @@ class ProjectsController extends GetxController {
     selectedClient.value.isNotEmpty,
     selectedCategory.value.isNotEmpty,
     selectedUser.value.isNotEmpty,
-    selectedTypology.value.isNotEmpty,
+    selectedTypologies.isNotEmpty,
   ].where((active) => active).length;
 
   /// True once any *entity* filter (as opposed to a plain display filter
@@ -257,7 +257,7 @@ class ProjectsController extends GetxController {
     selectedUser.value = '';
     selectedUserName.value = '';
     selectedSort.value = '';
-    selectedTypology.value = '';
+    selectedTypologies.clear();
     searchQuery.value = '';
     await fetchAll();
   }

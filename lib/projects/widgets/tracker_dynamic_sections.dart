@@ -197,22 +197,55 @@ class _Heading extends StatelessWidget {
   }
 }
 
-/// Matches tracker_browse_sections.html's `.tbs-empty` placeholder text —
-/// the section header still renders so an empty tracker reads as "exists,
-/// just empty" rather than looking like the feature is missing.
+/// Matches tracker_browse_sections.html's `.tbs-empty` placeholder — the
+/// section header still renders so an empty tracker reads as "exists, just
+/// empty" rather than looking like the feature is missing. Styled as a
+/// left-accented card (not raw text) so a 0-item category/period/tracker
+/// still reads as a deliberate, on-brand state.
 class _EmptyNote extends StatelessWidget {
   final String message;
-  const _EmptyNote(this.message);
+  final String title;
+  const _EmptyNote(this.message, {this.title = 'Nothing here yet'});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
-        message,
-        style: GoogleFonts.montserrat(
-          fontSize: 12,
-          color: AppColors.textSubtle,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          decoration: const BoxDecoration(
+            border: Border(
+              left: BorderSide(color: Color(0xFF0284C7), width: 3.5),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF334155),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                message,
+                style: GoogleFonts.montserrat(
+                  fontSize: 11.5,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -419,15 +452,9 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
         ),
         const SizedBox(height: 10),
         if (window.projects.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'No views yet in this window.',
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                color: AppColors.textSubtle,
-              ),
-            ),
+          _EmptyNote(
+            'Nothing has picked up views in this window yet.',
+            title: 'Most Viewed — ${window.label}',
           )
         else ...[
           Padding(

@@ -21,6 +21,16 @@ import '../screens/project_detail_screen.dart';
 /// Nairobi — the same default center the website's #pj-map uses.
 const LatLng kKenyaMapCenter = LatLng(-1.286389, 36.817223);
 
+/// Geographic center of Kenya — used as the base map view for domestic
+/// trackers (Built History, Private Developments, Site Safety) when the
+/// current filter matches zero pins, so the map still centers somewhere
+/// sensible rather than defaulting to Nairobi specifically.
+const LatLng kKenyaGeographicCenter = LatLng(-0.0236, 37.9062);
+
+/// Default center for AfricaWorldScreen's map when the current
+/// region/filter matches zero pins.
+const LatLng kAfricaMapCenter = LatLng(1.6508, 17.5849);
+
 Color statusMarkerColor(String status) {
   switch (status) {
     case 'ongoing':
@@ -180,40 +190,26 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
 /// touch).
 class ProjectsMapView extends StatelessWidget {
   final List<Project> projects;
-  const ProjectsMapView({super.key, required this.projects});
+
+  /// Base view shown when [projects] has no located pins — the map itself
+  /// is never unmounted for an empty filter result, only its camera falls
+  /// back to this center with an "Explore project locations" overlay pill
+  /// instead of a marker set.
+  final LatLng defaultCenter;
+
+  const ProjectsMapView({
+    super.key,
+    required this.projects,
+    this.defaultCenter = kKenyaGeographicCenter,
+  });
 
   @override
   Widget build(BuildContext context) {
     final located = projects.where((p) => p.hasCoordinates).toList();
-
-    if (located.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.map_outlined,
-                size: 44,
-                color: AppColors.textSubtle,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'None of these projects have map coordinates yet.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     final points = located
         .map((p) => LatLng(p.latitude!, p.longitude!))
         .toList();
-    final bounds = LatLngBounds.fromPoints(points);
+    final bounds = located.isNotEmpty ? LatLngBounds.fromPoints(points) : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -227,13 +223,13 @@ class ProjectsMapView extends StatelessWidget {
                 options: MapOptions(
                   initialCameraFit: located.length > 1
                       ? CameraFit.bounds(
-                          bounds: bounds,
+                          bounds: bounds!,
                           padding: const EdgeInsets.all(40),
                         )
                       : null,
                   initialCenter: located.length == 1
                       ? points.first
-                      : kKenyaMapCenter,
+                      : defaultCenter,
                   initialZoom: located.length == 1 ? 14 : 6,
                   interactionOptions: const InteractionOptions(
                     flags: InteractiveFlag.none,
@@ -275,27 +271,55 @@ class ProjectsMapView extends StatelessWidget {
                   ),
                 ],
               ),
-              Positioned(
-                left: 10,
-                bottom: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+              if (located.isEmpty)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Explore project locations on the map',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.headingSlate,
+                      ),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Tap map to explore',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.headingSlate,
+                )
+              else
+                Positioned(
+                  left: 10,
+                  bottom: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Tap map to explore',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.headingSlate,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

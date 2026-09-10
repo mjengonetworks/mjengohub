@@ -8,6 +8,7 @@
 // separate sections, matching the "top interactive live map" spec rather
 // than the earlier toggle-based design.
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../shared/widgets/coming_soon.dart';
 import '../models/project_model.dart';
@@ -18,10 +19,18 @@ class TrackerLiveMap extends StatelessWidget {
   final List<Project> projects;
   final bool loading;
 
+  /// Base camera center used when the current filter matches zero pins —
+  /// the map is always rendered (never unmounted), just recentered here
+  /// with an overlay pill instead of markers. Defaults to Kenya's
+  /// geographic center for domestic trackers; AfricaWorldScreen passes
+  /// [kAfricaMapCenter].
+  final LatLng defaultCenter;
+
   const TrackerLiveMap({
     super.key,
     required this.projects,
     required this.loading,
+    this.defaultCenter = kKenyaGeographicCenter,
   });
 
   @override
@@ -32,20 +41,11 @@ class TrackerLiveMap extends StatelessWidget {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    if (projects.isEmpty) {
-      return const SizedBox(
-        height: 220,
-        child: ComingSoonPlaceholder(
-          icon: Icons.map_outlined,
-          title: 'Nothing to map yet',
-          message:
-              'Entries will appear here as pins once they have a location.',
-        ),
-      );
-    }
     // Full-bleed, no horizontal padding — the map is the top-of-screen
-    // anchor, edge-to-edge like the website's own #pj-map.
-    return ProjectsMapView(projects: projects);
+    // anchor, edge-to-edge like the website's own #pj-map. Always rendered,
+    // even with zero pins — ProjectsMapView itself handles that case with a
+    // default-centered base view and an overlay pill instead of unmounting.
+    return ProjectsMapView(projects: projects, defaultCenter: defaultCenter);
   }
 }
 

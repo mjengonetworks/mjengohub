@@ -21,6 +21,7 @@ import '../../shared/widgets/responsive.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/tracker_dynamic_sections.dart';
+import '../widgets/tracker_hero_carousel.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
@@ -60,11 +61,15 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
   List<Article> _archiveArticles = [];
   bool _loading = true;
 
-  /// First loaded entry's photo backs the hero strip — there's no dedicated
-  /// "featured heritage image" endpoint, same pragmatic fallback used by
-  /// ProjectsScreen's own hero banner.
-  String? get _heroImageUrl =>
-      _projects.isNotEmpty ? _projects.first.imageUrl : null;
+  /// Top 5 loaded entries' photos rotate through the hero carousel — there's
+  /// no dedicated "featured heritage image" endpoint, same pragmatic
+  /// fallback used elsewhere for unconfirmed/uncapped totals.
+  List<String> get _heroImageUrls => _projects
+      .map((p) => p.imageUrl)
+      .whereType<String>()
+      .toSet()
+      .take(5)
+      .toList();
 
   @override
   void initState() {
@@ -130,7 +135,12 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
               padding: const EdgeInsets.only(bottom: 24),
               children: [
                 const SizedBox(height: 12),
-                _HeroStrip(imageUrl: _heroImageUrl),
+                TrackerHeroCarousel(
+                  title: 'Built History & Architectural Heritage',
+                  subtitle:
+                      'Landmark structures and historic urban architecture',
+                  imageUrls: _heroImageUrls,
+                ),
                 const SizedBox(height: 16),
 
                 // 1. Top interactive live map — the very first scrollable
@@ -327,72 +337,4 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
           ),
         ),
       );
-}
-
-/// Slim 150px hero strip — mirrors the web's compact tracker header. Kept
-/// deliberately shorter than ProjectsScreen's 240px hero since this screen
-/// already carries a live map + decade chips right below it.
-class _HeroStrip extends StatelessWidget {
-  final String? imageUrl;
-  const _HeroStrip({required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          height: 150,
-          width: double.infinity,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              NetImage(
-                url: imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholderColor: AppColors.deepNavy,
-              ),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Color(0xDE000000), Color(0x8A000000)],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Built History & Architectural Heritage',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Landmark structures and historic urban architecture',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
