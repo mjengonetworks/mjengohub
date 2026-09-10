@@ -20,7 +20,7 @@ const Color _textGray    = Color(0xFF475569);
 
 class LoginScreen extends StatefulWidget {
   final bool startOnSignUp;
-  const LoginScreen({Key? key, this.startOnSignUp = false}) : super(key: key);
+  const LoginScreen({super.key, this.startOnSignUp = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
 // ── Login Form ─────────────────────────────────────────────────────────────────
 
 class _LoginForm extends StatefulWidget {
-  const _LoginForm({Key? key}) : super(key: key);
+  const _LoginForm({super.key});
 
   @override
   State<_LoginForm> createState() => _LoginFormState();
@@ -281,7 +281,7 @@ class _LoginFormState extends State<_LoginForm> {
 // ── Sign Up Form ───────────────────────────────────────────────────────────────
 
 class _SignUpForm extends StatefulWidget {
-  const _SignUpForm({Key? key}) : super(key: key);
+  const _SignUpForm({super.key});
 
   @override
   State<_SignUpForm> createState() => _SignUpFormState();
@@ -613,7 +613,7 @@ class _PrimaryButton extends StatelessWidget {
           onPressed: loading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: _accent,
-            disabledBackgroundColor: _accent.withOpacity(0.5),
+            disabledBackgroundColor: _accent.withValues(alpha: 0.5),
             elevation: 0,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12)),

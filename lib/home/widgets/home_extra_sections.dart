@@ -16,7 +16,6 @@ import '../../navigation/main_navigation.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../news/models/article_model.dart';
 import '../../news/models/category_model.dart';
-import '../../news/screens/article_detail_screen.dart';
 import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/models/contributors_model.dart';
@@ -193,7 +192,7 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
                     crossAxisSpacing: 10,
                     childAspectRatio: 0.95,
                   ),
-                  itemBuilder: (_, __) => Container(
+                  itemBuilder: (_, _) => Container(
                     decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(14)),
                   ),
                 )
@@ -229,7 +228,7 @@ class _ProjectCategoryCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -718,8 +717,8 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: 3,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, __) => Container(
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (_, _) => Container(
                     width: 220,
                     decoration: BoxDecoration(
                       color: AppColors.divider,
@@ -731,7 +730,7 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _projects.take(4).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => _FeaturedProjectCard(project: _projects[i]),
                 ),
         ),
@@ -910,7 +909,7 @@ class _BuiltHistoryPreviewSectionState extends State<BuiltHistoryPreviewSection>
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _projects.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => TrackerProjectCard(
                     project: _projects[i],
                     captionOverride: _projects[i].completionDecade,
@@ -981,7 +980,7 @@ class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _projects.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => TrackerProjectCard(
                     project: _projects[i],
                     captionOverride: _projects[i].country,
@@ -1065,7 +1064,7 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _projects.take(4).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => TrackerProjectCard(project: _projects[i]),
                 ),
         ),
@@ -1156,8 +1155,8 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: 3,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, __) => Container(
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (_, _) => Container(
                     width: 200,
                     decoration: BoxDecoration(
                       color: AppColors.divider,
@@ -1169,7 +1168,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _incidents.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => _SafetyIncidentCard(incident: _incidents[i]),
                 ),
         ),
@@ -1234,7 +1233,7 @@ class _SafetyIncidentCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -1358,7 +1357,7 @@ class _CategoryPillsBarState extends State<CategoryPillsBar> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           final cat = _categories[i];
           return GestureDetector(
@@ -1478,7 +1477,7 @@ class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _videos.take(4).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => _VideoCard(video: _videos[i]),
                 ),
         ),
@@ -1589,7 +1588,7 @@ class _MerchPreviewSectionState extends State<MerchPreviewSection> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _products.take(4).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (_, i) => _MerchCard(product: _products[i]),
                 ),
         ),

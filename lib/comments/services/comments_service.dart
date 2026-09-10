@@ -107,8 +107,8 @@ class CommentsService {
       final res = await _api.postRequest('${resource.pathPrefix}/$id/comments', {
         'content': content,
         'name': name,
-        if (email != null) 'email': email,
-        if (parentId != null) 'parent_id': parentId,
+        'email': ?email,
+        'parent_id': ?parentId,
       });
       if (res.statusCode == 200 || res.statusCode == 201) {
         final data = res.body?['data'];

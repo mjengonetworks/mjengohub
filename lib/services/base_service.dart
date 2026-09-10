@@ -26,7 +26,7 @@ class BaseService extends GetConnect {
       // an automation signature to host-level bot protection (Imunify360)
       // and was triggering 403s independent of any CORS concern.
       request.headers['Accept'] = 'application/json';
-      final method = request.method?.toUpperCase() ?? '';
+      final method = request.method.toUpperCase();
       if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
         request.headers['Content-Type'] = 'application/json';
       }

@@ -343,7 +343,7 @@ class _SearchScreenState extends State<SearchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(title, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
-                if (trailing != null) trailing,
+                ?trailing,
               ],
             ),
           ),

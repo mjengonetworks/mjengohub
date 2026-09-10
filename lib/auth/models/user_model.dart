@@ -250,16 +250,18 @@ class UserModel {
       }
       return names[0][0].toUpperCase();
     }
-    if (firstName != null && firstName!.isNotEmpty)
+    if (firstName != null && firstName!.isNotEmpty) {
       return firstName![0].toUpperCase();
+    }
     if (email != null && email!.isNotEmpty) return email![0].toUpperCase();
     return '?';
   }
 
   String get displayNameOrFallback {
     if (displayName != null && displayName!.isNotEmpty) return displayName!;
-    if (firstName != null && lastName != null)
+    if (firstName != null && lastName != null) {
       return '$firstName $lastName'.trim();
+    }
     if (firstName != null) return firstName!;
     if (email != null) return email!;
     if (phoneNumber != null) return phoneNumber!;
@@ -267,8 +269,9 @@ class UserModel {
   }
 
   String? get fullName {
-    if (firstName != null && lastName != null)
+    if (firstName != null && lastName != null) {
       return '$firstName $lastName'.trim();
+    }
     return displayName ?? firstName;
   }
 

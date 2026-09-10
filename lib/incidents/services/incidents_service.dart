@@ -25,8 +25,9 @@ class IncidentsService {
       };
       if (severity != null && severity.isNotEmpty) query['severity'] = severity;
       if (county != null && county.isNotEmpty) query['county'] = county;
-      if (regionalScope != null && regionalScope.isNotEmpty)
+      if (regionalScope != null && regionalScope.isNotEmpty) {
         query['regional_scope'] = regionalScope;
+      }
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
 
@@ -59,11 +60,12 @@ class IncidentsService {
       );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List)
+        if (data is List) {
           return data
               .whereType<Map<String, dynamic>>()
               .map(Incident.fromJson)
               .toList();
+        }
       }
       return [];
     } catch (e) {
@@ -97,8 +99,8 @@ class IncidentsService {
       final res = await _api.postRequest('incidents/$incidentId/comments', {
         'name': name,
         'content': content,
-        if (email != null) 'email': email,
-        if (parentId != null) 'parent_id': parentId,
+        'email': ?email,
+        'parent_id': ?parentId,
       });
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {

@@ -128,7 +128,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _kDecades.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (_, i) {
                     if (i == 0) return _chip('All Decades', _decade == null, () => setState(() { _decade = null; _load(); }));
                     final d = _kDecades[i - 1];
@@ -153,7 +153,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _archiveArticles.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    separatorBuilder: (_, _) => const SizedBox(width: 10),
                     itemBuilder: (_, i) {
                       final a = _archiveArticles[i];
                       return GestureDetector(

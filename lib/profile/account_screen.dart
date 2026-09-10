@@ -40,7 +40,7 @@ const _divider    = Color(0xFFEEEEF5);
 const _error      = Color(0xFFEF4444);
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({Key? key}) : super(key: key);
+  const AccountScreen({super.key});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
@@ -395,8 +395,8 @@ class _Hero extends StatelessWidget {
                       height: 76,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.2),
-                        border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
+                        color: Colors.white.withValues(alpha: 0.2),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 2),
                       ),
                       child: ClipOval(
                         child: NetImage(
@@ -797,7 +797,7 @@ class _PasswordTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFEFF6FF),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _blue.withOpacity(0.2)),
+                border: Border.all(color: _blue.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -1072,7 +1072,7 @@ class _Card extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: _blue.withOpacity(0.06),
+              color: _blue.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 3),
             ),
@@ -1246,7 +1246,7 @@ class _ReadOnlyField extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
@@ -1282,7 +1282,7 @@ class _SaveButton extends StatelessWidget {
           boxShadow: enabled
               ? [
                   BoxShadow(
-                    color: _blue.withOpacity(0.3),
+                    color: _blue.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )

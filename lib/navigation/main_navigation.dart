@@ -13,7 +13,7 @@ import '../shared/theme/app_theme.dart';
 import 'app_header.dart';
 
 class MainNavigation extends StatelessWidget {
-  const MainNavigation({Key? key}) : super(key: key);
+  const MainNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {

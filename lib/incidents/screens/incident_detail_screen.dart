@@ -22,7 +22,7 @@ const _kBg      = Color(0xFFF8FAFC);
 
 class IncidentDetailScreen extends StatelessWidget {
   final String slug;
-  const IncidentDetailScreen({Key? key, required this.slug}) : super(key: key);
+  const IncidentDetailScreen({super.key, required this.slug});
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +129,8 @@ class IncidentDetailScreen extends StatelessWidget {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              heroColor.withOpacity(0.4),
-                              heroColor.withOpacity(0.9),
+                              heroColor.withValues(alpha: 0.4),
+                              heroColor.withValues(alpha: 0.9),
                             ],
                           ),
                         ),

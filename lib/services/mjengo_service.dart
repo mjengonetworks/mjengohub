@@ -36,7 +36,7 @@ class MjengoService extends GetConnect {
       // Only set Content-Type on requests that have a body (POST / PUT / PATCH).
       // Setting it on GET triggers the browser to also set content-length,
       // which is a forbidden header on web and causes request failures.
-      final method = req.method?.toUpperCase() ?? '';
+      final method = req.method.toUpperCase();
       if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
         req.headers['Content-Type'] = 'application/json';
       }

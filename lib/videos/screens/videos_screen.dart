@@ -35,7 +35,7 @@ const int _kPageSize = 6;
 // ═════════════════════════════════════════════════════════════════════════════
 
 class VideosScreen extends StatefulWidget {
-  const VideosScreen({Key? key}) : super(key: key);
+  const VideosScreen({super.key});
 
   @override
   State<VideosScreen> createState() => _VideosScreenState();
@@ -483,7 +483,7 @@ class _ViewMoreButton extends StatelessWidget {
 class VideoCard extends StatelessWidget {
   final Video video;
   final VoidCallback? onTap;
-  const VideoCard({Key? key, required this.video, this.onTap}) : super(key: key);
+  const VideoCard({super.key, required this.video, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -586,7 +586,7 @@ class _PlaylistsSection extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: playlists.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, _) => const SizedBox(width: 12),
               itemBuilder: (_, i) => _PlaylistCard(playlist: playlists[i], ctrl: ctrl),
             ),
           ),

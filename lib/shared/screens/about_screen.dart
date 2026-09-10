@@ -17,7 +17,7 @@ import '../../profile/contact_screen.dart';
 import '../../constants/legal_texts.dart';
 
 class AboutScreen extends StatelessWidget {
-  const AboutScreen({Key? key}) : super(key: key);
+  const AboutScreen({super.key});
 
   static const _trackers = [
     (

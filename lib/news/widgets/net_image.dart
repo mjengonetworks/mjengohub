@@ -63,7 +63,7 @@ class NetImage extends StatelessWidget {
   };
 
   const NetImage({
-    Key? key,
+    super.key,
     this.url,
     this.width,
     this.height,
@@ -75,7 +75,7 @@ class NetImage extends StatelessWidget {
     this.placeholderIconColor = const Color(0xFF9CA3AF),
     this.placeholderIconSize = 28,
     this.errorBuilder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,9 +111,9 @@ class NetImage extends StatelessWidget {
     }
 
     // Mobile/desktop: Referer & User-Agent bypass cPanel hotlink protection.
-    final Map<String, String>? headers = {
+    final Map<String, String> headers = {
       ..._mobileHeaders,
-      if (extraHeaders != null) ...extraHeaders!,
+      ...?extraHeaders,
     };
 
     return Image.network(

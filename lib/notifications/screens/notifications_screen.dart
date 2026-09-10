@@ -199,7 +199,7 @@ class _PreferencePanelState extends State<_PreferencePanel> {
       SwitchListTile.adaptive(
         title: Text(label),
         value: value,
-        activeColor: _blue,
+        activeThumbColor: _blue,
         onChanged: onChanged,
       );
 }

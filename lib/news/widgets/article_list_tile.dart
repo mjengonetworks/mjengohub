@@ -1,4 +1,4 @@
-﻿// lib/news/widgets/article_list_tile.dart
+// lib/news/widgets/article_list_tile.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article_model.dart';
@@ -9,8 +9,7 @@ class ArticleListTile extends StatelessWidget {
   final Article article;
   final VoidCallback? onTap;
 
-  const ArticleListTile({Key? key, required this.article, this.onTap})
-      : super(key: key);
+  const ArticleListTile({super.key, required this.article, this.onTap});
 
   @override
   Widget build(BuildContext context) {

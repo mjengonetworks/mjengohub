@@ -31,7 +31,7 @@ class PublicProfileScreen extends StatefulWidget {
 
 class _PublicProfileScreenState extends State<PublicProfileScreen> {
   final _service = PublicProfileService();
-  late Future<PublicProfile?> _future = _service.getUser(widget.userId);
+  late final Future<PublicProfile?> _future = _service.getUser(widget.userId);
 
   @override
   Widget build(BuildContext context) {

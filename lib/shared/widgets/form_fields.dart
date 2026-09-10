@@ -175,7 +175,7 @@ class _SelectionSheetState<T> extends State<_SelectionSheet<T>> {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: filtered.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (_, index) {
                   final item = filtered[index];
                   final selected = item == widget.value;

@@ -125,7 +125,7 @@ class _ContributorsScreenState extends State<ContributorsScreen> with SingleTick
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     itemCount: rows.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                    separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
                     itemBuilder: (_, i) => _RankedRow(rank: i + 1, row: rows[i], isProjects: _showProjects),
                   );
                 },

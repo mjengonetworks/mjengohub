@@ -90,7 +90,7 @@ class NewsApiService {
         'title': title,
         'content': content,
         if (summary != null && summary.isNotEmpty) 'summary': summary,
-        if (categorySlug != null) 'category': categorySlug,
+        'category': ?categorySlug,
       });
       if (res.statusCode == 200 || res.statusCode == 201) {
         return {'success': true, 'message': res.body?['message'] as String?};

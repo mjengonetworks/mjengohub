@@ -24,6 +24,6 @@ class SocialShareModal {
       if (summary != null && summary.trim().isNotEmpty) summary.trim(),
       url,
     ].join('\n\n');
-    await Share.share(text, subject: title);
+    await SharePlus.instance.share(ShareParams(text: text, subject: title));
   }
 }

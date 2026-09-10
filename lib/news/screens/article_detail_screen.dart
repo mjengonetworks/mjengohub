@@ -23,7 +23,7 @@ import '../widgets/tagged_project_card.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
-  const ArticleDetailScreen({Key? key}) : super(key: key);
+  const ArticleDetailScreen({super.key});
 
   @override
   State<ArticleDetailScreen> createState() => _ArticleDetailScreenState();

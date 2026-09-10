@@ -98,7 +98,7 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: itemCount,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (_, i) => _PartnerLogoCard(partner: _partners[i % _partners.length], onTap: _openPartner),
       ),
     );

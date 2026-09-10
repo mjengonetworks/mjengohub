@@ -15,7 +15,7 @@ import '../widgets/legal_doc_screen.dart';
 import '../widgets/responsive.dart';
 
 class SupportUsScreen extends StatelessWidget {
-  const SupportUsScreen({Key? key}) : super(key: key);
+  const SupportUsScreen({super.key});
 
   static const _reasons = [
     ('Road Safety Campaign', 'Funds our Share Barabara road-safety awareness and incident reporting work.'),

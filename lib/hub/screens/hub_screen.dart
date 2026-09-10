@@ -17,7 +17,7 @@ import '../../shared/theme/app_theme.dart';
 // ═════════════════════════════════════════════════════════════════════════════
 
 class HubScreen extends StatelessWidget {
-  const HubScreen({Key? key}) : super(key: key);
+  const HubScreen({super.key});
 
   static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
   static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
@@ -253,9 +253,8 @@ class _HubItem {
     required this.color,
     this.route,
     this.externalUrl,
-    this.categorySlug,
     this.openScreen,
-  });
+  }) : categorySlug = null;
 
   Future<void> open(BuildContext context) async {
     if (externalUrl != null) {

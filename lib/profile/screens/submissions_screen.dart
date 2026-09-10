@@ -163,7 +163,7 @@ class _MiniTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            ?trailing,
           ],
         ),
       ),
@@ -202,7 +202,7 @@ class _MyArticlesTabState extends State<_MyArticlesTab> {
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final a = items[i];
             return _MiniTile(
@@ -247,7 +247,7 @@ class _MyProjectsTabState extends State<_MyProjectsTab> {
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final p = items[i];
             return _MiniTile(
@@ -295,7 +295,7 @@ class _MyIncidentsTabState extends State<_MyIncidentsTab> {
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final inc = items[i];
             return _MiniTile(
@@ -343,7 +343,7 @@ class _MyCommentsTabState extends State<_MyCommentsTab> {
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final c = items[i];
             return Padding(

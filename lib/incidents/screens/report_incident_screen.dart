@@ -16,8 +16,7 @@ const _kBg      = Color(0xFFF8FAFC);
 
 class ReportIncidentScreen extends StatefulWidget {
   final String incidentType; // 'road_safety' or 'site_safety'
-  const ReportIncidentScreen({Key? key, required this.incidentType})
-      : super(key: key);
+  const ReportIncidentScreen({super.key, required this.incidentType});
 
   @override
   State<ReportIncidentScreen> createState() => _ReportIncidentScreenState();
@@ -201,7 +200,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFF16A34A).withOpacity(0.1),
+                color: const Color(0xFF16A34A).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle_outline_rounded,
@@ -332,7 +331,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             // Severity
             _label('Severity'),
             DropdownButtonFormField<String>(
-              value: _severity,
+              initialValue: _severity,
               items: const [
                 DropdownMenuItem(value: 'minor', child: Text('Minor')),
                 DropdownMenuItem(value: 'moderate', child: Text('Moderate')),
@@ -649,9 +648,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _primary.withOpacity(0.08),
+        color: _primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _primary.withOpacity(0.2)),
+        border: Border.all(color: _primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -24,11 +24,9 @@ class MjengoAuthController extends GetxController {
   static const String _googleClientId =
       '729219361762-7pcsonpov16fit17ettakrj1cufsjel2.apps.googleusercontent.com';
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? _googleClientId : null,
-    serverClientId: _googleClientId,
-    scopes: ['email', 'profile'],
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  late final Future<void> _googleSignInReady;
+  static const List<String> _googleScopes = ['email', 'profile'];
   // ── Getters ───────────────────────────────────────────────────────────────
 
   UserModel? get currentUser      => _user.value;
@@ -42,6 +40,10 @@ class MjengoAuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _googleSignInReady = _googleSignIn.initialize(
+      clientId: kIsWeb ? _googleClientId : null,
+      serverClientId: _googleClientId,
+    );
     _restoreSession();
     // Kick off Google Sign-In initialization eagerly (and only once) so the
     // later call to authenticate() from the button's onTap is the *first*
@@ -251,13 +253,16 @@ class MjengoAuthController extends GetxController {
       _setLoading(true);
       _setError('');
 
-      final GoogleSignInAccount? account = await _googleSignIn.signIn();
-      if (account == null) {
-        // User closed or dismissed the popup
-        return;
-      }
-      final GoogleSignInAuthentication auth = await account.authentication;
-      final String? token = auth.idToken ?? auth.accessToken;
+      await _googleSignInReady;
+      final GoogleSignInAccount account = await _googleSignIn.authenticate(
+        scopeHint: _googleScopes,
+      );
+      final GoogleSignInAuthentication auth = account.authentication;
+      final GoogleSignInClientAuthorization? authorization = await account
+          .authorizationClient
+          .authorizationForScopes(_googleScopes);
+      final String? accessToken = authorization?.accessToken;
+      final String? token = auth.idToken ?? accessToken;
       if (token == null) {
         _setError('Google sign-in failed: No credentials received from Google.');
         return;
@@ -266,7 +271,7 @@ class MjengoAuthController extends GetxController {
       final response = await _api.apiPost(
         'auth/google',
         {
-          'access_token': auth.accessToken,
+          'access_token': accessToken,
           'id_token': auth.idToken,
           'token': token,
         },
@@ -348,15 +353,15 @@ class MjengoAuthController extends GetxController {
       _setError('');
 
       final body = <String, dynamic>{
-        if (firstName != null) 'first_name': firstName,
-        if (lastName  != null) 'last_name':  lastName,
-        if (phone     != null) 'phone':       phone,
-        if (bio       != null) 'bio':         bio,
-        if (location  != null) 'location':    location,
-        if (company   != null) 'company':     company,
+        'first_name': ?firstName,
+        'last_name':  ?lastName,
+        'phone':       ?phone,
+        'bio':         ?bio,
+        'location':    ?location,
+        'company':     ?company,
         if (password  != null && password.isNotEmpty) 'password': password,
-        if (mjengoNetworksUrl != null) 'mjengo_networks_url': mjengoNetworksUrl,
-        if (shareBarabaraUrl  != null) 'share_barabara_url':  shareBarabaraUrl,
+        'mjengo_networks_url': ?mjengoNetworksUrl,
+        'share_barabara_url':  ?shareBarabaraUrl,
       };
 
       final response = await _api.apiPut('auth/me', body);

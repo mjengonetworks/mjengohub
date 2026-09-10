@@ -59,7 +59,7 @@ class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (_, i) {
                   final p = items[i];
                   return ListTile(

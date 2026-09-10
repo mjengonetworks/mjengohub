@@ -1,4 +1,4 @@
-﻿// lib/news/screens/discover_screen.dart
+// lib/news/screens/discover_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +10,7 @@ import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 
 class DiscoverScreen extends StatelessWidget {
-  const DiscoverScreen({Key? key}) : super(key: key);
+  const DiscoverScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +106,7 @@ class _SearchBar extends StatelessWidget {
           ),
           ValueListenableBuilder<TextEditingValue>(
               valueListenable: ctrl.searchController,
-              builder: (_, val, __) => val.text.isNotEmpty
+              builder: (_, val, _) => val.text.isNotEmpty
                   ? GestureDetector(
                       onTap: ctrl.clearSearch,
                       child: const Padding(
@@ -499,7 +499,7 @@ class _ArticleList extends StatelessWidget {
           padding: const EdgeInsets.only(top: 4, bottom: 16),
           itemCount:
               ctrl.articles.length + (ctrl.hasMore.value ? 1 : 0),
-          separatorBuilder: (_, __) => const Divider(
+          separatorBuilder: (_, _) => const Divider(
             height: 1,
             indent: 20,
             endIndent: 20,

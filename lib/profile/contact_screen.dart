@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../shared/theme/app_theme.dart';
 
 class ContactScreen extends StatefulWidget {
-  const ContactScreen({Key? key}) : super(key: key);
+  const ContactScreen({super.key});
 
   @override
   State<ContactScreen> createState() => _ContactScreenState();
@@ -202,7 +202,7 @@ class _ContactScreenState extends State<ContactScreen> {
             'Reach out for advertising enquiries, construction services, or any questions. We respond within 24 hours.',
             style: GoogleFonts.montserrat(
               fontSize: 12.5,
-              color: Colors.white.withOpacity(0.65),
+              color: Colors.white.withValues(alpha: 0.65),
               height: 1.6,
             ),
           ),
@@ -265,7 +265,7 @@ class _ContactScreenState extends State<ContactScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: _accent.withOpacity(0.08),
+                color: _accent.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 20, color: _accent),
@@ -288,7 +288,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: _secondary.withOpacity(0.5), size: 20),
+            Icon(Icons.chevron_right_rounded, color: _secondary.withValues(alpha: 0.5), size: 20),
           ],
         ),
       ),
@@ -326,7 +326,7 @@ class _ContactScreenState extends State<ContactScreen> {
               style: GoogleFonts.montserrat(
                   fontSize: 9.5,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   letterSpacing: 0.5)),
           const SizedBox(height: 3),
           Text(value,
@@ -339,7 +339,7 @@ class _ContactScreenState extends State<ContactScreen> {
   }
 
   Widget _stripDivider() => Container(
-      width: 0.8, height: 40, color: Colors.white.withOpacity(0.12));
+      width: 0.8, height: 40, color: Colors.white.withValues(alpha: 0.12));
 
   // ── Social card ────────────────────────────────────────────────────────────
 
@@ -545,7 +545,7 @@ class _ContactScreenState extends State<ContactScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: _accent.withOpacity(0.6), width: 1.5),
+              borderSide: BorderSide(color: _accent.withValues(alpha: 0.6), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -587,7 +587,7 @@ class _ContactScreenState extends State<ContactScreen> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: _inquiryType,
+          initialValue: _inquiryType,
           hint: Text('Select an option…',
               style: GoogleFonts.montserrat(
                   fontSize: 12.5, color: const Color(0xFF475569))),
@@ -608,7 +608,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 borderSide: const BorderSide(color: _divider)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: _accent.withOpacity(0.6), width: 1.5),
+              borderSide: BorderSide(color: _accent.withValues(alpha: 0.6), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -650,7 +650,7 @@ class _ContactScreenState extends State<ContactScreen> {
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: _accent,
-          disabledBackgroundColor: _accent.withOpacity(0.5),
+          disabledBackgroundColor: _accent.withValues(alpha: 0.5),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

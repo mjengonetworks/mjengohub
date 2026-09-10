@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -10,7 +10,7 @@ const Color _textDark    = Color(0xFF111827);
 const Color _textGray    = Color(0xFF475569);
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -92,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -209,7 +209,7 @@ class _OnboardPageView extends StatelessWidget {
                   child: Image.asset(
                     page.image,
                     fit: BoxFit.cover,
-                    color: Colors.blue.withOpacity(0.18),
+                    color: Colors.blue.withValues(alpha: 0.18),
                     colorBlendMode: BlendMode.srcATop,
                   ),
                 ),

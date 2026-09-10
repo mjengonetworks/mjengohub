@@ -251,8 +251,8 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
       if (_county != null) 'county': _county,
       'status': _status,
       'project_type': projectType,
-      if (lat != null) 'latitude': lat,
-      if (lng != null) 'longitude': lng,
+      'latitude': ?lat,
+      'longitude': ?lng,
       if (_plusCode.text.trim().isNotEmpty) 'plus_code': _plusCode.text.trim(),
       'is_built_history': isBuiltHistory,
       if (isBuiltHistory) ...{
@@ -758,7 +758,7 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: _results.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                      separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
                       itemBuilder: (_, i) => ListTile(
                         dense: true,
                         title: Text(_results[i].displayName, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 12)),

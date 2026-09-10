@@ -17,11 +17,11 @@ class ResponsiveAuthLayout extends StatelessWidget {
   static const Color textDark = Color(0xFF1A1A1A);
 
   const ResponsiveAuthLayout({
-    Key? key,
+    super.key,
     required this.child,
     this.showBackButton = false,
     this.onBack,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class ResponsiveAuthLayout extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.sharpLg),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),

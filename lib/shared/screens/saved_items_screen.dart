@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/bookmarks_service.dart';
-import '../theme/app_theme.dart';
 import '../../navigation/app_header.dart';
 import '../../news/screens/article_detail_screen.dart';
 
 class SavedItemsScreen extends StatefulWidget {
-  const SavedItemsScreen({Key? key}) : super(key: key);
+  const SavedItemsScreen({super.key});
 
   @override
   State<SavedItemsScreen> createState() => _SavedItemsScreenState();
@@ -48,7 +47,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                 GestureDetector(
                   onTap: () => Get.back(),
                   child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 20, color: const Color(0xFF1A1A2E)),
+                      size: 20, color: Color(0xFF1A1A2E)),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -80,7 +79,7 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.bookmark_outline_rounded,
-                                size: 64, color: const Color(0xFF8888AA)),
+                                size: 64, color: Color(0xFF8888AA)),
                             const SizedBox(height: 16),
                             Text(
                               'No saved items yet',

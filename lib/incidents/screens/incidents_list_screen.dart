@@ -26,8 +26,7 @@ const _kDivider = Color(0xFFF3F4F6);
 
 class IncidentsListScreen extends StatelessWidget {
   final String incidentType;
-  const IncidentsListScreen({Key? key, required this.incidentType})
-    : super(key: key);
+  const IncidentsListScreen({super.key, required this.incidentType});
 
   bool get _isRoad => incidentType == 'road_safety';
 
@@ -281,7 +280,7 @@ class _SearchBarState extends State<_SearchBar> {
           // Clear button
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _textCtrl,
-            builder: (_, val, __) => val.text.isNotEmpty
+            builder: (_, val, _) => val.text.isNotEmpty
                 ? GestureDetector(
                     onTap: _clear,
                     child: const Padding(
@@ -616,7 +615,7 @@ class _IncidentList extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: incidents.length,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           const Divider(height: 1, indent: 20, endIndent: 20, color: _kDivider),
       itemBuilder: (_, i) =>
           _IncidentTile(incident: incidents[i], accent: accent),
@@ -793,7 +792,7 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

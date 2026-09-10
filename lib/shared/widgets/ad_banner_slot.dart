@@ -12,11 +12,11 @@ class AdBannerSlot extends StatelessWidget {
   final int? slotNumber;
 
   const AdBannerSlot({
-    Key? key,
+    super.key,
     this.slotId = 'mjengo-feed-ad',
     this.height = 90,
     this.slotNumber,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

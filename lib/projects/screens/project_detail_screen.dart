@@ -36,7 +36,7 @@ const _kCardPad = EdgeInsets.all(20);
 
 class ProjectDetailScreen extends StatelessWidget {
   final String slug;
-  const ProjectDetailScreen({Key? key, required this.slug}) : super(key: key);
+  const ProjectDetailScreen({super.key, required this.slug});
 
   @override
   Widget build(BuildContext context) {
@@ -473,24 +473,30 @@ class ProjectDetailScreen extends StatelessWidget {
   // this app, and there's no backend toggle for submitter-only display.
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
-    if (project.client != null)
+    if (project.client != null) {
       rows.add(_DetailRow(
           project.projectType == 'private_development' ? 'Developer' : 'Client',
           project.client!.name,
           onTap: () => _openEntity(project.client!.name, project.client!.slug)));
-    if (project.contractor != null)
+    }
+    if (project.contractor != null) {
       rows.add(_DetailRow('Contractor', project.contractor!,
           onTap: () => _openEntity(project.contractor!)));
-    if (project.consultant != null)
+    }
+    if (project.consultant != null) {
       rows.add(_DetailRow('Consultant', project.consultant!,
           onTap: () => _openEntity(project.consultant!)));
-    if (project.financier != null)
+    }
+    if (project.financier != null) {
       rows.add(_DetailRow('Financier', project.financier!,
           onTap: () => _openEntity(project.financier!)));
-    if (project.contractValue != null)
+    }
+    if (project.contractValue != null) {
       rows.add(_DetailRow('Contract Value', _fmtCurrency(project.contractValue!)));
-    if (project.startDate != null)
+    }
+    if (project.startDate != null) {
       rows.add(_DetailRow('Start Date', _fmtDate(project.startDate!)));
+    }
     if (project.status == 'completed' && project.actualEndDate != null) {
       rows.add(_DetailRow('Completed', _fmtDate(project.actualEndDate!)));
     } else if (project.expectedEndDate != null) {
@@ -615,7 +621,7 @@ class ProjectDetailScreen extends StatelessWidget {
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: m.media.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 6),
+                            separatorBuilder: (_, _) => const SizedBox(width: 6),
                             itemBuilder: (_, i) => ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: m.media[i].mediaType == 'image'
@@ -906,7 +912,7 @@ class _CompactRatingRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: rated ? const Color(0xFF16A34A).withOpacity(0.08) : _kBg,
+            color: rated ? const Color(0xFF16A34A).withValues(alpha: 0.08) : _kBg,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -1319,7 +1325,7 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DropdownButtonFormField<String>(
-            value: _field,
+            initialValue: _field,
             decoration: _sheetFieldDecoration('Field to correct'),
             items: _fields.map((f) => DropdownMenuItem(value: f, child: Text(f.replaceAll('_', ' ')))).toList(),
             onChanged: (v) => setState(() => _field = v ?? _field),
@@ -1479,7 +1485,7 @@ class _ProgressUpdateCard extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: update.media.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
               itemBuilder: (_, i) => ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.sharp),
                 child: update.media[i].mediaType == 'image'
@@ -2065,7 +2071,7 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _articles.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (_, i) => _RelatedArticleCard(article: _articles[i]),
               ),
             ),

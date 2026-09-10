@@ -97,8 +97,8 @@ class ReportsService {
         if (reporterName != null && reporterName.isNotEmpty) 'reporter_name': reporterName,
         if (reporterEmail != null && reporterEmail.isNotEmpty) 'reporter_email': reporterEmail,
         if (reporterPhone != null && reporterPhone.isNotEmpty) 'reporter_phone': reporterPhone,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
       });
       if (res.statusCode == 200 || res.statusCode == 201) {
         final data = res.body?['data'];

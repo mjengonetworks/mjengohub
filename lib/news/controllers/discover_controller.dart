@@ -81,5 +81,6 @@ class DiscoverController extends GetxController {
     isLoadingArticles.value = false;
   }
 
+  @override
   Future<void> refresh() => _loadAll();
 }

@@ -1,4 +1,4 @@
-﻿// lib/news/widgets/breaking_news_card.dart
+// lib/news/widgets/breaking_news_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/widgets/preview_data_badge.dart';
@@ -15,11 +15,11 @@ class BreakingNewsCard extends StatelessWidget {
   final bool showPreviewBadge;
 
   const BreakingNewsCard({
-    Key? key,
+    super.key,
     required this.article,
     this.onTap,
     this.showPreviewBadge = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class BreakingNewsCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),

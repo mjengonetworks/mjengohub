@@ -79,7 +79,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           child: ListView.separated(
                             padding: const EdgeInsets.all(16),
                             itemCount: _services.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            separatorBuilder: (_, _) => const SizedBox(height: 12),
                             itemBuilder: (_, i) => _ServiceCard(service: _services[i]),
                           ),
                         ),

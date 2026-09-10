@@ -43,28 +43,36 @@ class ProjectsService {
       final query = <String, dynamic>{'page': '$page', 'per_page': '$perPage'};
       if (status != null && status.isNotEmpty) query['status'] = status;
       if (county != null && county.isNotEmpty) query['county'] = county;
-      if (counties != null && counties.isNotEmpty)
+      if (counties != null && counties.isNotEmpty) {
         query['counties'] = counties.join(',');
+      }
       if (costMin != null) query['cost_min'] = '$costMin';
       if (costMax != null) query['cost_max'] = '$costMax';
-      if (clientSlug != null && clientSlug.isNotEmpty)
+      if (clientSlug != null && clientSlug.isNotEmpty) {
         query['client'] = clientSlug;
+      }
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
-      if (projectType != null && projectType.isNotEmpty)
+      if (projectType != null && projectType.isNotEmpty) {
         query['project_type'] = projectType;
+      }
       if (isBuiltHistory != null) query['is_built_history'] = '$isBuiltHistory';
-      if (geoScope != null && geoScope.isNotEmpty)
+      if (geoScope != null && geoScope.isNotEmpty) {
         query['geo_scope'] = geoScope;
+      }
       if (region != null && region.isNotEmpty) query['region'] = region;
-      if (heritageCategory != null && heritageCategory.isNotEmpty)
+      if (heritageCategory != null && heritageCategory.isNotEmpty) {
         query['heritage_category'] = heritageCategory;
-      if (ownershipType != null && ownershipType.isNotEmpty)
+      }
+      if (ownershipType != null && ownershipType.isNotEmpty) {
         query['ownership_type'] = ownershipType;
-      if (completionDecade != null && completionDecade.isNotEmpty)
+      }
+      if (completionDecade != null && completionDecade.isNotEmpty) {
         query['completion_decade'] = completionDecade;
-      if (categorySlug != null && categorySlug.isNotEmpty)
+      }
+      if (categorySlug != null && categorySlug.isNotEmpty) {
         query['category'] = categorySlug;
+      }
 
       final res = await _api.getRequest('projects', query: query);
       if (res.statusCode == 200 && res.body != null) {
@@ -167,9 +175,9 @@ class ProjectsService {
       final res = await _api
           .postRequest('projects/$projectId/suggest-progress', {
             'proposed_percent': proposedPercent,
-            if (name != null) 'name': name,
-            if (email != null) 'email': email,
-            if (reason != null) 'reason': reason,
+            'name': ?name,
+            'email': ?email,
+            'reason': ?reason,
           });
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
@@ -217,11 +225,12 @@ class ProjectsService {
       );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List)
+        if (data is List) {
           return data
               .whereType<Map<String, dynamic>>()
               .map(Project.fromJson)
               .toList();
+        }
       }
       return [];
     } catch (e) {
@@ -242,11 +251,12 @@ class ProjectsService {
       );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List)
+        if (data is List) {
           return data
               .whereType<Map<String, dynamic>>()
               .map(Project.fromJson)
               .toList();
+        }
       }
       return [];
     } catch (e) {
@@ -301,8 +311,9 @@ class ProjectsService {
         'projects/$projectId/publish-toggle',
         {},
       );
-      if (res.statusCode == 200)
+      if (res.statusCode == 200) {
         return res.body?['data']?['is_published'] as bool?;
+      }
       return null;
     } catch (e) {
       print('ProjectsService.togglePublish error: $e');
@@ -382,11 +393,12 @@ class ProjectsService {
       );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List)
+        if (data is List) {
           return data
               .whereType<Map<String, dynamic>>()
               .map(ProjectUpdate.fromJson)
               .toList();
+        }
       }
       return [];
     } catch (e) {
@@ -482,8 +494,9 @@ class ProjectsService {
       final res = await _api.getRequest('clients/$slug');
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is Map<String, dynamic>)
+        if (data is Map<String, dynamic>) {
           return ProjectClientDetail.fromJson(data);
+        }
       }
       return null;
     } catch (e) {
@@ -528,8 +541,9 @@ class ProjectsService {
   }) async {
     try {
       final query = <String, dynamic>{};
-      if (monthYear != null && monthYear.isNotEmpty)
+      if (monthYear != null && monthYear.isNotEmpty) {
         query['month_year'] = monthYear;
+      }
       if (milestoneId != null) query['milestone_id'] = '$milestoneId';
       if (mediaType != null && mediaType.isNotEmpty) query['type'] = mediaType;
 

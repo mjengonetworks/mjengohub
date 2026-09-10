@@ -6,7 +6,7 @@ import '../auth/controllers/mjengo_auth_controller.dart';
 import '../point/routes/app_routes.dart';
 
 class ModernSplashScreen extends StatefulWidget {
-  const ModernSplashScreen({Key? key}) : super(key: key);
+  const ModernSplashScreen({super.key});
 
   @override
   State<ModernSplashScreen> createState() => _ModernSplashScreenState();

@@ -19,16 +19,14 @@ import '../point/routes/app_routes.dart';
 import '../shared/services/link_launcher.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/widgets/badges.dart';
-import '../shared/widgets/leaderboard_widget.dart';
 import '../shared/widgets/partners_carousel.dart';
-import '../shared/widgets/preview_data_badge.dart';
 import '../shared/widgets/responsive.dart';
 import '../shared/widgets/scroll_to_top_fab.dart';
 import '../shared/widgets/section_header.dart';
 import 'widgets/home_extra_sections.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -453,8 +451,7 @@ class _SectionData {
     required this.label,
     required this.icon,
     required this.route,
-    this.isExternal = false,
-  });
+  }) : isExternal = false;
 }
 
 class _ExploreIconPill extends StatelessWidget {

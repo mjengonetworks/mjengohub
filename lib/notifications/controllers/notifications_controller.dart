@@ -52,6 +52,7 @@ class NotificationsController extends GetxController {
     }
   }
 
+  @override
   Future<void> refresh() => _loadInitial();
 
   Future<void> loadMore() async {

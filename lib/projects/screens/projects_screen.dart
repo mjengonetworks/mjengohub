@@ -70,11 +70,11 @@ class ProjectsScreen extends StatelessWidget {
   final String projectType;
 
   const ProjectsScreen({
-    Key? key,
+    super.key,
     this.title = 'Infrastructure Tracker',
     this.subtitle = "Kenya's roads, bridges & public infrastructure projects",
     this.projectType = 'infrastructure',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -804,7 +804,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.1),
+        color: _color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -905,7 +905,7 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 itemCount: matches.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (_, i) =>
                     _FeaturedProjectCard(project: matches[i]),
               ),
