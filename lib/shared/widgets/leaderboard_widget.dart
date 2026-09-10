@@ -17,7 +17,8 @@ import '../../news/widgets/net_image.dart';
 import '../../profile/screens/public_profile_screen.dart';
 import '../theme/app_theme.dart';
 
-void _openProfile(int userId) => Get.to(() => PublicProfileScreen(userId: userId));
+void _openProfile(int userId) =>
+    Get.to(() => PublicProfileScreen(userId: userId));
 
 // ── Fuller cards (Media Hub / Merch) ─────────────────────────────────────
 //
@@ -28,7 +29,10 @@ void _openProfile(int userId) => Get.to(() => PublicProfileScreen(userId: userId
 
 class LeaderboardPreview extends StatefulWidget {
   final LeaderboardWindow window;
-  const LeaderboardPreview({super.key, this.window = LeaderboardWindow.past7Days});
+  const LeaderboardPreview({
+    super.key,
+    this.window = LeaderboardWindow.past7Days,
+  });
 
   @override
   State<LeaderboardPreview> createState() => _LeaderboardPreviewState();
@@ -36,7 +40,10 @@ class LeaderboardPreview extends StatefulWidget {
 
 class _LeaderboardPreviewState extends State<LeaderboardPreview> {
   final _service = ContributorsService();
-  late final Future<CommunityLeaderboards> _future = _service.getContributors(window: widget.window, limit: 5);
+  late final Future<CommunityLeaderboards> _future = _service.getContributors(
+    window: widget.window,
+    limit: 5,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +79,12 @@ class _MetricLeaderboardCard extends StatefulWidget {
   final LeaderboardMetric? metric;
   final bool loading;
   final String emptyLabel;
-  const _MetricLeaderboardCard({required this.title, required this.metric, required this.loading, required this.emptyLabel});
+  const _MetricLeaderboardCard({
+    required this.title,
+    required this.metric,
+    required this.loading,
+    required this.emptyLabel,
+  });
 
   @override
   State<_MetricLeaderboardCard> createState() => _MetricLeaderboardCardState();
@@ -83,14 +95,22 @@ class _MetricLeaderboardCardState extends State<_MetricLeaderboardCard> {
 
   @override
   Widget build(BuildContext context) {
-    final rows = widget.metric == null ? const <LeaderboardRow>[] : (_showPages ? widget.metric!.pages : widget.metric!.profiles);
+    final rows = widget.metric == null
+        ? const <LeaderboardRow>[]
+        : (_showPages ? widget.metric!.pages : widget.metric!.profiles);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.sharpLg),
-        boxShadow: [BoxShadow(color: AppColors.accentBlue.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentBlue.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,33 +119,63 @@ class _MetricLeaderboardCardState extends State<_MetricLeaderboardCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(widget.title,
-                    style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                child: Text(
+                  widget.title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
-              _ProfilesPagesToggle(showPages: _showPages, onChanged: (v) => setState(() => _showPages = v)),
+              _ProfilesPagesToggle(
+                showPages: _showPages,
+                onChanged: (v) => setState(() => _showPages = v),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           if (widget.loading)
-            const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
           else if (rows.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               // Business Pages have no points/submission mechanism in the
               // schema yet, so this branch is always what the Pages tab
               // shows today — a real backend limitation, not a bug.
-              child: Text(_showPages ? 'No business pages on the leaderboard yet.' : widget.emptyLabel,
-                  style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
+              child: Text(
+                _showPages
+                    ? 'No business pages on the leaderboard yet.'
+                    : widget.emptyLabel,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  color: AppColors.textSubtle,
+                ),
+              ),
             )
           else
-            ...rows.take(5).toList().asMap().entries.map((e) => _LeaderboardRowTile(rank: e.key + 1, row: e.value)),
+            ...rows
+                .take(5)
+                .toList()
+                .asMap()
+                .entries
+                .map((e) => _LeaderboardRowTile(rank: e.key + 1, row: e.value)),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () => Get.toNamed(AppRoutes.contributors),
             child: Center(
-              child: Text('View More',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+              child: Text(
+                'View More',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.accentBlue,
+                ),
+              ),
             ),
           ),
         ],
@@ -137,11 +187,15 @@ class _MetricLeaderboardCardState extends State<_MetricLeaderboardCard> {
 class _ProfilesPagesToggle extends StatelessWidget {
   final bool showPages;
   final ValueChanged<bool> onChanged;
-  const _ProfilesPagesToggle({required this.showPages, required this.onChanged});
+  const _ProfilesPagesToggle({
+    required this.showPages,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Widget pill(String label, bool active, VoidCallback onTap) => GestureDetector(
+    Widget pill(String label, bool active, VoidCallback onTap) =>
+        GestureDetector(
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -149,14 +203,22 @@ class _ProfilesPagesToggle extends StatelessWidget {
               color: active ? AppColors.accentBlue : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text(label,
-                style: GoogleFonts.montserrat(
-                    fontSize: 10.5, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textSubtle)),
+            child: Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+                color: active ? Colors.white : AppColors.textSubtle,
+              ),
+            ),
           ),
         );
     return Container(
       padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(999),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -173,7 +235,11 @@ class _LeaderboardRowTile extends StatelessWidget {
   final LeaderboardRow row;
   const _LeaderboardRowTile({required this.rank, required this.row});
 
-  static const _medalColors = {1: Color(0xFFFBBF24), 2: Color(0xFFB0B7C3), 3: Color(0xFFCD7F32)};
+  static const _medalColors = {
+    1: Color(0xFFFBBF24),
+    2: Color(0xFFB0B7C3),
+    3: Color(0xFFCD7F32),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -188,21 +254,47 @@ class _LeaderboardRowTile extends StatelessWidget {
               width: 22,
               child: medal != null
                   ? Icon(Icons.emoji_events_rounded, color: medal, size: 18)
-                  : Text('$rank', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
+                  : Text(
+                      '$rank',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
             ),
             ClipOval(
               child: SizedBox(
                 width: 28,
                 height: 28,
-                child: NetImage(url: row.avatar, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                child: NetImage(
+                  url: row.avatar,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                ),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(row.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textDark)),
+              child: Text(
+                row.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
             ),
-            Text('${row.value}', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+            Text(
+              '${row.value}',
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.accentBlue,
+              ),
+            ),
           ],
         ),
       ),
@@ -223,8 +315,10 @@ class MicroLeaderboardStrip extends StatefulWidget {
 
 class _MicroLeaderboardStripState extends State<MicroLeaderboardStrip> {
   final _service = ContributorsService();
-  late final Future<CommunityLeaderboards> _future =
-      _service.getContributors(window: LeaderboardWindow.past7Days, limit: 1);
+  late final Future<CommunityLeaderboards> _future = _service.getContributors(
+    window: LeaderboardWindow.past7Days,
+    limit: 1,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -232,9 +326,14 @@ class _MicroLeaderboardStripState extends State<MicroLeaderboardStrip> {
       future: _future,
       builder: (context, snap) {
         final boards = snap.data;
-        final topPoints = boards?.points.profiles.isNotEmpty == true ? boards!.points.profiles.first : null;
-        final topProject = boards?.projects.profiles.isNotEmpty == true ? boards!.projects.profiles.first : null;
-        if (topPoints == null && topProject == null) return const SizedBox.shrink();
+        final topPoints = boards?.points.profiles.isNotEmpty == true
+            ? boards!.points.profiles.first
+            : null;
+        final topProject = boards?.projects.profiles.isNotEmpty == true
+            ? boards!.projects.profiles.first
+            : null;
+        if (topPoints == null && topProject == null)
+          return const SizedBox.shrink();
         return GestureDetector(
           onTap: () => Get.toNamed(AppRoutes.contributors),
           child: Container(
@@ -250,16 +349,38 @@ class _MicroLeaderboardStripState extends State<MicroLeaderboardStrip> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 16),
+                    const Icon(
+                      Icons.emoji_events_rounded,
+                      color: Color(0xFFFBBF24),
+                      size: 16,
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _MicroEntry(label: 'Top Points', row: topPoints)),
-                    Container(width: 1, height: 22, color: AppColors.divider, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                    Expanded(child: _MicroEntry(label: 'Top Contributor', row: topProject)),
+                    Expanded(
+                      child: _MicroEntry(label: 'Top Points', row: topPoints),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 22,
+                      color: AppColors.divider,
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                    ),
+                    Expanded(
+                      child: _MicroEntry(
+                        label: 'Top Contributor',
+                        row: topProject,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text('View All Leaderboards →',
-                    style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+                Text(
+                  'View All Leaderboards →',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.accentBlue,
+                  ),
+                ),
               ],
             ),
           ),
@@ -277,15 +398,35 @@ class _MicroEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (row == null) {
-      return Text('—', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle));
+      return Text(
+        '—',
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: GoogleFonts.montserrat(fontSize: 9, color: AppColors.textSubtle)),
-        Text(row!.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 9,
+            color: AppColors.textSubtle,
+          ),
+        ),
+        Text(
+          row!.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
       ],
     );
   }

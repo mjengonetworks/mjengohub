@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../point/routes/app_routes.dart';
 
-const Color _primary     = Color(0xFF3B82F6);
+const Color _primary = Color(0xFF3B82F6);
 const Color _primaryDeep = Color(0xFF1D4ED8);
-const Color _textDark    = Color(0xFF111827);
-const Color _textGray    = Color(0xFF475569);
+const Color _textDark = Color(0xFF111827);
+const Color _textGray = Color(0xFF475569);
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -90,7 +90,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: GestureDetector(
                 onTap: _completeOnboarding,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(20),
@@ -261,14 +264,20 @@ class _BlobClipper extends CustomClipper<Path> {
     final path = Path();
     path.lineTo(0, size.height * 0.78);
     path.cubicTo(
-      size.width * 0.10, size.height * 0.95,
-      size.width * 0.30, size.height * 0.88,
-      size.width * 0.50, size.height * 0.93,
+      size.width * 0.10,
+      size.height * 0.95,
+      size.width * 0.30,
+      size.height * 0.88,
+      size.width * 0.50,
+      size.height * 0.93,
     );
     path.cubicTo(
-      size.width * 0.70, size.height * 0.98,
-      size.width * 0.85, size.height * 0.80,
-      size.width,        size.height * 0.88,
+      size.width * 0.70,
+      size.height * 0.98,
+      size.width * 0.85,
+      size.height * 0.80,
+      size.width,
+      size.height * 0.88,
     );
     path.lineTo(size.width, 0);
     path.close();

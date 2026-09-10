@@ -13,11 +13,11 @@ import '../models/user_model.dart';
 class MjengoAuthController extends GetxController {
   final MjengoService _api = Get.find<MjengoService>();
 
-  final Rx<UserModel?>  _user            = Rx<UserModel?>(null);
-  final RxBool          _isLoading        = false.obs;
-  final RxBool          _isAuthenticated  = false.obs;
-  final RxString        _errorMessage     = ''.obs;
-  final RxBool          _isInitialized    = false.obs;
+  final Rx<UserModel?> _user = Rx<UserModel?>(null);
+  final RxBool _isLoading = false.obs;
+  final RxBool _isAuthenticated = false.obs;
+  final RxString _errorMessage = ''.obs;
+  final RxBool _isInitialized = false.obs;
 
   // Web OAuth client registered on the Mjengo Hub backend — used to obtain a
   // Google ID token whose audience the server can verify.
@@ -29,11 +29,11 @@ class MjengoAuthController extends GetxController {
   static const List<String> _googleScopes = ['email', 'profile'];
   // ── Getters ───────────────────────────────────────────────────────────────
 
-  UserModel? get currentUser      => _user.value;
-  bool       get isLoading        => _isLoading.value;
-  bool       get isAuthenticated  => _isAuthenticated.value;
-  bool       get isInitialized    => _isInitialized.value;
-  String     get errorMessage     => _errorMessage.value;
+  UserModel? get currentUser => _user.value;
+  bool get isLoading => _isLoading.value;
+  bool get isAuthenticated => _isAuthenticated.value;
+  bool get isInitialized => _isInitialized.value;
+  String get errorMessage => _errorMessage.value;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -49,7 +49,6 @@ class MjengoAuthController extends GetxController {
     // later call to authenticate() from the button's onTap is the *first*
     // await in that gesture — required for the popup/GIS flow to be treated
     // as user-initiated on web.
-    
   }
 
   bool get _isGoogleSignInSupported {
@@ -134,30 +133,32 @@ class MjengoAuthController extends GetxController {
         _setError('Email and password are required');
         return false;
       }
-      if (firstName.trim().isEmpty) { _setError('First name is required'); return false; }
-      if (lastName.trim().isEmpty)  { _setError('Last name is required');  return false; }
+      if (firstName.trim().isEmpty) {
+        _setError('First name is required');
+        return false;
+      }
+      if (lastName.trim().isEmpty) {
+        _setError('Last name is required');
+        return false;
+      }
       if (password.length < 6) {
         _setError('Password must be at least 6 characters');
         return false;
       }
 
-      final response = await _api.apiPost(
-        'auth/register',
-        {
-          'email':      email.trim().toLowerCase(),
-          'password':   password,
-          'first_name': firstName.trim(),
-          'last_name':  lastName.trim(),
-          if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
-        },
-        auth: false,
-      );
+      final response = await _api.apiPost('auth/register', {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+        'first_name': firstName.trim(),
+        'last_name': lastName.trim(),
+        if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
+      }, auth: false);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.body as Map<String, dynamic>;
         final userData = body['data']['user'] as Map<String, dynamic>;
         await _api.saveTokens(
-          body['data']['access_token']  as String,
+          body['data']['access_token'] as String,
           body['data']['refresh_token'] as String,
         );
         await _api.saveUserCache(userData);
@@ -181,7 +182,8 @@ class MjengoAuthController extends GetxController {
         _setError(_extractError(response.body));
       }
     } catch (e) {
-      print('Google Sign-In caught error: $e'); _setError('Error: $e');
+      print('Google Sign-In caught error: $e');
+      _setError('Error: $e');
     } finally {
       _setLoading(false);
     }
@@ -204,20 +206,16 @@ class MjengoAuthController extends GetxController {
         return false;
       }
 
-      final response = await _api.apiPost(
-        'auth/login',
-        {
-          'email':    email.trim().toLowerCase(),
-          'password': password,
-        },
-        auth: false,
-      );
+      final response = await _api.apiPost('auth/login', {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      }, auth: false);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.body as Map<String, dynamic>;
         final userData = body['data']['user'] as Map<String, dynamic>;
         await _api.saveTokens(
-          body['data']['access_token']  as String,
+          body['data']['access_token'] as String,
           body['data']['refresh_token'] as String,
         );
         await _api.saveUserCache(userData);
@@ -234,7 +232,8 @@ class MjengoAuthController extends GetxController {
         _setError(_extractError(response.body));
       }
     } catch (e) {
-      print('Google Sign-In caught error: $e'); _setError('Error: $e');
+      print('Google Sign-In caught error: $e');
+      _setError('Error: $e');
     } finally {
       _setLoading(false);
     }
@@ -264,25 +263,23 @@ class MjengoAuthController extends GetxController {
       final String? accessToken = authorization?.accessToken;
       final String? token = auth.idToken ?? accessToken;
       if (token == null) {
-        _setError('Google sign-in failed: No credentials received from Google.');
+        _setError(
+          'Google sign-in failed: No credentials received from Google.',
+        );
         return;
       }
 
-      final response = await _api.apiPost(
-        'auth/google',
-        {
-          'access_token': accessToken,
-          'id_token': auth.idToken,
-          'token': token,
-        },
-        auth: false,
-      );
+      final response = await _api.apiPost('auth/google', {
+        'access_token': accessToken,
+        'id_token': auth.idToken,
+        'token': token,
+      }, auth: false);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.body as Map<String, dynamic>;
         final userData = body['data']['user'] as Map<String, dynamic>;
         await _api.saveTokens(
-          body['data']['access_token']  as String,
+          body['data']['access_token'] as String,
           body['data']['refresh_token'] as String,
         );
         await _api.saveUserCache(userData);
@@ -304,7 +301,8 @@ class MjengoAuthController extends GetxController {
         _setError(_extractError(response.body));
       }
     } catch (e) {
-      print('Google Sign-In caught error: $e'); _setError('Error: $e');
+      print('Google Sign-In caught error: $e');
+      _setError('Error: $e');
     } finally {
       _setLoading(false);
     }
@@ -354,14 +352,14 @@ class MjengoAuthController extends GetxController {
 
       final body = <String, dynamic>{
         'first_name': ?firstName,
-        'last_name':  ?lastName,
-        'phone':       ?phone,
-        'bio':         ?bio,
-        'location':    ?location,
-        'company':     ?company,
-        if (password  != null && password.isNotEmpty) 'password': password,
+        'last_name': ?lastName,
+        'phone': ?phone,
+        'bio': ?bio,
+        'location': ?location,
+        'company': ?company,
+        if (password != null && password.isNotEmpty) 'password': password,
         'mjengo_networks_url': ?mjengoNetworksUrl,
-        'share_barabara_url':  ?shareBarabaraUrl,
+        'share_barabara_url': ?shareBarabaraUrl,
       };
 
       final response = await _api.apiPut('auth/me', body);
@@ -395,11 +393,9 @@ class MjengoAuthController extends GetxController {
       _setLoading(true);
       _setError('');
 
-      final response = await _api.apiPost(
-        'auth/forgot-password',
-        {'email': email.trim().toLowerCase()},
-        auth: false,
-      );
+      final response = await _api.apiPost('auth/forgot-password', {
+        'email': email.trim().toLowerCase(),
+      }, auth: false);
 
       if (response.statusCode == 200) {
         return true;
@@ -443,7 +439,7 @@ class MjengoAuthController extends GetxController {
   void clearError() => _setError('');
 
   void _setLoading(bool v) => _isLoading.value = v;
-  void _setError(String v)  => _errorMessage.value = v;
+  void _setError(String v) => _errorMessage.value = v;
 
   /// The API's user shape and the cached-user JSON are identical, so parsing
   /// lives in [UserModel.fromJson] rather than being duplicated here.
@@ -470,7 +466,9 @@ class MjengoAuthController extends GetxController {
           _user.value = _parseUser(data);
           await _api.saveUserCache(data);
         } else if (result['profile_image'] != null && _user.value != null) {
-          _user.value = _user.value!.copyWith(photoURL: result['profile_image'] as String);
+          _user.value = _user.value!.copyWith(
+            photoURL: result['profile_image'] as String,
+          );
         }
         return true;
       }
@@ -500,7 +498,9 @@ class MjengoAuthController extends GetxController {
           _user.value = _parseUser(data);
           await _api.saveUserCache(data);
         } else if (result['cover_image'] != null && _user.value != null) {
-          _user.value = _user.value!.copyWith(coverImageUrl: result['cover_image'] as String);
+          _user.value = _user.value!.copyWith(
+            coverImageUrl: result['cover_image'] as String,
+          );
         }
         return true;
       }
@@ -516,7 +516,8 @@ class MjengoAuthController extends GetxController {
 
   String _extractError(dynamic body) {
     if (body is Map<String, dynamic>) {
-      return (body['error'] ?? body['message'] ?? 'Something went wrong').toString();
+      return (body['error'] ?? body['message'] ?? 'Something went wrong')
+          .toString();
     }
     return 'Something went wrong';
   }

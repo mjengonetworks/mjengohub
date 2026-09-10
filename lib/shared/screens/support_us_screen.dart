@@ -18,14 +18,28 @@ class SupportUsScreen extends StatelessWidget {
   const SupportUsScreen({super.key});
 
   static const _reasons = [
-    ('Road Safety Campaign', 'Funds our Share Barabara road-safety awareness and incident reporting work.'),
-    ('Industry News & Updates', 'Keeps our newsroom covering construction news, safety alerts, and project updates.'),
-    ('Advocacy & Awareness', 'Amplifies our voice for better construction standards and sustainable building practices nationwide.'),
-    ('Educational Content', 'Supports the tutorials, calculators, and safety resources we publish for free.'),
+    (
+      'Road Safety Campaign',
+      'Funds our Share Barabara road-safety awareness and incident reporting work.',
+    ),
+    (
+      'Industry News & Updates',
+      'Keeps our newsroom covering construction news, safety alerts, and project updates.',
+    ),
+    (
+      'Advocacy & Awareness',
+      'Amplifies our voice for better construction standards and sustainable building practices nationwide.',
+    ),
+    (
+      'Educational Content',
+      'Supports the tutorials, calculators, and safety resources we publish for free.',
+    ),
   ];
 
   Future<void> _emailUs() async {
-    final uri = Uri.parse('mailto:info@mjengohub.com?subject=Supporting%20Mjengo%20Hub');
+    final uri = Uri.parse(
+      'mailto:info@mjengohub.com?subject=Supporting%20Mjengo%20Hub',
+    );
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
@@ -41,7 +55,11 @@ class SupportUsScreen extends StatelessWidget {
         titleSpacing: 0,
         title: Text(
           'Support Us',
-          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.headingSlate),
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.headingSlate,
+          ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -59,19 +77,32 @@ class SupportUsScreen extends StatelessWidget {
               children: [
                 Text(
                   'Support Mjengo Hub',
-                  style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.2),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.headingSlate,
+                    height: 1.2,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   'Every contribution, no matter the size, helps us continue promoting road safety and '
                   'delivering vital construction-industry news that protects lives.',
-                  style: GoogleFonts.montserrat(fontSize: 14.5, color: AppColors.bodyCharcoal, height: 1.55),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14.5,
+                    color: AppColors.bodyCharcoal,
+                    height: 1.55,
+                  ),
                 ),
                 const SizedBox(height: 28),
 
                 Text(
                   'Why Your Support Matters',
-                  style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.headingSlate),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.headingSlate,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 for (final r in _reasons)
@@ -87,9 +118,23 @@ class SupportUsScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(r.$1, style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
+                          Text(
+                            r.$1,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.headingSlate,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(r.$2, style: GoogleFonts.montserrat(fontSize: 14, color: AppColors.bodyCharcoal, height: 1.55)),
+                          Text(
+                            r.$2,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              color: AppColors.bodyCharcoal,
+                              height: 1.55,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -106,7 +151,11 @@ class SupportUsScreen extends StatelessWidget {
                   child: Text(
                     "In-app donations aren't set up yet — email us and we'll share how to contribute "
                     'via M-Pesa or another method.',
-                    style: GoogleFonts.montserrat(fontSize: 14, color: AppColors.bodyCharcoal, height: 1.55),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      color: AppColors.bodyCharcoal,
+                      height: 1.55,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -119,11 +168,19 @@ class SupportUsScreen extends StatelessWidget {
                       backgroundColor: AppColors.headingSlate,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.sharp),
+                      ),
                       elevation: 0,
                     ),
                     icon: const Icon(Icons.mail_outline_rounded, size: 18),
-                    label: Text('Email Us to Support', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w600)),
+                    label: Text(
+                      'Email Us to Support',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -132,7 +189,10 @@ class SupportUsScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'mjengohub.co.ke/support',
-                  style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.captionSlate),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: AppColors.captionSlate,
+                  ),
                 ),
               ],
             ),

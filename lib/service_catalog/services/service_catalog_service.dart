@@ -68,23 +68,29 @@ class ServiceCatalogService {
         'client_phone': clientPhone,
         'project_description': projectDescription,
         if (company != null && company.isNotEmpty) 'company': company,
-        if (projectTitle != null && projectTitle.isNotEmpty) 'project_title': projectTitle,
+        if (projectTitle != null && projectTitle.isNotEmpty)
+          'project_title': projectTitle,
         if (location != null && location.isNotEmpty) 'location': location,
-        if (budgetRange != null && budgetRange.isNotEmpty) 'budget_range': budgetRange,
+        if (budgetRange != null && budgetRange.isNotEmpty)
+          'budget_range': budgetRange,
         if (timeline != null && timeline.isNotEmpty) 'timeline': timeline,
       });
       if (res.statusCode == 200 || res.statusCode == 201) {
         final data = res.body?['data'];
         return {
           'success': true,
-          'message': (data is Map ? data['message'] as String? : null) ??
+          'message':
+              (data is Map ? data['message'] as String? : null) ??
               'Request submitted successfully',
         };
       }
       return {'success': false, 'message': _errorMessage(res.body)};
     } catch (e) {
       print('❌ submitRequest failed: $e');
-      return {'success': false, 'message': 'Could not submit request. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not submit request. Check your connection.',
+      };
     }
   }
 

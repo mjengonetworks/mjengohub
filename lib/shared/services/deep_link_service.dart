@@ -24,7 +24,11 @@ import 'package:get/get.dart';
 import '../../point/routes/app_routes.dart';
 
 class DeepLinkService {
-  static const _hosts = {'mjengohub.co.ke', 'app.mjengohub.co.ke', 'www.mjengohub.co.ke'};
+  static const _hosts = {
+    'mjengohub.co.ke',
+    'app.mjengohub.co.ke',
+    'www.mjengohub.co.ke',
+  };
 
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _sub;

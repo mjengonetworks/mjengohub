@@ -34,7 +34,10 @@ class _PointsScreenState extends State<PointsScreen> {
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([_api.getPointsSummary(), _api.getPointsLog()]);
+    final results = await Future.wait([
+      _api.getPointsSummary(),
+      _api.getPointsLog(),
+    ]);
     if (!mounted) return;
     setState(() {
       _summary = results[0] as PointsSummary?;
@@ -55,7 +58,13 @@ class _PointsScreenState extends State<PointsScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDark),
-        title: Text('Your Points', style: GoogleFonts.montserrat(color: AppColors.textDark, fontWeight: FontWeight.w500)),
+        title: Text(
+          'Your Points',
+          style: GoogleFonts.montserrat(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
@@ -68,19 +77,35 @@ class _PointsScreenState extends State<PointsScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$points', style: GoogleFonts.montserrat(fontSize: 34, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                        Text(
+                          '$points',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textDark,
+                          ),
+                        ),
                         ReviewerLevelBadge(points: points),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text('total reputation points', style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textSubtle)),
+                    Text(
+                      'total reputation points',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12.5,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
@@ -88,7 +113,9 @@ class _PointsScreenState extends State<PointsScreen> {
                         value: progress,
                         minHeight: 8,
                         backgroundColor: AppColors.divider,
-                        valueColor: const AlwaysStoppedAnimation(AppColors.accentBlue),
+                        valueColor: const AlwaysStoppedAnimation(
+                          AppColors.accentBlue,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -96,53 +123,94 @@ class _PointsScreenState extends State<PointsScreen> {
                       level.pointsToNext != null
                           ? '${level.pointsToNext! - points} points to the next level'
                           : 'You\'ve reached the highest level — Legend!',
-                      style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        color: AppColors.textSubtle,
+                      ),
                     ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
-              Text('Breakdown', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+              Text(
+                'Breakdown',
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
               const SizedBox(height: 10),
 
               if (_loading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.accentBlue,
+                    ),
+                  ),
                 )
               else if (_summary == null)
                 Text(
                   'Could not load your points breakdown right now.',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textSubtle),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    color: AppColors.textSubtle,
+                  ),
                 )
               else ...[
                 _BreakdownGrid(summary: _summary!),
                 const SizedBox(height: 24),
-                Text('Recent Activity', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                Text(
+                  'Recent Activity',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 if (_log.isEmpty)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 32),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+                    ),
                     child: Column(
                       children: [
-                        const Icon(Icons.receipt_long_rounded, size: 36, color: AppColors.textSubtle),
+                        const Icon(
+                          Icons.receipt_long_rounded,
+                          size: 36,
+                          color: AppColors.textSubtle,
+                        ),
                         const SizedBox(height: 10),
-                        Text('No points activity yet', style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
+                        Text(
+                          'No points activity yet',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: AppColors.textSubtle,
+                          ),
+                        ),
                       ],
                     ),
                   )
                 else
                   Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+                    ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
                         for (int i = 0; i < _log.length; i++) ...[
                           _LogRow(entry: _log[i]),
-                          if (i < _log.length - 1) const Divider(height: 1, color: AppColors.divider),
+                          if (i < _log.length - 1)
+                            const Divider(height: 1, color: AppColors.divider),
                         ],
                       ],
                     ),
@@ -166,8 +234,16 @@ class _BreakdownGrid extends StatelessWidget {
     final items = [
       ('Reviews', summary.fromReviews, Icons.rate_review_rounded),
       ('Upvotes received', summary.fromUpvotes, Icons.thumb_up_rounded),
-      ('Referral signups', summary.fromReferralSignups, Icons.person_add_rounded),
-      ('Referrals went Prime', summary.fromReferralPrime, Icons.workspace_premium_rounded),
+      (
+        'Referral signups',
+        summary.fromReferralSignups,
+        Icons.person_add_rounded,
+      ),
+      (
+        'Referrals went Prime',
+        summary.fromReferralPrime,
+        Icons.workspace_premium_rounded,
+      ),
     ];
     return GridView.count(
       crossAxisCount: 2,
@@ -180,14 +256,32 @@ class _BreakdownGrid extends StatelessWidget {
         final (label, value, icon) = item;
         return Container(
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(icon, size: 18, color: AppColors.accentBlue),
               const Spacer(),
-              Text('$value', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-              Text(label, style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(
+                '$value',
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
+              Text(
+                label,
+                style: GoogleFonts.montserrat(
+                  fontSize: 10.5,
+                  color: AppColors.textSubtle,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         );
@@ -202,11 +296,16 @@ class _LogRow extends StatelessWidget {
 
   IconData get _icon {
     switch (entry.source) {
-      case 'review': return Icons.rate_review_rounded;
-      case 'upvote': return Icons.thumb_up_rounded;
-      case 'referral_signup': return Icons.person_add_rounded;
-      case 'referral_prime': return Icons.workspace_premium_rounded;
-      default: return Icons.stars_rounded;
+      case 'review':
+        return Icons.rate_review_rounded;
+      case 'upvote':
+        return Icons.thumb_up_rounded;
+      case 'referral_signup':
+        return Icons.person_add_rounded;
+      case 'referral_prime':
+        return Icons.workspace_premium_rounded;
+      default:
+        return Icons.stars_rounded;
     }
   }
 
@@ -219,7 +318,10 @@ class _LogRow extends StatelessWidget {
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(color: AppColors.accentBlue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: AppColors.accentBlue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(_icon, size: 16, color: AppColors.accentBlue),
           ),
           const SizedBox(width: 12),
@@ -227,14 +329,35 @@ class _LogRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(entry.description?.isNotEmpty == true ? entry.description! : entry.sourceLabel,
-                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                Text(
+                  entry.description?.isNotEmpty == true
+                      ? entry.description!
+                      : entry.sourceLabel,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
                 if (entry.createdAt != null)
-                  Text(_timeAgo(entry.createdAt!), style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+                  Text(
+                    _timeAgo(entry.createdAt!),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      color: AppColors.textSubtle,
+                    ),
+                  ),
               ],
             ),
           ),
-          Text('+${entry.points}', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.success)),
+          Text(
+            '+${entry.points}',
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.success,
+            ),
+          ),
         ],
       ),
     );

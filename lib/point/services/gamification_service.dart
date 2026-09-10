@@ -55,11 +55,17 @@ class GamificationService {
   /// OAuth / existing accounts that skipped the ?ref= signup flow).
   Future<String?> redeemReferralCode(String code) async {
     try {
-      final res = await _api.apiPost('referrals/redeem', {'referral_code': code});
-      if (res.statusCode == 200 || res.statusCode == 201) return null; // null = success
+      final res = await _api.apiPost('referrals/redeem', {
+        'referral_code': code,
+      });
+      if (res.statusCode == 200 || res.statusCode == 201)
+        return null; // null = success
       final body = res.body;
       if (body is Map) {
-        return (body['error'] ?? body['message'] ?? 'Could not redeem this code').toString();
+        return (body['error'] ??
+                body['message'] ??
+                'Could not redeem this code')
+            .toString();
       }
       return 'Could not redeem this code';
     } catch (e) {

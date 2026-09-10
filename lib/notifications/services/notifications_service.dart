@@ -7,22 +7,22 @@ class NotificationsService {
   final MjengoService _api = Get.find<MjengoService>();
 
   // ── Fetch paginated notifications ─────────────────────────────────────────
-  Future<({List<NotificationModel> items, int total, int pages})> fetchNotifications({
-    int page = 1,
-    int perPage = 20,
-  }) async {
+  Future<({List<NotificationModel> items, int total, int pages})>
+  fetchNotifications({int page = 1, int perPage = 20}) async {
     final res = await _api.apiGet(
       'notifications',
       query: {'page': page, 'per_page': perPage},
     );
     if (res.statusCode == 200) {
       final body = res.body as Map<String, dynamic>;
-      final data  = (body['data']  as List<dynamic>?) ?? [];
-      final pag   = body['pagination'] as Map<String, dynamic>? ?? {};
+      final data = (body['data'] as List<dynamic>?) ?? [];
+      final pag = body['pagination'] as Map<String, dynamic>? ?? {};
       return (
-        items : data.map((e) => NotificationModel.fromJson(e as Map<String, dynamic>)).toList(),
-        total : pag['total'] as int? ?? 0,
-        pages : pag['pages'] as int? ?? 1,
+        items: data
+            .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        total: pag['total'] as int? ?? 0,
+        pages: pag['pages'] as int? ?? 1,
       );
     }
     return (items: <NotificationModel>[], total: 0, pages: 1);

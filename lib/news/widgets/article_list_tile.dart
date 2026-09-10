@@ -50,8 +50,11 @@ class ArticleListTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.access_time_rounded,
-                          size: 12, color: Color(0xFF475569)),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 12,
+                        color: Color(0xFF475569),
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         article.timeAgo,
@@ -61,8 +64,11 @@ class ArticleListTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.remove_red_eye_outlined,
-                          size: 12, color: Color(0xFF475569)),
+                      const Icon(
+                        Icons.remove_red_eye_outlined,
+                        size: 12,
+                        color: Color(0xFF475569),
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         '${article.formattedViews} views',

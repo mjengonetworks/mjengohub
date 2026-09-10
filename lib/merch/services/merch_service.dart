@@ -12,7 +12,11 @@ class MerchService {
       final res = await _api.getRequest('merch/products');
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(MerchProduct.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(MerchProduct.fromJson)
+              .toList();
       }
       return [];
     } catch (e) {
@@ -23,10 +27,17 @@ class MerchService {
 
   Future<List<MerchShoutout>> getShoutouts({int limit = 20}) async {
     try {
-      final res = await _api.getRequest('merch/shoutouts', query: {'limit': '$limit'});
+      final res = await _api.getRequest(
+        'merch/shoutouts',
+        query: {'limit': '$limit'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(MerchShoutout.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(MerchShoutout.fromJson)
+              .toList();
       }
       return [];
     } catch (e) {

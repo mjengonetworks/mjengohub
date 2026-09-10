@@ -22,16 +22,21 @@ class LocationSearchService {
   Future<List<LocationSearchResult>> search(String query) async {
     if (query.trim().length < 3) return [];
     try {
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-        'q': query.trim(),
-        'format': 'json',
-        'limit': '5',
-        'addressdetails': '0',
-      });
-      final res = await http.get(uri, headers: {
-        // Nominatim's usage policy requires an identifying User-Agent.
-        'User-Agent': 'MjengoHubApp/1.0 (mjengohub.co.ke)',
-      });
+      final uri = Uri.parse(_baseUrl).replace(
+        queryParameters: {
+          'q': query.trim(),
+          'format': 'json',
+          'limit': '5',
+          'addressdetails': '0',
+        },
+      );
+      final res = await http.get(
+        uri,
+        headers: {
+          // Nominatim's usage policy requires an identifying User-Agent.
+          'User-Agent': 'MjengoHubApp/1.0 (mjengohub.co.ke)',
+        },
+      );
       if (res.statusCode != 200) return [];
       final data = jsonDecode(res.body);
       if (data is! List) return [];

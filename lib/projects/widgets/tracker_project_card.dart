@@ -22,19 +22,33 @@ class TrackerProjectCard extends StatelessWidget {
   final String? captionOverride;
   final double width;
 
-  const TrackerProjectCard({super.key, required this.project, this.captionOverride, this.width = 220});
+  const TrackerProjectCard({
+    super.key,
+    required this.project,
+    this.captionOverride,
+    this.width = 220,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
       child: Container(
         width: width,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.borderSlate),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -45,7 +59,12 @@ class TrackerProjectCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  NetImage(url: project.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholderColor: const Color(0xFF1E3A5F)),
+                  NetImage(
+                    url: project.imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    placeholderColor: const Color(0xFF1E3A5F),
+                  ),
                   if (project.isLegacy)
                     Positioned(
                       top: 8,
@@ -55,7 +74,10 @@ class TrackerProjectCard extends StatelessWidget {
                   Positioned(
                     bottom: 8,
                     left: 8,
-                    child: _pill((captionOverride ?? project.statusLabel).toUpperCase(), AppColors.accentBlue),
+                    child: _pill(
+                      (captionOverride ?? project.statusLabel).toUpperCase(),
+                      AppColors.accentBlue,
+                    ),
                   ),
                 ],
               ),
@@ -69,20 +91,35 @@ class TrackerProjectCard extends StatelessWidget {
                     project.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.headingSlate, height: 1.3),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.headingSlate,
+                      height: 1.3,
+                    ),
                   ),
-                  if ((project.county ?? project.location ?? project.country) != null) ...[
+                  if ((project.county ?? project.location ?? project.country) !=
+                      null) ...[
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        const Icon(Icons.place_outlined, size: 11, color: AppColors.textSubtle),
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 11,
+                          color: AppColors.textSubtle,
+                        ),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
-                            project.county ?? project.location ?? project.country!,
+                            project.county ??
+                                project.location ??
+                                project.country!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10.5,
+                              color: AppColors.textSubtle,
+                            ),
                           ),
                         ),
                       ],
@@ -98,8 +135,18 @@ class TrackerProjectCard extends StatelessWidget {
   }
 
   Widget _pill(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
-        child: Text(label, style: GoogleFonts.montserrat(fontSize: 8.5, fontWeight: FontWeight.w500, color: Colors.white)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(
+      label,
+      style: GoogleFonts.montserrat(
+        fontSize: 8.5,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+      ),
+    ),
+  );
 }

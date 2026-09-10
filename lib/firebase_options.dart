@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '457461415783',
     projectId: 'mjengohubapp',
     storageBucket: 'mjengohubapp.firebasestorage.app',
-    iosClientId: '457461415783-ohtbhp98btr9gq6i8qnvn681bvksm5nt.apps.googleusercontent.com',
+    iosClientId:
+        '457461415783-ohtbhp98btr9gq6i8qnvn681bvksm5nt.apps.googleusercontent.com',
     iosBundleId: 'ke.co.mjengohub',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '457461415783',
     projectId: 'mjengohubapp',
     storageBucket: 'mjengohubapp.firebasestorage.app',
-    iosClientId: '457461415783-h5odp86jee2tqvcjkfkcpkj7dql9r8ol.apps.googleusercontent.com',
+    iosClientId:
+        '457461415783-h5odp86jee2tqvcjkfkcpkj7dql9r8ol.apps.googleusercontent.com',
     iosBundleId: 'com.example.mjengoHubApp',
   );
 

@@ -44,7 +44,10 @@ class ResponsiveAuthLayout extends StatelessWidget {
   }
 
   /// Large screen layout: Centered form with max width and card styling
-  Widget _buildLargeScreenLayout(BuildContext context, BoxConstraints constraints) {
+  Widget _buildLargeScreenLayout(
+    BuildContext context,
+    BoxConstraints constraints,
+  ) {
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,

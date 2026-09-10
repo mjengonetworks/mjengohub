@@ -14,7 +14,11 @@ class PickedMedia {
   final Uint8List bytes;
   final String filename;
   final bool isVideo;
-  const PickedMedia({required this.bytes, required this.filename, required this.isVideo});
+  const PickedMedia({
+    required this.bytes,
+    required this.filename,
+    required this.isVideo,
+  });
 }
 
 class MediaPipeline {
@@ -26,7 +30,11 @@ class MediaPipeline {
   /// platform) rather than blocking the upload.
   static Future<Uint8List> _compress(Uint8List bytes) async {
     try {
-      return await FlutterImageCompress.compressWithList(bytes, quality: 80, keepExif: false);
+      return await FlutterImageCompress.compressWithList(
+        bytes,
+        quality: 80,
+        keepExif: false,
+      );
     } catch (_) {
       return bytes;
     }
@@ -35,21 +43,27 @@ class MediaPipeline {
   /// Opens the gallery for multi-select images + video, compressing every
   /// image picked. [imagesOnly] restricts the picker to still images (used
   /// by the dedicated Project Renders picker, which doesn't accept video).
-  static Future<List<PickedMedia>> pickMultiple({bool imagesOnly = false}) async {
+  static Future<List<PickedMedia>> pickMultiple({
+    bool imagesOnly = false,
+  }) async {
     final results = <PickedMedia>[];
 
     final images = await _picker.pickMultiImage(imageQuality: 100);
     for (final img in images) {
       final bytes = await img.readAsBytes();
       final compressed = await _compress(bytes);
-      results.add(PickedMedia(bytes: compressed, filename: img.name, isVideo: false));
+      results.add(
+        PickedMedia(bytes: compressed, filename: img.name, isVideo: false),
+      );
     }
 
     if (!imagesOnly) {
       final video = await _picker.pickVideo(source: ImageSource.gallery);
       if (video != null) {
         final bytes = await video.readAsBytes();
-        results.add(PickedMedia(bytes: bytes, filename: video.name, isVideo: true));
+        results.add(
+          PickedMedia(bytes: bytes, filename: video.name, isVideo: true),
+        );
       }
     }
 

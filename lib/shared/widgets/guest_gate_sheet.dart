@@ -84,13 +84,22 @@ class _GuestGateSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.headingSlate,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.sharp),
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                   Get.toNamed(AppRoutes.login);
                 },
-                child: Text('Sign In', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                child: Text(
+                  'Sign In',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -100,13 +109,22 @@ class _GuestGateSheet extends StatelessWidget {
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.borderSlate),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.sharp),
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                   Get.toNamed(AppRoutes.signup);
                 },
-                child: Text('Register', style: GoogleFonts.montserrat(color: AppColors.headingSlate, fontWeight: FontWeight.w600, fontSize: 14)),
+                child: Text(
+                  'Register',
+                  style: GoogleFonts.montserrat(
+                    color: AppColors.headingSlate,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
           ],

@@ -81,30 +81,32 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.headingSlate))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.headingSlate),
+            )
           : e == null
-              ? _notFound()
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: ContentWidth(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _header(e),
-                        const SizedBox(height: 16),
-                        if ((e.bioText ?? '').isNotEmpty) ...[
-                          _bioCard(e),
-                          const SizedBox(height: 16),
-                        ],
-                        if ((e.mjengoNetworksUrl ?? '').isNotEmpty) ...[
-                          _fullProfileButton(e),
-                          const SizedBox(height: 16),
-                        ],
-                        if (e.totalLinkedProjects > 0) _projectsSection(e),
-                      ],
-                    ),
-                  ),
+          ? _notFound()
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: ContentWidth(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _header(e),
+                    const SizedBox(height: 16),
+                    if ((e.bioText ?? '').isNotEmpty) ...[
+                      _bioCard(e),
+                      const SizedBox(height: 16),
+                    ],
+                    if ((e.mjengoNetworksUrl ?? '').isNotEmpty) ...[
+                      _fullProfileButton(e),
+                      const SizedBox(height: 16),
+                    ],
+                    if (e.totalLinkedProjects > 0) _projectsSection(e),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 
@@ -116,7 +118,11 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.business_outlined, size: 44, color: AppColors.captionSlate),
+            const Icon(
+              Icons.business_outlined,
+              size: 44,
+              color: AppColors.captionSlate,
+            ),
             const SizedBox(height: 14),
             Text(
               name != null && name.isNotEmpty
@@ -133,7 +139,10 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
             Text(
               'Verified stakeholder profiles are still being added.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.captionSlate),
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                color: AppColors.captionSlate,
+              ),
             ),
           ],
         ),
@@ -202,7 +211,11 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.public_rounded, size: 12, color: AppColors.primaryBlue),
+          const Icon(
+            Icons.public_rounded,
+            size: 12,
+            color: AppColors.primaryBlue,
+          ),
           const SizedBox(width: 5),
           Text(
             country,
@@ -228,7 +241,11 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
       ),
       child: Text(
         e.bioText!,
-        style: GoogleFonts.montserrat(fontSize: 13.5, height: 1.6, color: AppColors.bodyCharcoal),
+        style: GoogleFonts.montserrat(
+          fontSize: 13.5,
+          height: 1.6,
+          color: AppColors.bodyCharcoal,
+        ),
       ),
     );
   }
@@ -241,13 +258,18 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
         icon: const Icon(Icons.open_in_new_rounded, size: 16),
         label: Text(
           'View Full Profile on Mjengo Networks',
-          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600),
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.headingSlate,
           side: const BorderSide(color: AppColors.borderSlate),
           padding: const EdgeInsets.symmetric(vertical: 13),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
+          ),
         ),
       ),
     );
@@ -259,7 +281,11 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
       children: [
         Text(
           'Projects',
-          style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.headingSlate),
+          style: GoogleFonts.montserrat(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: AppColors.headingSlate,
+          ),
         ),
         const SizedBox(height: 12),
         for (final role in _roleOrder)
@@ -289,7 +315,9 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
         borderRadius: BorderRadius.circular(AppRadius.sharp),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.sharp),
-          onTap: p.slug.isEmpty ? null : () => Get.toNamed(AppRoutes.projectDetail, arguments: p.slug),
+          onTap: p.slug.isEmpty
+              ? null
+              : () => Get.toNamed(AppRoutes.projectDetail, arguments: p.slug),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -322,7 +350,11 @@ class _EntityProfileScreenState extends State<EntityProfileScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.captionSlate, size: 18),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.captionSlate,
+                  size: 18,
+                ),
               ],
             ),
           ),

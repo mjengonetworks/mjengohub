@@ -18,12 +18,16 @@ class ArticleDetailController extends GetxController {
     }
     isLoading.value = true;
     errorMessage.value = '';
-    _service.getArticle(slug).then((a) {
-      article.value = a;
-      if (a == null) errorMessage.value = 'Article not found.';
-    }).catchError((e) {
-      errorMessage.value = 'Failed to load article.';
-      print('ArticleDetailController error: $e');
-    }).whenComplete(() => isLoading.value = false);
+    _service
+        .getArticle(slug)
+        .then((a) {
+          article.value = a;
+          if (a == null) errorMessage.value = 'Article not found.';
+        })
+        .catchError((e) {
+          errorMessage.value = 'Failed to load article.';
+          print('ArticleDetailController error: $e');
+        })
+        .whenComplete(() => isLoading.value = false);
   }
 }

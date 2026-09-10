@@ -9,10 +9,10 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/incidents_service.dart';
 
-const _kDark    = Color(0xFF1A1A2E);
+const _kDark = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
 const _kDivider = Color(0xFFEEEEF5);
-const _kBg      = Color(0xFFF8FAFC);
+const _kBg = Color(0xFFF8FAFC);
 
 class ReportIncidentScreen extends StatefulWidget {
   final String incidentType; // 'road_safety' or 'site_safety'
@@ -25,15 +25,15 @@ class ReportIncidentScreen extends StatefulWidget {
 class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   final _service = IncidentsService();
   final _formKey = GlobalKey<FormState>();
-  final _picker  = ImagePicker();
+  final _picker = ImagePicker();
 
-  final _titleCtrl       = TextEditingController();
-  final _descCtrl        = TextEditingController();
-  final _locationCtrl    = TextEditingController();
-  final _countyCtrl      = TextEditingController();
-  final _lessonsCtrl     = TextEditingController();
-  final _casualtiesCtrl  = TextEditingController(text: '0');
-  final _injuriesCtrl    = TextEditingController(text: '0');
+  final _titleCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _countyCtrl = TextEditingController();
+  final _lessonsCtrl = TextEditingController();
+  final _casualtiesCtrl = TextEditingController(text: '0');
+  final _injuriesCtrl = TextEditingController(text: '0');
 
   String _severity = 'moderate';
   DateTime? _incidentDate;
@@ -42,8 +42,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   final _selectedImages = <XFile>[];
 
   bool get _isRoad => widget.incidentType == 'road_safety';
-  Color get _primary => _isRoad ? const Color(0xFFDC2626) : const Color(0xFFF97316);
-  Color get _dark    => _isRoad ? const Color(0xFF7F1D1D) : const Color(0xFF431407);
+  Color get _primary =>
+      _isRoad ? const Color(0xFFDC2626) : const Color(0xFFF97316);
+  Color get _dark =>
+      _isRoad ? const Color(0xFF7F1D1D) : const Color(0xFF431407);
 
   @override
   void dispose() {
@@ -64,9 +66,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       firstDate: DateTime(1990),
       lastDate: DateTime.now(),
       builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(primary: _primary),
-        ),
+        data: Theme.of(
+          ctx,
+        ).copyWith(colorScheme: ColorScheme.light(primary: _primary)),
         child: child!,
       ),
     );
@@ -76,8 +78,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_incidentDate == null) {
-      Get.snackbar('Required', 'Please select the incident date.',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Required',
+        'Please select the incident date.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     setState(() => _submitting = true);
@@ -107,12 +112,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         }
         setState(() => _submitted = true);
       } else {
-        Get.snackbar('Error', 'Could not submit. Please try again.',
-            snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Could not submit. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Something went wrong: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Something went wrong: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       setState(() => _submitting = false);
     }
@@ -149,8 +160,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                         color: Colors.white24,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white, size: 18),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -171,7 +185,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                               ? 'Road safety incident'
                               : 'Construction site incident',
                           style: GoogleFonts.montserrat(
-                              fontSize: 12, color: Colors.white70),
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ),
@@ -180,9 +196,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               ),
             ),
 
-            Expanded(
-              child: _submitted ? _buildSuccess() : _buildForm(),
-            ),
+            Expanded(child: _submitted ? _buildSuccess() : _buildForm()),
           ],
         ),
       ),
@@ -203,8 +217,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 color: const Color(0xFF16A34A).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle_outline_rounded,
-                  color: Color(0xFF16A34A), size: 44),
+              child: const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Color(0xFF16A34A),
+                size: 44,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -220,7 +237,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               'Thank you. Your incident report is under review by our editors and will be published once verified.',
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
-                  fontSize: 13.5, color: _kSubtext, height: 1.6),
+                fontSize: 13.5,
+                color: _kSubtext,
+                height: 1.6,
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -232,12 +252,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   backgroundColor: _primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: Text('Back to Incidents',
-                    style: GoogleFonts.montserrat(
-                        fontSize: 14, fontWeight: FontWeight.w500)),
+                child: Text(
+                  'Back to Incidents',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ),
           ],
@@ -273,8 +298,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               controller: _descCtrl,
               hint: 'Describe the incident in detail…',
               maxLines: 5,
-              validator: (v) =>
-                  v == null || v.trim().length < 20 ? 'Please add more detail' : null,
+              validator: (v) => v == null || v.trim().length < 20
+                  ? 'Please add more detail'
+                  : null,
             ),
             const SizedBox(height: 14),
 
@@ -288,10 +314,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             const SizedBox(height: 14),
 
             _label('County'),
-            _textField(
-              controller: _countyCtrl,
-              hint: 'e.g. Machakos',
-            ),
+            _textField(controller: _countyCtrl, hint: 'e.g. Machakos'),
             const SizedBox(height: 14),
 
             // Date picker
@@ -300,7 +323,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               onTap: _pickDate,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 14),
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -308,8 +333,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.calendar_today_rounded,
-                        size: 18, color: _kSubtext),
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      size: 18,
+                      color: _kSubtext,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       _incidentDate == null
@@ -317,9 +345,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                           : '${_incidentDate!.day}/${_incidentDate!.month}/${_incidentDate!.year}',
                       style: GoogleFonts.montserrat(
                         fontSize: 13.5,
-                        color: _incidentDate == null
-                            ? _kSubtext
-                            : _kDark,
+                        color: _incidentDate == null ? _kSubtext : _kDark,
                       ),
                     ),
                   ],
@@ -401,7 +427,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   backgroundColor: _primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
                 child: _submitting
@@ -409,7 +436,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2.5, color: Colors.white),
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
                       )
                     : Text(
                         'Submit Report',
@@ -424,8 +453,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             Center(
               child: Text(
                 'Reviewed by our team before publishing.',
-                style: GoogleFonts.montserrat(
-                    fontSize: 11.5, color: _kSubtext),
+                style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext),
               ),
             ),
             const SizedBox(height: 24),
@@ -475,14 +503,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             const SizedBox(height: 12),
             ListTile(
               leading: Icon(Icons.camera_alt_rounded, color: _primary),
-              title: Text('Camera',
-                  style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              title: Text(
+                'Camera',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: Icon(Icons.photo_library_rounded, color: _primary),
-              title: Text('Photo Library',
-                  style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              title: Text(
+                'Photo Library',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             const SizedBox(height: 8),
@@ -524,10 +556,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: kIsWeb
-                          ? Image.network(_selectedImages[i].path,
-                              fit: BoxFit.cover, width: 80, height: 80)
-                          : Image.file(File(_selectedImages[i].path),
-                              fit: BoxFit.cover, width: 80, height: 80),
+                          ? Image.network(
+                              _selectedImages[i].path,
+                              fit: BoxFit.cover,
+                              width: 80,
+                              height: 80,
+                            )
+                          : Image.file(
+                              File(_selectedImages[i].path),
+                              fit: BoxFit.cover,
+                              width: 80,
+                              height: 80,
+                            ),
                     ),
                   ),
                   Positioned(
@@ -542,8 +582,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                           color: Color(0xFFDC2626),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close,
-                            color: Colors.white, size: 13),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 13,
+                        ),
                       ),
                     ),
                   ),
@@ -557,8 +600,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           GestureDetector(
             onTap: _pickImages,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -566,15 +608,20 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.add_photo_alternate_outlined,
-                      color: _primary, size: 20),
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    color: _primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     _selectedImages.isEmpty
                         ? 'Add photos (camera or gallery)'
                         : 'Add more (${_selectedImages.length}/4)',
                     style: GoogleFonts.montserrat(
-                        fontSize: 13, color: _kSubtext),
+                      fontSize: 13,
+                      color: _kSubtext,
+                    ),
                   ),
                 ],
               ),
@@ -589,9 +636,14 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   Widget _label(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text,
-          style: GoogleFonts.montserrat(
-              fontSize: 12, fontWeight: FontWeight.w600, color: _kDark)),
+      child: Text(
+        text,
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: _kDark,
+        ),
+      ),
     );
   }
 
@@ -613,36 +665,32 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   InputDecoration _inputDec(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle:
-            GoogleFonts.montserrat(fontSize: 13, color: _kSubtext),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _kDivider),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _kDivider),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: _primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFDC2626), width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFDC2626), width: 1.5),
-        ),
-      );
+    hintText: hint,
+    hintStyle: GoogleFonts.montserrat(fontSize: 13, color: _kSubtext),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _kDivider),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _kDivider),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: _primary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+    ),
+  );
 
   Widget _infoBox(String text) {
     return Container(
@@ -658,16 +706,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           Icon(Icons.info_outline_rounded, color: _primary, size: 18),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text,
-                style: GoogleFonts.montserrat(
-                    fontSize: 12.5,
-                    color: _primary,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5)),
+            child: Text(
+              text,
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                color: _primary,
+                fontWeight: FontWeight.w500,
+                height: 1.5,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
-

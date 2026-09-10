@@ -48,27 +48,37 @@ class MyComment {
   });
 
   factory MyComment.fromJson(Map<String, dynamic> j) => MyComment(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        content: (j['content'] as String?) ?? '',
-        commentableType: (j['commentable_type'] as String?) ?? '',
-        commentableId: (j['commentable_id'] as num?)?.toInt() ?? 0,
-        upvotes: (j['upvotes'] as num?)?.toInt() ?? 0,
-        downvotes: (j['downvotes'] as num?)?.toInt() ?? 0,
-        isApproved: j['is_approved'] as bool? ?? true,
-        createdAt: DateTime.tryParse((j['created_at'] as String?) ?? ''),
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    content: (j['content'] as String?) ?? '',
+    commentableType: (j['commentable_type'] as String?) ?? '',
+    commentableId: (j['commentable_id'] as num?)?.toInt() ?? 0,
+    upvotes: (j['upvotes'] as num?)?.toInt() ?? 0,
+    downvotes: (j['downvotes'] as num?)?.toInt() ?? 0,
+    isApproved: j['is_approved'] as bool? ?? true,
+    createdAt: DateTime.tryParse((j['created_at'] as String?) ?? ''),
+  );
 }
 
 class CommentsService {
   BaseService get _api => Get.find<BaseService>();
 
   /// The signed-in user's own comments across every content type.
-  Future<List<MyComment>> getMyComments({int page = 1, int perPage = 20}) async {
+  Future<List<MyComment>> getMyComments({
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
-      final res = await _api.getRequest('auth/me/comments', query: {'page': '$page', 'per_page': '$perPage'});
+      final res = await _api.getRequest(
+        'auth/me/comments',
+        query: {'page': '$page', 'per_page': '$perPage'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(MyComment.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(MyComment.fromJson)
+              .toList();
       }
       return [];
     } catch (_) {
@@ -76,7 +86,10 @@ class CommentsService {
     }
   }
 
-  Future<List<ThreadedComment>> getComments(CommentResource resource, int id) async {
+  Future<List<ThreadedComment>> getComments(
+    CommentResource resource,
+    int id,
+  ) async {
     try {
       final res = await _api.getRequest('${resource.pathPrefix}/$id/comments');
       if (res.statusCode == 200 && res.body != null) {
@@ -104,12 +117,15 @@ class CommentsService {
     int? parentId,
   }) async {
     try {
-      final res = await _api.postRequest('${resource.pathPrefix}/$id/comments', {
-        'content': content,
-        'name': name,
-        'email': ?email,
-        'parent_id': ?parentId,
-      });
+      final res = await _api.postRequest(
+        '${resource.pathPrefix}/$id/comments',
+        {
+          'content': content,
+          'name': name,
+          'email': ?email,
+          'parent_id': ?parentId,
+        },
+      );
       if (res.statusCode == 200 || res.statusCode == 201) {
         final data = res.body?['data'];
         if (data is Map<String, dynamic>) return ThreadedComment.fromJson(data);

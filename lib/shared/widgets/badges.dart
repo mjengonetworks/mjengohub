@@ -52,16 +52,30 @@ class SubmitProjectButton extends StatelessWidget {
           color: AppColors.textDark,
           borderRadius: BorderRadius.circular(AppRadius.pill),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 10, offset: const Offset(0, 3)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add_business_rounded, color: Colors.white, size: 16),
+            const Icon(
+              Icons.add_business_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
             const SizedBox(width: 7),
-            Text('Submit a Project',
-                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: Colors.white)),
+            Text(
+              'Submit a Project',
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
       ),
@@ -85,7 +99,11 @@ class PrimeBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.workspace_premium_rounded, color: Colors.white, size: fontSize + 3),
+          Icon(
+            Icons.workspace_premium_rounded,
+            color: Colors.white,
+            size: fontSize + 3,
+          ),
           const SizedBox(width: 3),
           Text(
             'MJENGO HUB PRIME',
@@ -107,13 +125,20 @@ class PrimeBadge extends StatelessWidget {
 class ReviewerLevelBadge extends StatelessWidget {
   final int points;
   final bool small;
-  const ReviewerLevelBadge({super.key, required this.points, this.small = false});
+  const ReviewerLevelBadge({
+    super.key,
+    required this.points,
+    this.small = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final level = ReviewerLevel.forPoints(points);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: small ? 6 : 9, vertical: small ? 2 : 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: small ? 6 : 9,
+        vertical: small ? 2 : 4,
+      ),
       decoration: BoxDecoration(
         color: AppColors.accentBlue.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(20),
@@ -122,7 +147,11 @@ class ReviewerLevelBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.military_tech_rounded, size: small ? 11 : 13, color: AppColors.accentBlue),
+          Icon(
+            Icons.military_tech_rounded,
+            size: small ? 11 : 13,
+            color: AppColors.accentBlue,
+          ),
           SizedBox(width: small ? 3 : 4),
           Text(
             'Level ${level.level} · ${level.name}',
@@ -149,7 +178,11 @@ class RoleBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = role
         .split('_')
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}')
+        .map(
+          (w) => w.isEmpty
+              ? w
+              : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}',
+        )
         .join(' ');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -180,11 +213,13 @@ class StoreButtonsRow extends StatelessWidget {
 
   static const String _defaultPlayStore =
       'https://play.google.com/store/apps/details?id=ke.co.mjengohub.app';
-  static const String _defaultAppStore = 'https://apps.apple.com/app/mjengo-hub';
+  static const String _defaultAppStore =
+      'https://apps.apple.com/app/mjengo-hub';
 
   Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (await canLaunchUrl(uri))
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -195,7 +230,11 @@ class StoreButtonsRow extends StatelessWidget {
           child: _StoreButton(
             icon: Icons.shop_rounded,
             label: 'Google Play',
-            onTap: () => _launch(playStoreUrl?.isNotEmpty == true ? playStoreUrl! : _defaultPlayStore),
+            onTap: () => _launch(
+              playStoreUrl?.isNotEmpty == true
+                  ? playStoreUrl!
+                  : _defaultPlayStore,
+            ),
           ),
         ),
         const SizedBox(width: 10),
@@ -203,7 +242,9 @@ class StoreButtonsRow extends StatelessWidget {
           child: _StoreButton(
             icon: Icons.apple,
             label: 'App Store',
-            onTap: () => _launch(appStoreUrl?.isNotEmpty == true ? appStoreUrl! : _defaultAppStore),
+            onTap: () => _launch(
+              appStoreUrl?.isNotEmpty == true ? appStoreUrl! : _defaultAppStore,
+            ),
           ),
         ),
       ],
@@ -215,7 +256,11 @@ class _StoreButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _StoreButton({required this.icon, required this.label, required this.onTap});
+  const _StoreButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

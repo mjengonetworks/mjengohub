@@ -46,22 +46,32 @@ class PublicProfile {
   });
 
   factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        name: (j['name'] as String?) ?? 'User',
-        avatar: j['avatar'] as String?,
-        coverImage: j['cover_image'] as String?,
-        bio: j['bio'] as String?,
-        company: j['company'] as String?,
-        location: j['location'] as String?,
-        role: j['role'] as String?,
-        points: (j['points'] as num?)?.toInt() ?? 0,
-        isVerified: j['is_verified'] as bool? ?? false,
-        mjengoNetworksUrl: j['mjengo_networks_url'] as String?,
-        shareBarabaraUrl: j['share_barabara_url'] as String?,
-        createdAt: DateTime.tryParse((j['created_at'] as String?) ?? ''),
-        articleCount: (j['article_count'] as num?)?.toInt() ?? 0,
-        projectCount: (j['project_count'] as num?)?.toInt() ?? 0,
-        articles: (j['articles'] as List?)?.whereType<Map<String, dynamic>>().map(Article.fromJson).toList() ?? [],
-        projects: (j['projects'] as List?)?.whereType<Map<String, dynamic>>().map(Project.fromJson).toList() ?? [],
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    name: (j['name'] as String?) ?? 'User',
+    avatar: j['avatar'] as String?,
+    coverImage: j['cover_image'] as String?,
+    bio: j['bio'] as String?,
+    company: j['company'] as String?,
+    location: j['location'] as String?,
+    role: j['role'] as String?,
+    points: (j['points'] as num?)?.toInt() ?? 0,
+    isVerified: j['is_verified'] as bool? ?? false,
+    mjengoNetworksUrl: j['mjengo_networks_url'] as String?,
+    shareBarabaraUrl: j['share_barabara_url'] as String?,
+    createdAt: DateTime.tryParse((j['created_at'] as String?) ?? ''),
+    articleCount: (j['article_count'] as num?)?.toInt() ?? 0,
+    projectCount: (j['project_count'] as num?)?.toInt() ?? 0,
+    articles:
+        (j['articles'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(Article.fromJson)
+            .toList() ??
+        [],
+    projects:
+        (j['projects'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(Project.fromJson)
+            .toList() ??
+        [],
+  );
 }

@@ -44,28 +44,32 @@ class ServiceOffering {
   });
 
   factory ServiceOffering.fromJson(Map<String, dynamic> j) => ServiceOffering(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        name: (j['name'] as String?) ?? '',
-        slug: (j['slug'] as String?) ?? '',
-        description: j['description'] as String?,
-        icon: j['icon'] as String?,
-        image: j['image'] as String?,
-        basePrice: j['base_price']?.toString(),
-        isFeatured: (j['is_featured'] as bool?) ?? false,
-        detailedDescription: j['detailed_description'] as String?,
-        formIntro: j['form_intro'] as String?,
-        whyChooseTitle: j['why_choose_title'] as String?,
-        benefits: _stringList(j['benefits']),
-        features: _stringList(j['features']),
-        process: _stringList(j['process']),
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    name: (j['name'] as String?) ?? '',
+    slug: (j['slug'] as String?) ?? '',
+    description: j['description'] as String?,
+    icon: j['icon'] as String?,
+    image: j['image'] as String?,
+    basePrice: j['base_price']?.toString(),
+    isFeatured: (j['is_featured'] as bool?) ?? false,
+    detailedDescription: j['detailed_description'] as String?,
+    formIntro: j['form_intro'] as String?,
+    whyChooseTitle: j['why_choose_title'] as String?,
+    benefits: _stringList(j['benefits']),
+    features: _stringList(j['features']),
+    process: _stringList(j['process']),
+  );
 
   /// Accepts a JSON list, a newline/pipe-delimited string, or null.
   static List<String> _stringList(dynamic raw) {
     if (raw == null) return const [];
     if (raw is List) {
       return raw
-          .map((e) => e is Map ? (e['title'] ?? e['name'] ?? '').toString() : e.toString())
+          .map(
+            (e) => e is Map
+                ? (e['title'] ?? e['name'] ?? '').toString()
+                : e.toString(),
+          )
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList();

@@ -16,10 +16,7 @@ class VideoApiService {
     String? q,
   }) async {
     try {
-      final query = <String, dynamic>{
-        'page': '$page',
-        'per_page': '$perPage',
-      };
+      final query = <String, dynamic>{'page': '$page', 'per_page': '$perPage'};
       if (categoryId != null) query['category_id'] = '$categoryId';
       if (playlistId != null && playlistId.isNotEmpty) {
         query['playlist_id'] = playlistId;

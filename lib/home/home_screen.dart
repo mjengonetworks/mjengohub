@@ -73,238 +73,272 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ContentWidth(
         maxWidth: 1100,
         child: SingleChildScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── 1. Hero: auto-playing photo carousel, 3:2 aspect ratio,
-            // minimal sharp search input, no decorative clipart. ───────────
-            AspectRatio(
-              aspectRatio: 3 / 2,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Stack(
-                    children: [
-                      // Admin-managed hero photos (GET site/hero-images) are
-                      // the primary source, ordered by sort_order. Falls
-                      // back to featured-article images if the admin hasn't
-                      // configured any hero photos, so the carousel is never
-                      // empty.
-                      Obx(() {
-                        final heroes = ctrl.heroImages;
-                        final articles = ctrl.featuredArticles;
-                        final slideCount = heroes.isNotEmpty ? heroes.length : articles.length;
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── 1. Hero: auto-playing photo carousel, 3:2 aspect ratio,
+              // minimal sharp search input, no decorative clipart. ───────────
+              AspectRatio(
+                aspectRatio: 3 / 2,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        // Admin-managed hero photos (GET site/hero-images) are
+                        // the primary source, ordered by sort_order. Falls
+                        // back to featured-article images if the admin hasn't
+                        // configured any hero photos, so the carousel is never
+                        // empty.
+                        Obx(() {
+                          final heroes = ctrl.heroImages;
+                          final articles = ctrl.featuredArticles;
+                          final slideCount = heroes.isNotEmpty
+                              ? heroes.length
+                              : articles.length;
 
-                        if (slideCount == 0) {
-                          return const _HeroSlide(imageUrl: null);
-                        }
+                          if (slideCount == 0) {
+                            return const _HeroSlide(imageUrl: null);
+                          }
 
-                        return CarouselSlider.builder(
-                          itemCount: slideCount,
-                          itemBuilder: (context, i, realIndex) {
-                            if (heroes.isNotEmpty) {
-                              final h = heroes[i];
-                              return _HeroSlide(imageUrl: h.image, fallbackImageUrl: h.fallbackImage);
-                            }
-                            final article = articles[i];
-                            return _HeroSlide(
-                              imageUrl: article.imageUrl,
-                              onTap: () => _openArticle(article),
-                            );
-                          },
-                          options: CarouselOptions(
-                            height: constraints.maxHeight,
-                            viewportFraction: 1.0,
-                            autoPlay: slideCount > 1,
-                            autoPlayInterval: const Duration(seconds: 5),
-                            onPageChanged: (index, reason) => ctrl.onPageChanged(index),
-                          ),
-                        );
-                      }),
-
-                      // Static headline + search CTA, constant across every slide —
-                      // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
-                      // (templates/homepage.html), which sits over a rotating photo
-                      // carousel the same way.
-                      const Positioned(
-                        left: 20,
-                        right: 20,
-                        top: 0,
-                        bottom: 60,
-                        child: Center(child: _HeroHeadline()),
-                      ),
-
-                      // Page dot indicators (bottom-right of hero) — flat line
-                      // dashes, matching the website's `.mj-hero-dot`.
-                      Positioned(
-                        bottom: 14,
-                        right: 20,
-                        child: Obx(() {
-                          final slideCount = ctrl.heroImages.isNotEmpty
-                              ? ctrl.heroImages.length
-                              : ctrl.featuredArticles.length;
-                          return slideCount > 1
-                              ? PageDotIndicator(count: slideCount, current: ctrl.featuredIndex.value)
-                              : const SizedBox.shrink();
+                          return CarouselSlider.builder(
+                            itemCount: slideCount,
+                            itemBuilder: (context, i, realIndex) {
+                              if (heroes.isNotEmpty) {
+                                final h = heroes[i];
+                                return _HeroSlide(
+                                  imageUrl: h.image,
+                                  fallbackImageUrl: h.fallbackImage,
+                                );
+                              }
+                              final article = articles[i];
+                              return _HeroSlide(
+                                imageUrl: article.imageUrl,
+                                onTap: () => _openArticle(article),
+                              );
+                            },
+                            options: CarouselOptions(
+                              height: constraints.maxHeight,
+                              viewportFraction: 1.0,
+                              autoPlay: slideCount > 1,
+                              autoPlayInterval: const Duration(seconds: 5),
+                              onPageChanged: (index, reason) =>
+                                  ctrl.onPageChanged(index),
+                            ),
+                          );
                         }),
-                      ),
 
-                      // Submit a Project CTA (bottom-left of hero, high-contrast)
-                      Positioned(
-                        bottom: 12,
-                        left: 16,
-                        child: SubmitProjectButton(
-                          onTap: () => Get.toNamed(AppRoutes.submitProject),
+                        // Static headline + search CTA, constant across every slide —
+                        // mirrors the website's `.mj-hero-title` / `.mj-hero-search`
+                        // (templates/homepage.html), which sits over a rotating photo
+                        // carousel the same way.
+                        const Positioned(
+                          left: 20,
+                          right: 20,
+                          top: 0,
+                          bottom: 60,
+                          child: Center(child: _HeroHeadline()),
                         ),
-                      ),
-                    ],
-                  );
-                },
+
+                        // Page dot indicators (bottom-right of hero) — flat line
+                        // dashes, matching the website's `.mj-hero-dot`.
+                        Positioned(
+                          bottom: 14,
+                          right: 20,
+                          child: Obx(() {
+                            final slideCount = ctrl.heroImages.isNotEmpty
+                                ? ctrl.heroImages.length
+                                : ctrl.featuredArticles.length;
+                            return slideCount > 1
+                                ? PageDotIndicator(
+                                    count: slideCount,
+                                    current: ctrl.featuredIndex.value,
+                                  )
+                                : const SizedBox.shrink();
+                          }),
+                        ),
+
+                        // Submit a Project CTA (bottom-left of hero, high-contrast)
+                        Positioned(
+                          bottom: 12,
+                          left: 16,
+                          child: SubmitProjectButton(
+                            onTap: () => Get.toNamed(AppRoutes.submitProject),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
 
-            // ── 2. Latest Construction News (top 4 + Read More) ─────────────
-            const SizedBox(height: 18),
-            _breakingHeader(ctrl),
-            const SizedBox(height: 12),
-            SizedBox(height: 220, child: _breakingList(ctrl)),
+              // ── 2. Latest Construction News (top 4 + Read More) ─────────────
+              const SizedBox(height: 18),
+              _breakingHeader(ctrl),
+              const SizedBox(height: 12),
+              SizedBox(height: 220, child: _breakingList(ctrl)),
 
-            // ── 3. Browse Articles by Category (directly beneath news) ──────
-            const SizedBox(height: 12),
-            const CategoryPillsBar(),
+              // ── 3. Browse Articles by Category (directly beneath news) ──────
+              const SizedBox(height: 12),
+              const CategoryPillsBar(),
 
-            // ── 4. Partner Banner (Slot 1) ───────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: const AdBannerSlot(slotNumber: 1),
-            ),
+              // ── 4. Partner Banner (Slot 1) ───────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: const AdBannerSlot(slotNumber: 1),
+              ),
 
-            // ── 5. Latest Infrastructure Projects ────────────────────────────
-            const FeaturedProjectsSection(
-              featured: false,
-              title: 'Latest Infrastructure Projects',
-              subtitle: 'Roads, bridges and major public infrastructure tracked across Kenya',
-            ),
+              // ── 5. Latest Infrastructure Projects ────────────────────────────
+              const FeaturedProjectsSection(
+                featured: false,
+                title: 'Latest Infrastructure Projects',
+                subtitle:
+                    'Roads, bridges and major public infrastructure tracked across Kenya',
+              ),
 
-            // ── 6. Mjengo Networks preview card ──────────────────────────────
-            const SizedBox(height: 18),
-            const MjengoNetworksBanner(),
+              // ── 6. Mjengo Networks preview card ──────────────────────────────
+              const SizedBox(height: 18),
+              const MjengoNetworksBanner(),
 
-            // ── 7. Latest Private Projects ───────────────────────────────────
-            const SizedBox(height: 18),
-            const PrivateDevelopmentsShowcaseSection(featured: false, title: 'Latest Private Projects'),
+              // ── 7. Latest Private Projects ───────────────────────────────────
+              const SizedBox(height: 18),
+              const PrivateDevelopmentsShowcaseSection(
+                featured: false,
+                title: 'Latest Private Projects',
+              ),
 
-            // ── 8. Partner Banner (Slot 2) ───────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: const AdBannerSlot(slotNumber: 2),
-            ),
+              // ── 8. Partner Banner (Slot 2) ───────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: const AdBannerSlot(slotNumber: 2),
+              ),
 
-            // ── 9. Share Barabara preview card ───────────────────────────────
-            const ShareBarabaraBanner(),
+              // ── 9. Share Barabara preview card ───────────────────────────────
+              const ShareBarabaraBanner(),
 
-            // ── 10. Featured Articles & Analysis (top 3-4) ───────────────────
-            const SizedBox(height: 18),
-            Obx(() {
-              final articles = ctrl.featuredArticles.toList();
-              return FeaturedArticlesAnalysisSection(
-                articles: articles,
-                onOpen: _openArticle,
-                onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews,
-              );
-            }),
+              // ── 10. Featured Articles & Analysis (top 3-4) ───────────────────
+              const SizedBox(height: 18),
+              Obx(() {
+                final articles = ctrl.featuredArticles.toList();
+                return FeaturedArticlesAnalysisSection(
+                  articles: articles,
+                  onOpen: _openArticle,
+                  onSeeAll: () =>
+                      Get.find<MainNavController>().currentIndex.value =
+                          MainNavController.tabNews,
+                );
+              }),
 
-            // ── 11. Media Page Preview ───────────────────────────────────────
-            const SizedBox(height: 18),
-            const MediaPreviewBanner(),
+              // ── 11. Media Page Preview ───────────────────────────────────────
+              const SizedBox(height: 18),
+              const MediaPreviewBanner(),
 
-            // ── 12. Mjengo Hub on YouTube ─────────────────────────────────────
-            const SizedBox(height: 18),
-            const YoutubeCarouselSection(),
+              // ── 12. Mjengo Hub on YouTube ─────────────────────────────────────
+              const SizedBox(height: 18),
+              const YoutubeCarouselSection(),
 
-            // ── 13. Partner Banner (Slot 3) ──────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: const AdBannerSlot(slotNumber: 3),
-            ),
+              // ── 13. Partner Banner (Slot 3) ──────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: const AdBannerSlot(slotNumber: 3),
+              ),
 
-            // ── 14. Africa & World Showcase ──────────────────────────────────
-            const AfricaWorldPreviewSection(),
+              // ── 14. Africa & World Showcase ──────────────────────────────────
+              const AfricaWorldPreviewSection(),
 
-            // ── 15. Merch Page Preview (Slot 1) ──────────────────────────────
-            const SizedBox(height: 18),
-            const MerchPreviewSection(title: 'Merch Preview'),
+              // ── 15. Merch Page Preview (Slot 1) ──────────────────────────────
+              const SizedBox(height: 18),
+              const MerchPreviewSection(title: 'Merch Preview'),
 
-            // ── 16. Built History Showcase ───────────────────────────────────
-            const SizedBox(height: 18),
-            const BuiltHistoryPreviewSection(),
+              // ── 16. Built History Showcase ───────────────────────────────────
+              const SizedBox(height: 18),
+              const BuiltHistoryPreviewSection(),
 
-            // ── 17. Featured Public Projects ─────────────────────────────────
-            const SizedBox(height: 18),
-            const FeaturedProjectsSection(
-              featured: true,
-              title: 'Featured Public Projects',
-              subtitle: 'Editor-picked public infrastructure making the biggest impact',
-            ),
+              // ── 17. Featured Public Projects ─────────────────────────────────
+              const SizedBox(height: 18),
+              const FeaturedProjectsSection(
+                featured: true,
+                title: 'Featured Public Projects',
+                subtitle:
+                    'Editor-picked public infrastructure making the biggest impact',
+              ),
 
-            // ── 18. Site Safety Page Preview ─────────────────────────────────
-            const SizedBox(height: 18),
-            const SafetyIncidentsSection(),
+              // ── 18. Site Safety Page Preview ─────────────────────────────────
+              const SizedBox(height: 18),
+              const SafetyIncidentsSection(),
 
-            // ── 19. Featured Private Projects ────────────────────────────────
-            const SizedBox(height: 18),
-            const PrivateDevelopmentsShowcaseSection(featured: true, title: 'Featured Private Projects'),
+              // ── 19. Featured Private Projects ────────────────────────────────
+              const SizedBox(height: 18),
+              const PrivateDevelopmentsShowcaseSection(
+                featured: true,
+                title: 'Featured Private Projects',
+              ),
 
-            // ── 20. Mjengo Hub Merch Page Preview (Slot 2) ───────────────────
-            const SizedBox(height: 18),
-            const MerchPreviewSection(title: 'Mjengo Hub Merch'),
+              // ── 20. Mjengo Hub Merch Page Preview (Slot 2) ───────────────────
+              const SizedBox(height: 18),
+              const MerchPreviewSection(title: 'Mjengo Hub Merch'),
 
-            // ── 21. Partner Banner (Slot 4) ──────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: const AdBannerSlot(slotNumber: 4),
-            ),
+              // ── 21. Partner Banner (Slot 4) ──────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: const AdBannerSlot(slotNumber: 4),
+              ),
 
-            // ── 22. Browse Projects by Category ──────────────────────────────
-            const BrowseProjectsByCategorySection(),
+              // ── 22. Browse Projects by Category ──────────────────────────────
+              const BrowseProjectsByCategorySection(),
 
-            // ── 23. More News & Articles — was split into two paginated
-            // "Part 1"/"Part 2" blocks with the same heading, back to back;
-            // the website has exactly one "More News & Articles" section, so
-            // this collapses back to one ────────────────────────────────
-            const SizedBox(height: 18),
-            const MoreNewsSection(title: 'More News & Articles', page: 2),
+              // ── 23. More News & Articles — was split into two paginated
+              // "Part 1"/"Part 2" blocks with the same heading, back to back;
+              // the website has exactly one "More News & Articles" section, so
+              // this collapses back to one ────────────────────────────────
+              const SizedBox(height: 18),
+              const MoreNewsSection(title: 'More News & Articles', page: 2),
 
-            // ── 24. Partner Banner (Slot 5) ───────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: const AdBannerSlot(slotNumber: 5),
-            ),
+              // ── 24. Partner Banner (Slot 5) ───────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: const AdBannerSlot(slotNumber: 5),
+              ),
 
-            // ── 26. Join Our Community ───────────────────────────────────────
-            const SizedBox(height: 18),
-            const CommunitySection(),
+              // ── 26. Join Our Community ───────────────────────────────────────
+              const SizedBox(height: 18),
+              const CommunitySection(),
 
-            // ── 27. Our Partners Carousel ────────────────────────────────────
-            const SizedBox(height: 18),
-            const SectionHeader(title: 'Our Partners'),
-            const SizedBox(height: 10),
-            const PartnersCarousel(),
+              // ── 27. Our Partners Carousel ────────────────────────────────────
+              const SizedBox(height: 18),
+              const SectionHeader(title: 'Our Partners'),
+              const SizedBox(height: 10),
+              const PartnersCarousel(),
 
-            // ── App-only utilities below the 27-section sequence ─────────────
-            const SizedBox(height: 20),
-            const _PartnerWithUsBanner(),
+              // ── App-only utilities below the 27-section sequence ─────────────
+              const SizedBox(height: 20),
+              const _PartnerWithUsBanner(),
 
-            const SizedBox(height: 24),
-            const _ExploreSectionsWidget(),
+              const SizedBox(height: 24),
+              const _ExploreSectionsWidget(),
 
-            const SizedBox(height: 18),
-            const SocialLinksGrid(),
+              const SizedBox(height: 18),
+              const SocialLinksGrid(),
 
-            const SizedBox(height: 16),
-          ],
-        ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -313,12 +347,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Latest Construction News header ─────────────────────────────────────────
 
   Widget _breakingHeader(HomeNewsController ctrl) {
-    return Obx(() => SectionHeader(
-          title: 'Latest Construction News',
-          isDemo: ctrl.isShowingDemoData.value,
-          seeAllLabel: 'Read More',
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews,
-        ));
+    return Obx(
+      () => SectionHeader(
+        title: 'Latest Construction News',
+        isDemo: ctrl.isShowingDemoData.value,
+        seeAllLabel: 'Read More',
+        onSeeAll: () => Get.find<MainNavController>().currentIndex.value =
+            MainNavController.tabNews,
+      ),
+    );
   }
 
   // ── Latest Construction News horizontal list (capped at 4) ─────────────────
@@ -330,7 +367,10 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'No breaking news at the moment.',
-            style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.captionSlate),
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              color: AppColors.captionSlate,
+            ),
           ),
         );
       }
@@ -356,7 +396,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _loadingState() {
     return Column(
       children: [
-        AspectRatio(aspectRatio: 3 / 2, child: Container(color: AppColors.headingSlate)),
+        AspectRatio(
+          aspectRatio: 3 / 2,
+          child: Container(color: AppColors.headingSlate),
+        ),
         const Expanded(
           child: Center(
             child: CircularProgressIndicator(
@@ -378,19 +421,29 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded, size: 52, color: AppColors.borderSlate),
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 52,
+              color: AppColors.borderSlate,
+            ),
             const SizedBox(height: 16),
             Text(
               ctrl.errorMessage.value.isNotEmpty
                   ? ctrl.errorMessage.value
                   : 'No content available right now. Pull to refresh.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(fontSize: 14, color: AppColors.captionSlate),
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: AppColors.captionSlate,
+              ),
             ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: ctrl.fetchHomeData,
-              child: Text('Retry', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              child: Text(
+                'Retry',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),
@@ -432,10 +485,12 @@ class _ExploreSectionsWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: _sections
-            .expand((s) => [
-                  _ExploreIconPill(data: s),
-                  if (s != _sections.last) const SizedBox(width: 24),
-                ])
+            .expand(
+              (s) => [
+                _ExploreIconPill(data: s),
+                if (s != _sections.last) const SizedBox(width: 24),
+              ],
+            )
             .toList(),
       ),
     );
@@ -529,10 +584,10 @@ class _HeroSlide extends StatelessWidget {
             // HeroImage.fallbackImage for why this is needed.
             errorBuilder: fallbackImageUrl != null
                 ? (_) => NetImage(
-                      url: fallbackImageUrl,
-                      fit: BoxFit.cover,
-                      placeholderColor: const Color(0xFF1F2937),
-                    )
+                    url: fallbackImageUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF1F2937),
+                  )
                 : null,
           ),
           Container(
@@ -586,11 +641,18 @@ class _HeroHeadline extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.search, size: 17, color: AppColors.captionSlate),
+                const Icon(
+                  Icons.search,
+                  size: 17,
+                  color: AppColors.captionSlate,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Search articles, news, projects, safety incidents...',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.captionSlate),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    color: AppColors.captionSlate,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -628,18 +690,37 @@ class _PartnerWithUsBanner extends StatelessWidget {
               Container(
                 width: 42,
                 height: 42,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.sharp)),
-                child: const Icon(Icons.handshake_rounded, color: Colors.white, size: 22),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppRadius.sharp),
+                ),
+                child: const Icon(
+                  Icons.handshake_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Partner With Us', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: Colors.white)),
+                    Text(
+                      'Partner With Us',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text('Advertise, sponsor a project, or reach our audience',
-                        style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.85))),
+                    Text(
+                      'Advertise, sponsor a project, or reach our audience',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
                   ],
                 ),
               ),

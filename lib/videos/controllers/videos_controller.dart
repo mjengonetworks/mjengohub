@@ -8,15 +8,15 @@ class VideosController extends GetxController {
   final _service = VideoApiService();
 
   // ── Observable state ────────────────────────────────────────────────────────
-  final videos         = <Video>[].obs;
+  final videos = <Video>[].obs;
   final featuredVideos = <Video>[].obs;
-  final playlists      = <VideoPlaylist>[].obs;
-  final categories     = <VideoCategory>[].obs;
+  final playlists = <VideoPlaylist>[].obs;
+  final categories = <VideoCategory>[].obs;
 
-  final isLoading     = true.obs;
+  final isLoading = true.obs;
   final isLoadingMore = false.obs;
-  final hasMore       = true.obs;
-  final errorMessage  = ''.obs;
+  final hasMore = true.obs;
+  final errorMessage = ''.obs;
 
   // ── Filters ─────────────────────────────────────────────────────────────────
   final selectedCategoryId = Rxn<int>();
@@ -34,7 +34,7 @@ class VideosController extends GetxController {
     super.onInit();
     _initialLoad();
     ever(selectedCategoryId, (_) => _resetAndFetch());
-    ever(selectedPlaylistId,  (_) => _resetAndFetch());
+    ever(selectedPlaylistId, (_) => _resetAndFetch());
   }
 
   @override
@@ -74,10 +74,10 @@ class VideosController extends GetxController {
     isLoadingMore.value = true;
     try {
       final more = await _service.getVideos(
-        page:       _page + 1,
+        page: _page + 1,
         categoryId: selectedCategoryId.value,
         playlistId: selectedPlaylistId.value,
-        q:          _searchQuery.isEmpty ? null : _searchQuery,
+        q: _searchQuery.isEmpty ? null : _searchQuery,
       );
       if (more.isEmpty) {
         hasMore.value = false;
@@ -93,7 +93,7 @@ class VideosController extends GetxController {
   // ── Private helpers ──────────────────────────────────────────────────────────
 
   Future<void> _initialLoad() async {
-    isLoading.value    = true;
+    isLoading.value = true;
     errorMessage.value = '';
     try {
       final results = await Future.wait([
@@ -103,10 +103,10 @@ class VideosController extends GetxController {
         _service.getCategories(),
       ]);
       featuredVideos.value = results[0] as List<Video>;
-      videos.value         = results[1] as List<Video>;
-      playlists.value      = results[2] as List<VideoPlaylist>;
-      categories.value     = results[3] as List<VideoCategory>;
-      _page     = 1;
+      videos.value = results[1] as List<Video>;
+      playlists.value = results[2] as List<VideoPlaylist>;
+      categories.value = results[3] as List<VideoCategory>;
+      _page = 1;
       hasMore.value = (results[1] as List<Video>).length >= 20;
     } catch (e) {
       errorMessage.value = 'Failed to load videos. Pull to refresh.';
@@ -118,16 +118,16 @@ class VideosController extends GetxController {
 
   Future<void> _resetAndFetch() async {
     _page = 1;
-    hasMore.value   = true;
+    hasMore.value = true;
     isLoading.value = true;
     try {
       final fresh = await _service.getVideos(
-        page:       1,
+        page: 1,
         categoryId: selectedCategoryId.value,
         playlistId: selectedPlaylistId.value,
-        q:          _searchQuery.isEmpty ? null : _searchQuery,
+        q: _searchQuery.isEmpty ? null : _searchQuery,
       );
-      videos.value  = fresh;
+      videos.value = fresh;
       hasMore.value = fresh.length >= 20;
     } finally {
       isLoading.value = false;

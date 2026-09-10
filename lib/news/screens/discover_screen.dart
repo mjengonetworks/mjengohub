@@ -84,8 +84,7 @@ class _SearchBar extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 12),
-          const Icon(Icons.search_rounded,
-              size: 20, color: Color(0xFF475569)),
+          const Icon(Icons.search_rounded, size: 20, color: Color(0xFF475569)),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -93,11 +92,15 @@ class _SearchBar extends StatelessWidget {
               onSubmitted: ctrl.onSearchSubmit,
               textInputAction: TextInputAction.search,
               style: GoogleFonts.montserrat(
-                  fontSize: 14, color: const Color(0xFF111827)),
+                fontSize: 14,
+                color: const Color(0xFF111827),
+              ),
               decoration: InputDecoration(
                 hintText: 'Search',
                 hintStyle: GoogleFonts.montserrat(
-                    fontSize: 14, color: const Color(0xFF475569)),
+                  fontSize: 14,
+                  color: const Color(0xFF475569),
+                ),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -105,23 +108,22 @@ class _SearchBar extends StatelessWidget {
             ),
           ),
           ValueListenableBuilder<TextEditingValue>(
-              valueListenable: ctrl.searchController,
-              builder: (_, val, _) => val.text.isNotEmpty
-                  ? GestureDetector(
-                      onTap: ctrl.clearSearch,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.close_rounded,
-                            size: 18, color: Color(0xFF475569)),
+            valueListenable: ctrl.searchController,
+            builder: (_, val, _) => val.text.isNotEmpty
+                ? GestureDetector(
+                    onTap: ctrl.clearSearch,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Color(0xFF475569),
                       ),
-                    )
-                  : const SizedBox(width: 8),
-            ),
-          Container(
-            height: 30,
-            width: 1,
-            color: const Color(0xFFE5E7EB),
+                    ),
+                  )
+                : const SizedBox(width: 8),
           ),
+          Container(height: 30, width: 1, color: const Color(0xFFE5E7EB)),
           Obx(() {
             final active = ctrl.selectedSlug.value.isNotEmpty;
             return GestureDetector(
@@ -131,11 +133,13 @@ class _SearchBar extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Icon(Icons.tune_rounded,
-                        size: 18,
-                        color: active
-                            ? AppColors.accentBlue
-                            : const Color(0xFF374151)),
+                    Icon(
+                      Icons.tune_rounded,
+                      size: 18,
+                      color: active
+                          ? AppColors.accentBlue
+                          : const Color(0xFF374151),
+                    ),
                     if (active)
                       Positioned(
                         top: -3,
@@ -204,10 +208,11 @@ class _TabItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _TabItem(
-      {required this.label,
-      required this.isSelected,
-      required this.onTap});
+  const _TabItem({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -249,15 +254,15 @@ class _FilterSheet extends StatelessWidget {
   final DiscoverController ctrl;
   const _FilterSheet({required this.ctrl});
 
-  static const _kPurple  = AppColors.accentBlue;
-  static const _kDark    = Color(0xFF111827);
+  static const _kPurple = AppColors.accentBlue;
+  static const _kDark = Color(0xFF111827);
   static const _kSubtext = Color(0xFF475569);
   static const _kDivider = Color(0xFFF3F4F6);
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
-    final maxHeight   = MediaQuery.of(context).size.height * 0.75;
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
@@ -293,30 +298,42 @@ class _FilterSheet extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filter by Category',
-                          style: GoogleFonts.montserrat(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500,
-                              color: _kDark)),
-                      Obx(() => ctrl.selectedSlug.value.isNotEmpty
-                          ? GestureDetector(
-                              onTap: () {
-                                ctrl.selectCategory('');
-                                Navigator.pop(context);
-                              },
-                              child: Text('Clear',
+                      Text(
+                        'Filter by Category',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: _kDark,
+                        ),
+                      ),
+                      Obx(
+                        () => ctrl.selectedSlug.value.isNotEmpty
+                            ? GestureDetector(
+                                onTap: () {
+                                  ctrl.selectCategory('');
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  'Clear',
                                   style: GoogleFonts.montserrat(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: _kPurple)),
-                            )
-                          : const SizedBox.shrink()),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: _kPurple,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('Choose a topic to filter articles',
-                      style: GoogleFonts.montserrat(
-                          fontSize: 12.5, color: _kSubtext)),
+                  Text(
+                    'Choose a topic to filter articles',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12.5,
+                      color: _kSubtext,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   const Divider(color: _kDivider, height: 1),
                 ],
@@ -347,22 +364,27 @@ class _FilterSheet extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Center(
-                            child: Text('No categories available',
-                                style: GoogleFonts.montserrat(
-                                    fontSize: 13, color: _kSubtext)),
+                            child: Text(
+                              'No categories available',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                color: _kSubtext,
+                              ),
+                            ),
                           ),
                         )
                       else
-                        ...cats.map((cat) => _FilterOption(
-                              label: cat.name,
-                              icon: _categoryIcon(cat.slug),
-                              isSelected:
-                                  ctrl.selectedSlug.value == cat.slug,
-                              onTap: () {
-                                ctrl.selectCategory(cat.slug);
-                                Navigator.pop(context);
-                              },
-                            )),
+                        ...cats.map(
+                          (cat) => _FilterOption(
+                            label: cat.name,
+                            icon: _categoryIcon(cat.slug),
+                            isSelected: ctrl.selectedSlug.value == cat.slug,
+                            onTap: () {
+                              ctrl.selectCategory(cat.slug);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
                     ],
                   );
                 }),
@@ -415,7 +437,7 @@ class _FilterOption extends StatelessWidget {
   });
 
   static const _kPurple = AppColors.accentBlue;
-  static const _kDark   = Color(0xFF111827);
+  static const _kDark = Color(0xFF111827);
 
   @override
   Widget build(BuildContext context) {
@@ -438,24 +460,24 @@ class _FilterOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon,
-                size: 18,
-                color: isSelected ? _kPurple : const Color(0xFF475569)),
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? _kPurple : const Color(0xFF475569),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
-                  fontWeight:
-                      isSelected ? FontWeight.w500 : FontWeight.w500,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.w500,
                   color: isSelected ? _kPurple : _kDark,
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded,
-                  size: 18, color: _kPurple),
+              const Icon(Icons.check_circle_rounded, size: 18, color: _kPurple),
           ],
         ),
       ),
@@ -476,8 +498,7 @@ class _ArticleList extends StatelessWidget {
         return const Center(
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor:
-                AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
           ),
         );
       }
@@ -487,7 +508,9 @@ class _ArticleList extends StatelessWidget {
           child: Text(
             'No articles found.',
             style: GoogleFonts.montserrat(
-                fontSize: 14, color: const Color(0xFF475569)),
+              fontSize: 14,
+              color: const Color(0xFF475569),
+            ),
           ),
         );
       }
@@ -497,8 +520,7 @@ class _ArticleList extends StatelessWidget {
         onRefresh: ctrl.refresh,
         child: ListView.separated(
           padding: const EdgeInsets.only(top: 4, bottom: 16),
-          itemCount:
-              ctrl.articles.length + (ctrl.hasMore.value ? 1 : 0),
+          itemCount: ctrl.articles.length + (ctrl.hasMore.value ? 1 : 0),
           separatorBuilder: (_, _) => const Divider(
             height: 1,
             indent: 20,
@@ -513,9 +535,11 @@ class _ArticleList extends StatelessWidget {
                 padding: EdgeInsets.all(16),
                 child: Center(
                   child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFF111827))),
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF111827),
+                    ),
+                  ),
                 ),
               );
             }

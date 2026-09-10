@@ -43,22 +43,45 @@ class RelatedTrackersCard extends StatelessWidget {
               Container(
                 width: 42,
                 height: 42,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
-                child: const Icon(Icons.corporate_fare_rounded, color: Colors.white, size: 22),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: const Icon(
+                  Icons.corporate_fare_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Explore Active Developments', style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: Colors.white)),
+                    Text(
+                      'Explore Active Developments',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text('Track infrastructure and private projects across Kenya',
-                        style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white.withValues(alpha: 0.85))),
+                    Text(
+                      'Track infrastructure and private projects across Kenya',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
             ],
           ),
         ),
@@ -72,7 +95,8 @@ class ArticleDiscoverySection extends StatefulWidget {
   const ArticleDiscoverySection({super.key, required this.article});
 
   @override
-  State<ArticleDiscoverySection> createState() => _ArticleDiscoverySectionState();
+  State<ArticleDiscoverySection> createState() =>
+      _ArticleDiscoverySectionState();
 }
 
 class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
@@ -103,27 +127,41 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
       // client-side, a reasonable proxy rather than a true trending algorithm.
       _newsService.getArticles(perPage: 20),
       _newsService.getArticles(perPage: 6),
-      _projectsService.getProjects(projectType: 'infrastructure', featured: true, perPage: 4),
+      _projectsService.getProjects(
+        projectType: 'infrastructure',
+        featured: true,
+        perPage: 4,
+      ),
     ]);
     if (!mounted) return;
-    final related = (results[0] as List<Article>).where((a) => a.slug != widget.article.slug).toList();
-    final trendingSource = (results[1] as List<Article>).where((a) => a.slug != widget.article.slug).toList()
-      ..sort((a, b) => b.viewCount.compareTo(a.viewCount));
+    final related = (results[0] as List<Article>)
+        .where((a) => a.slug != widget.article.slug)
+        .toList();
+    final trendingSource =
+        (results[1] as List<Article>)
+            .where((a) => a.slug != widget.article.slug)
+            .toList()
+          ..sort((a, b) => b.viewCount.compareTo(a.viewCount));
     setState(() {
       _related = related.take(4).toList();
       _trending = trendingSource.take(4).toList();
-      _latest = (results[2] as List<Article>).where((a) => a.slug != widget.article.slug).take(4).toList();
+      _latest = (results[2] as List<Article>)
+          .where((a) => a.slug != widget.article.slug)
+          .take(4)
+          .toList();
       _showcaseProjects = results[3] as List<Project>;
       _loading = false;
     });
   }
 
-  void _openArticle(Article a) => Get.toNamed(AppRoutes.articleDetail, arguments: a.slug);
+  void _openArticle(Article a) =>
+      Get.toNamed(AppRoutes.articleDetail, arguments: a.slug);
 
   /// "View All" / "Read More" targets all resolve to the News tab -- there's
   /// no dedicated trending/related-only screen, same destination the
   /// homepage's own "More News & Articles" sections already route to.
-  void _viewAllNews() => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+  void _viewAllNews() => Get.find<MainNavController>().currentIndex.value =
+      MainNavController.tabNews;
 
   void _viewAllRelated() {
     final slug = widget.article.category?.slug;
@@ -156,11 +194,17 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _related.length,
               separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => _RelatedArticleCard(article: _related[i], onTap: () => _openArticle(_related[i])),
+              itemBuilder: (_, i) => _RelatedArticleCard(
+                article: _related[i],
+                onTap: () => _openArticle(_related[i]),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          _ViewAllButton(label: 'View All Related Articles', onTap: _viewAllRelated),
+          _ViewAllButton(
+            label: 'View All Related Articles',
+            onTap: _viewAllRelated,
+          ),
           const SizedBox(height: 24),
         ],
 
@@ -174,20 +218,35 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _latest.length,
               separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => _RelatedArticleCard(article: _latest[i], onTap: () => _openArticle(_latest[i])),
+              itemBuilder: (_, i) => _RelatedArticleCard(
+                article: _latest[i],
+                onTap: () => _openArticle(_latest[i]),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          _ViewAllButton(label: 'View All Latest Articles', onTap: _viewAllNews),
+          _ViewAllButton(
+            label: 'View All Latest Articles',
+            onTap: _viewAllNews,
+          ),
           const SizedBox(height: 24),
         ],
 
         if (_trending.isNotEmpty) ...[
           _SectionHeading('Trending Articles'),
           const SizedBox(height: 6),
-          ..._trending.asMap().entries.map((e) => _TrendingRow(rank: e.key + 1, article: e.value, onTap: () => _openArticle(e.value))),
+          ..._trending.asMap().entries.map(
+            (e) => _TrendingRow(
+              rank: e.key + 1,
+              article: e.value,
+              onTap: () => _openArticle(e.value),
+            ),
+          ),
           const SizedBox(height: 6),
-          _ViewAllButton(label: 'View All Trending Articles', onTap: _viewAllNews),
+          _ViewAllButton(
+            label: 'View All Trending Articles',
+            onTap: _viewAllNews,
+          ),
           const SizedBox(height: 24),
         ],
 
@@ -201,7 +260,8 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _showcaseProjects.length,
               separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => TrackerProjectCard(project: _showcaseProjects[i], width: 190),
+              itemBuilder: (_, i) =>
+                  TrackerProjectCard(project: _showcaseProjects[i], width: 190),
             ),
           ),
           const SizedBox(height: 24),
@@ -233,9 +293,20 @@ class _ViewAllButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+              Text(
+                label,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.headingSlate,
+                ),
+              ),
               const SizedBox(width: 4),
-              const Icon(Icons.arrow_forward, size: 14, color: AppColors.headingSlate),
+              const Icon(
+                Icons.arrow_forward,
+                size: 14,
+                color: AppColors.headingSlate,
+              ),
             ],
           ),
         ),
@@ -252,7 +323,14 @@ class _SectionHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(title, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+      child: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textDark,
+        ),
+      ),
     );
   }
 }
@@ -268,19 +346,37 @@ class _RelatedArticleCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 200,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.divider)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.divider),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: NetImage(url: article.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholderColor: const Color(0xFF1F2937)),
+              child: NetImage(
+                url: article.imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                placeholderColor: const Color(0xFF1F2937),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(10),
-              child: Text(article.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textDark, height: 1.3)),
+              child: Text(
+                article.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                  height: 1.3,
+                ),
+              ),
             ),
           ],
         ),
@@ -293,7 +389,11 @@ class _TrendingRow extends StatelessWidget {
   final int rank;
   final Article article;
   final VoidCallback onTap;
-  const _TrendingRow({required this.rank, required this.article, required this.onTap});
+  const _TrendingRow({
+    required this.rank,
+    required this.article,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -306,13 +406,28 @@ class _TrendingRow extends StatelessWidget {
           children: [
             SizedBox(
               width: 28,
-              child: Text('$rank',
-                  style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+              child: Text(
+                '$rank',
+                style: GoogleFonts.montserrat(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.accentBlue,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(article.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark, height: 1.35)),
+              child: Text(
+                article.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                  height: 1.35,
+                ),
+              ),
             ),
           ],
         ),
@@ -320,4 +435,3 @@ class _TrendingRow extends StatelessWidget {
     );
   }
 }
-

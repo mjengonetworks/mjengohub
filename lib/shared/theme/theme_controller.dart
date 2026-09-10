@@ -28,9 +28,12 @@ class ThemeController extends GetxController {
 
   ThemeMode get themeMode {
     switch (_preference.value) {
-      case AppThemePreference.system: return ThemeMode.system;
-      case AppThemePreference.light: return ThemeMode.light;
-      case AppThemePreference.dark: return ThemeMode.dark;
+      case AppThemePreference.system:
+        return ThemeMode.system;
+      case AppThemePreference.light:
+        return ThemeMode.light;
+      case AppThemePreference.dark:
+        return ThemeMode.dark;
     }
   }
 
@@ -54,7 +57,9 @@ class ThemeController extends GetxController {
       // Migrate the old binary preference if it's the only thing set.
       final legacyDark = prefs.getBool(_legacyBoolKey);
       if (legacyDark != null) {
-        _preference.value = legacyDark ? AppThemePreference.dark : AppThemePreference.light;
+        _preference.value = legacyDark
+            ? AppThemePreference.dark
+            : AppThemePreference.light;
       }
     } catch (_) {}
   }

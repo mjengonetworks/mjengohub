@@ -39,7 +39,12 @@ class PostUpdateScreen extends StatefulWidget {
   /// cosmetic only, not a way to bypass moderation.
   final bool isPrivileged;
 
-  const PostUpdateScreen({super.key, required this.projectId, required this.projectTitle, required this.isPrivileged});
+  const PostUpdateScreen({
+    super.key,
+    required this.projectId,
+    required this.projectTitle,
+    required this.isPrivileged,
+  });
 
   @override
   State<PostUpdateScreen> createState() => _PostUpdateScreenState();
@@ -55,7 +60,8 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
   final List<PickedMedia> _photos = [];
   bool _showUpgradeBanner = false;
 
-  bool get _isPrime => Get.find<MjengoAuthController>().currentUser?.isPrime == true;
+  bool get _isPrime =>
+      Get.find<MjengoAuthController>().currentUser?.isPrime == true;
   int get _wordCap => _isPrime ? kUpdateWordCap : kFreeUpdateWordCap;
   int get _photoCap => _isPrime ? kPrimePhotoCap : kFreePhotoCap;
 
@@ -63,7 +69,9 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
   void initState() {
     super.initState();
     _content.addListener(() {
-      final count = _content.text.trim().isEmpty ? 0 : _content.text.trim().split(RegExp(r'\s+')).length;
+      final count = _content.text.trim().isEmpty
+          ? 0
+          : _content.text.trim().split(RegExp(r'\s+')).length;
       setState(() {
         _wordCount = count;
         if (!_isPrime && count > kFreeUpdateWordCap) _showUpgradeBanner = true;
@@ -82,7 +90,9 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
     final text = (v ?? '').trim();
     if (text.isEmpty) return 'Update content is required';
     if (text.split(RegExp(r'\s+')).length > _wordCap) {
-      return _isPrime ? 'Keep it under $_wordCap words' : 'Free accounts are capped at $_wordCap words — upgrade to Prime for $kUpdateWordCap';
+      return _isPrime
+          ? 'Keep it under $_wordCap words'
+          : 'Free accounts are capped at $_wordCap words — upgrade to Prime for $kUpdateWordCap';
     }
     return null;
   }
@@ -134,7 +144,10 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
       Get.back(result: true);
       Get.snackbar(
         widget.isPrivileged ? 'Published' : 'Submitted',
-        res['message'] as String? ?? (widget.isPrivileged ? 'Update published' : 'Update submitted for review'),
+        res['message'] as String? ??
+            (widget.isPrivileged
+                ? 'Update published'
+                : 'Update submitted for review'),
         backgroundColor: AppColors.success,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -162,7 +175,11 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
         elevation: 0,
         title: Text(
           widget.isPrivileged ? 'Add an Update' : 'Suggest an Update',
-          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark),
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
         ),
       ),
       body: ContentWidth(
@@ -172,42 +189,78 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(widget.projectTitle, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
+              Text(
+                widget.projectTitle,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSubtle,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 widget.isPrivileged
                     ? 'This publishes immediately as an official update.'
                     : 'Your update goes into a review queue before it\'s shown publicly.',
-                style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  color: AppColors.textSubtle,
+                ),
               ),
               const SizedBox(height: 20),
 
               const FieldLabel('Update', required: true),
-              AppTextField(controller: _content, hint: 'What\'s new on this project?', maxLines: 8, validator: _validateContent),
+              AppTextField(
+                controller: _content,
+                hint: 'What\'s new on this project?',
+                maxLines: 8,
+                validator: _validateContent,
+              ),
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Text('$_wordCount / $_wordCap words',
-                      style: GoogleFonts.montserrat(fontSize: 11, color: over ? AppColors.danger : AppColors.textSubtle)),
+                  child: Text(
+                    '$_wordCount / $_wordCap words',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      color: over ? AppColors.danger : AppColors.textSubtle,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
 
               const FieldLabel('Reference video link'),
-              AppTextField(controller: _videoUrl, hint: 'YouTube link (optional)', keyboard: TextInputType.url),
+              AppTextField(
+                controller: _videoUrl,
+                hint: 'YouTube link (optional)',
+                keyboard: TextInputType.url,
+              ),
               const SizedBox(height: 14),
 
               FieldLabel('Photos (${_photos.length}/$_photoCap)'),
-              _PhotoPicker(photos: _photos, onAdd: _addPhotos, onRemove: _removePhoto),
+              _PhotoPicker(
+                photos: _photos,
+                onAdd: _addPhotos,
+                onRemove: _removePhoto,
+              ),
 
               if (_showUpgradeBanner) ...[
                 const SizedBox(height: 14),
-                _PrimeUpgradeBanner(onDismiss: () => setState(() => _showUpgradeBanner = false)),
+                _PrimeUpgradeBanner(
+                  onDismiss: () => setState(() => _showUpgradeBanner = false),
+                ),
               ],
 
               const SizedBox(height: 24),
-              AppSubmitButton(label: widget.isPrivileged ? 'Publish update' : 'Submit for review', busy: _submitting, onPressed: _submit),
+              AppSubmitButton(
+                label: widget.isPrivileged
+                    ? 'Publish update'
+                    : 'Submit for review',
+                busy: _submitting,
+                onPressed: _submit,
+              ),
               const SizedBox(height: 20),
             ],
           ),
@@ -221,7 +274,11 @@ class _PhotoPicker extends StatelessWidget {
   final List<PickedMedia> photos;
   final VoidCallback onAdd;
   final void Function(int) onRemove;
-  const _PhotoPicker({required this.photos, required this.onAdd, required this.onRemove});
+  const _PhotoPicker({
+    required this.photos,
+    required this.onAdd,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,7 +291,12 @@ class _PhotoPicker extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.sharp),
-                child: Image.memory(photos[i].bytes, width: 72, height: 72, fit: BoxFit.cover),
+                child: Image.memory(
+                  photos[i].bytes,
+                  width: 72,
+                  height: 72,
+                  fit: BoxFit.cover,
+                ),
               ),
               Positioned(
                 top: 2,
@@ -243,8 +305,15 @@ class _PhotoPicker extends StatelessWidget {
                   onTap: () => onRemove(i),
                   child: Container(
                     padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                    child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -259,7 +328,11 @@ class _PhotoPicker extends StatelessWidget {
               border: Border.all(color: AppColors.borderSlate),
               borderRadius: BorderRadius.circular(AppRadius.sharp),
             ),
-            child: const Icon(Icons.add_a_photo_outlined, color: AppColors.textSubtle, size: 22),
+            child: const Icon(
+              Icons.add_a_photo_outlined,
+              color: AppColors.textSubtle,
+              size: 22,
+            ),
           ),
         ),
       ],
@@ -282,22 +355,49 @@ class _PrimeUpgradeBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.workspace_premium_outlined, size: 18, color: AppColors.headingSlate),
+          const Icon(
+            Icons.workspace_premium_outlined,
+            size: 18,
+            color: AppColors.headingSlate,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Mjengo Hub Prime members get $kUpdateWordCap words and $kPrimePhotoCap photos per update.',
-              style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.headingSlate, height: 1.4),
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                color: AppColors.headingSlate,
+                height: 1.4,
+              ),
             ),
           ),
           TextButton(
-            style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
-            onPressed: () => Get.to(() => const WebviewCheckoutScreen(title: 'Get Verified', nextPath: '/verify')),
-            child: Text('Upgrade', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.headingSlate)),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 0),
+            ),
+            onPressed: () => Get.to(
+              () => const WebviewCheckoutScreen(
+                title: 'Get Verified',
+                nextPath: '/verify',
+              ),
+            ),
+            child: Text(
+              'Upgrade',
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.headingSlate,
+              ),
+            ),
           ),
           GestureDetector(
             onTap: onDismiss,
-            child: const Icon(Icons.close_rounded, size: 16, color: AppColors.textSubtle),
+            child: const Icon(
+              Icons.close_rounded,
+              size: 16,
+              color: AppColors.textSubtle,
+            ),
           ),
         ],
       ),

@@ -48,7 +48,10 @@ class _CommentsSectionState extends State<CommentsSection> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
-    final result = await _service.getComments(widget.resource, widget.resourceId);
+    final result = await _service.getComments(
+      widget.resource,
+      widget.resourceId,
+    );
     if (!mounted) return;
     setState(() {
       _comments = result;
@@ -99,8 +102,12 @@ class _CommentsSectionState extends State<CommentsSection> {
       });
       _load();
     } else {
-      Get.snackbar('Couldn\'t post', 'Please try again in a moment.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      Get.snackbar(
+        'Couldn\'t post',
+        'Please try again in a moment.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
     }
   }
 
@@ -130,10 +137,20 @@ class _CommentsSectionState extends State<CommentsSection> {
           children: [
             Text(
               widget.title,
-              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark),
+              style: GoogleFonts.montserrat(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+              ),
             ),
             const SizedBox(width: 6),
-            Text('($_totalCount)', style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
+            Text(
+              '($_totalCount)',
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: AppColors.textSubtle,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -142,24 +159,36 @@ class _CommentsSectionState extends State<CommentsSection> {
         if (_loading)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentBlue)),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.accentBlue,
+              ),
+            ),
           )
         else if (_comments.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: Text(
               'No comments yet. Be the first to share your thoughts.',
-              style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: AppColors.textSubtle,
+              ),
             ),
           )
         else
           Column(
-            children: _comments.map((c) => _CommentTile(
-                  comment: c,
-                  depth: 0,
-                  onReply: _startReply,
-                  onVote: _vote,
-                )).toList(),
+            children: _comments
+                .map(
+                  (c) => _CommentTile(
+                    comment: c,
+                    depth: 0,
+                    onReply: _startReply,
+                    onVote: _vote,
+                  ),
+                )
+                .toList(),
           ),
       ],
     );
@@ -174,15 +203,25 @@ class _CommentsSectionState extends State<CommentsSection> {
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               children: [
-                Text('Replying to $_replyingToName',
-                    style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.accentBlue, fontWeight: FontWeight.w600)),
+                Text(
+                  'Replying to $_replyingToName',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11.5,
+                    color: AppColors.accentBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(width: 6),
                 GestureDetector(
                   onTap: () => setState(() {
                     _replyingToId = null;
                     _replyingToName = null;
                   }),
-                  child: const Icon(Icons.close_rounded, size: 14, color: AppColors.textSubtle),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 14,
+                    color: AppColors.textSubtle,
+                  ),
                 ),
               ],
             ),
@@ -197,7 +236,10 @@ class _CommentsSectionState extends State<CommentsSection> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.divider),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
                 child: TextField(
                   controller: _inputCtrl,
                   minLines: 1,
@@ -210,8 +252,13 @@ class _CommentsSectionState extends State<CommentsSection> {
                   },
                   style: GoogleFonts.montserrat(fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: _isSignedIn ? 'Add to the discussion...' : 'Sign in to comment...',
-                    hintStyle: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
+                    hintText: _isSignedIn
+                        ? 'Add to the discussion...'
+                        : 'Sign in to comment...',
+                    hintStyle: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      color: AppColors.textSubtle,
+                    ),
                     border: InputBorder.none,
                   ),
                 ),
@@ -223,13 +270,23 @@ class _CommentsSectionState extends State<CommentsSection> {
               child: Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(color: AppColors.accentBlue, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: AppColors.accentBlue,
+                  shape: BoxShape.circle,
+                ),
                 child: _posting
                     ? const Padding(
                         padding: EdgeInsets.all(10),
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
-                    : const Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 20),
+                    : const Icon(
+                        Icons.arrow_upward_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
               ),
             ),
           ],
@@ -265,7 +322,10 @@ class _CommentTile extends StatelessWidget {
     final guidelineColor = _guidelineColors[depth % _guidelineColors.length];
 
     return Padding(
-      padding: EdgeInsets.only(left: depth == 0 ? 0 : 14, top: depth == 0 ? 14 : 10),
+      padding: EdgeInsets.only(
+        left: depth == 0 ? 0 : 14,
+        top: depth == 0 ? 14 : 10,
+      ),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,17 +344,26 @@ class _CommentTile extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: depth == 0 ? 15 : 12,
-                        backgroundColor: AppColors.accentBlue.withValues(alpha: 0.12),
-                        backgroundImage: comment.authorPhotoUrl != null && comment.authorPhotoUrl!.isNotEmpty
+                        backgroundColor: AppColors.accentBlue.withValues(
+                          alpha: 0.12,
+                        ),
+                        backgroundImage:
+                            comment.authorPhotoUrl != null &&
+                                comment.authorPhotoUrl!.isNotEmpty
                             ? NetworkImage(comment.authorPhotoUrl!)
                             : null,
-                        child: comment.authorPhotoUrl == null || comment.authorPhotoUrl!.isEmpty
+                        child:
+                            comment.authorPhotoUrl == null ||
+                                comment.authorPhotoUrl!.isEmpty
                             ? Text(
-                                comment.authorName.isNotEmpty ? comment.authorName[0].toUpperCase() : '?',
+                                comment.authorName.isNotEmpty
+                                    ? comment.authorName[0].toUpperCase()
+                                    : '?',
                                 style: GoogleFonts.montserrat(
-                                    fontSize: depth == 0 ? 12 : 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.accentBlue),
+                                  fontSize: depth == 0 ? 12 : 10,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.accentBlue,
+                                ),
                               )
                             : null,
                       ),
@@ -308,28 +377,61 @@ class _CommentTile extends StatelessWidget {
                               spacing: 6,
                               runSpacing: 2,
                               children: [
-                                Text(comment.authorName,
-                                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                                ReviewerLevelBadge(points: comment.authorPoints, small: true),
+                                Text(
+                                  comment.authorName,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                                ReviewerLevelBadge(
+                                  points: comment.authorPoints,
+                                  small: true,
+                                ),
                               ],
                             ),
                             const SizedBox(height: 3),
-                            Text(comment.content,
-                                style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textDark, height: 1.4)),
+                            Text(
+                              comment.content,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12.5,
+                                color: AppColors.textDark,
+                                height: 1.4,
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                _VoteButton(icon: Icons.arrow_upward_rounded, onTap: () => onVote(comment, true)),
+                                _VoteButton(
+                                  icon: Icons.arrow_upward_rounded,
+                                  onTap: () => onVote(comment, true),
+                                ),
                                 const SizedBox(width: 4),
-                                Text('${comment.netScore}',
-                                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textSubtle)),
+                                Text(
+                                  '${comment.netScore}',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSubtle,
+                                  ),
+                                ),
                                 const SizedBox(width: 4),
-                                _VoteButton(icon: Icons.arrow_downward_rounded, onTap: () => onVote(comment, false)),
+                                _VoteButton(
+                                  icon: Icons.arrow_downward_rounded,
+                                  onTap: () => onVote(comment, false),
+                                ),
                                 const SizedBox(width: 12),
                                 GestureDetector(
                                   onTap: () => onReply(comment),
-                                  child: Text('Reply',
-                                      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+                                  child: Text(
+                                    'Reply',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.accentBlue,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -339,7 +441,12 @@ class _CommentTile extends StatelessWidget {
                     ],
                   ),
                   for (final reply in comment.replies)
-                    _CommentTile(comment: reply, depth: depth + 1, onReply: onReply, onVote: onVote),
+                    _CommentTile(
+                      comment: reply,
+                      depth: depth + 1,
+                      onReply: onReply,
+                      onVote: onVote,
+                    ),
                 ],
               ),
             ),

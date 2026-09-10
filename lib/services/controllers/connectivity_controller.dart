@@ -41,13 +41,13 @@ class ConnectivityController extends GetxController {
 
   // Listen to connectivity changes
   void _startListening() {
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-      (List<ConnectivityResult> results) {
-        if (results.isNotEmpty) {
-          _updateConnectionStatus(results.first);
-        }
-      },
-    );
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
+      if (results.isNotEmpty) {
+        _updateConnectionStatus(results.first);
+      }
+    });
   }
 
   // Update connection status and verify with actual internet check
@@ -66,11 +66,9 @@ class ConnectivityController extends GetxController {
   // Actually check if we can reach the internet
   Future<bool> _checkInternetConnection() async {
     try {
-      final response = await http.get(
-        Uri.parse('https://www.google.com'),
-      ).timeout(
-        const Duration(seconds: 5),
-      );
+      final response = await http
+          .get(Uri.parse('https://www.google.com'))
+          .timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
     } catch (e) {
       return false;

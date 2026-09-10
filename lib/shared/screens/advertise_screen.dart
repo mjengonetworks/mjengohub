@@ -95,7 +95,8 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
     final uri = Uri(
       scheme: 'mailto',
       path: email,
-      query: 'subject=${Uri.encodeComponent('[Mjengo Hub] Advertising Enquiry')}',
+      query:
+          'subject=${Uri.encodeComponent('[Mjengo Hub] Advertising Enquiry')}',
     );
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
@@ -103,8 +104,13 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
   @override
   void dispose() {
     for (final c in [
-      _companyName, _contactPerson, _email, _phone,
-      _campaignObjectives, _targetAudience, _additionalInfo,
+      _companyName,
+      _contactPerson,
+      _email,
+      _phone,
+      _campaignObjectives,
+      _targetAudience,
+      _additionalInfo,
     ]) {
       c.dispose();
     }
@@ -173,49 +179,52 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
   }
 
   Widget _successView() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, color: AppColors.success, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                'Enquiry received',
-                style: GoogleFonts.montserrat(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Our advertising team will be in touch shortly.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
-              ),
-              if (_reference != null) ...[
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                  child: Text(
-                    'Reference: $_reference',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primaryBlue,
-                    ),
-                  ),
-                ),
-              ],
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.check_circle, color: AppColors.success, size: 48),
+          const SizedBox(height: 16),
+          Text(
+            'Enquiry received',
+            style: GoogleFonts.montserrat(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textDark,
+            ),
           ),
-        ),
-      );
+          const SizedBox(height: 8),
+          Text(
+            'Our advertising team will be in touch shortly.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              color: AppColors.textSubtle,
+            ),
+          ),
+          if (_reference != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Text(
+                'Reference: $_reference',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 
   Widget _form() {
     return Form(
@@ -229,7 +238,8 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
             bodyColor: Colors.white70,
             icon: Icons.groups_rounded,
             title: 'Reach the people who build Kenya',
-            body: 'Contractors, architects, engineers, project managers and '
+            body:
+                'Contractors, architects, engineers, project managers and '
                 'developers across the country read Mjengo Hub every week — '
                 'put your brand in front of the audience that specifies and '
                 'buys.',
@@ -241,7 +251,8 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
             bodyColor: AppColors.textSubtle,
             icon: Icons.trending_up_rounded,
             title: 'Multiple placements, one campaign',
-            body: 'Homepage banners, sponsored project spotlights on the '
+            body:
+                'Homepage banners, sponsored project spotlights on the '
                 'Infrastructure and Private Developments trackers, and '
                 'newsletter features — pick the mix that fits your budget.',
           ),
@@ -253,7 +264,8 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
             bodyColor: AppColors.textSubtle,
             icon: Icons.handshake_rounded,
             title: 'Sponsored project spotlights',
-            body: 'Attach your brand to a real, tracked project — visibility '
+            body:
+                'Attach your brand to a real, tracked project — visibility '
                 'that lasts as long as the build, not just a campaign window.',
           ),
           const SizedBox(height: 20),
@@ -264,7 +276,9 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
                 child: _CtaButton(
                   icon: Icons.call_rounded,
                   label: 'Call us',
-                  onTap: _settings?.contactPhone?.isNotEmpty == true ? _callUs : null,
+                  onTap: _settings?.contactPhone?.isNotEmpty == true
+                      ? _callUs
+                      : null,
                 ),
               ),
               const SizedBox(width: 12),
@@ -281,7 +295,11 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
 
           Text(
             'Or send us the details below and our advertising team will reach out.',
-            style: GoogleFonts.montserrat(fontSize: 12.5, height: 1.5, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 12.5,
+              height: 1.5,
+              color: AppColors.textSubtle,
+            ),
           ),
           const SizedBox(height: 20),
 
@@ -341,7 +359,8 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
           const FieldLabel('Target audience'),
           AppTextField(
             controller: _targetAudience,
-            hint: 'e.g. contractors, architects, project managers, specific regions',
+            hint:
+                'e.g. contractors, architects, project managers, specific regions',
             maxLines: 3,
           ),
           const SizedBox(height: 14),
@@ -385,7 +404,8 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
             child: TextButton.icon(
               onPressed: () async {
                 final uri = Uri.parse('https://mjengohub.co.ke/advertise');
-                if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                if (await canLaunchUrl(uri))
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
               },
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textSubtle,
@@ -394,7 +414,10 @@ class _AdvertiseScreenState extends State<AdvertiseScreen> {
               icon: const Icon(Icons.open_in_new_rounded, size: 14),
               label: Text(
                 'View canonical version on mjengohub.co.ke',
-                style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -462,7 +485,11 @@ class _PitchCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   body,
-                  style: GoogleFonts.montserrat(fontSize: 12, height: 1.5, color: bodyColor),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    height: 1.5,
+                    color: bodyColor,
+                  ),
                 ),
               ],
             ),
@@ -478,7 +505,11 @@ class _CtaButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
 
-  const _CtaButton({required this.icon, required this.label, required this.onTap});
+  const _CtaButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -489,14 +520,24 @@ class _CtaButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 13),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: enabled ? AppColors.primaryBlue.withValues(alpha: 0.1) : AppColors.divider.withValues(alpha: 0.5),
+          color: enabled
+              ? AppColors.primaryBlue.withValues(alpha: 0.1)
+              : AppColors.divider.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: enabled ? AppColors.primaryBlue.withValues(alpha: 0.3) : AppColors.divider),
+          border: Border.all(
+            color: enabled
+                ? AppColors.primaryBlue.withValues(alpha: 0.3)
+                : AppColors.divider,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 17, color: enabled ? AppColors.primaryBlue : AppColors.textSubtle),
+            Icon(
+              icon,
+              size: 17,
+              color: enabled ? AppColors.primaryBlue : AppColors.textSubtle,
+            ),
             const SizedBox(width: 8),
             Text(
               label,

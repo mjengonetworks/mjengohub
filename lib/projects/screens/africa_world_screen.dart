@@ -36,7 +36,8 @@ class AfricaWorldScreen extends StatefulWidget {
   State<AfricaWorldScreen> createState() => _AfricaWorldScreenState();
 }
 
-class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTickerProviderStateMixin {
+class _AfricaWorldScreenState extends State<AfricaWorldScreen>
+    with SingleTickerProviderStateMixin {
   final _service = ProjectsService();
   final _scrollController = ScrollController();
   late final TabController _tabController;
@@ -85,60 +86,80 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen> with SingleTicker
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Africa & World', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
+        title: Text(
+          'Africa & World',
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: AppColors.textDark,
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           labelColor: AppColors.accentBlue,
           unselectedLabelColor: AppColors.textSubtle,
           indicatorColor: AppColors.accentBlue,
-          labelStyle: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500),
+          labelStyle: GoogleFonts.montserrat(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: GoogleFonts.montserrat(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w500,
+          ),
           tabs: _regionKeys.map((k) => Tab(text: _kRegions[k])).toList(),
         ),
       ),
       body: ScrollToTopFab(
         controller: _scrollController,
         child: ContentWidth(
-        maxWidth: 900,
-        child: RefreshIndicator(
-          onRefresh: _load,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(top: 16, bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. Top interactive live map — the very first scrollable
-                // item, directly beneath the app bar (continent tabs live
-                // in the app bar itself). Never gated behind a toggle.
-                TrackerLiveMap(projects: _projects, loading: _loading),
-                const SizedBox(height: 24),
+          maxWidth: 900,
+          child: RefreshIndicator(
+            onRefresh: _load,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Top interactive live map — the very first scrollable
+                  // item, directly beneath the app bar (continent tabs live
+                  // in the app bar itself). Never gated behind a toggle.
+                  TrackerLiveMap(projects: _projects, loading: _loading),
+                  const SizedBox(height: 24),
 
-                // 3-5. Browse by Category / Most Viewed / By Status
-                TrackerDynamicSections(geoScope: 'global'),
+                  // 3-5. Browse by Category / Most Viewed / By Status
+                  TrackerDynamicSections(geoScope: 'global'),
 
-                // 6. All entries grid for the selected region, mirrors
-                // africa_world.html's .aw-views.
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('All Entries in This Region',
-                      style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                ),
-                const SizedBox(height: 10),
-                TrackerProjectsWrapGrid(
-                  projects: _projects,
-                  loading: _loading,
-                  captionOf: (p) => p.country ?? p.statusLabel,
-                  emptyMessage: 'No Africa & World entries in this region yet.',
-                ),
-              ],
+                  // 6. All entries grid for the selected region, mirrors
+                  // africa_world.html's .aw-views.
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'All Entries in This Region',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TrackerProjectsWrapGrid(
+                    projects: _projects,
+                    loading: _loading,
+                    captionOf: (p) => p.country ?? p.statusLabel,
+                    emptyMessage:
+                        'No Africa & World entries in this region yet.',
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

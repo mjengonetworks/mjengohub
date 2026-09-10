@@ -72,7 +72,9 @@ class CookiePolicyScreen extends StatelessWidget {
         const DocSection(
           heading: '5. Managing Your Cookie Preferences',
           blocks: [
-            DocParagraph('You can control cookies through your browser settings at any time:'),
+            DocParagraph(
+              'You can control cookies through your browser settings at any time:',
+            ),
             DocBullets([
               'Chrome: Settings → Privacy and security → Cookies and other site data',
               'Firefox: Settings → Privacy & Security → Cookies and Site Data',

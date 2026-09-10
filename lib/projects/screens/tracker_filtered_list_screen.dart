@@ -16,10 +16,16 @@ class TrackerFilteredListScreen extends StatefulWidget {
   final Future<List<Project>> Function() fetcher;
   final String Function(Project)? captionOf;
 
-  const TrackerFilteredListScreen({super.key, required this.title, required this.fetcher, this.captionOf});
+  const TrackerFilteredListScreen({
+    super.key,
+    required this.title,
+    required this.fetcher,
+    this.captionOf,
+  });
 
   @override
-  State<TrackerFilteredListScreen> createState() => _TrackerFilteredListScreenState();
+  State<TrackerFilteredListScreen> createState() =>
+      _TrackerFilteredListScreenState();
 }
 
 class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
@@ -33,17 +39,29 @@ class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: AppColors.textDark,
+          ),
+        ),
       ),
       body: ContentWidth(
         maxWidth: 900,
         child: FutureBuilder<List<Project>>(
           future: _future,
           builder: (context, snap) {
-            if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+            if (!snap.hasData)
+              return const Center(child: CircularProgressIndicator());
             final items = snap.data!;
             if (items.isEmpty) {
-              return const ComingSoonPlaceholder(icon: Icons.folder_off_rounded, title: 'Nothing here yet', message: 'No projects match this filter.');
+              return const ComingSoonPlaceholder(
+                icon: Icons.folder_off_rounded,
+                title: 'Nothing here yet',
+                message: 'No projects match this filter.',
+              );
             }
             return RefreshIndicator(
               onRefresh: () async {
@@ -57,7 +75,13 @@ class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
                   spacing: 12,
                   runSpacing: 12,
                   children: items
-                      .map((p) => TrackerProjectCard(project: p, captionOverride: widget.captionOf?.call(p), width: 220))
+                      .map(
+                        (p) => TrackerProjectCard(
+                          project: p,
+                          captionOverride: widget.captionOf?.call(p),
+                          width: 220,
+                        ),
+                      )
                       .toList(),
                 ),
               ),

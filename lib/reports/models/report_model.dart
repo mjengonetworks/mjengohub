@@ -57,7 +57,8 @@ class InfrastructureReport {
     this.reporterName,
   });
 
-  factory InfrastructureReport.fromJson(Map<String, dynamic> j) => InfrastructureReport(
+  factory InfrastructureReport.fromJson(Map<String, dynamic> j) =>
+      InfrastructureReport(
         id: (j['id'] as num?)?.toInt() ?? 0,
         title: (j['title'] as String?) ?? '',
         location: j['location'] as String?,

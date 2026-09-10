@@ -128,12 +128,18 @@ class LegalDocScreen extends StatelessWidget {
                     onPressed: _openCanonical,
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.captionSlate,
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 6,
+                      ),
                     ),
                     icon: const Icon(Icons.open_in_new_rounded, size: 14),
                     label: Text(
                       'View canonical version on mjengohub.co.ke',
-                      style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -192,7 +198,10 @@ class _BlockView extends StatelessWidget {
     if (block is DocParagraph) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: Text(block.text, style: GoogleFonts.montserrat(textStyle: _bodyStyle)),
+        child: Text(
+          block.text,
+          style: GoogleFonts.montserrat(textStyle: _bodyStyle),
+        ),
       );
     }
 
@@ -232,7 +241,10 @@ class _BlockView extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: Text(item, style: GoogleFonts.montserrat(textStyle: _bodyStyle)),
+                      child: Text(
+                        item,
+                        style: GoogleFonts.montserrat(textStyle: _bodyStyle),
+                      ),
                     ),
                   ],
                 ),
@@ -251,7 +263,10 @@ class _BlockView extends StatelessWidget {
           border: Border.all(color: AppColors.borderSlate),
           borderRadius: BorderRadius.circular(AppRadius.sharp),
         ),
-        child: Text(block.text, style: GoogleFonts.montserrat(textStyle: _bodyStyle)),
+        child: Text(
+          block.text,
+          style: GoogleFonts.montserrat(textStyle: _bodyStyle),
+        ),
       );
     }
 

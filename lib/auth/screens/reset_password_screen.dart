@@ -8,12 +8,12 @@ import '../controllers/mjengo_auth_controller.dart';
 import '../../shared/theme/app_theme.dart';
 
 // ── Palette (matches login_screen.dart) ───────────────────────────────────────
-const Color _accent      = Color(0xFF3B82F6);
-const Color _bg          = Color(0xFFFFFFFF);
-const Color _inputBg     = Color(0xFFF4F4FB);
+const Color _accent = Color(0xFF3B82F6);
+const Color _bg = Color(0xFFFFFFFF);
+const Color _inputBg = Color(0xFFF4F4FB);
 const Color _inputBorder = Color(0xFFE8E8F0);
-const Color _textDark    = Color(0xFF1A1A2E);
-const Color _textGray    = Color(0xFF475569);
+const Color _textDark = Color(0xFF1A1A2E);
+const Color _textGray = Color(0xFF475569);
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -24,7 +24,7 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _emailCtrl = TextEditingController();
-  final _formKey   = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   late final MjengoAuthController _auth;
 
   bool _emailSent = false;
@@ -70,10 +70,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   height: 42,
                   fit: BoxFit.contain,
                 ),
-                _BackPill(onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.of(context).pop();
-                }),
+                _BackPill(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.of(context).pop();
+                  },
+                ),
               ],
             ),
 
@@ -124,7 +126,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: RichText(
                   text: TextSpan(
                     style: GoogleFonts.montserrat(
-                        fontSize: 13, color: _textGray),
+                      fontSize: 13,
+                      color: _textGray,
+                    ),
                     children: [
                       const TextSpan(text: 'Remember it? '),
                       TextSpan(
@@ -182,8 +186,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             decoration: InputDecoration(
               hintText: 'you@example.com',
               hintStyle: GoogleFonts.montserrat(fontSize: 14, color: _textGray),
-              prefixIcon: const Icon(Icons.email_outlined,
-                  size: 18, color: _textGray),
+              prefixIcon: const Icon(
+                Icons.email_outlined,
+                size: 18,
+                color: _textGray,
+              ),
               filled: true,
               fillColor: _inputBg,
               border: OutlineInputBorder(
@@ -200,16 +207,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: Colors.redAccent, width: 1.5),
+                borderSide: const BorderSide(
+                  color: Colors.redAccent,
+                  width: 1.5,
+                ),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: Colors.redAccent, width: 1.5),
+                borderSide: const BorderSide(
+                  color: Colors.redAccent,
+                  width: 1.5,
+                ),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               errorStyle: GoogleFonts.montserrat(fontSize: 11),
             ),
             validator: (v) {
@@ -230,8 +243,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             if (msg.isEmpty) return const SizedBox.shrink();
             return Container(
               margin: const EdgeInsets.only(top: 12),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFFEF2F2),
                 borderRadius: BorderRadius.circular(10),
@@ -239,14 +251,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded,
-                      color: Colors.redAccent, size: 16),
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.redAccent,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       msg,
                       style: GoogleFonts.montserrat(
-                          fontSize: 12, color: Colors.red.shade700),
+                        fontSize: 12,
+                        color: Colors.red.shade700,
+                      ),
                     ),
                   ),
                 ],
@@ -257,43 +274,51 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const SizedBox(height: 28),
 
           // ── Send button ───────────────────────────────────────────────
-          Obx(() => SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: _auth.isLoading ? null : _sendReset,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _accent,
-                    disabledBackgroundColor: _accent.withValues(alpha: 0.5),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+          Obx(
+            () => SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _auth.isLoading ? null : _sendReset,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  disabledBackgroundColor: _accent.withValues(alpha: 0.5),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: _auth.isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.send_rounded,
-                                color: Colors.white, size: 17),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Send Reset Link',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
                 ),
-              )),
+                child: _auth.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 17,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Send Reset Link',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -315,10 +340,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           Container(
             width: 64,
             height: 64,
-            decoration:
-                const BoxDecoration(color: _accent, shape: BoxShape.circle),
-            child: const Icon(Icons.mark_email_read_outlined,
-                color: Colors.white, size: 30),
+            decoration: const BoxDecoration(
+              color: _accent,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.mark_email_read_outlined,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -361,34 +391,38 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   // ── Resend button ──────────────────────────────────────────────────────────
 
   Widget _buildResendButton() {
-    return Obx(() => SizedBox(
-          width: double.infinity,
-          height: 54,
-          child: OutlinedButton(
-            onPressed: _auth.isLoading ? null : _resend,
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: _accent, width: 1.5),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: 54,
+        child: OutlinedButton(
+          onPressed: _auth.isLoading ? null : _resend,
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: _accent, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: _auth.isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(_accent)),
-                  )
-                : Text(
-                    'Resend Link',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: _accent,
-                    ),
-                  ),
           ),
-        ));
+          child: _auth.isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(_accent),
+                  ),
+                )
+              : Text(
+                  'Resend Link',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _accent,
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -398,21 +432,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final parts = email.split('@');
     if (parts.length != 2) return email;
 
-    final local  = parts[0];
+    final local = parts[0];
     final domain = parts[1].split('.');
 
     final maskedLocal = local.isEmpty
         ? '*'
         : local.length <= 2
-            ? '*' * local.length
-            : '${local[0]}${'*' * (local.length - 1)}';
+        ? '*' * local.length
+        : '${local[0]}${'*' * (local.length - 1)}';
 
-    final domainName   = domain[0];
+    final domainName = domain[0];
     final maskedDomain = domainName.isEmpty
         ? '*'
         : domainName.length <= 2
-            ? '*' * domainName.length
-            : '${domainName[0]}${'*' * (domainName.length - 1)}';
+        ? '*' * domainName.length
+        : '${domainName[0]}${'*' * (domainName.length - 1)}';
 
     final tld = domain.sublist(1).join('.');
     return '$maskedLocal@$maskedDomain.$tld';
@@ -452,13 +486,13 @@ class _Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        style: GoogleFonts.montserrat(
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
-          color: _textDark,
-        ),
-      );
+    text,
+    style: GoogleFonts.montserrat(
+      fontSize: 12.5,
+      fontWeight: FontWeight.w600,
+      color: _textDark,
+    ),
+  );
 }
 
 class _BackPill extends StatelessWidget {

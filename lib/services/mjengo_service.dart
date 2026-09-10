@@ -7,14 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// HTTP client that talks to the Mjengo Hub Flask API.
 /// Automatically attaches the saved JWT access token to every request.
 class MjengoService extends GetConnect {
- static const String _apiBaseUrl = 'https://mjengohub.co.ke/api/v1/';
+  static const String _apiBaseUrl = 'https://mjengohub.co.ke/api/v1/';
 
   //static const String _apiBaseUrl = 'http://192.168.0.102:8080/api/v1/';
 
-
-  static const String _accessTokenKey  = 'mjengo_access_token';
+  static const String _accessTokenKey = 'mjengo_access_token';
   static const String _refreshTokenKey = 'mjengo_refresh_token';
-  static const String _cachedUserKey   = 'mjengo_cached_user';
+  static const String _cachedUserKey = 'mjengo_cached_user';
 
   bool _ready = false;
 
@@ -58,7 +57,7 @@ class MjengoService extends GetConnect {
 
   Future<void> saveTokens(String access, String refresh) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_accessTokenKey,  access);
+    await prefs.setString(_accessTokenKey, access);
     await prefs.setString(_refreshTokenKey, refresh);
   }
 
@@ -100,13 +99,15 @@ class MjengoService extends GetConnect {
     final refresh = await getRefreshToken();
     if (refresh == null || refresh.isEmpty) return null;
     try {
-      final res = await http.post(
-        Uri.parse('${_apiBaseUrl}auth/refresh'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $refresh',
-        },
-      ).timeout(const Duration(seconds: 20));
+      final res = await http
+          .post(
+            Uri.parse('${_apiBaseUrl}auth/refresh'),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $refresh',
+            },
+          )
+          .timeout(const Duration(seconds: 20));
 
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
@@ -126,7 +127,9 @@ class MjengoService extends GetConnect {
       }
       // 401 = refresh token rejected, 422 = malformed/not a refresh token.
       if (res.statusCode == 401 || res.statusCode == 422) {
-        print('🔐 Refresh token rejected (${res.statusCode}) — clearing session');
+        print(
+          '🔐 Refresh token rejected (${res.statusCode}) — clearing session',
+        );
         await _clearTokens();
       }
     } catch (e) {
@@ -174,13 +177,19 @@ class MjengoService extends GetConnect {
   Future<Response> apiGet(String path, {Map<String, dynamic>? query}) async {
     _configure();
     try {
-      return _wrap(await get(path.replaceAll(RegExp(r'^/+'), ''), query: query));
+      return _wrap(
+        await get(path.replaceAll(RegExp(r'^/+'), ''), query: query),
+      );
     } catch (e) {
       return _networkError(e);
     }
   }
 
-  Future<Response> apiPost(String path, dynamic body, {bool auth = true}) async {
+  Future<Response> apiPost(
+    String path,
+    dynamic body, {
+    bool auth = true,
+  }) async {
     _configure();
     try {
       if (!auth) {
@@ -242,16 +251,16 @@ class MjengoService extends GetConnect {
   }) async {
     try {
       final token = await getAccessToken();
-      final uri = Uri.parse('$_apiBaseUrl${path.replaceAll(RegExp(r'^/+'), '')}');
+      final uri = Uri.parse(
+        '$_apiBaseUrl${path.replaceAll(RegExp(r'^/+'), '')}',
+      );
       final request = http.MultipartRequest('POST', uri);
       request.headers['Accept'] = 'application/json';
       if (token != null) request.headers['Authorization'] = 'Bearer $token';
       if (fields != null) request.fields.addAll(fields);
-      request.files.add(http.MultipartFile.fromBytes(
-        fieldName,
-        bytes,
-        filename: filename,
-      ));
+      request.files.add(
+        http.MultipartFile.fromBytes(fieldName, bytes, filename: filename),
+      );
       final streamed = await request.send();
       final body = await streamed.stream.bytesToString();
       if (streamed.statusCode == 401) await _clearTokens();
@@ -263,8 +272,10 @@ class MjengoService extends GetConnect {
       } catch (_) {}
       return {
         '_statusCode': streamed.statusCode,
-        if (streamed.statusCode >= 200 && streamed.statusCode < 300) 'success': true
-        else 'error': 'Upload failed (${streamed.statusCode})',
+        if (streamed.statusCode >= 200 && streamed.statusCode < 300)
+          'success': true
+        else
+          'error': 'Upload failed (${streamed.statusCode})',
       };
     } catch (e) {
       return {'error': e.toString(), '_statusCode': 500};
@@ -272,10 +283,10 @@ class MjengoService extends GetConnect {
   }
 
   Response _networkError(Object e) => Response(
-        statusCode: 500,
-        statusText: 'Network error',
-        body: {'error': e.toString()},
-      );
+    statusCode: 500,
+    statusText: 'Network error',
+    body: {'error': e.toString()},
+  );
 
   // ── Session logout ─────────────────────────────────────────────────────────
 

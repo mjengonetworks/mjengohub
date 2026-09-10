@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'net_image_html_stub.dart' if (dart.library.html) 'net_image_html_web.dart' as html_image;
+import 'net_image_html_stub.dart'
+    if (dart.library.html) 'net_image_html_web.dart'
+    as html_image;
 
 /// Normalizes a possibly-relative or possibly-insecure image URL into an
 /// absolute `https://mjengohub.co.ke/...` URL. Several model `imageUrl`
@@ -18,7 +20,8 @@ String? resolveImageUrl(String? raw) {
   if (raw == null) return null;
   final url = raw.trim();
   if (url.isEmpty) return null;
-  if (url.startsWith('http://')) return 'https://${url.substring('http://'.length)}';
+  if (url.startsWith('http://'))
+    return 'https://${url.substring('http://'.length)}';
   if (url.startsWith('https://')) return url;
   return 'https://mjengohub.co.ke${url.startsWith('/') ? '' : '/'}$url';
 }
@@ -105,16 +108,14 @@ class NetImage extends StatelessWidget {
         child: _WebNetImage(
           url: resolved,
           fit: fit,
-          errorWidget: errorBuilder?.call(context) ?? _placeholder(isError: true),
+          errorWidget:
+              errorBuilder?.call(context) ?? _placeholder(isError: true),
         ),
       );
     }
 
     // Mobile/desktop: Referer & User-Agent bypass cPanel hotlink protection.
-    final Map<String, String> headers = {
-      ..._mobileHeaders,
-      ...?extraHeaders,
-    };
+    final Map<String, String> headers = {..._mobileHeaders, ...?extraHeaders};
 
     return Image.network(
       resolved,
@@ -134,28 +135,24 @@ class NetImage extends StatelessWidget {
   }
 
   Widget _placeholder({required bool isError}) => Container(
-        width: width,
-        height: height,
-        color: placeholderColor,
-        child: Center(
-          child: Icon(
-            placeholderIcon ??
-                (isError ? Icons.broken_image_outlined : Icons.image_outlined),
-            color: placeholderIconColor,
-            size: placeholderIconSize,
-          ),
-        ),
-      );
+    width: width,
+    height: height,
+    color: placeholderColor,
+    child: Center(
+      child: Icon(
+        placeholderIcon ??
+            (isError ? Icons.broken_image_outlined : Icons.image_outlined),
+        color: placeholderIconColor,
+        size: placeholderIconSize,
+      ),
+    ),
+  );
 
   Widget _shimmer() => Shimmer.fromColors(
-        baseColor: placeholderColor,
-        highlightColor: Colors.white.withValues(alpha: 0.8),
-        child: Container(
-          width: width,
-          height: height,
-          color: placeholderColor,
-        ),
-      );
+    baseColor: placeholderColor,
+    highlightColor: Colors.white.withValues(alpha: 0.8),
+    child: Container(width: width, height: height, color: placeholderColor),
+  );
 }
 
 /// Web-only DOM-`<img>`-backed image (see net_image_html_web.dart for why).
@@ -165,7 +162,11 @@ class _WebNetImage extends StatefulWidget {
   final String url;
   final BoxFit fit;
   final Widget errorWidget;
-  const _WebNetImage({required this.url, required this.fit, required this.errorWidget});
+  const _WebNetImage({
+    required this.url,
+    required this.fit,
+    required this.errorWidget,
+  });
 
   @override
   State<_WebNetImage> createState() => _WebNetImageState();

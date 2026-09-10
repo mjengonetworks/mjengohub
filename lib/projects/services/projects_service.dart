@@ -13,6 +13,9 @@ class ProjectsService {
     List<String>? counties,
     double? costMin,
     double? costMax,
+    double? costUsdMin,
+    double? costUsdMax,
+    String? sector,
     String? clientSlug,
     String? q,
     bool featured = false,
@@ -48,6 +51,9 @@ class ProjectsService {
       }
       if (costMin != null) query['cost_min'] = '$costMin';
       if (costMax != null) query['cost_max'] = '$costMax';
+      if (costUsdMin != null) query['cost_usd_min'] = '$costUsdMin';
+      if (costUsdMax != null) query['cost_usd_max'] = '$costUsdMax';
+      if (sector != null && sector.isNotEmpty) query['sector'] = sector;
       if (clientSlug != null && clientSlug.isNotEmpty) {
         query['client'] = clientSlug;
       }

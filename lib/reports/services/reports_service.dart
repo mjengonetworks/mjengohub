@@ -17,7 +17,8 @@ class ReportsService {
 
   /// Paginated report list. [category], [severity] and [status] map straight
   /// onto the backend's query filters; pass null to leave a filter off.
-  Future<({List<InfrastructureReport> items, int total, int pages})> getReports({
+  Future<({List<InfrastructureReport> items, int total, int pages})>
+  getReports({
     int page = 1,
     int perPage = 12,
     String? category,
@@ -25,13 +26,16 @@ class ReportsService {
     String? status,
   }) async {
     try {
-      final res = await _api.getRequest('reports', query: {
-        'page': page.toString(),
-        'per_page': perPage.toString(),
-        if (category != null && category.isNotEmpty) 'category': category,
-        if (severity != null && severity.isNotEmpty) 'severity': severity,
-        if (status != null && status.isNotEmpty) 'status': status,
-      });
+      final res = await _api.getRequest(
+        'reports',
+        query: {
+          'page': page.toString(),
+          'per_page': perPage.toString(),
+          if (category != null && category.isNotEmpty) 'category': category,
+          if (severity != null && severity.isNotEmpty) 'severity': severity,
+          if (status != null && status.isNotEmpty) 'status': status,
+        },
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
         final pag = res.body['pagination'];
@@ -94,9 +98,12 @@ class ReportsService {
         'location': location,
         'category': category,
         'severity': severity,
-        if (reporterName != null && reporterName.isNotEmpty) 'reporter_name': reporterName,
-        if (reporterEmail != null && reporterEmail.isNotEmpty) 'reporter_email': reporterEmail,
-        if (reporterPhone != null && reporterPhone.isNotEmpty) 'reporter_phone': reporterPhone,
+        if (reporterName != null && reporterName.isNotEmpty)
+          'reporter_name': reporterName,
+        if (reporterEmail != null && reporterEmail.isNotEmpty)
+          'reporter_email': reporterEmail,
+        if (reporterPhone != null && reporterPhone.isNotEmpty)
+          'reporter_phone': reporterPhone,
         'latitude': ?latitude,
         'longitude': ?longitude,
       });
@@ -105,20 +112,27 @@ class ReportsService {
         return {
           'success': true,
           'id': data is Map ? data['id'] : null,
-          'message': (data is Map ? data['message'] as String? : null) ??
+          'message':
+              (data is Map ? data['message'] as String? : null) ??
               'Report submitted successfully',
         };
       }
       return {'success': false, 'message': _errorMessage(res.body)};
     } catch (e) {
       print('❌ submitReport failed: $e');
-      return {'success': false, 'message': 'Could not submit report. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not submit report. Check your connection.',
+      };
     }
   }
 
   /// Up/down votes a report. Returns the authoritative counts from the server,
   /// or null if the vote didn't go through.
-  Future<({int upvotes, int downvotes})?> voteReport(int id, {required bool up}) async {
+  Future<({int upvotes, int downvotes})?> voteReport(
+    int id, {
+    required bool up,
+  }) async {
     try {
       final res = await _api.postRequest('reports/$id/vote', {
         'vote_type': up ? 'up' : 'down',

@@ -42,9 +42,10 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
       CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
 
-    _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.easeIn),
-    );
+    _logoOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeIn));
 
     _logoController.forward();
     _startAppInitialization();
@@ -65,10 +66,13 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
       if (!kIsWeb) {
         final startTime = DateTime.now();
         MjengoAuthController? mjengoAuth;
-        try { mjengoAuth = Get.find<MjengoAuthController>(); } catch (_) {}
+        try {
+          mjengoAuth = Get.find<MjengoAuthController>();
+        } catch (_) {}
         while (mjengoAuth != null && !mjengoAuth.isInitialized) {
           await Future.delayed(const Duration(milliseconds: 100));
-          if (DateTime.now().difference(startTime).inMilliseconds >= 5000) break;
+          if (DateTime.now().difference(startTime).inMilliseconds >= 5000)
+            break;
         }
         final elapsed = DateTime.now().difference(startTime).inMilliseconds;
         if (elapsed < 2500) {
@@ -139,10 +143,9 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
         // Last resort: use the mounted splash context directly.
         try {
           if (!mounted) return;
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            targetRoute,
-            (route) => false,
-          );
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(targetRoute, (route) => false);
         } catch (e2) {
           print('Fallback navigation also failed: $e2');
         }
@@ -187,4 +190,3 @@ class _ModernSplashScreenState extends State<ModernSplashScreen>
     );
   }
 }
-

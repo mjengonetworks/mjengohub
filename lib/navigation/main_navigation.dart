@@ -30,25 +30,29 @@ class MainNavigation extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1080),
-                  child: Obx(() => IndexedStack(
-                        index: ctrl.currentIndex.value,
-                        children: const [
-                          HomeScreen(),     // MainNavController.tabHome
-                          DiscoverScreen(), // MainNavController.tabNews
-                          HubScreen(),      // MainNavController.tabHub
-                          VideosScreen(),   // MainNavController.tabMedia
-                          ProfileScreen(),  // MainNavController.tabProfile
-                        ],
-                      )),
+                  child: Obx(
+                    () => IndexedStack(
+                      index: ctrl.currentIndex.value,
+                      children: const [
+                        HomeScreen(), // MainNavController.tabHome
+                        DiscoverScreen(), // MainNavController.tabNews
+                        HubScreen(), // MainNavController.tabHub
+                        VideosScreen(), // MainNavController.tabMedia
+                        ProfileScreen(), // MainNavController.tabProfile
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ],
         ),
-        bottomNavigationBar: Obx(() => _BottomNav(
-              currentIndex: ctrl.currentIndex.value,
-              onTap: (i) => ctrl.currentIndex.value = i,
-            )),
+        bottomNavigationBar: Obx(
+          () => _BottomNav(
+            currentIndex: ctrl.currentIndex.value,
+            onTap: (i) => ctrl.currentIndex.value = i,
+          ),
+        ),
       ),
     );
   }
@@ -182,7 +186,10 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               width: 4,
               height: 4,
-              decoration: BoxDecoration(color: isSelected ? AppColors.primaryBlue : Colors.transparent, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
             ),
           ],
         ),
@@ -190,7 +197,6 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
-
 
 class MainNavController extends GetxController {
   // Named tab indices — use these instead of magic numbers when jumping
@@ -203,4 +209,3 @@ class MainNavController extends GetxController {
 
   final RxInt currentIndex = 0.obs;
 }
-

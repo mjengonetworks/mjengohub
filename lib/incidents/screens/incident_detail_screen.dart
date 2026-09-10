@@ -14,11 +14,11 @@ import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/form_fields.dart';
 
-const _kDark    = Color(0xFF1A1A2E);
+const _kDark = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
 const _kDivider = Color(0xFFEEEEF5);
-const _kCard    = Colors.white;
-const _kBg      = Color(0xFFF8FAFC);
+const _kCard = Colors.white;
+const _kBg = Color(0xFFF8FAFC);
 
 class IncidentDetailScreen extends StatelessWidget {
   final String slug;
@@ -26,10 +26,7 @@ class IncidentDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(
-      IncidentDetailController(slug),
-      tag: 'incident_$slug',
-    );
+    final ctrl = Get.put(IncidentDetailController(slug), tag: 'incident_$slug');
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -38,7 +35,8 @@ class IncidentDetailScreen extends StatelessWidget {
         body: Obx(() {
           if (ctrl.isLoading.value) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFFDC2626)));
+              child: CircularProgressIndicator(color: Color(0xFFDC2626)),
+            );
           }
           if (ctrl.incident.value == null) {
             return _buildError(ctrl);
@@ -56,23 +54,27 @@ class IncidentDetailScreen extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline_rounded, size: 48, color: _kSubtext),
           const SizedBox(height: 12),
-          Text(ctrl.errorMessage.value,
-              style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext)),
+          Text(
+            ctrl.errorMessage.value,
+            style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
+          ),
           const SizedBox(height: 16),
           TextButton(
             onPressed: ctrl.load,
-            child: Text('Retry',
-                style: GoogleFonts.montserrat(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFDC2626))),
+            child: Text(
+              'Retry',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFDC2626),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, IncidentDetailController ctrl) {
+  Widget _buildContent(BuildContext context, IncidentDetailController ctrl) {
     final incident = ctrl.incident.value!;
     final topPad = MediaQuery.of(context).padding.top;
     final heroColor = incident.isRoadSafety
@@ -95,22 +97,22 @@ class IncidentDetailScreen extends StatelessWidget {
                 color: Colors.black38,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 18),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
           flexibleSpace: FlexibleSpaceBar(
-            titlePadding:
-                const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            titlePadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             title: Text(
               incident.title,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
-                shadows: [
-                  const Shadow(color: Colors.black54, blurRadius: 4)
-                ],
+                shadows: [const Shadow(color: Colors.black54, blurRadius: 4)],
               ),
               maxLines: 2,
             ),
@@ -155,18 +157,21 @@ class IncidentDetailScreen extends StatelessWidget {
               Container(
                 color: const Color(0xFF1A1A2E),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 12),
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     _SeverityBadge(severity: incident.severity),
                     const SizedBox(width: 12),
-                    if (incident.county != null ||
-                        incident.location != null)
+                    if (incident.county != null || incident.location != null)
                       Flexible(
                         child: Text(
                           '📍 ${incident.county ?? incident.location}',
                           style: GoogleFonts.montserrat(
-                              fontSize: 12, color: Colors.white70),
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     const Spacer(),
@@ -174,25 +179,24 @@ class IncidentDetailScreen extends StatelessWidget {
                       Text(
                         incident.formattedDate,
                         style: GoogleFonts.montserrat(
-                            fontSize: 11, color: Colors.white60),
+                          fontSize: 11,
+                          color: Colors.white60,
+                        ),
                       ),
                   ],
                 ),
               ),
 
               // Casualties row
-              if (incident.casualties != null ||
-                  incident.injuries != null)
+              if (incident.casualties != null || incident.injuries != null)
                 Container(
                   color: const Color(0xFF1A1A2E),
-                  padding:
-                      const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                   child: Row(
                     children: [
                       if (incident.casualties != null)
                         _StatChip(
-                          label:
-                              '${incident.casualties} fatalities',
+                          label: '${incident.casualties} fatalities',
                           color: const Color(0xFFFCA5A5),
                         ),
                       if (incident.injuries != null) ...[
@@ -217,9 +221,10 @@ class IncidentDetailScreen extends StatelessWidget {
                         .replaceAll(RegExp(r'<[^>]*>'), '')
                         .trim(),
                     style: GoogleFonts.montserrat(
-                        fontSize: 13.5,
-                        color: _kDark,
-                        height: 1.65),
+                      fontSize: 13.5,
+                      color: _kDark,
+                      height: 1.65,
+                    ),
                   ),
                 ),
 
@@ -229,14 +234,13 @@ class IncidentDetailScreen extends StatelessWidget {
                   title: 'Photos & Videos',
                   child: GridView.builder(
                     shrinkWrap: true,
-                    physics:
-                        const NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 6,
-                      mainAxisSpacing: 6,
-                    ),
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 6,
+                          mainAxisSpacing: 6,
+                        ),
                     itemCount: incident.media.length.clamp(0, 9),
                     itemBuilder: (_, i) {
                       final m = incident.media[i];
@@ -247,16 +251,18 @@ class IncidentDetailScreen extends StatelessWidget {
                                 url: m.url,
                                 fit: BoxFit.cover,
                                 placeholderColor: _kDivider,
-                                placeholderIcon: Icons.image_not_supported_rounded,
+                                placeholderIcon:
+                                    Icons.image_not_supported_rounded,
                                 placeholderIconColor: _kSubtext,
                                 placeholderIconSize: 20,
                               )
                             : Container(
                                 color: _kDark,
                                 child: const Icon(
-                                    Icons.play_circle_fill_rounded,
-                                    color: Colors.white54,
-                                    size: 32),
+                                  Icons.play_circle_fill_rounded,
+                                  color: Colors.white54,
+                                  size: 32,
+                                ),
                               ),
                       );
                     },
@@ -273,8 +279,7 @@ class IncidentDetailScreen extends StatelessWidget {
                       color: const Color(0xFFFFF7ED),
                       borderRadius: BorderRadius.circular(8),
                       border: const Border(
-                        left: BorderSide(
-                            color: Color(0xFFF97316), width: 4),
+                        left: BorderSide(color: Color(0xFFF97316), width: 4),
                       ),
                     ),
                     child: Text(
@@ -282,9 +287,10 @@ class IncidentDetailScreen extends StatelessWidget {
                           .replaceAll(RegExp(r'<[^>]*>'), '')
                           .trim(),
                       style: GoogleFonts.montserrat(
-                          fontSize: 13.5,
-                          color: _kDark,
-                          height: 1.6),
+                        fontSize: 13.5,
+                        color: _kDark,
+                        height: 1.6,
+                      ),
                     ),
                   ),
                 ),
@@ -298,9 +304,10 @@ class IncidentDetailScreen extends StatelessWidget {
                         .replaceAll(RegExp(r'<[^>]*>'), '')
                         .trim(),
                     style: GoogleFonts.montserrat(
-                        fontSize: 13.5,
-                        color: _kDark,
-                        height: 1.6),
+                      fontSize: 13.5,
+                      color: _kDark,
+                      height: 1.6,
+                    ),
                   ),
                 ),
 
@@ -318,17 +325,16 @@ class IncidentDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           border: const Border(
                             left: BorderSide(
-                                color: Color(0xFF16A34A),
-                                width: 3),
+                              color: Color(0xFF16A34A),
+                              width: 3,
+                            ),
                           ),
                         ),
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   u.title ?? 'Update',
@@ -338,17 +344,23 @@ class IncidentDetailScreen extends StatelessWidget {
                                     color: _kDark,
                                   ),
                                 ),
-                                Text(u.formattedDate,
-                                    style: GoogleFonts.montserrat(
-                                        fontSize: 10.5,
-                                        color: _kSubtext)),
+                                Text(
+                                  u.formattedDate,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 10.5,
+                                    color: _kSubtext,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text(u.content,
-                                style: GoogleFonts.montserrat(
-                                    fontSize: 12.5,
-                                    color: _kDark)),
+                            Text(
+                              u.content,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12.5,
+                                color: _kDark,
+                              ),
+                            ),
                           ],
                         ),
                       );
@@ -372,7 +384,8 @@ class IncidentDetailScreen extends StatelessWidget {
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
-                          builder: (_) => _IncidentSuggestEditSheet(incident: incident),
+                          builder: (_) =>
+                              _IncidentSuggestEditSheet(incident: incident),
                         ),
                       ),
                     ),
@@ -382,7 +395,8 @@ class IncidentDetailScreen extends StatelessWidget {
                         icon: Icons.copyright_rounded,
                         label: 'Claim Copyright',
                         onTap: () => showComingSoonSnack(
-                            'Copyright claims aren\'t available in the app yet.'),
+                          'Copyright claims aren\'t available in the app yet.',
+                        ),
                       ),
                     ),
                   ],
@@ -416,12 +430,14 @@ class IncidentDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: GoogleFonts.montserrat(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: _kDark,
-              )),
+          Text(
+            title,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: _kDark,
+            ),
+          ),
           const SizedBox(height: 12),
           child,
         ],
@@ -431,10 +447,14 @@ class IncidentDetailScreen extends StatelessWidget {
 
   Color _severityColor(String s) {
     switch (s) {
-      case 'fatal': return const Color(0xFF7F1D1D);
-      case 'serious': return const Color(0xFFDC2626);
-      case 'moderate': return const Color(0xFFF97316);
-      default: return const Color(0xFF22C55E);
+      case 'fatal':
+        return const Color(0xFF7F1D1D);
+      case 'serious':
+        return const Color(0xFFDC2626);
+      case 'moderate':
+        return const Color(0xFFF97316);
+      default:
+        return const Color(0xFF22C55E);
     }
   }
 }
@@ -447,11 +467,16 @@ class _SeverityBadge extends StatelessWidget {
 
   Color get _color {
     switch (severity) {
-      case 'fatal': return const Color(0xFF7F1D1D);
-      case 'serious': return const Color(0xFFDC2626);
-      case 'moderate': return const Color(0xFFF97316);
-      case 'minor': return const Color(0xFF22C55E);
-      default: return const Color(0xFF8888AA);
+      case 'fatal':
+        return const Color(0xFF7F1D1D);
+      case 'serious':
+        return const Color(0xFFDC2626);
+      case 'moderate':
+        return const Color(0xFFF97316);
+      case 'minor':
+        return const Color(0xFF22C55E);
+      default:
+        return const Color(0xFF8888AA);
     }
   }
 
@@ -500,7 +525,11 @@ class _ActionChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _ActionChip({required this.icon, required this.label, required this.onTap});
+  const _ActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -518,9 +547,14 @@ class _ActionChip extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: AppColors.primaryBlue),
             const SizedBox(width: 6),
-            Text(label,
-                style: GoogleFonts.montserrat(
-                    fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.primaryBlue)),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.primaryBlue,
+              ),
+            ),
           ],
         ),
       ),
@@ -538,9 +572,16 @@ class _IncidentSheetShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          MediaQuery.of(context).padding.bottom + 20,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -586,7 +627,8 @@ class _IncidentSuggestEditSheet extends StatefulWidget {
   const _IncidentSuggestEditSheet({required this.incident});
 
   @override
-  State<_IncidentSuggestEditSheet> createState() => _IncidentSuggestEditSheetState();
+  State<_IncidentSuggestEditSheet> createState() =>
+      _IncidentSuggestEditSheetState();
 }
 
 class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
@@ -608,8 +650,12 @@ class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
 
   Future<void> _submit() async {
     if (_nameCtrl.text.trim().isEmpty || _valueCtrl.text.trim().isEmpty) {
-      Get.snackbar('Missing info', 'Please enter your name and the corrected value.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      Get.snackbar(
+        'Missing info',
+        'Please enter your name and the corrected value.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
       return;
     }
     setState(() => _submitting = true);
@@ -619,7 +665,9 @@ class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
       proposedValue: _valueCtrl.text.trim(),
       name: _nameCtrl.text.trim(),
       email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
-      reason: _reasonCtrl.text.trim().isNotEmpty ? _reasonCtrl.text.trim() : null,
+      reason: _reasonCtrl.text.trim().isNotEmpty
+          ? _reasonCtrl.text.trim()
+          : null,
     );
     if (!mounted) return;
     setState(() => _submitting = false);
@@ -665,15 +713,22 @@ class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
           ),
           const SizedBox(height: 12),
           const FieldLabel('Corrected value', required: true),
-          AppTextField(controller: _valueCtrl, hint: 'Proposed value', maxLines: 2),
+          AppTextField(
+            controller: _valueCtrl,
+            hint: 'Proposed value',
+            maxLines: 2,
+          ),
           const SizedBox(height: 12),
           const FieldLabel('Reason / source'),
           AppTextField(controller: _reasonCtrl, hint: 'Optional', maxLines: 2),
           const SizedBox(height: 16),
-          AppSubmitButton(label: 'Submit Correction', busy: _submitting, onPressed: _submit),
+          AppSubmitButton(
+            label: 'Submit Correction',
+            busy: _submitting,
+            onPressed: _submit,
+          ),
         ],
       ),
     );
   }
 }
-

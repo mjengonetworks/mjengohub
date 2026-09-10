@@ -55,36 +55,38 @@ class _ServicesScreenState extends State<ServicesScreen> {
             context: context,
             removeTop: true,
             child: Scaffold(
-            backgroundColor: AppColors.background,
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.white,
-              elevation: 0,
-              title: Text(
-                'Services',
-                style: GoogleFonts.montserrat(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
+              backgroundColor: AppColors.background,
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.white,
+                elevation: 0,
+                title: Text(
+                  'Services',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
                 ),
               ),
-            ),
-            body: RefreshIndicator(
-              onRefresh: _load,
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _services.isEmpty
-                      ? _empty()
-                      : ContentWidth(
-                          child: ListView.separated(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: _services.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (_, i) => _ServiceCard(service: _services[i]),
-                          ),
+              body: RefreshIndicator(
+                onRefresh: _load,
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _services.isEmpty
+                    ? _empty()
+                    : ContentWidth(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _services.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (_, i) =>
+                              _ServiceCard(service: _services[i]),
                         ),
+                      ),
+              ),
             ),
-          ),
           ),
         ),
       ],
@@ -92,27 +94,30 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Widget _empty() => ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 80),
-        children: [
-          Icon(Icons.handyman_outlined, size: 44, color: AppColors.textSubtle),
-          const SizedBox(height: 14),
-          Text(
-            'No services listed yet',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Pull down to refresh.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textSubtle),
-          ),
-        ],
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 80),
+    children: [
+      Icon(Icons.handyman_outlined, size: 44, color: AppColors.textSubtle),
+      const SizedBox(height: 14),
+      Text(
+        'No services listed yet',
+        textAlign: TextAlign.center,
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textDark,
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        'Pull down to refresh.',
+        textAlign: TextAlign.center,
+        style: GoogleFonts.montserrat(
+          fontSize: 12.5,
+          color: AppColors.textSubtle,
+        ),
+      ),
+    ],
+  );
 }
 
 class _ServiceCard extends StatelessWidget {
@@ -124,7 +129,8 @@ class _ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(AppRadius.card),
-      onTap: () => Get.toNamed(AppRoutes.serviceDetail, arguments: service.slug),
+      onTap: () =>
+          Get.toNamed(AppRoutes.serviceDetail, arguments: service.slug),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -165,7 +171,10 @@ class _ServiceCard extends StatelessWidget {
                       ),
                       if (service.isFeatured)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryBlue.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(AppRadius.chip),
@@ -181,7 +190,8 @@ class _ServiceCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  if (service.description != null && service.description!.isNotEmpty) ...[
+                  if (service.description != null &&
+                      service.description!.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Text(
                       service.description!,
@@ -194,7 +204,8 @@ class _ServiceCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (service.basePrice != null && service.basePrice!.isNotEmpty) ...[
+                  if (service.basePrice != null &&
+                      service.basePrice!.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Text(
                       'From KES ${service.basePrice}',

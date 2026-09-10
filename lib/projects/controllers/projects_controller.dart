@@ -14,17 +14,26 @@ class ProjectsController extends GetxController {
   ProjectsController({this.projectType = 'infrastructure'});
 
   final projects = <Project>[].obs;
-  final featuredProjects = <Project>[].obs;
-  final clients = <ProjectClient>[].obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
   final selectedStatus = ''.obs;
-  final selectedClientSlug = ''.obs;
   final selectedCounty = ''.obs;
   final selectedCounties = <String>[].obs;
+  final selectedSector = ''.obs;
   final searchQuery = ''.obs;
   final selectedCostTier = ''.obs;
+
+  static const sectorOptions = <String>[
+    'Transport',
+    'Energy',
+    'Water',
+    'Ports',
+    'Rail',
+    'Housing',
+    'ICT',
+    'Other',
+  ];
 
   double? get costMin => switch (selectedCostTier.value) {
     '100M-500M' => 100000000,
@@ -40,6 +49,28 @@ class ProjectsController extends GetxController {
     '1B-5B' => 5000000000,
     _ => null,
   };
+
+  double? get costUsdMin => switch (selectedCostTier.value) {
+    'usd_under_1m' => 0,
+    'usd_1m_5m' => 1000000,
+    'usd_5m_10m' => 5000000,
+    'usd_10m_plus' => 10000000,
+    _ => null,
+  };
+
+  double? get costUsdMax => switch (selectedCostTier.value) {
+    'usd_under_1m' => 1000000,
+    'usd_1m_5m' => 5000000,
+    'usd_5m_10m' => 10000000,
+    _ => null,
+  };
+
+  int get activeFilterCount => [
+    selectedCounties.isNotEmpty,
+    selectedSector.value.isNotEmpty,
+    selectedStatus.value.isNotEmpty,
+    selectedCostTier.value.isNotEmpty,
+  ].where((active) => active).length;
 
   int _page = 1;
   bool _hasMore = true;
@@ -64,43 +95,35 @@ class ProjectsController extends GetxController {
     _page = 1;
     _hasMore = true;
 
-    final results = await Future.wait([
-      _service.getProjects(
-        projectType: projectType,
-        featured: true,
-        perPage: 4,
-      ),
-      _service.getProjects(
-        projectType: projectType,
-        status: selectedStatus.value,
-        clientSlug: selectedClientSlug.value,
-        county: selectedCounty.value,
-        counties: selectedCounties,
-        costMin: costMin,
-        costMax: costMax,
-        q: searchQuery.value,
-        page: 1,
-      ),
-      _service.getClients(),
-    ]);
+    final result = await _service.getProjects(
+      projectType: projectType,
+      status: selectedStatus.value,
+      county: selectedCounty.value,
+      counties: selectedCounties,
+      sector: selectedSector.value,
+      costMin: costMin,
+      costMax: costMax,
+      costUsdMin: costUsdMin,
+      costUsdMax: costUsdMax,
+      q: searchQuery.value,
+      page: 1,
+    );
 
-    featuredProjects.value = results[0] as List<Project>;
-    projects.value = results[1] as List<Project>;
-    clients.value = results[2] as List<ProjectClient>;
-    _hasMore = (results[1] as List).length >= 12;
+    projects.value = result;
+    _hasMore = result.length >= 12;
 
     isLoading.value = false;
   }
 
   Future<void> applyFilters({
     String? status,
-    String? clientSlug,
     String? county,
+    String? sector,
     String? q,
   }) async {
     selectedStatus.value = status ?? '';
-    selectedClientSlug.value = clientSlug ?? '';
     selectedCounty.value = county ?? '';
+    selectedSector.value = sector ?? '';
     searchQuery.value = q ?? '';
     await fetchAll();
   }
@@ -110,6 +133,16 @@ class ProjectsController extends GetxController {
     await applyFilters(county: counties.length == 1 ? counties.first : '');
   }
 
+  Future<void> clearFilters() async {
+    selectedStatus.value = '';
+    selectedCounty.value = '';
+    selectedCounties.clear();
+    selectedSector.value = '';
+    selectedCostTier.value = '';
+    searchQuery.value = '';
+    await fetchAll();
+  }
+
   Future<void> loadMore() async {
     if (!_hasMore || _isFetchingMore) return;
     _isFetchingMore = true;
@@ -117,11 +150,13 @@ class ProjectsController extends GetxController {
     final more = await _service.getProjects(
       projectType: projectType,
       status: selectedStatus.value,
-      clientSlug: selectedClientSlug.value,
       county: selectedCounty.value,
       counties: selectedCounties,
+      sector: selectedSector.value,
       costMin: costMin,
       costMax: costMax,
+      costUsdMin: costUsdMin,
+      costUsdMax: costUsdMax,
       q: searchQuery.value,
       page: _page,
     );

@@ -63,9 +63,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
     if (counts == null || !mounted) return;
     setState(() {
       _reports = _reports
-          .map((e) => e.id == r.id
-              ? e.copyWith(upvotes: counts.upvotes, downvotes: counts.downvotes)
-              : e)
+          .map(
+            (e) => e.id == r.id
+                ? e.copyWith(
+                    upvotes: counts.upvotes,
+                    downvotes: counts.downvotes,
+                  )
+                : e,
+          )
           .toList();
     });
   }
@@ -83,75 +88,84 @@ class _ReportsScreenState extends State<ReportsScreen> {
             context: context,
             removeTop: true,
             child: Scaffold(
-            backgroundColor: AppColors.background,
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.white,
-              elevation: 0,
-              // Matches templates/infrastructure_reports.html's H1 exactly
-              // ("Report Infrastructure Issues") — the page itself is just a
-              // static placeholder with no real design to otherwise mirror,
-              // but the title/subtitle copy is real.
-              title: Text(
-                'Report Infrastructure Issues',
-                style: GoogleFonts.montserrat(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ),
-            floatingActionButton: FloatingActionButton.extended(
-              backgroundColor: AppColors.primaryBlue,
-              onPressed: () async {
-                final submitted = await Get.toNamed(AppRoutes.submitReport);
-                if (submitted == true) _load();
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: Text(
-                'Report',
-                style: GoogleFonts.montserrat(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            body: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: Colors.white,
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Text(
-                    "Help improve Kenya's infrastructure by reporting poorly constructed projects",
-                    style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textSubtle),
+              backgroundColor: AppColors.background,
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.white,
+                elevation: 0,
+                // Matches templates/infrastructure_reports.html's H1 exactly
+                // ("Report Infrastructure Issues") — the page itself is just a
+                // static placeholder with no real design to otherwise mirror,
+                // but the title/subtitle copy is real.
+                title: Text(
+                  'Report Infrastructure Issues',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
                   ),
                 ),
-                _filters(),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _load,
-                    child: _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _reports.isEmpty
-                            ? _empty()
-                            : ContentWidth(
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-                                  itemCount: _reports.length,
-                                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                                  itemBuilder: (_, i) => _ReportCard(
-                                    report: _reports[i],
-                                    onVote: (up) => _vote(_reports[i], up),
-                                  ),
+              ),
+              floatingActionButton: FloatingActionButton.extended(
+                backgroundColor: AppColors.primaryBlue,
+                onPressed: () async {
+                  final submitted = await Get.toNamed(AppRoutes.submitReport);
+                  if (submitted == true) _load();
+                },
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text(
+                  'Report',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              body: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Text(
+                      "Help improve Kenya's infrastructure by reporting poorly constructed projects",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12.5,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
+                  ),
+                  _filters(),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: _load,
+                      child: _loading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _reports.isEmpty
+                          ? _empty()
+                          : ContentWidth(
+                              child: ListView.separated(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  16,
+                                  90,
+                                ),
+                                itemCount: _reports.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(height: 10),
+                                itemBuilder: (_, i) => _ReportCard(
+                                  report: _reports[i],
+                                  onVote: (up) => _vote(_reports[i], up),
                                 ),
                               ),
+                            ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ],
@@ -193,47 +207,50 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _chip(String label, bool active, VoidCallback onTap) => Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            decoration: BoxDecoration(
-              color: active ? AppColors.primaryBlue : Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-              border: Border.all(
-                color: active ? AppColors.primaryBlue : AppColors.divider,
-              ),
-            ),
-            child: Text(
-              label,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: active ? Colors.white : AppColors.textSubtle,
-              ),
-            ),
+    padding: const EdgeInsets.only(right: 8),
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: active ? AppColors.primaryBlue : Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(
+            color: active ? AppColors.primaryBlue : AppColors.divider,
           ),
         ),
-      );
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: active ? Colors.white : AppColors.textSubtle,
+          ),
+        ),
+      ),
+    ),
+  );
 
   Widget _empty() => ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 80),
-        children: [
-          const Icon(Icons.report_gmailerrorred_outlined,
-              size: 44, color: AppColors.textSubtle),
-          const SizedBox(height: 14),
-          Text(
-            'No reports match this filter',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textDark,
-            ),
-          ),
-        ],
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 80),
+    children: [
+      const Icon(
+        Icons.report_gmailerrorred_outlined,
+        size: 44,
+        color: AppColors.textSubtle,
+      ),
+      const SizedBox(height: 14),
+      Text(
+        'No reports match this filter',
+        textAlign: TextAlign.center,
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textDark,
+        ),
+      ),
+    ],
+  );
 }
 
 String _titleCase(String s) =>
@@ -264,7 +281,10 @@ class _ReportCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: sevColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadius.chip),
@@ -280,7 +300,10 @@ class _ReportCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.divider,
                     borderRadius: BorderRadius.circular(AppRadius.chip),
@@ -296,7 +319,11 @@ class _ReportCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 if (report.isVerified)
-                  const Icon(Icons.verified, size: 15, color: AppColors.primaryBlue),
+                  const Icon(
+                    Icons.verified,
+                    size: 15,
+                    color: AppColors.primaryBlue,
+                  ),
               ],
             ),
             const SizedBox(height: 10),
@@ -313,7 +340,11 @@ class _ReportCard extends StatelessWidget {
               const SizedBox(height: 5),
               Row(
                 children: [
-                  const Icon(Icons.place_outlined, size: 13, color: AppColors.textSubtle),
+                  const Icon(
+                    Icons.place_outlined,
+                    size: 13,
+                    color: AppColors.textSubtle,
+                  ),
                   const SizedBox(width: 3),
                   Expanded(
                     child: Text(
@@ -373,23 +404,22 @@ class _ReportCard extends StatelessWidget {
     required IconData icon,
     required int count,
     required VoidCallback onTap,
-  }) =>
-      GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Row(
-          children: [
-            Icon(icon, size: 15, color: AppColors.textSubtle),
-            const SizedBox(width: 4),
-            Text(
-              '$count',
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSubtle,
-              ),
-            ),
-          ],
+  }) => GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: Row(
+      children: [
+        Icon(icon, size: 15, color: AppColors.textSubtle),
+        const SizedBox(width: 4),
+        Text(
+          '$count',
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSubtle,
+          ),
         ),
-      );
+      ],
+    ),
+  );
 }

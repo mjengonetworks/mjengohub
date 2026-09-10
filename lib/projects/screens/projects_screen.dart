@@ -10,15 +10,13 @@ import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
-import '../widgets/tracker_dynamic_sections.dart';
-import '../widgets/tracker_map_grid_section.dart';
 import 'project_detail_screen.dart';
 
 const _kBlue = Color(0xFF2563EB);
 const _kBg = Color(0xFFF0F4FF);
 const _kDark = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
-const _kDivider = Color(0xFFEEEEF5);
+const _kDivider = Color(0xFFE2E8F0);
 const _kCard = Colors.white;
 
 /// "Buildings" hierarchy (Spec 3) — client-side display/filter layer only.
@@ -156,32 +154,15 @@ class ProjectsScreen extends StatelessWidget {
                   // pins, tap-to-preview bottom sheet. Never gated behind a
                   // toggle and never pushed below other content.
                   const SizedBox(height: 12),
-                  TrackerLiveMap(projects: ctrl.projects, loading: false),
+                  _buildFilterControls(context, ctrl),
                   const SizedBox(height: 12),
 
                   // 2. Dedicated tracker control — status/county/client
                   // filter chips.
-                  _buildStatusChips(ctrl),
-                  _buildCostChips(ctrl),
-                  if (ctrl.availableCounties.isNotEmpty)
-                    _buildCountyChips(ctrl),
-                  if (ctrl.clients.isNotEmpty) _buildClientChips(ctrl),
-                  if (projectType == 'private_development')
-                    _BuildingsTaxonomyFilter(ctrl: ctrl),
-
-                  if (ctrl.featuredProjects.isNotEmpty)
-                    _buildFeaturedSection(ctrl),
-
-                  // 3-5. Browse by Category / Most Viewed / By Status
-                  const SizedBox(height: 12),
-                  TrackerDynamicSections(projectType: ctrl.projectType),
-
-                  // 6. All projects grid (paginated list feed)
-                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'All Projects',
+                      'Megaprojects',
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -241,8 +222,8 @@ class ProjectsScreen extends StatelessWidget {
             TextField(
               onSubmitted: (q) => ctrl.applyFilters(
                 status: ctrl.selectedStatus.value,
-                clientSlug: ctrl.selectedClientSlug.value,
                 county: ctrl.selectedCounty.value,
+                sector: ctrl.selectedSector.value,
                 q: q,
               ),
               style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
@@ -283,212 +264,191 @@ class ProjectsScreen extends StatelessWidget {
     );
   }
 
-  static const _statusOptions = ['planned', 'ongoing', 'completed', 'stalled'];
-
-  Widget _buildStatusChips(ProjectsController ctrl) {
-    return Container(
-      height: 42,
-      color: _kCard,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        itemCount: _statusOptions.length + 1,
-        itemBuilder: (_, i) {
-          if (i == 0) {
-            return _FilterChip(
-              label: 'All',
-              selected: ctrl.selectedStatus.value.isEmpty,
-              onTap: () => ctrl.applyFilters(
-                status: '',
-                clientSlug: ctrl.selectedClientSlug.value,
-                county: ctrl.selectedCounty.value,
-                q: ctrl.searchQuery.value,
-              ),
-            );
-          }
-          final status = _statusOptions[i - 1];
-          return _FilterChip(
-            label: Project.labelForStatus(status),
-            selected: ctrl.selectedStatus.value == status,
-            onTap: () => ctrl.applyFilters(
-              status: status,
-              clientSlug: ctrl.selectedClientSlug.value,
-              county: ctrl.selectedCounty.value,
-              q: ctrl.searchQuery.value,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildClientChips(ProjectsController ctrl) {
-    return Container(
-      height: 46,
-      color: _kCard,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: ctrl.clients.length + 1,
-        itemBuilder: (_, i) {
-          if (i == 0) {
-            return _FilterChip(
-              label: 'All',
-              selected: ctrl.selectedClientSlug.value.isEmpty,
-              onTap: () => ctrl.applyFilters(
-                status: ctrl.selectedStatus.value,
-                clientSlug: '',
-                county: ctrl.selectedCounty.value,
-                q: ctrl.searchQuery.value,
-              ),
-            );
-          }
-          final client = ctrl.clients[i - 1];
-          return _FilterChip(
-            label: client.name,
-            selected: ctrl.selectedClientSlug.value == client.slug,
-            onTap: () => ctrl.applyFilters(
-              status: ctrl.selectedStatus.value,
-              clientSlug: client.slug,
-              county: ctrl.selectedCounty.value,
-              q: ctrl.searchQuery.value,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildCountyChips(ProjectsController ctrl) {
-    final counties = ctrl.availableCounties;
-    return Container(
-      height: 52,
-      color: _kCard,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: OutlinedButton.icon(
-          icon: const Icon(Icons.location_on_outlined, size: 17),
-          label: Text(
-            ctrl.selectedCounties.isEmpty
-                ? 'All Counties (47)'
-                : '${ctrl.selectedCounties.length} counties selected',
-          ),
-          onPressed: () async {
-            final selected = ctrl.selectedCounties.toSet();
-            await showModalBottomSheet<void>(
-              context: Get.context!,
-              isScrollControlled: true,
-              builder: (context) => StatefulBuilder(
-                builder: (context, setSheetState) => SafeArea(
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height * .75,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: const Text('Select counties'),
-                          trailing: Text('${selected.length}/47'),
-                        ),
-                        Expanded(
-                          child: ListView(
-                            children: [
-                              for (final county in counties)
-                                CheckboxListTile(
-                                  title: Text(county),
-                                  value: selected.contains(county),
-                                  onChanged: (value) => setSheetState(
-                                    () => value == true
-                                        ? selected.add(county)
-                                        : selected.remove(county),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                ctrl.applyCountySelection(selected.toList());
-                              },
-                              child: const Text('Apply counties'),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+  Widget _buildFilterControls(BuildContext context, ProjectsController ctrl) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Filter projects',
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _kDark,
                 ),
               ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCostChips(ProjectsController ctrl) {
-    const tiers = ['<100M', '100M-500M', '500M-1B', '1B-5B', '5B+'];
-    return SizedBox(
-      height: 42,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        children: [
-          _FilterChip(
-            label: 'All Costs',
-            selected: ctrl.selectedCostTier.value.isEmpty,
-            onTap: () {
-              ctrl.selectedCostTier.value = '';
-              ctrl.fetchAll();
-            },
+              const Spacer(),
+              if (ctrl.activeFilterCount > 0)
+                TextButton(
+                  onPressed: ctrl.clearFilters,
+                  child: const Text('Clear All'),
+                ),
+            ],
           ),
-          for (final tier in tiers)
-            _FilterChip(
-              label: tier == '<100M' ? 'Under 100M' : tier,
-              selected: ctrl.selectedCostTier.value == tier,
-              onTap: () {
-                ctrl.selectedCostTier.value = tier;
-                ctrl.fetchAll();
-              },
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _LabeledFilterButton(
+                label: 'County',
+                value: ctrl.selectedCounties.isEmpty
+                    ? 'All 47 Counties'
+                    : '${ctrl.selectedCounties.length} selected',
+                icon: Icons.location_on_outlined,
+                onTap: () => _showCountySheet(context, ctrl),
+              ),
+              _LabeledFilterButton(
+                label: 'Sector',
+                value: ctrl.selectedSector.value.isEmpty
+                    ? 'All sectors'
+                    : ctrl.selectedSector.value,
+                icon: Icons.category_outlined,
+                onTap: () => _showSingleSelectSheet(
+                  context,
+                  title: 'Select Sector',
+                  options: ProjectsController.sectorOptions,
+                  selected: ctrl.selectedSector.value,
+                  onSelected: (value) => ctrl.applyFilters(sector: value),
+                ),
+              ),
+              _LabeledFilterButton(
+                label: 'Status',
+                value: _statusLabel(ctrl.selectedStatus.value),
+                icon: Icons.timelapse_outlined,
+                onTap: () => _showSingleSelectSheet(
+                  context,
+                  title: 'Select Status',
+                  options: const [
+                    'Announced',
+                    'Under Construction',
+                    'Completed',
+                    'Stalled',
+                  ],
+                  values: const ['planned', 'ongoing', 'completed', 'stalled'],
+                  selected: ctrl.selectedStatus.value,
+                  onSelected: (value) => ctrl.applyFilters(status: value),
+                ),
+              ),
+              _LabeledFilterButton(
+                label: 'Cost Tier',
+                value: _costTierLabel(ctrl.selectedCostTier.value),
+                icon: Icons.payments_outlined,
+                onTap: () => _showSingleSelectSheet(
+                  context,
+                  title: 'Select Cost Tier',
+                  options: const [
+                    'Under KES 100M',
+                    'KES 100M–500M',
+                    'KES 500M–1B',
+                    'KES 1B–5B',
+                    'KES 5B+',
+                    'Under USD 1M',
+                    'USD 1M–5M',
+                    'USD 5M–10M',
+                    'USD 10M+',
+                  ],
+                  values: const [
+                    '<100M',
+                    '100M-500M',
+                    '500M-1B',
+                    '1B-5B',
+                    '5B+',
+                    'usd_under_1m',
+                    'usd_1m_5m',
+                    'usd_5m_10m',
+                    'usd_10m_plus',
+                  ],
+                  selected: ctrl.selectedCostTier.value,
+                  onSelected: (value) {
+                    ctrl.selectedCostTier.value = value;
+                    ctrl.fetchAll();
+                  },
+                ),
+              ),
+            ],
+          ),
+          if (ctrl.activeFilterCount > 0) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Filters (${ctrl.activeFilterCount}) active',
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                color: _kBlue,
+                fontWeight: FontWeight.w600,
+              ),
             ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildFeaturedSection(ProjectsController ctrl) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Notable Projects',
-            style: GoogleFonts.montserrat(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: _kDark,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: ctrl.featuredProjects.length,
-            itemBuilder: (_, i) =>
-                _FeaturedProjectCard(project: ctrl.featuredProjects[i]),
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Divider(height: 1, color: _kDivider),
-      ],
+  String _statusLabel(String status) => switch (status) {
+    'planned' => 'Announced',
+    'ongoing' => 'Under Construction',
+    'completed' => 'Completed',
+    'stalled' => 'Stalled',
+    _ => 'All statuses',
+  };
+
+  String _costTierLabel(String tier) => switch (tier) {
+    '<100M' => 'Under KES 100M',
+    '100M-500M' => 'KES 100M–500M',
+    '500M-1B' => 'KES 500M–1B',
+    '1B-5B' => 'KES 1B–5B',
+    '5B+' => 'KES 5B+',
+    'usd_under_1m' => 'Under USD 1M',
+    'usd_1m_5m' => 'USD 1M–5M',
+    'usd_5m_10m' => 'USD 5M–10M',
+    'usd_10m_plus' => 'USD 10M+',
+    _ => 'All ranges',
+  };
+
+  Future<void> _showCountySheet(
+    BuildContext context,
+    ProjectsController ctrl,
+  ) async {
+    final selected = ctrl.selectedCounties.toSet();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _SearchableMultiSelectSheet(
+        title: 'Select County',
+        options: ctrl.availableCounties,
+        selected: selected,
+        onApply: (values) {
+          Navigator.pop(sheetContext);
+          ctrl.applyCountySelection(values);
+        },
+      ),
+    );
+  }
+
+  Future<void> _showSingleSelectSheet(
+    BuildContext context, {
+    required String title,
+    required List<String> options,
+    List<String>? values,
+    required String selected,
+    required ValueChanged<String> onSelected,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _SearchableSelectSheet(
+        title: title,
+        options: options,
+        values: values,
+        selected: selected,
+        onSelected: (value) {
+          Navigator.pop(sheetContext);
+          onSelected(value);
+        },
+      ),
     );
   }
 
@@ -533,7 +493,7 @@ class _FeaturedProjectCard extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
           color: _kCard,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _kDivider),
           boxShadow: const [
             BoxShadow(
@@ -622,7 +582,7 @@ class _ProjectListTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: _kCard,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _kDivider),
           boxShadow: const [
             BoxShadow(
@@ -638,8 +598,8 @@ class _ProjectListTile extends StatelessWidget {
             // Thumbnail
             ClipRRect(
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(14),
-                bottomLeft: Radius.circular(14),
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
               ),
               child: SizedBox(
                 width: 100,
@@ -664,6 +624,8 @@ class _ProjectListTile extends StatelessWidget {
                     Row(
                       children: [
                         _StatusBadge(status: project.status),
+                        const SizedBox(width: 6),
+                        _MetricTag(label: project.sectorLabel),
                         if (project.client != null) ...[
                           const SizedBox(width: 6),
                           Flexible(
@@ -697,6 +659,27 @@ class _ProjectListTile extends StatelessWidget {
                         '📍 ${project.county ?? project.location}',
                         style: GoogleFonts.montserrat(
                           fontSize: 11,
+                          color: _kSubtext,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Text(
+                      'Budget: ${project.budgetTier}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10.5,
+                        color: _kSubtext,
+                      ),
+                    ),
+                    if (project.contractor != null &&
+                        project.contractor!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Contractor: ${project.contractor}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10.5,
                           color: _kSubtext,
                         ),
                       ),
@@ -912,6 +895,253 @@ class _BuildingsTaxonomyFilterState extends State<_BuildingsTaxonomyFilter> {
             );
           }),
       ],
+    );
+  }
+}
+
+class _LabeledFilterButton extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _LabeledFilterButton({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _kDivider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 17, color: _kBlue),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: _kSubtext,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _kDark,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.expand_more_rounded, size: 18, color: _kSubtext),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetricTag extends StatelessWidget {
+  final String label;
+  const _MetricTag({required this.label});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+      color: _kBg,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      label,
+      style: GoogleFonts.montserrat(
+        fontSize: 9.5,
+        fontWeight: FontWeight.w600,
+        color: _kBlue,
+      ),
+    ),
+  );
+}
+
+class _SearchableSelectSheet extends StatefulWidget {
+  final String title;
+  final List<String> options;
+  final List<String>? values;
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  const _SearchableSelectSheet({
+    required this.title,
+    required this.options,
+    this.values,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  State<_SearchableSelectSheet> createState() => _SearchableSelectSheetState();
+}
+
+class _SearchableSelectSheetState extends State<_SearchableSelectSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = widget.options
+        .asMap()
+        .entries
+        .where(
+          (entry) => entry.value.toLowerCase().contains(_query.toLowerCase()),
+        )
+        .toList();
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * .72,
+        child: Column(
+          children: [
+            ListTile(
+              title: Text(
+                widget.title,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: const Icon(Icons.close_rounded),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search_rounded),
+                  hintText: 'Search options',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: RadioGroup<String>(
+                groupValue: widget.selected,
+                onChanged: (selected) {
+                  if (selected != null) widget.onSelected(selected);
+                },
+                child: ListView.builder(
+                  itemCount: visible.length,
+                  itemBuilder: (_, index) {
+                    final entry = visible[index];
+                    final value = widget.values?[entry.key] ?? entry.value;
+                    return RadioListTile<String>(
+                      title: Text(entry.value),
+                      value: value,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchableMultiSelectSheet extends StatefulWidget {
+  final String title;
+  final List<String> options;
+  final Set<String> selected;
+  final ValueChanged<List<String>> onApply;
+
+  const _SearchableMultiSelectSheet({
+    required this.title,
+    required this.options,
+    required this.selected,
+    required this.onApply,
+  });
+
+  @override
+  State<_SearchableMultiSelectSheet> createState() =>
+      _SearchableMultiSelectSheetState();
+}
+
+class _SearchableMultiSelectSheetState
+    extends State<_SearchableMultiSelectSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = widget.options
+        .where((option) => option.toLowerCase().contains(_query.toLowerCase()))
+        .toList();
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * .78,
+        child: Column(
+          children: [
+            ListTile(
+              title: Text(
+                widget.title,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: Text('${widget.selected.length} selected'),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search_rounded),
+                  hintText: 'Search counties',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: visible.length,
+                itemBuilder: (_, index) => CheckboxListTile(
+                  title: Text(visible[index]),
+                  value: widget.selected.contains(visible[index]),
+                  onChanged: (checked) => setState(
+                    () => checked == true
+                        ? widget.selected.add(visible[index])
+                        : widget.selected.remove(visible[index]),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => widget.onApply(widget.selected.toList()),
+                  child: const Text('Apply County Filter'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -49,11 +49,21 @@ class _SectionHeader extends StatelessWidget {
   final bool isDemo;
   final String seeAllLabel;
 
-  const _SectionHeader({required this.title, this.onSeeAll, this.isDemo = false, this.seeAllLabel = 'See All'});
+  const _SectionHeader({
+    required this.title,
+    this.onSeeAll,
+    this.isDemo = false,
+    this.seeAllLabel = 'See All',
+  });
 
   @override
   Widget build(BuildContext context) {
-    return shared.SectionHeader(title: title, onSeeAll: onSeeAll, isDemo: isDemo, seeAllLabel: seeAllLabel);
+    return shared.SectionHeader(
+      title: title,
+      onSeeAll: onSeeAll,
+      isDemo: isDemo,
+      seeAllLabel: seeAllLabel,
+    );
   }
 }
 
@@ -79,7 +89,10 @@ class FeaturedArticlesAnalysisSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Featured Articles & Analysis', onSeeAll: onSeeAll),
+        _SectionHeader(
+          title: 'Featured Articles & Analysis',
+          onSeeAll: onSeeAll,
+        ),
         const SizedBox(height: 10),
         for (int i = 0; i < items.length; i++) ...[
           GestureDetector(
@@ -98,8 +111,14 @@ class FeaturedArticlesAnalysisSection extends StatelessWidget {
                       color: AppColors.accentBlue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(7),
                     ),
-                    child: Text('${i + 1}',
-                        style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+                    child: Text(
+                      '${i + 1}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.accentBlue,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -107,10 +126,19 @@ class FeaturedArticlesAnalysisSection extends StatelessWidget {
                       items[i].title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w600, color: AppColors.textDark, height: 1.35),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                        height: 1.35,
+                      ),
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textSubtle),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: AppColors.textSubtle,
+                  ),
                 ],
               ),
             ),
@@ -132,10 +160,12 @@ class BrowseProjectsByCategorySection extends StatefulWidget {
   const BrowseProjectsByCategorySection({super.key});
 
   @override
-  State<BrowseProjectsByCategorySection> createState() => _BrowseProjectsByCategorySectionState();
+  State<BrowseProjectsByCategorySection> createState() =>
+      _BrowseProjectsByCategorySectionState();
 }
 
-class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCategorySection> {
+class _BrowseProjectsByCategorySectionState
+    extends State<BrowseProjectsByCategorySection> {
   final _service = ProjectsService();
   List<Project> _projects = [];
   bool _loading = true;
@@ -193,7 +223,10 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
                     childAspectRatio: 0.95,
                   ),
                   itemBuilder: (_, _) => Container(
-                    decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(14)),
+                    decoration: BoxDecoration(
+                      color: AppColors.divider,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 )
               : GridView.builder(
@@ -206,7 +239,8 @@ class _BrowseProjectsByCategorySectionState extends State<BrowseProjectsByCatego
                     crossAxisSpacing: 10,
                     childAspectRatio: 0.95,
                   ),
-                  itemBuilder: (_, i) => _ProjectCategoryCard(project: _projects[i]),
+                  itemBuilder: (_, i) =>
+                      _ProjectCategoryCard(project: _projects[i]),
                 ),
         ),
       ],
@@ -221,7 +255,10 @@ class _ProjectCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -252,14 +289,22 @@ class _ProjectCategoryCard extends StatelessWidget {
                     top: 6,
                     left: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.accentBlue,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         project.statusLabel.toUpperCase(),
-                        style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          letterSpacing: 0.4,
+                        ),
                       ),
                     ),
                   ),
@@ -272,7 +317,12 @@ class _ProjectCategoryCard extends StatelessWidget {
                 project.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textDark, height: 1.25),
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                  height: 1.25,
+                ),
               ),
             ),
           ],
@@ -280,7 +330,6 @@ class _ProjectCategoryCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ── Ecosystem cross-promotion: two standalone banners (Mjengo Networks,
@@ -320,7 +369,8 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
   void initState() {
     super.initState();
     _service.getHeroImages(pageKey: widget.heroImagePageKey).then((icons) {
-      if (mounted && icons.isNotEmpty) setState(() => _icon = icons.first.image);
+      if (mounted && icons.isNotEmpty)
+        setState(() => _icon = icons.first.image);
     });
   }
 
@@ -341,16 +391,32 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _EcosystemIcon(imageUrl: _icon, fallbackIcon: widget.fallbackIcon),
+                _EcosystemIcon(
+                  imageUrl: _icon,
+                  fallbackIcon: widget.fallbackIcon,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white)),
+                      Text(
+                        widget.title,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(widget.subtitle,
-                          style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white.withValues(alpha: 0.92), height: 1.4)),
+                      Text(
+                        widget.subtitle,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.92),
+                          height: 1.4,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -365,10 +431,18 @@ class _EcosystemBannerState extends State<_EcosystemBanner> {
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 11),
                   side: BorderSide.none,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: Text(widget.ctaLabel,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                child: Text(
+                  widget.ctaLabel,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
               ),
             ),
           ],
@@ -388,10 +462,14 @@ class MjengoNetworksBanner extends StatelessWidget {
       url: 'https://mjengonetworks.co.ke/',
       fallbackIcon: Icons.hub_rounded,
       title: 'Mjengo Networks',
-      subtitle: 'Mjengo Networks — redefining construction networking in Kenya '
+      subtitle:
+          'Mjengo Networks — redefining construction networking in Kenya '
           'and beyond. Mjengo Hub is proudly built and run by Mjengo Networks.',
       ctaLabel: 'Visit Mjengo Networks →',
-      background: () => BoxDecoration(gradient: AppColors.verifiedPillGradient, borderRadius: BorderRadius.circular(14)),
+      background: () => BoxDecoration(
+        gradient: AppColors.verifiedPillGradient,
+        borderRadius: BorderRadius.circular(14),
+      ),
     );
   }
 }
@@ -406,9 +484,13 @@ class ShareBarabaraBanner extends StatelessWidget {
       url: 'https://sharebarabara.co.ke',
       fallbackIcon: Icons.directions_car_filled_rounded,
       title: 'Share Barabara',
-      subtitle: 'Report and track road conditions across Kenya, together with fellow road users.',
+      subtitle:
+          'Report and track road conditions across Kenya, together with fellow road users.',
       ctaLabel: 'Visit Share Barabara →',
-      background: () => BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(14)),
+      background: () => BoxDecoration(
+        color: AppColors.danger,
+        borderRadius: BorderRadius.circular(14),
+      ),
     );
   }
 }
@@ -428,8 +510,14 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
     SocialLinkInfo(platform: 'twitter', url: 'https://x.com/mjengohub'),
     SocialLinkInfo(platform: 'tiktok', url: 'https://tiktok.com/@mjengohub'),
     SocialLinkInfo(platform: 'facebook', url: 'https://facebook.com/mjengohub'),
-    SocialLinkInfo(platform: 'instagram', url: 'https://instagram.com/mjengohub'),
-    SocialLinkInfo(platform: 'whatsapp', url: 'https://whatsapp.com/channel/mjengohub'),
+    SocialLinkInfo(
+      platform: 'instagram',
+      url: 'https://instagram.com/mjengohub',
+    ),
+    SocialLinkInfo(
+      platform: 'whatsapp',
+      url: 'https://whatsapp.com/channel/mjengohub',
+    ),
     SocialLinkInfo(platform: 'telegram', url: 'https://t.me/mjengohub'),
   ];
 
@@ -498,13 +586,18 @@ class _SocialLinksGridState extends State<SocialLinksGrid> {
             spacing: 12,
             runSpacing: 12,
             children: _links
-                .map((l) => _SocialIcon(
-                      brand: _brandFor[l.platform],
-                      fallbackIcon: _fallbackIconFor[l.platform] ?? Icons.link_rounded,
-                      color: _colorFor[l.platform] ?? AppColors.textSubtle,
-                      url: l.url,
-                      label: l.label?.isNotEmpty == true ? l.label! : (_labelFor[l.platform] ?? l.platform),
-                    ))
+                .map(
+                  (l) => _SocialIcon(
+                    brand: _brandFor[l.platform],
+                    fallbackIcon:
+                        _fallbackIconFor[l.platform] ?? Icons.link_rounded,
+                    color: _colorFor[l.platform] ?? AppColors.textSubtle,
+                    url: l.url,
+                    label: l.label?.isNotEmpty == true
+                        ? l.label!
+                        : (_labelFor[l.platform] ?? l.platform),
+                  ),
+                )
                 .toList(),
           ),
         ),
@@ -523,9 +616,21 @@ class _NetworkSitesDirectory extends StatelessWidget {
   const _NetworkSitesDirectory();
 
   static const _sites = [
-    (label: 'Mjengo Hub', domain: 'mjengohub.co.ke', url: 'https://mjengohub.co.ke'),
-    (label: 'Share Barabara', domain: 'sharebarabara.co.ke', url: 'https://sharebarabara.co.ke'),
-    (label: 'Mjengo Networks', domain: 'mjengonetworks.co.ke', url: 'https://mjengonetworks.co.ke/'),
+    (
+      label: 'Mjengo Hub',
+      domain: 'mjengohub.co.ke',
+      url: 'https://mjengohub.co.ke',
+    ),
+    (
+      label: 'Share Barabara',
+      domain: 'sharebarabara.co.ke',
+      url: 'https://sharebarabara.co.ke',
+    ),
+    (
+      label: 'Mjengo Networks',
+      domain: 'mjengonetworks.co.ke',
+      url: 'https://mjengonetworks.co.ke/',
+    ),
   ];
 
   @override
@@ -535,7 +640,15 @@ class _NetworkSitesDirectory extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Our Network', style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
+          Text(
+            'Our Network',
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSubtle,
+              letterSpacing: 0.4,
+            ),
+          ),
           const SizedBox(height: 8),
           for (final site in _sites)
             Padding(
@@ -544,11 +657,28 @@ class _NetworkSitesDirectory extends StatelessWidget {
                 onTap: () => LinkLauncher.openLink(context, site.url),
                 child: Row(
                   children: [
-                    const Icon(Icons.public, size: 14, color: AppColors.accentBlue),
+                    const Icon(
+                      Icons.public,
+                      size: 14,
+                      color: AppColors.accentBlue,
+                    ),
                     const SizedBox(width: 8),
-                    Text(site.label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                    Text(
+                      site.label,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Text(site.domain, style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle)),
+                    Text(
+                      site.domain,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -576,12 +706,19 @@ class _EcosystemIcon extends StatelessWidget {
     return Container(
       width: _diameter,
       height: _diameter,
-      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+      ),
       child: (imageUrl != null && imageUrl!.isNotEmpty)
           ? Padding(
               padding: const EdgeInsets.all(_diameter * 0.12),
               child: ClipOval(
-                child: NetImage(url: imageUrl, fit: BoxFit.contain, placeholderColor: Colors.transparent),
+                child: NetImage(
+                  url: imageUrl,
+                  fit: BoxFit.contain,
+                  placeholderColor: Colors.transparent,
+                ),
               ),
             )
           : Icon(fallbackIcon, color: Colors.white, size: 22),
@@ -595,7 +732,13 @@ class _SocialIcon extends StatelessWidget {
   final Color color;
   final String url;
   final String label;
-  const _SocialIcon({required this.brand, required this.fallbackIcon, required this.color, required this.url, required this.label});
+  const _SocialIcon({
+    required this.brand,
+    required this.fallbackIcon,
+    required this.color,
+    required this.url,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -608,13 +751,23 @@ class _SocialIcon extends StatelessWidget {
             width: 46,
             height: 46,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
             child: brand != null
                 ? BrandIconWidget(icon: brand!, color: color, size: 20)
                 : Icon(fallbackIcon, color: color, size: 21),
           ),
           const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.montserrat(fontSize: 9.5, color: AppColors.textSubtle, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 9.5,
+              color: AppColors.textSubtle,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -645,11 +798,13 @@ class FeaturedProjectsSection extends StatefulWidget {
     super.key,
     this.featured = true,
     this.title = 'Featured Infrastructure Projects',
-    this.subtitle = 'Roads, bridges and major public infrastructure tracked across Kenya',
+    this.subtitle =
+        'Roads, bridges and major public infrastructure tracked across Kenya',
   });
 
   @override
-  State<FeaturedProjectsSection> createState() => _FeaturedProjectsSectionState();
+  State<FeaturedProjectsSection> createState() =>
+      _FeaturedProjectsSectionState();
 }
 
 class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
@@ -668,11 +823,18 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
     // Infrastructure only — Private Developments gets its own dedicated
     // showcase section (PrivateDevelopmentsShowcaseSection) further down the
     // homepage, so the two don't show overlapping cards.
-    var projects = await _service.getProjects(featured: widget.featured, projectType: 'infrastructure', perPage: 8);
+    var projects = await _service.getProjects(
+      featured: widget.featured,
+      projectType: 'infrastructure',
+      perPage: 8,
+    );
     // Spec 8: guaranteed fallback — an empty featured cut falls back to the
     // general unfiltered list before resorting to demo data.
     if (projects.isEmpty && widget.featured) {
-      projects = await _service.getProjects(projectType: 'infrastructure', perPage: 8);
+      projects = await _service.getProjects(
+        projectType: 'infrastructure',
+        perPage: 8,
+      );
     }
     if (!mounted) return;
     if (projects.isEmpty) {
@@ -706,7 +868,10 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             widget.subtitle,
-            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: AppColors.textSubtle,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -731,7 +896,8 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _projects.take(4).length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => _FeaturedProjectCard(project: _projects[i]),
+                  itemBuilder: (_, i) =>
+                      _FeaturedProjectCard(project: _projects[i]),
                 ),
         ),
       ],
@@ -755,14 +921,23 @@ class _FeaturedProjectCard extends StatelessWidget {
     final statusColor = _statusColors[project.status] ?? AppColors.textSubtle;
 
     return GestureDetector(
-      onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
       child: Container(
         width: 220,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.divider),
-          boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 3))],
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x06000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -782,7 +957,10 @@ class _FeaturedProjectCard extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: _pill(project.statusLabel.toUpperCase(), statusColor),
+                    child: _pill(
+                      project.statusLabel.toUpperCase(),
+                      statusColor,
+                    ),
                   ),
                 ],
               ),
@@ -796,20 +974,31 @@ class _FeaturedProjectCard extends StatelessWidget {
                     project.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
                   ),
                   if ((project.county ?? project.location) != null) ...[
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        const Icon(Icons.place_outlined, size: 11, color: AppColors.textSubtle),
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 11,
+                          color: AppColors.textSubtle,
+                        ),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             project.county ?? project.location!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10.5,
+                              color: AppColors.textSubtle,
+                            ),
                           ),
                         ),
                       ],
@@ -828,7 +1017,10 @@ class _FeaturedProjectCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     '${project.progressPercent}% complete',
-                    style: GoogleFonts.montserrat(fontSize: 10, color: AppColors.textSubtle),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      color: AppColors.textSubtle,
+                    ),
                   ),
                 ],
               ),
@@ -840,13 +1032,21 @@ class _FeaturedProjectCard extends StatelessWidget {
   }
 
   Widget _pill(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5)),
-        child: Text(
-          label,
-          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.3),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: Text(
+      label,
+      style: GoogleFonts.montserrat(
+        fontSize: 7.5,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+        letterSpacing: 0.3,
+      ),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -860,10 +1060,12 @@ class BuiltHistoryPreviewSection extends StatefulWidget {
   const BuiltHistoryPreviewSection({super.key});
 
   @override
-  State<BuiltHistoryPreviewSection> createState() => _BuiltHistoryPreviewSectionState();
+  State<BuiltHistoryPreviewSection> createState() =>
+      _BuiltHistoryPreviewSectionState();
 }
 
-class _BuiltHistoryPreviewSectionState extends State<BuiltHistoryPreviewSection> {
+class _BuiltHistoryPreviewSectionState
+    extends State<BuiltHistoryPreviewSection> {
   final _service = ProjectsService();
   List<Project> _projects = [];
   bool _loading = true;
@@ -891,13 +1093,19 @@ class _BuiltHistoryPreviewSectionState extends State<BuiltHistoryPreviewSection>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Built History', onSeeAll: () => Get.to(() => const BuiltHistoryScreen())),
+        _SectionHeader(
+          title: 'Built History',
+          onSeeAll: () => Get.to(() => const BuiltHistoryScreen()),
+        ),
         const SizedBox(height: 4),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Kenya\'s architectural and infrastructure heritage',
-            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: AppColors.textSubtle,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -931,7 +1139,8 @@ class AfricaWorldPreviewSection extends StatefulWidget {
   const AfricaWorldPreviewSection({super.key});
 
   @override
-  State<AfricaWorldPreviewSection> createState() => _AfricaWorldPreviewSectionState();
+  State<AfricaWorldPreviewSection> createState() =>
+      _AfricaWorldPreviewSectionState();
 }
 
 class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
@@ -962,13 +1171,19 @@ class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Africa & World', onSeeAll: () => Get.to(() => const AfricaWorldScreen())),
+        _SectionHeader(
+          title: 'Africa & World',
+          onSeeAll: () => Get.to(() => const AfricaWorldScreen()),
+        ),
         const SizedBox(height: 4),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Landmark projects from across the continent and beyond',
-            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: AppColors.textSubtle,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -1005,13 +1220,19 @@ class PrivateDevelopmentsShowcaseSection extends StatefulWidget {
   final bool featured;
   final String title;
 
-  const PrivateDevelopmentsShowcaseSection({super.key, this.featured = false, this.title = 'Private Developments'});
+  const PrivateDevelopmentsShowcaseSection({
+    super.key,
+    this.featured = false,
+    this.title = 'Private Developments',
+  });
 
   @override
-  State<PrivateDevelopmentsShowcaseSection> createState() => _PrivateDevelopmentsShowcaseSectionState();
+  State<PrivateDevelopmentsShowcaseSection> createState() =>
+      _PrivateDevelopmentsShowcaseSectionState();
 }
 
-class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopmentsShowcaseSection> {
+class _PrivateDevelopmentsShowcaseSectionState
+    extends State<PrivateDevelopmentsShowcaseSection> {
   final _service = ProjectsService();
   List<Project> _projects = [];
   bool _loading = true;
@@ -1023,11 +1244,18 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
   }
 
   Future<void> _load() async {
-    var projects = await _service.getProjects(projectType: 'private_development', featured: widget.featured, perPage: 8);
+    var projects = await _service.getProjects(
+      projectType: 'private_development',
+      featured: widget.featured,
+      perPage: 8,
+    );
     // Spec 8: guaranteed fallback — an empty featured cut falls back to the
     // general unfiltered list.
     if (projects.isEmpty && widget.featured) {
-      projects = await _service.getProjects(projectType: 'private_development', perPage: 8);
+      projects = await _service.getProjects(
+        projectType: 'private_development',
+        perPage: 8,
+      );
     }
     if (!mounted) return;
     setState(() {
@@ -1052,7 +1280,10 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Buildings — residential, commercial and mixed-use developments',
-            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: AppColors.textSubtle,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -1065,7 +1296,8 @@ class _PrivateDevelopmentsShowcaseSectionState extends State<PrivateDevelopments
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _projects.take(4).length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => TrackerProjectCard(project: _projects[i]),
+                  itemBuilder: (_, i) =>
+                      TrackerProjectCard(project: _projects[i]),
                 ),
         ),
       ],
@@ -1104,11 +1336,16 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
   }
 
   Future<void> _load() async {
-    final results = await _service.getIncidents(type: 'site_safety', perPage: 8);
+    final results = await _service.getIncidents(
+      type: 'site_safety',
+      perPage: 8,
+    );
     if (!mounted) return;
     if (results.isEmpty) {
       setState(() {
-        _incidents = demoIncidents().where((i) => i.incidentType == 'site_safety').toList();
+        _incidents = demoIncidents()
+            .where((i) => i.incidentType == 'site_safety')
+            .toList();
         _isDemo = true;
         _loading = false;
       });
@@ -1133,9 +1370,17 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
             children: [
               const Text(
                 'Site Safety',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
               ),
-              if (_isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
+              if (_isDemo)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: PreviewDataBadge(),
+                ),
             ],
           ),
         ),
@@ -1144,7 +1389,10 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Construction site incidents from across Kenya',
-            style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: AppColors.textSubtle,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -1169,7 +1417,8 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: _incidents.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => _SafetyIncidentCard(incident: _incidents[i]),
+                  itemBuilder: (_, i) =>
+                      _SafetyIncidentCard(incident: _incidents[i]),
                 ),
         ),
         const SizedBox(height: 14),
@@ -1185,7 +1434,11 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
     );
   }
 
-  Widget _ctaChip({required String label, required Color color, required VoidCallback onTap}) {
+  Widget _ctaChip({
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1198,7 +1451,11 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: color),
+          style: GoogleFonts.montserrat(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w500,
+            color: color,
+          ),
         ),
       ),
     );
@@ -1222,10 +1479,12 @@ class _SafetyIncidentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRoad = incident.isRoadSafety;
-    final severityColor = _severityColors[incident.severity] ?? AppColors.textSubtle;
+    final severityColor =
+        _severityColors[incident.severity] ?? AppColors.textSubtle;
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
+      onTap: () =>
+          Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
       child: Container(
         width: 200,
         decoration: BoxDecoration(
@@ -1252,18 +1511,26 @@ class _SafetyIncidentCard extends StatelessWidget {
                     url: incident.imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    placeholderColor: isRoad ? const Color(0xFF7F1D1D) : const Color(0xFF78350F),
+                    placeholderColor: isRoad
+                        ? const Color(0xFF7F1D1D)
+                        : const Color(0xFF78350F),
                     placeholderIcon: Icons.report_problem_rounded,
                   ),
                   Positioned(
                     top: 7,
                     left: 7,
-                    child: _pill(isRoad ? 'ROAD' : 'SITE', isRoad ? const Color(0xFFDC2626) : AppColors.warning),
+                    child: _pill(
+                      isRoad ? 'ROAD' : 'SITE',
+                      isRoad ? const Color(0xFFDC2626) : AppColors.warning,
+                    ),
                   ),
                   Positioned(
                     top: 7,
                     right: 7,
-                    child: _pill(incident.severity.toUpperCase(), severityColor),
+                    child: _pill(
+                      incident.severity.toUpperCase(),
+                      severityColor,
+                    ),
                   ),
                 ],
               ),
@@ -1277,20 +1544,32 @@ class _SafetyIncidentCard extends StatelessWidget {
                     incident.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textDark, height: 1.3),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                      height: 1.3,
+                    ),
                   ),
                   if ((incident.county ?? incident.location) != null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.place_outlined, size: 11, color: AppColors.textSubtle),
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 11,
+                          color: AppColors.textSubtle,
+                        ),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             incident.county ?? incident.location!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10.5,
+                              color: AppColors.textSubtle,
+                            ),
                           ),
                         ),
                       ],
@@ -1306,13 +1585,21 @@ class _SafetyIncidentCard extends StatelessWidget {
   }
 
   Widget _pill(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5)),
-        child: Text(
-          label,
-          style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.3),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: Text(
+      label,
+      style: GoogleFonts.montserrat(
+        fontSize: 7.5,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+        letterSpacing: 0.3,
+      ),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1345,7 +1632,8 @@ class _CategoryPillsBarState extends State<CategoryPillsBar> {
     if (Get.isRegistered<DiscoverController>()) {
       Get.find<DiscoverController>().selectCategory(slug);
     }
-    Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+    Get.find<MainNavController>().currentIndex.value =
+        MainNavController.tabNews;
   }
 
   @override
@@ -1372,7 +1660,11 @@ class _CategoryPillsBarState extends State<CategoryPillsBar> {
               ),
               child: Text(
                 cat.name,
-                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.bodyCharcoal,
+                ),
               ),
             ),
           );
@@ -1396,7 +1688,8 @@ class MediaPreviewBanner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GestureDetector(
-        onTap: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabMedia,
+        onTap: () => Get.find<MainNavController>().currentIndex.value =
+            MainNavController.tabMedia,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -1410,22 +1703,45 @@ class MediaPreviewBanner extends StatelessWidget {
                 width: 42,
                 height: 42,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: AppColors.accentBlue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(AppRadius.sharp)),
-                child: const Icon(Icons.perm_media_outlined, color: AppColors.accentBlue, size: 22),
+                decoration: BoxDecoration(
+                  color: AppColors.accentBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.sharp),
+                ),
+                child: const Icon(
+                  Icons.perm_media_outlined,
+                  color: AppColors.accentBlue,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Media Hub', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+                    Text(
+                      'Media Hub',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.headingSlate,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text('Photos, videos and site coverage in one place',
-                        style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
+                    Text(
+                      'Photos, videos and site coverage in one place',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        color: AppColors.captionSlate,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward, size: 16, color: AppColors.captionSlate),
+              const Icon(
+                Icons.arrow_forward,
+                size: 16,
+                color: AppColors.captionSlate,
+              ),
             ],
           ),
         ),
@@ -1466,7 +1782,8 @@ class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
       children: [
         shared.SectionHeader(
           title: 'Mjengo Hub on YouTube',
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabMedia,
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value =
+              MainNavController.tabMedia,
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -1510,17 +1827,39 @@ class _VideoCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  NetImage(url: video.thumbnailUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF0F172A)),
-                  const Center(child: Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 36)),
+                  NetImage(
+                    url: video.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF0F172A),
+                  ),
+                  const Center(
+                    child: Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: Colors.white,
+                      size: 36,
+                    ),
+                  ),
                   if (video.duration != null && video.duration!.isNotEmpty)
                     Positioned(
                       right: 6,
                       bottom: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(4)),
-                        child: Text(video.duration!,
-                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          video.duration!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -1532,7 +1871,12 @@ class _VideoCard extends StatelessWidget {
                 video.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.3),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.headingSlate,
+                  height: 1.3,
+                ),
               ),
             ),
           ],
@@ -1578,7 +1922,10 @@ class _MerchPreviewSectionState extends State<MerchPreviewSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        shared.SectionHeader(title: widget.title, onSeeAll: () => Get.to(() => const MerchScreen())),
+        shared.SectionHeader(
+          title: widget.title,
+          onSeeAll: () => Get.to(() => const MerchScreen()),
+        ),
         const SizedBox(height: 12),
         SizedBox(
           height: 200,
@@ -1619,7 +1966,11 @@ class _MerchCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 1.15,
-              child: NetImage(url: product.image, fit: BoxFit.cover, placeholderColor: const Color(0xFFF1F5F9)),
+              child: NetImage(
+                url: product.image,
+                fit: BoxFit.cover,
+                placeholderColor: const Color(0xFFF1F5F9),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(10),
@@ -1627,14 +1978,26 @@ class _MerchCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                          fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.25)),
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.headingSlate,
+                      height: 1.25,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('KES ${product.price.toStringAsFixed(0)}',
-                      style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
+                  Text(
+                    'KES ${product.price.toStringAsFixed(0)}',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.accentBlue,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1687,7 +2050,8 @@ class _MoreNewsSectionState extends State<MoreNewsSection> {
       children: [
         shared.SectionHeader(
           title: widget.title,
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews,
+          onSeeAll: () => Get.find<MainNavController>().currentIndex.value =
+              MainNavController.tabNews,
         ),
         const SizedBox(height: 12),
         if (_loading)
@@ -1698,10 +2062,16 @@ class _MoreNewsSectionState extends State<MoreNewsSection> {
         else
           for (int i = 0; i < _articles.length; i++) ...[
             GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: _articles[i].slug),
+              onTap: () => Get.toNamed(
+                AppRoutes.articleDetail,
+                arguments: _articles[i].slug,
+              ),
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1710,7 +2080,11 @@ class _MoreNewsSectionState extends State<MoreNewsSection> {
                       child: SizedBox(
                         width: 68,
                         height: 52,
-                        child: NetImage(url: _articles[i].imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF0F172A)),
+                        child: NetImage(
+                          url: _articles[i].imageUrl,
+                          fit: BoxFit.cover,
+                          placeholderColor: const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1719,7 +2093,12 @@ class _MoreNewsSectionState extends State<MoreNewsSection> {
                         _articles[i].title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.3),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.headingSlate,
+                          height: 1.3,
+                        ),
                       ),
                     ),
                   ],
@@ -1727,7 +2106,10 @@ class _MoreNewsSectionState extends State<MoreNewsSection> {
               ),
             ),
             if (i != _articles.length - 1)
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Divider(height: 1, color: AppColors.borderSlate)),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Divider(height: 1, color: AppColors.borderSlate),
+              ),
           ],
       ],
     );
@@ -1783,13 +2165,30 @@ class _CommunitySectionState extends State<CommunitySection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Join Our Community', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
+          Text(
+            'Join Our Community',
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text('This week\'s top contributors',
-              style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white.withValues(alpha: 0.75))),
+          Text(
+            'This week\'s top contributors',
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.75),
+            ),
+          ),
           const SizedBox(height: 14),
           if (_loading)
-            const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
           else
             Row(
               children: [
@@ -1808,10 +2207,18 @@ class _CommunitySectionState extends State<CommunitySection> {
                 backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 11),
                 side: BorderSide.none,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.sharp),
+                ),
               ),
-              child: Text('Join Community →',
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+              child: Text(
+                'Join Community →',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.headingSlate,
+                ),
+              ),
             ),
           ),
         ],
@@ -1833,17 +2240,32 @@ class _ContributorAvatar extends StatelessWidget {
           child: SizedBox(
             width: 44,
             height: 44,
-            child: NetImage(url: row.avatar, fit: BoxFit.cover, placeholderColor: Colors.white.withValues(alpha: 0.15)),
+            child: NetImage(
+              url: row.avatar,
+              fit: BoxFit.cover,
+              placeholderColor: Colors.white.withValues(alpha: 0.15),
+            ),
           ),
         ),
         const SizedBox(height: 6),
-        Text(row.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
-        Text('${row.value} pts',
-            style: GoogleFonts.montserrat(fontSize: 9.5, color: Colors.white.withValues(alpha: 0.7))),
+        Text(
+          row.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.montserrat(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          '${row.value} pts',
+          style: GoogleFonts.montserrat(
+            fontSize: 9.5,
+            color: Colors.white.withValues(alpha: 0.7),
+          ),
+        ),
       ],
     );
   }

@@ -30,19 +30,27 @@ enum _PlatformFilter { all, mjengohub, sharebarabara, mjengonetworks }
 extension on _PlatformFilter {
   String get label {
     switch (this) {
-      case _PlatformFilter.all: return 'All';
-      case _PlatformFilter.mjengohub: return 'Mjengo Hub';
-      case _PlatformFilter.sharebarabara: return 'Share Barabara';
-      case _PlatformFilter.mjengonetworks: return 'Mjengo Networks';
+      case _PlatformFilter.all:
+        return 'All';
+      case _PlatformFilter.mjengohub:
+        return 'Mjengo Hub';
+      case _PlatformFilter.sharebarabara:
+        return 'Share Barabara';
+      case _PlatformFilter.mjengonetworks:
+        return 'Mjengo Networks';
     }
   }
 
   String? get platformKey {
     switch (this) {
-      case _PlatformFilter.all: return null;
-      case _PlatformFilter.mjengohub: return 'mjengohub';
-      case _PlatformFilter.sharebarabara: return 'sharebarabara';
-      case _PlatformFilter.mjengonetworks: return 'mjengonetworks';
+      case _PlatformFilter.all:
+        return null;
+      case _PlatformFilter.mjengohub:
+        return 'mjengohub';
+      case _PlatformFilter.sharebarabara:
+        return 'sharebarabara';
+      case _PlatformFilter.mjengonetworks:
+        return 'mjengonetworks';
     }
   }
 }
@@ -74,7 +82,10 @@ class _MerchScreenState extends State<MerchScreen> {
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([_service.getProducts(), _service.getShoutouts(limit: 10)]);
+    final results = await Future.wait([
+      _service.getProducts(),
+      _service.getShoutouts(limit: 10),
+    ]);
     if (!mounted) return;
     setState(() {
       _products = results[0] as List<MerchProduct>;
@@ -84,7 +95,12 @@ class _MerchScreenState extends State<MerchScreen> {
   }
 
   void _openCheckout() {
-    Get.to(() => const WebviewCheckoutScreen(title: 'Mjengo Hub Merch', nextPath: '/merch'));
+    Get.to(
+      () => const WebviewCheckoutScreen(
+        title: 'Mjengo Hub Merch',
+        nextPath: '/merch',
+      ),
+    );
   }
 
   @override
@@ -94,7 +110,14 @@ class _MerchScreenState extends State<MerchScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text('Merch', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+        title: Text(
+          'Merch',
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -112,14 +135,16 @@ class _MerchScreenState extends State<MerchScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: _PlatformFilter.values
-                    .map((f) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _PlatformTab(
-                            label: f.label,
-                            selected: _platformFilter == f,
-                            onTap: () => setState(() => _platformFilter = f),
-                          ),
-                        ))
+                    .map(
+                      (f) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _PlatformTab(
+                          label: f.label,
+                          selected: _platformFilter == f,
+                          onTap: () => setState(() => _platformFilter = f),
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -127,75 +152,100 @@ class _MerchScreenState extends State<MerchScreen> {
           const Divider(height: 1, color: AppColors.divider),
           Expanded(
             child: ScrollToTopFab(
-        controller: _scrollController,
-        child: ContentWidth(
-        maxWidth: 900,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _load,
-                child: ListView(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  children: [
-                    if (_filteredProducts.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                        child: Center(
-                          child: Text(
-                            _platformFilter == _PlatformFilter.all
-                                ? 'No merch available right now.'
-                                : 'No ${_platformFilter.label} merch yet.',
-                            style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
-                          ),
-                        ),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.72,
-                          ),
-                          itemCount: _filteredProducts.length,
-                          itemBuilder: (_, i) => _ProductCard(product: _filteredProducts[i], onBuy: _openCheckout),
-                        ),
-                      ),
+              controller: _scrollController,
+              child: ContentWidth(
+                maxWidth: 900,
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                        onRefresh: _load,
+                        child: ListView(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          children: [
+                            if (_filteredProducts.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 40,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _platformFilter == _PlatformFilter.all
+                                        ? 'No merch available right now.'
+                                        : 'No ${_platformFilter.label} merch yet.',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 13,
+                                      color: AppColors.textSubtle,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 12,
+                                        mainAxisSpacing: 12,
+                                        childAspectRatio: 0.72,
+                                      ),
+                                  itemCount: _filteredProducts.length,
+                                  itemBuilder: (_, i) => _ProductCard(
+                                    product: _filteredProducts[i],
+                                    onBuy: _openCheckout,
+                                  ),
+                                ),
+                              ),
 
-                    // ── Buyer Shoutouts — embedded directly in the feed ──
-                    if (_shoutouts.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text('Buyer Shoutouts', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                      ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        height: 110,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: _shoutouts.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 10),
-                          itemBuilder: (_, i) => _ShoutoutCard(shoutout: _shoutouts[i]),
+                            // ── Buyer Shoutouts — embedded directly in the feed ──
+                            if (_shoutouts.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: Text(
+                                  'Buyer Shoutouts',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                height: 110,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  itemCount: _shoutouts.length,
+                                  separatorBuilder: (_, _) =>
+                                      const SizedBox(width: 10),
+                                  itemBuilder: (_, i) =>
+                                      _ShoutoutCard(shoutout: _shoutouts[i]),
+                                ),
+                              ),
+                            ],
+
+                            // ── Dual weekly leaderboards ─────────────────────────
+                            const SizedBox(height: 24),
+                            const LeaderboardPreview(),
+                            const SizedBox(height: 16),
+                          ],
                         ),
                       ),
-                    ],
-
-                    // ── Dual weekly leaderboards ─────────────────────────
-                    const SizedBox(height: 24),
-                    const LeaderboardPreview(),
-                    const SizedBox(height: 16),
-                  ],
-                ),
               ),
-      ),
-      ),
+            ),
           ),
         ],
       ),
@@ -207,7 +257,11 @@ class _PlatformTab extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _PlatformTab({required this.label, required this.selected, required this.onTap});
+  const _PlatformTab({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -219,13 +273,18 @@ class _PlatformTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.headingSlate : Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(color: selected ? AppColors.headingSlate : AppColors.borderSlate),
+          border: Border.all(
+            color: selected ? AppColors.headingSlate : AppColors.borderSlate,
+          ),
         ),
-        child: Text(label,
-            style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : AppColors.captionSlate)),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : AppColors.captionSlate,
+          ),
+        ),
       ),
     );
   }
@@ -239,29 +298,62 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.divider)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.divider),
+      ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(aspectRatio: 1, child: NetImage(url: product.image, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F))),
+          AspectRatio(
+            aspectRatio: 1,
+            child: NetImage(
+              url: product.image,
+              fit: BoxFit.cover,
+              placeholderColor: const Color(0xFF1E3A5F),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                Text(
+                  product.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('KSh ${product.price.toStringAsFixed(0)}',
-                    style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+                Text(
+                  'KSh ${product.price.toStringAsFixed(0)}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.accentBlue,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: product.isInStock ? onBuy : null,
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 8)),
-                    child: Text(product.isInStock ? 'Buy' : 'Out of stock', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    child: Text(
+                      product.isInStock ? 'Buy' : 'Out of stock',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -282,26 +374,54 @@ class _ShoutoutCard extends StatelessWidget {
     return Container(
       width: 220,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.divider)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               ClipOval(
-                child: SizedBox(width: 22, height: 22, child: NetImage(url: shoutout.userAvatar, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F))),
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: NetImage(
+                    url: shoutout.userAvatar,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF1E3A5F),
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(shoutout.userName ?? 'A buyer', maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                child: Text(
+                  shoutout.userName ?? 'A buyer',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Expanded(
-            child: Text(shoutout.message ?? '', maxLines: 3, overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle, height: 1.4)),
+            child: Text(
+              shoutout.message ?? '',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                color: AppColors.textSubtle,
+                height: 1.4,
+              ),
+            ),
           ),
         ],
       ),

@@ -28,7 +28,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   InfrastructureReport? _report;
   bool _loading = true;
 
-  int get _id => widget.reportId ?? (Get.arguments is int ? Get.arguments as int : 0);
+  int get _id =>
+      widget.reportId ?? (Get.arguments is int ? Get.arguments as int : 0);
 
   @override
   void initState() {
@@ -56,25 +57,27 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     });
   }
 
-  String _titleCase(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  String _titleCase(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   Widget _tag(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(AppRadius.chip),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 10.5,
-            fontWeight: FontWeight.w500,
-            color: color,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(AppRadius.chip),
+    ),
+    child: Text(
+      label,
+      style: GoogleFonts.montserrat(
+        fontSize: 10.5,
+        fontWeight: FontWeight.w500,
+        color: color,
+      ),
+    ),
+  );
 
-  Widget _voteChip(IconData icon, int count, VoidCallback onTap) => GestureDetector(
+  Widget _voteChip(IconData icon, int count, VoidCallback onTap) =>
+      GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
@@ -122,106 +125,117 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : r == null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(
-                      'This report could not be loaded.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 14,
-                        color: AppColors.textSubtle,
-                      ),
-                    ),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  'This report could not be loaded.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    color: AppColors.textSubtle,
                   ),
-                )
-              : ContentWidth(child: _body(r)),
+                ),
+              ),
+            )
+          : ContentWidth(child: _body(r)),
     );
   }
 
   Widget _body(InfrastructureReport r) => ListView(
-        padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(16),
+    children: [
+      Wrap(
+        spacing: 6,
+        runSpacing: 6,
         children: [
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _tag(_titleCase(r.severity),
-                  kSeverityColors[r.severity] ?? AppColors.textSubtle),
-              _tag(_titleCase(r.category), AppColors.textSubtle),
-              _tag(_titleCase(r.status.replaceAll('_', ' ')), AppColors.primaryBlue),
-              if (r.isVerified) _tag('Verified', AppColors.success),
-            ],
+          _tag(
+            _titleCase(r.severity),
+            kSeverityColors[r.severity] ?? AppColors.textSubtle,
           ),
-          const SizedBox(height: 14),
-          Text(
-            r.title,
-            style: GoogleFonts.montserrat(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              height: 1.3,
-              color: AppColors.textDark,
-            ),
+          _tag(_titleCase(r.category), AppColors.textSubtle),
+          _tag(
+            _titleCase(r.status.replaceAll('_', ' ')),
+            AppColors.primaryBlue,
           ),
-          if (r.location != null && r.location!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.place_outlined, size: 15, color: AppColors.textSubtle),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    r.location!,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      color: AppColors.textSubtle,
-                    ),
-                  ),
-                ),
-              ],
+          if (r.isVerified) _tag('Verified', AppColors.success),
+        ],
+      ),
+      const SizedBox(height: 14),
+      Text(
+        r.title,
+        style: GoogleFonts.montserrat(
+          fontSize: 20,
+          fontWeight: FontWeight.w500,
+          height: 1.3,
+          color: AppColors.textDark,
+        ),
+      ),
+      if (r.location != null && r.location!.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(
+              Icons.place_outlined,
+              size: 15,
+              color: AppColors.textSubtle,
             ),
-          ],
-          if (r.description != null && r.description!.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            Text(
-              r.description!,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                height: 1.65,
-                color: AppColors.textDark,
-              ),
-            ),
-          ],
-          if (r.reporterName != null && r.reporterName!.isNotEmpty || r.timeAgo.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            Text(
-              [
-                if (r.reporterName != null && r.reporterName!.isNotEmpty) 'Reported by ${r.reporterName}',
-                if (r.timeAgo.isNotEmpty) r.timeAgo,
-              ].join(' · '),
-              style: GoogleFonts.montserrat(
-                fontSize: 12.5,
-                fontStyle: FontStyle.italic,
-                color: AppColors.textSubtle,
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              _voteChip(Icons.thumb_up_outlined, r.upvotes, () => _vote(true)),
-              const SizedBox(width: 10),
-              _voteChip(Icons.thumb_down_outlined, r.downvotes, () => _vote(false)),
-              const Spacer(),
-              Text(
-                '${r.viewCount} views',
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                r.location!,
                 style: GoogleFonts.montserrat(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: AppColors.textSubtle,
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+      ],
+      if (r.description != null && r.description!.isNotEmpty) ...[
+        const SizedBox(height: 18),
+        Text(
+          r.description!,
+          style: GoogleFonts.montserrat(
+            fontSize: 14,
+            height: 1.65,
+            color: AppColors.textDark,
+          ),
+        ),
+      ],
+      if (r.reporterName != null && r.reporterName!.isNotEmpty ||
+          r.timeAgo.isNotEmpty) ...[
+        const SizedBox(height: 18),
+        Text(
+          [
+            if (r.reporterName != null && r.reporterName!.isNotEmpty)
+              'Reported by ${r.reporterName}',
+            if (r.timeAgo.isNotEmpty) r.timeAgo,
+          ].join(' · '),
+          style: GoogleFonts.montserrat(
+            fontSize: 12.5,
+            fontStyle: FontStyle.italic,
+            color: AppColors.textSubtle,
+          ),
+        ),
+      ],
+      const SizedBox(height: 24),
+      Row(
+        children: [
+          _voteChip(Icons.thumb_up_outlined, r.upvotes, () => _vote(true)),
+          const SizedBox(width: 10),
+          _voteChip(Icons.thumb_down_outlined, r.downvotes, () => _vote(false)),
+          const Spacer(),
+          Text(
+            '${r.viewCount} views',
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: AppColors.textSubtle,
+            ),
           ),
         ],
-      );
+      ),
+    ],
+  );
 }

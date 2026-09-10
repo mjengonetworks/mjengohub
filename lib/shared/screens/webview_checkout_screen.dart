@@ -46,7 +46,10 @@ class WebviewCheckoutScreen extends StatefulWidget {
     this.banner,
     this.isSuccessUrl,
     this.onSuccess,
-  }) : assert((nextPath == null) != (url == null), 'Pass exactly one of nextPath or url');
+  }) : assert(
+         (nextPath == null) != (url == null),
+         'Pass exactly one of nextPath or url',
+       );
 
   @override
   State<WebviewCheckoutScreen> createState() => _WebviewCheckoutScreenState();
@@ -63,16 +66,18 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
     final target = widget.url ?? '$_baseUrl${widget.nextPath}';
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (currentUrl) {
-          if (!mounted) return;
-          setState(() => _loading = false);
-          if (widget.isSuccessUrl?.call(currentUrl) == true) {
-            widget.onSuccess?.call();
-            Get.back();
-          }
-        },
-      ))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (currentUrl) {
+            if (!mounted) return;
+            setState(() => _loading = false);
+            if (widget.isSuccessUrl?.call(currentUrl) == true) {
+              widget.onSuccess?.call();
+              Get.back();
+            }
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(target));
     _controller = controller;
   }
@@ -84,8 +89,14 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(widget.title,
-            style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+        title: Text(
+          widget.title,
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.headingSlate,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -93,7 +104,8 @@ class _WebviewCheckoutScreenState extends State<WebviewCheckoutScreen> {
           Expanded(
             child: Stack(
               children: [
-                if (_controller != null) WebViewWidget(controller: _controller!),
+                if (_controller != null)
+                  WebViewWidget(controller: _controller!),
                 if (_loading) const Center(child: CircularProgressIndicator()),
               ],
             ),

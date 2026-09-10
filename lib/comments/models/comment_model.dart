@@ -38,16 +38,20 @@ class ThreadedComment {
     return ThreadedComment(
       id: (j['id'] as num?)?.toInt() ?? 0,
       userId: (j['user_id'] as num?)?.toInt(),
-      authorName: (j['commenter_name'] as String?) ??
+      authorName:
+          (j['commenter_name'] as String?) ??
           (j['author_name'] as String?) ??
           'Anonymous',
-      authorPhotoUrl: j['author_photo'] as String? ?? j['author_image'] as String?,
+      authorPhotoUrl:
+          j['author_photo'] as String? ?? j['author_image'] as String?,
       authorPoints: (j['author_points'] as num?)?.toInt() ?? 0,
       content: (j['content'] as String?) ?? '',
       parentId: (j['parent_id'] as num?)?.toInt(),
       upvotes: (j['upvotes'] as num?)?.toInt() ?? 0,
       downvotes: (j['downvotes'] as num?)?.toInt() ?? 0,
-      createdAt: j['created_at'] != null ? DateTime.tryParse(j['created_at'].toString()) : null,
+      createdAt: j['created_at'] != null
+          ? DateTime.tryParse(j['created_at'].toString())
+          : null,
       replies: repliesJson
           .whereType<Map<String, dynamic>>()
           .map(ThreadedComment.fromJson)
@@ -95,7 +99,11 @@ class ThreadedComment {
 
     ThreadedComment attach(ThreadedComment c) {
       final kids = (childrenOf[c.id] ?? [])
-        ..sort((a, b) => (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)));
+        ..sort(
+          (a, b) => (a.createdAt ?? DateTime(0)).compareTo(
+            b.createdAt ?? DateTime(0),
+          ),
+        );
       return c.copyWith(replies: kids.map(attach).toList());
     }
 

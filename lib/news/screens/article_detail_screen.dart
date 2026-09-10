@@ -58,19 +58,22 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         body: ScrollToTopFab(
           controller: _scrollController,
           child: Obx(() {
-          if (_ctrl.isLoading.value) {
-            return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
-              ),
+            if (_ctrl.isLoading.value) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
+                ),
+              );
+            }
+            if (_ctrl.errorMessage.isNotEmpty || _ctrl.article.value == null) {
+              return _ErrorView(message: _ctrl.errorMessage.value);
+            }
+            return _ArticleBody(
+              article: _ctrl.article.value!,
+              scrollController: _scrollController,
             );
-          }
-          if (_ctrl.errorMessage.isNotEmpty || _ctrl.article.value == null) {
-            return _ErrorView(message: _ctrl.errorMessage.value);
-          }
-          return _ArticleBody(article: _ctrl.article.value!, scrollController: _scrollController);
-        }),
+          }),
         ),
       ),
     );
@@ -105,7 +108,9 @@ class _ArticleBodyState extends State<_ArticleBody> {
   }
 
   Future<void> _checkSavedStatus() async {
-    final saved = await BookmarksService.isBookmarked(widget.article.id.toString());
+    final saved = await BookmarksService.isBookmarked(
+      widget.article.id.toString(),
+    );
     if (mounted) setState(() => _isSaved = saved);
   }
 
@@ -176,7 +181,11 @@ class _ArticleBodyState extends State<_ArticleBody> {
             children: [
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: NetImage(url: widget.article.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1F2937)),
+                child: NetImage(
+                  url: widget.article.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1F2937),
+                ),
               ),
               if (hasCaption || hasCredit)
                 Padding(
@@ -187,15 +196,27 @@ class _ArticleBodyState extends State<_ArticleBody> {
                       if (hasCaption)
                         Text(
                           widget.article.featuredImageCaption!,
-                          style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF475569), fontStyle: FontStyle.italic, height: 1.4),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12.5,
+                            color: const Color(0xFF475569),
+                            fontStyle: FontStyle.italic,
+                            height: 1.4,
+                          ),
                         ),
                       if (hasCaption && hasCredit)
-                        const Text('  ·  ', style: TextStyle(color: Color(0xFF475569))),
+                        const Text(
+                          '  ·  ',
+                          style: TextStyle(color: Color(0xFF475569)),
+                        ),
                       if (hasCredit)
                         Text(
                           'Photo: ${widget.article.featuredImageCredit}',
                           style: GoogleFonts.montserrat(
-                              fontSize: 12.5, color: const Color(0xFF475569), fontStyle: FontStyle.normal, fontWeight: FontWeight.normal),
+                            fontSize: 12.5,
+                            color: const Color(0xFF475569),
+                            fontStyle: FontStyle.normal,
+                            fontWeight: FontWeight.normal,
+                          ),
                         ),
                     ],
                   ),
@@ -217,7 +238,8 @@ class _ArticleBodyState extends State<_ArticleBody> {
                 const Divider(color: Color(0xFFF3F4F6), height: 1),
                 const SizedBox(height: 20),
 
-                if (widget.article.summary != null && widget.article.summary!.isNotEmpty) ...[
+                if (widget.article.summary != null &&
+                    widget.article.summary!.isNotEmpty) ...[
                   _SummaryCallout(text: widget.article.summary!),
                   const SizedBox(height: 24),
                 ],
@@ -242,7 +264,8 @@ class _ArticleBodyState extends State<_ArticleBody> {
                 ),
               ),
             ),
-          if (i == midpoint) const SliverToBoxAdapter(child: RelatedTrackersCard()),
+          if (i == midpoint)
+            const SliverToBoxAdapter(child: RelatedTrackersCard()),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -286,8 +309,15 @@ class _ArticleBodyState extends State<_ArticleBody> {
           width: 36,
           height: 36,
           alignment: Alignment.center,
-          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-          child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F172A), size: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+          ),
+          child: const Icon(
+            Icons.arrow_back_rounded,
+            color: Color(0xFF0F172A),
+            size: 20,
+          ),
         ),
       ),
     );
@@ -312,7 +342,14 @@ class _ArticleBodyState extends State<_ArticleBody> {
           if (mounted) {
             setState(() => _isSaved = nowSaved);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(nowSaved ? 'Article saved to bookmarks' : 'Article removed from bookmarks'), duration: const Duration(seconds: 2)),
+              SnackBar(
+                content: Text(
+                  nowSaved
+                      ? 'Article saved to bookmarks'
+                      : 'Article removed from bookmarks',
+                ),
+                duration: const Duration(seconds: 2),
+              ),
             );
           }
         },
@@ -320,7 +357,10 @@ class _ArticleBodyState extends State<_ArticleBody> {
           width: 36,
           height: 36,
           alignment: Alignment.center,
-          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+          ),
           child: Icon(
             _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
             color: _isSaved ? const Color(0xFFF59E0B) : const Color(0xFF0F172A),
@@ -340,8 +380,15 @@ class _ArticleBodyState extends State<_ArticleBody> {
           width: 36,
           height: 36,
           alignment: Alignment.center,
-          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-          child: const Icon(Icons.share_rounded, color: Color(0xFF0F172A), size: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+          ),
+          child: const Icon(
+            Icons.share_rounded,
+            color: Color(0xFF0F172A),
+            size: 20,
+          ),
         ),
       ),
     );
@@ -355,8 +402,31 @@ class _MetadataRow extends StatelessWidget {
   final Article article;
   const _MetadataRow({required this.article});
 
-  static const _weekdays = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  static const _months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  static const _weekdays = [
+    '',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  static const _months = [
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
   String _fullDate() {
     if (article.publishedAt == null) return '';
@@ -376,15 +446,37 @@ class _MetadataRow extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (date.isNotEmpty)
-          Text(date, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF475569))),
+          Text(
+            date,
+            style: GoogleFonts.montserrat(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF475569),
+            ),
+          ),
         if (date.isNotEmpty && article.readTime != null)
-          Text('•', style: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF475569))),
+          Text(
+            '•',
+            style: GoogleFonts.montserrat(
+              fontSize: 12.5,
+              color: const Color(0xFF475569),
+            ),
+          ),
         if (article.readTime != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(AppRadius.sharp)),
-            child: Text('${article.readTime} min read',
-                style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w600, color: const Color(0xFF475569))),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+            ),
+            child: Text(
+              '${article.readTime} min read',
+              style: GoogleFonts.montserrat(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF475569),
+              ),
+            ),
           ),
       ],
     );
@@ -416,7 +508,12 @@ class _SummaryCallout extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xFF1E293B), height: 1.6, fontWeight: FontWeight.w500),
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          color: const Color(0xFF1E293B),
+          height: 1.6,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -430,10 +527,18 @@ class _CategoryPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: const Color(0xFFF97316), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF97316),
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Text(
         name.toUpperCase(),
-        style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
+        style: GoogleFonts.montserrat(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w500,
+          color: Colors.white,
+          letterSpacing: 0.4,
+        ),
       ),
     );
   }
@@ -460,7 +565,13 @@ class _AuthorRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         ClipOval(
-          child: NetImage(url: author.imageUrl, width: 40, height: 40, fit: BoxFit.cover, placeholderColor: const Color(0xFF374151)),
+          child: NetImage(
+            url: author.imageUrl,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            placeholderColor: const Color(0xFF374151),
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -468,10 +579,24 @@ class _AuthorRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(author.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: const Color(0xFF111827))),
+              Text(
+                author.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF111827),
+                ),
+              ),
               if (article.timeAgo.isNotEmpty)
-                Text(article.timeAgo, style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF475569))),
+                Text(
+                  article.timeAgo,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11.5,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
             ],
           ),
         ),
@@ -492,14 +617,28 @@ class _ArticleBlockWidget extends StatelessWidget {
       case ArticleBlockType.heading2:
         return Padding(
           padding: const EdgeInsets.only(top: 24, bottom: 10),
-          child: Text(block.text!,
-              style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w500, color: const Color(0xFF0F172A), height: 1.3)),
+          child: Text(
+            block.text!,
+            style: GoogleFonts.montserrat(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF0F172A),
+              height: 1.3,
+            ),
+          ),
         );
       case ArticleBlockType.heading3:
         return Padding(
           padding: const EdgeInsets.only(top: 20, bottom: 8),
-          child: Text(block.text!,
-              style: GoogleFonts.montserrat(fontSize: 17, fontWeight: FontWeight.w500, color: const Color(0xFF0F172A), height: 1.3)),
+          child: Text(
+            block.text!,
+            style: GoogleFonts.montserrat(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF0F172A),
+              height: 1.3,
+            ),
+          ),
         );
       case ArticleBlockType.quote:
         return Container(
@@ -507,10 +646,19 @@ class _ArticleBlockWidget extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           decoration: const BoxDecoration(
             color: Color(0xFFF8FAFC),
-            border: Border(left: BorderSide(color: AppColors.accentBlue, width: 4)),
+            border: Border(
+              left: BorderSide(color: AppColors.accentBlue, width: 4),
+            ),
           ),
-          child: Text(block.text!,
-              style: GoogleFonts.montserrat(fontSize: 15, fontStyle: FontStyle.italic, color: const Color(0xFF334155), height: 1.6)),
+          child: Text(
+            block.text!,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF334155),
+              height: 1.6,
+            ),
+          ),
         );
       case ArticleBlockType.bulletList:
         return Padding(
@@ -518,22 +666,38 @@ class _ArticleBlockWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: block.items!
-                .map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 7),
-                            child: Container(width: 5, height: 5, decoration: const BoxDecoration(color: AppColors.accentBlue, shape: BoxShape.circle)),
+                .map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 7),
+                          child: Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
+                              color: AppColors.accentBlue,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(item, style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xFF4B5563), height: 1.6)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            item,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 15,
+                              color: const Color(0xFF4B5563),
+                              height: 1.6,
+                            ),
                           ),
-                        ],
-                      ),
-                    ))
+                        ),
+                      ],
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         );
@@ -545,18 +709,33 @@ class _ArticleBlockWidget extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: NetImage(url: block.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholderColor: const Color(0xFF1F2937)),
+                child: NetImage(
+                  url: block.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  placeholderColor: const Color(0xFF1F2937),
+                ),
               ),
               if (block.imageCaption?.isNotEmpty == true) ...[
                 const SizedBox(height: 6),
-                Text(block.imageCaption!,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, color: const Color(0xFF475569), fontStyle: FontStyle.italic)),
+                Text(
+                  block.imageCaption!,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11.5,
+                    color: const Color(0xFF475569),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               ],
             ],
           ),
         );
       case ArticleBlockType.paragraph:
-        final baseStyle = GoogleFonts.montserrat(fontSize: 15.5, color: const Color(0xFF334155), height: 1.75);
+        final baseStyle = GoogleFonts.montserrat(
+          fontSize: 15.5,
+          color: const Color(0xFF334155),
+          height: 1.75,
+        );
         if (block.spans == null) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -568,13 +747,19 @@ class _ArticleBlockWidget extends StatelessWidget {
           child: Text.rich(
             TextSpan(
               children: block.spans!
-                  .map((s) => s.href == null || s.href!.isEmpty
-                      ? TextSpan(text: s.text, style: baseStyle)
-                      : TextSpan(
-                          text: s.text,
-                          style: baseStyle.copyWith(color: AppColors.accentBlue, decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()..onTap = () => _openInlineLink(context, s.href!),
-                        ))
+                  .map(
+                    (s) => s.href == null || s.href!.isEmpty
+                        ? TextSpan(text: s.text, style: baseStyle)
+                        : TextSpan(
+                            text: s.text,
+                            style: baseStyle.copyWith(
+                              color: AppColors.accentBlue,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => _openInlineLink(context, s.href!),
+                          ),
+                  )
                   .toList(),
             ),
           ),
@@ -600,7 +785,10 @@ class _ArticleBlockWidget extends StatelessWidget {
     if (uri == null) return null;
     final host = uri.host.toLowerCase();
     final isMjengoHost =
-        host.isEmpty || host == 'mjengohub.co.ke' || host == 'www.mjengohub.co.ke' || host == 'app.mjengohub.co.ke';
+        host.isEmpty ||
+        host == 'mjengohub.co.ke' ||
+        host == 'www.mjengohub.co.ke' ||
+        host == 'app.mjengohub.co.ke';
     if (!isMjengoHost) return null;
     final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
     if (segments.isEmpty) return null;
@@ -624,14 +812,27 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.article_outlined, size: 52, color: Color(0xFFD1D5DB)),
+            const Icon(
+              Icons.article_outlined,
+              size: 52,
+              color: Color(0xFFD1D5DB),
+            ),
             const SizedBox(height: 16),
-            Text(message.isEmpty ? 'Article not found.' : message,
-                textAlign: TextAlign.center, style: GoogleFonts.montserrat(fontSize: 14, color: const Color(0xFF475569))),
+            Text(
+              message.isEmpty ? 'Article not found.' : message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: const Color(0xFF475569),
+              ),
+            ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: Get.back,
-              child: Text('Go back', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              child: Text(
+                'Go back',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),

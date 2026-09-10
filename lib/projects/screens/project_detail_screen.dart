@@ -26,12 +26,12 @@ import '../widgets/projects_map_view.dart';
 import 'post_update_screen.dart';
 import 'submit_project_screen.dart';
 
-const _kBlue    = Color(0xFF2563EB);
-const _kBg      = Color(0xFFF0F4FF);
-const _kDark    = Color(0xFF1A1A2E);
+const _kBlue = Color(0xFF2563EB);
+const _kBg = Color(0xFFF0F4FF);
+const _kDark = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
 const _kDivider = Color(0xFFEEEEF5);
-const _kCard    = Colors.white;
+const _kCard = Colors.white;
 const _kCardPad = EdgeInsets.all(20);
 
 class ProjectDetailScreen extends StatelessWidget {
@@ -40,10 +40,7 @@ class ProjectDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(
-      ProjectDetailController(slug),
-      tag: slug,
-    );
+    final ctrl = Get.put(ProjectDetailController(slug), tag: slug);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -51,7 +48,9 @@ class ProjectDetailScreen extends StatelessWidget {
         backgroundColor: _kBg,
         body: Obx(() {
           if (ctrl.isLoading.value) {
-            return const Center(child: CircularProgressIndicator(color: _kBlue));
+            return const Center(
+              child: CircularProgressIndicator(color: _kBlue),
+            );
           }
           if (ctrl.project.value == null) {
             return _buildError(ctrl);
@@ -69,22 +68,27 @@ class ProjectDetailScreen extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline_rounded, size: 48, color: _kSubtext),
           const SizedBox(height: 12),
-          Text(ctrl.errorMessage.value,
-              style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext)),
+          Text(
+            ctrl.errorMessage.value,
+            style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext),
+          ),
           const SizedBox(height: 16),
           TextButton(
             onPressed: ctrl.load,
-            child: Text('Retry',
-                style: GoogleFonts.montserrat(
-                    fontWeight: FontWeight.w600, color: _kBlue)),
+            child: Text(
+              'Retry',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600,
+                color: _kBlue,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, ProjectDetailController ctrl) {
+  Widget _buildContent(BuildContext context, ProjectDetailController ctrl) {
     final project = ctrl.project.value!;
     final topPad = MediaQuery.of(context).padding.top;
 
@@ -106,15 +110,19 @@ class ProjectDetailScreen extends StatelessWidget {
                 color: Colors.black38,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 18),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
           actions: [
             _FollowButton(project: project, ctrl: ctrl),
             GestureDetector(
               onTap: () {
-                final projectUrl = 'https://mjengohub.co.ke/projects/${project.slug}';
+                final projectUrl =
+                    'https://mjengohub.co.ke/projects/${project.slug}';
                 SocialShareModal.show(
                   context,
                   title: 'Check out ${project.title} on Mjengo Hub:',
@@ -130,8 +138,11 @@ class ProjectDetailScreen extends StatelessWidget {
                   color: Colors.black38,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.share_rounded,
-                    color: Colors.white, size: 18),
+                child: const Icon(
+                  Icons.share_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
             ),
           ],
@@ -152,7 +163,10 @@ class ProjectDetailScreen extends StatelessWidget {
                   left: 16,
                   bottom: 16,
                   child: HeroTextBadge(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -195,17 +209,25 @@ class ProjectDetailScreen extends StatelessWidget {
                         // links lives in the Project Details card below).
                         if (project.contractor != null)
                           Expanded(
-                            child: Text('🏗 ${project.contractor!}',
-                                style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
-                                overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              '🏗 ${project.contractor!}',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                color: _kSubtext,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           )
                         else
                           const Spacer(),
                         if (project.averageRating != null)
                           Row(
                             children: [
-                              const Icon(Icons.star_rounded,
-                                  color: Color(0xFFF59E0B), size: 16),
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Color(0xFFF59E0B),
+                                size: 16,
+                              ),
                               const SizedBox(width: 3),
                               Text(
                                 project.ratingDisplay!,
@@ -218,7 +240,9 @@ class ProjectDetailScreen extends StatelessWidget {
                               Text(
                                 ' (${project.ratingCount})',
                                 style: GoogleFonts.montserrat(
-                                    fontSize: 11, color: _kSubtext),
+                                  fontSize: 11,
+                                  color: _kSubtext,
+                                ),
                               ),
                             ],
                           ),
@@ -239,9 +263,12 @@ class ProjectDetailScreen extends StatelessWidget {
                       Text(
                         '📍 ${project.county ?? project.location}',
                         style: GoogleFonts.montserrat(
-                            fontSize: 13, color: _kSubtext),
+                          fontSize: 13,
+                          color: _kSubtext,
+                        ),
                       ),
-                    if (project.isLinear && (project.routeData?.length ?? 0) >= 2) ...[
+                    if (project.isLinear &&
+                        (project.routeData?.length ?? 0) >= 2) ...[
                       const SizedBox(height: 12),
                       ProjectRouteMap(project: project),
                     ] else if (project.hasCoordinates) ...[
@@ -263,11 +290,14 @@ class ProjectDetailScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Project Progress',
-                                  style: GoogleFonts.montserrat(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: _kDark)),
+                              Text(
+                                'Project Progress',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _kDark,
+                                ),
+                              ),
                               Text(
                                 '${project.progressPercent}%',
                                 style: GoogleFonts.montserrat(
@@ -285,8 +315,9 @@ class ProjectDetailScreen extends StatelessWidget {
                               value: project.progressPercent / 100,
                               minHeight: 10,
                               backgroundColor: _kDivider,
-                              valueColor:
-                                  const AlwaysStoppedAnimation<Color>(_kBlue),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                _kBlue,
+                              ),
                             ),
                           ),
                         ],
@@ -340,7 +371,8 @@ class ProjectDetailScreen extends StatelessWidget {
               // ── Project Team & Stakeholders (defensive — `team_members`
               // isn't sent by the live backend yet, so this stays hidden
               // until it is) ────────────────────────────────────────────
-              if (project.teamMembers.isNotEmpty) _TeamStakeholdersCard(project: project),
+              if (project.teamMembers.isNotEmpty)
+                _TeamStakeholdersCard(project: project),
 
               if (project.teamMembers.isNotEmpty) const SizedBox(height: 8),
 
@@ -372,7 +404,10 @@ class ProjectDetailScreen extends StatelessWidget {
               // ── Renders (architectural impressions) — directly below the
               // Overview, ahead of documents/photos/milestones ───────────
               if (project.renderGallery.isNotEmpty)
-                _buildGalleryCard('Architectural Renders & Visualizations', project.renderGallery),
+                _buildGalleryCard(
+                  'Architectural Renders & Visualizations',
+                  project.renderGallery,
+                ),
 
               const SizedBox(height: 8),
 
@@ -390,7 +425,9 @@ class ProjectDetailScreen extends StatelessWidget {
               if (project.media.isNotEmpty)
                 _buildGalleryCard(
                   'Featured Project Photos & Videos',
-                  project.renderGallery.isNotEmpty ? project.progressGallery : project.media,
+                  project.renderGallery.isNotEmpty
+                      ? project.progressGallery
+                      : project.media,
                 ),
 
               const SizedBox(height: 8),
@@ -456,16 +493,15 @@ class ProjectDetailScreen extends StatelessWidget {
     );
   }
 
-
   /// Client always has a real entity slug (ProjectClient.slug); Contractor/
   /// Consultant/Financier are plain free-text strings on Project with no
   /// entity linkage, so their taps guess a slug via slugify() — see
   /// entities/screens/entity_profile_screen.dart for how a miss is handled.
   void _openEntity(String name, [String? realSlug]) {
-    Get.toNamed(AppRoutes.entityProfile, arguments: {
-      'slug': realSlug ?? slugify(name),
-      'fallbackName': name,
-    });
+    Get.toNamed(
+      AppRoutes.entityProfile,
+      arguments: {'slug': realSlug ?? slugify(name), 'fallbackName': name},
+    );
   }
 
   // Attribution (submitter/approving admin) is scoped out: submittedBy/
@@ -474,25 +510,45 @@ class ProjectDetailScreen extends StatelessWidget {
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
     if (project.client != null) {
-      rows.add(_DetailRow(
+      rows.add(
+        _DetailRow(
           project.projectType == 'private_development' ? 'Developer' : 'Client',
           project.client!.name,
-          onTap: () => _openEntity(project.client!.name, project.client!.slug)));
+          onTap: () => _openEntity(project.client!.name, project.client!.slug),
+        ),
+      );
     }
     if (project.contractor != null) {
-      rows.add(_DetailRow('Contractor', project.contractor!,
-          onTap: () => _openEntity(project.contractor!)));
+      rows.add(
+        _DetailRow(
+          'Contractor',
+          project.contractor!,
+          onTap: () => _openEntity(project.contractor!),
+        ),
+      );
     }
     if (project.consultant != null) {
-      rows.add(_DetailRow('Consultant', project.consultant!,
-          onTap: () => _openEntity(project.consultant!)));
+      rows.add(
+        _DetailRow(
+          'Consultant',
+          project.consultant!,
+          onTap: () => _openEntity(project.consultant!),
+        ),
+      );
     }
     if (project.financier != null) {
-      rows.add(_DetailRow('Financier', project.financier!,
-          onTap: () => _openEntity(project.financier!)));
+      rows.add(
+        _DetailRow(
+          'Financier',
+          project.financier!,
+          onTap: () => _openEntity(project.financier!),
+        ),
+      );
     }
     if (project.contractValue != null) {
-      rows.add(_DetailRow('Contract Value', _fmtCurrency(project.contractValue!)));
+      rows.add(
+        _DetailRow('Contract Value', _fmtCurrency(project.contractValue!)),
+      );
     }
     if (project.startDate != null) {
       rows.add(_DetailRow('Start Date', _fmtDate(project.startDate!)));
@@ -500,7 +556,9 @@ class ProjectDetailScreen extends StatelessWidget {
     if (project.status == 'completed' && project.actualEndDate != null) {
       rows.add(_DetailRow('Completed', _fmtDate(project.actualEndDate!)));
     } else if (project.expectedEndDate != null) {
-      rows.add(_DetailRow('Expected Completion', _fmtDate(project.expectedEndDate!)));
+      rows.add(
+        _DetailRow('Expected Completion', _fmtDate(project.expectedEndDate!)),
+      );
     }
 
     if (rows.isEmpty) return const SizedBox.shrink();
@@ -529,17 +587,29 @@ class ProjectDetailScreen extends StatelessWidget {
       color: const Color(0xFFF8FAFC),
       padding: _kCardPad,
       decoration: const BoxDecoration(
-        border: Border(left: BorderSide(color: AppColors.headingSlate, width: 4)),
+        border: Border(
+          left: BorderSide(color: AppColors.headingSlate, width: 4),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Project Summary',
-              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+          Text(
+            'Project Summary',
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.headingSlate,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             project.summary!.replaceAll(RegExp(r'<[^>]*>'), '').trim(),
-            style: GoogleFonts.montserrat(fontSize: 13.5, height: 1.6, color: _kDark),
+            style: GoogleFonts.montserrat(
+              fontSize: 13.5,
+              height: 1.6,
+              color: _kDark,
+            ),
           ),
         ],
       ),
@@ -551,7 +621,9 @@ class ProjectDetailScreen extends StatelessWidget {
   /// Project" and conflated summary+description, dropping the description
   /// entirely whenever a summary was present).
   Widget _buildDescriptionCard(Project project) {
-    final text = (project.descriptionOverview ?? project.description ?? '').replaceAll(RegExp(r'<[^>]*>'), '').trim();
+    final text = (project.descriptionOverview ?? project.description ?? '')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .trim();
     return _InfoCard(
       title: 'Project Overview',
       child: _ExpandableDescription(text: text),
@@ -572,9 +644,7 @@ class ProjectDetailScreen extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: m.isAchieved
-                        ? const Color(0xFF16A34A)
-                        : _kDivider,
+                    color: m.isAchieved ? const Color(0xFF16A34A) : _kDivider,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -603,7 +673,9 @@ class ProjectDetailScreen extends StatelessWidget {
                         Text(
                           _fmtDate(m.milestoneDate!),
                           style: GoogleFonts.montserrat(
-                              fontSize: 11, color: _kSubtext),
+                            fontSize: 11,
+                            color: _kSubtext,
+                          ),
                         ),
                       ],
                       if (m.description != null) ...[
@@ -611,7 +683,9 @@ class ProjectDetailScreen extends StatelessWidget {
                         Text(
                           m.description!,
                           style: GoogleFonts.montserrat(
-                              fontSize: 12, color: _kSubtext),
+                            fontSize: 12,
+                            color: _kSubtext,
+                          ),
                         ),
                       ],
                       if (m.media.isNotEmpty) ...[
@@ -621,7 +695,8 @@ class ProjectDetailScreen extends StatelessWidget {
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: m.media.length,
-                            separatorBuilder: (_, _) => const SizedBox(width: 6),
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 6),
                             itemBuilder: (_, i) => ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: m.media[i].mediaType == 'image'
@@ -636,8 +711,11 @@ class ProjectDetailScreen extends StatelessWidget {
                                       width: 52,
                                       height: 52,
                                       color: _kDark,
-                                      child: const Icon(Icons.play_circle_fill_rounded,
-                                          color: Colors.white54, size: 22),
+                                      child: const Icon(
+                                        Icons.play_circle_fill_rounded,
+                                        color: Colors.white54,
+                                        size: 22,
+                                      ),
                                     ),
                             ),
                           ),
@@ -681,8 +759,11 @@ class ProjectDetailScreen extends StatelessWidget {
                   )
                 : Container(
                     color: _kDark,
-                    child: const Icon(Icons.play_circle_fill_rounded,
-                        color: Colors.white54, size: 32),
+                    child: const Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: Colors.white54,
+                      size: 32,
+                    ),
                   ),
           );
         },
@@ -694,8 +775,19 @@ class ProjectDetailScreen extends StatelessWidget {
     try {
       final d = DateTime.parse(s);
       const months = [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       return '${d.day} ${months[d.month]} ${d.year}';
     } catch (_) {
@@ -719,8 +811,11 @@ class _FollowButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (!auth.isAuthenticated) {
-          Get.snackbar('Sign in required', 'Sign in to follow projects and get update notifications.',
-              snackPosition: SnackPosition.BOTTOM);
+          Get.snackbar(
+            'Sign in required',
+            'Sign in to follow projects and get update notifications.',
+            snackPosition: SnackPosition.BOTTOM,
+          );
           return;
         }
         ctrl.toggleFollow();
@@ -734,7 +829,9 @@ class _FollowButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
-          project.isFollowing ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+          project.isFollowing
+              ? Icons.notifications_active_rounded
+              : Icons.notifications_none_rounded,
           color: Colors.white,
           size: 18,
         ),
@@ -757,7 +854,8 @@ class _ProjectActionBar extends StatelessWidget {
     // Guests see the same "Suggest an Update" chip signed-in non-privileged
     // users see, gated on tap via the guest-gate sheet, instead of the
     // action bar disappearing entirely.
-    final canManage = auth.isAuthenticated && auth.currentUser?.canManageProjects == true;
+    final canManage =
+        auth.isAuthenticated && auth.currentUser?.canManageProjects == true;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -765,7 +863,11 @@ class _ProjectActionBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: _kCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: canManage ? AppColors.headingSlate.withValues(alpha: 0.18) : _kDivider),
+        border: Border.all(
+          color: canManage
+              ? AppColors.headingSlate.withValues(alpha: 0.18)
+              : _kDivider,
+        ),
       ),
       child: canManage
           ? Column(
@@ -773,10 +875,21 @@ class _ProjectActionBar extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.shield_rounded, size: 13, color: AppColors.headingSlate),
+                    Icon(
+                      Icons.shield_rounded,
+                      size: 13,
+                      color: AppColors.headingSlate,
+                    ),
                     const SizedBox(width: 6),
-                    Text('ADMIN ACTIONS',
-                        style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate, letterSpacing: 0.6)),
+                    Text(
+                      'ADMIN ACTIONS',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.headingSlate,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -787,7 +900,13 @@ class _ProjectActionBar extends StatelessWidget {
                         icon: Icons.add_comment_rounded,
                         label: 'Add an Update',
                         dark: true,
-                        onTap: () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: true)),
+                        onTap: () => Get.to(
+                          () => PostUpdateScreen(
+                            projectId: project.id,
+                            projectTitle: project.title,
+                            isPrivileged: true,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -796,19 +915,27 @@ class _ProjectActionBar extends StatelessWidget {
                         icon: Icons.edit_rounded,
                         label: 'Edit Project',
                         dark: true,
-                        onTap: () => Get.to(() => SubmitProjectScreen(existingProject: project)),
+                        onTap: () => Get.to(
+                          () => SubmitProjectScreen(existingProject: project),
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Obx(() => _ProjectActionChip(
-                      icon: Icons.visibility_off_rounded,
-                      label: ctrl.publishToggling.value ? 'Working…' : 'Publish / Unpublish',
-                      dark: true,
-                      onTap: ctrl.publishToggling.value ? null : ctrl.togglePublish,
-                      fullWidth: true,
-                    )),
+                Obx(
+                  () => _ProjectActionChip(
+                    icon: Icons.visibility_off_rounded,
+                    label: ctrl.publishToggling.value
+                        ? 'Working…'
+                        : 'Publish / Unpublish',
+                    dark: true,
+                    onTap: ctrl.publishToggling.value
+                        ? null
+                        : ctrl.togglePublish,
+                    fullWidth: true,
+                  ),
+                ),
               ],
             )
           : _ProjectActionChip(
@@ -816,7 +943,13 @@ class _ProjectActionBar extends StatelessWidget {
               label: 'Suggest an Update',
               onTap: () => requireAuth(
                 context,
-                () => Get.to(() => PostUpdateScreen(projectId: project.id, projectTitle: project.title, isPrivileged: false)),
+                () => Get.to(
+                  () => PostUpdateScreen(
+                    projectId: project.id,
+                    projectTitle: project.title,
+                    isPrivileged: false,
+                  ),
+                ),
                 message: 'Sign in to submit project updates',
               ),
               fullWidth: true,
@@ -830,16 +963,27 @@ class _ProjectActionChip extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final bool fullWidth;
+
   /// Deep-slate architectural style for admin/editor/moderator-only actions,
   /// distinct from the blue "Suggest an Update" chip regular users see.
   final bool dark;
-  const _ProjectActionChip({required this.icon, required this.label, required this.onTap, this.fullWidth = false, this.dark = false});
+  const _ProjectActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.fullWidth = false,
+    this.dark = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final fg = dark ? AppColors.headingSlate : _kBlue;
-    final bg = dark ? AppColors.headingSlate.withValues(alpha: 0.06) : _kBlue.withValues(alpha: 0.08);
-    final border = dark ? AppColors.headingSlate : _kBlue.withValues(alpha: 0.25);
+    final bg = dark
+        ? AppColors.headingSlate.withValues(alpha: 0.06)
+        : _kBlue.withValues(alpha: 0.08);
+    final border = dark
+        ? AppColors.headingSlate
+        : _kBlue.withValues(alpha: 0.25);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -856,7 +1000,14 @@ class _ProjectActionChip extends StatelessWidget {
           children: [
             Icon(icon, size: 15, color: fg),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: fg)),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: fg,
+              ),
+            ),
           ],
         ),
       ),
@@ -870,19 +1021,25 @@ class _StatusDot extends StatelessWidget {
 
   Color get _color {
     switch (status) {
-      case 'completed': return const Color(0xFF4ADE80);
-      case 'ongoing': return const Color(0xFF60A5FA);
-      case 'planned': return const Color(0xFFFBBF24);
+      case 'completed':
+        return const Color(0xFF4ADE80);
+      case 'ongoing':
+        return const Color(0xFF60A5FA);
+      case 'planned':
+        return const Color(0xFFFBBF24);
       case 'stalled':
-      case 'cancelled': return const Color(0xFFF87171);
-      default: return Colors.white70;
+      case 'cancelled':
+        return const Color(0xFFF87171);
+      default:
+        return Colors.white70;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 7, height: 7,
+      width: 7,
+      height: 7,
       decoration: BoxDecoration(color: _color, shape: BoxShape.circle),
     );
   }
@@ -912,7 +1069,9 @@ class _CompactRatingRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: rated ? const Color(0xFF16A34A).withValues(alpha: 0.08) : _kBg,
+            color: rated
+                ? const Color(0xFF16A34A).withValues(alpha: 0.08)
+                : _kBg,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -936,8 +1095,10 @@ class _CompactRatingRow extends StatelessWidget {
                 ),
               ),
               if (!rated)
-                Text('Tap to rate',
-                    style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext)),
+                Text(
+                  'Tap to rate',
+                  style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
+                ),
             ],
           ),
         ),
@@ -953,7 +1114,12 @@ class _RatingSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.of(context).padding.bottom + 20,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -964,56 +1130,74 @@ class _RatingSheet extends StatelessWidget {
         children: [
           Center(
             child: Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(color: _kDivider, borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(
+                color: _kDivider,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
-          Text('Rate This Project',
-              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: _kDark)),
+          Text(
+            'Rate This Project',
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: _kDark,
+            ),
+          ),
           const SizedBox(height: 16),
-          Obx(() => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(10, (i) {
-                  final rating = i + 1;
-                  final selected = ctrl.userRating.value >= rating;
-                  return GestureDetector(
-                    onTap: ctrl.ratingLoading.value
-                        ? null
-                        : () {
-                            ctrl.userRating.value = rating;
-                            ctrl.submitRating(rating);
-                            Navigator.of(context).pop();
-                          },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: selected ? _kBlue : _kBg,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: selected ? _kBlue : _kDivider),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$rating',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: selected ? Colors.white : _kSubtext,
-                          ),
+          Obx(
+            () => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(10, (i) {
+                final rating = i + 1;
+                final selected = ctrl.userRating.value >= rating;
+                return GestureDetector(
+                  onTap: ctrl.ratingLoading.value
+                      ? null
+                      : () {
+                          ctrl.userRating.value = rating;
+                          ctrl.submitRating(rating);
+                          Navigator.of(context).pop();
+                        },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: selected ? _kBlue : _kBg,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: selected ? _kBlue : _kDivider),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$rating',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: selected ? Colors.white : _kSubtext,
                         ),
                       ),
                     ),
-                  );
-                }),
-              )),
+                  ),
+                );
+              }),
+            ),
+          ),
           const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Poor', style: GoogleFonts.montserrat(fontSize: 9.5, color: _kSubtext)),
-              Text('Excellent', style: GoogleFonts.montserrat(fontSize: 9.5, color: _kSubtext)),
+              Text(
+                'Poor',
+                style: GoogleFonts.montserrat(fontSize: 9.5, color: _kSubtext),
+              ),
+              Text(
+                'Excellent',
+                style: GoogleFonts.montserrat(fontSize: 9.5, color: _kSubtext),
+              ),
             ],
           ),
         ],
@@ -1029,7 +1213,11 @@ class _ActionsCard extends StatelessWidget {
   const _ActionsCard({required this.project});
 
   void _requireAuth(BuildContext context, VoidCallback action) {
-    requireAuth(context, action, message: 'Sign in to suggest an edit or progress update');
+    requireAuth(
+      context,
+      action,
+      message: 'Sign in to suggest an edit or progress update',
+    );
   }
 
   @override
@@ -1043,12 +1231,15 @@ class _ActionsCard extends StatelessWidget {
             child: _ActionChip(
               icon: Icons.percent_rounded,
               label: 'Suggest %',
-              onTap: () => _requireAuth(context, () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => _SuggestProgressSheet(project: project),
-                  )),
+              onTap: () => _requireAuth(
+                context,
+                () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => _SuggestProgressSheet(project: project),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -1056,12 +1247,15 @@ class _ActionsCard extends StatelessWidget {
             child: _ActionChip(
               icon: Icons.edit_note_rounded,
               label: 'Suggest Edit',
-              onTap: () => _requireAuth(context, () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => _SuggestEditSheet(project: project),
-                  )),
+              onTap: () => _requireAuth(
+                context,
+                () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => _SuggestEditSheet(project: project),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -1070,7 +1264,8 @@ class _ActionsCard extends StatelessWidget {
               icon: Icons.flag_outlined,
               label: 'Report Content',
               onTap: () => showComingSoonSnack(
-                  'Copyright/content claims aren\'t available in the app yet.'),
+                'Copyright/content claims aren\'t available in the app yet.',
+              ),
             ),
           ),
         ],
@@ -1083,7 +1278,11 @@ class _ActionChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _ActionChip({required this.icon, required this.label, required this.onTap});
+  const _ActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1101,7 +1300,14 @@ class _ActionChip extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: _kBlue),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: _kBlue)),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: _kBlue,
+              ),
+            ),
           ],
         ),
       ),
@@ -1117,9 +1323,16 @@ class _SheetShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          MediaQuery.of(context).padding.bottom + 20,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -1131,12 +1344,23 @@ class _SheetShell extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  width: 36, height: 4,
+                  width: 36,
+                  height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(color: _kDivider, borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(
+                    color: _kDivider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              Text(title, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: _kDark)),
+              Text(
+                title,
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: _kDark,
+                ),
+              ),
               const SizedBox(height: 16),
               child,
             ],
@@ -1148,13 +1372,16 @@ class _SheetShell extends StatelessWidget {
 }
 
 InputDecoration _sheetFieldDecoration(String label) => InputDecoration(
-      labelText: label,
-      labelStyle: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
-      filled: true,
-      fillColor: _kBg,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-    );
+  labelText: label,
+  labelStyle: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
+  filled: true,
+  fillColor: _kBg,
+  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: BorderSide.none,
+  ),
+);
 
 /// Mirrors templates/project_detail.html's "Suggest Completion %" card —
 /// a lighter-weight sibling to [_SuggestEditSheet] that hits the dedicated
@@ -1187,13 +1414,21 @@ class _SuggestProgressSheetState extends State<_SuggestProgressSheet> {
   Future<void> _submit() async {
     final percent = int.tryParse(_percentCtrl.text.trim());
     if (percent == null || percent < 0 || percent > 100) {
-      Get.snackbar('Invalid value', 'Enter a completion percentage between 0 and 100.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      Get.snackbar(
+        'Invalid value',
+        'Enter a completion percentage between 0 and 100.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
       return;
     }
     if (_nameCtrl.text.trim().isEmpty) {
-      Get.snackbar('Name required', 'Please enter your name.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      Get.snackbar(
+        'Name required',
+        'Please enter your name.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
       return;
     }
     setState(() => _submitting = true);
@@ -1202,14 +1437,18 @@ class _SuggestProgressSheetState extends State<_SuggestProgressSheet> {
       proposedPercent: percent,
       name: _nameCtrl.text.trim(),
       email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
-      reason: _reasonCtrl.text.trim().isNotEmpty ? _reasonCtrl.text.trim() : null,
+      reason: _reasonCtrl.text.trim().isNotEmpty
+          ? _reasonCtrl.text.trim()
+          : null,
     );
     if (!mounted) return;
     setState(() => _submitting = false);
     Navigator.of(context).pop();
     Get.snackbar(
       ok ? 'Thanks!' : 'Couldn\'t submit',
-      ok ? 'Your progress suggestion has been sent for review.' : 'Please try again.',
+      ok
+          ? 'Your progress suggestion has been sent for review.'
+          : 'Please try again.',
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
     );
@@ -1236,7 +1475,9 @@ class _SuggestProgressSheetState extends State<_SuggestProgressSheet> {
           TextField(
             controller: _percentCtrl,
             keyboardType: TextInputType.number,
-            decoration: _sheetFieldDecoration('Completion %').copyWith(suffixText: '%'),
+            decoration: _sheetFieldDecoration(
+              'Completion %',
+            ).copyWith(suffixText: '%'),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -1257,14 +1498,26 @@ class _SuggestProgressSheetState extends State<_SuggestProgressSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kBlue,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: _submitting
                   ? const SizedBox(
-                      width: 18, height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Submit Suggestion',
-                      style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Submit Suggestion',
+                      style: GoogleFonts.montserrat(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -1283,8 +1536,15 @@ class _SuggestEditSheet extends StatefulWidget {
 
 class _SuggestEditSheetState extends State<_SuggestEditSheet> {
   static const _fields = [
-    'title', 'summary', 'description', 'location',
-    'contractor', 'consultant', 'start_date', 'expected_end_date', 'progress_percent',
+    'title',
+    'summary',
+    'description',
+    'location',
+    'contractor',
+    'consultant',
+    'start_date',
+    'expected_end_date',
+    'progress_percent',
   ];
   String _field = _fields.first;
   final _valueCtrl = TextEditingController();
@@ -1296,8 +1556,12 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
   Future<void> _submit() async {
     if (_valueCtrl.text.trim().isEmpty) return;
     if (_nameCtrl.text.trim().isEmpty) {
-      Get.snackbar('Name required', 'Please enter your name.',
-          snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+      Get.snackbar(
+        'Name required',
+        'Please enter your name.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
       return;
     }
     setState(() => _submitting = true);
@@ -1307,14 +1571,20 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
       proposedValue: _valueCtrl.text.trim(),
       name: _nameCtrl.text.trim(),
       email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : null,
-      reason: _reasonCtrl.text.trim().isNotEmpty ? _reasonCtrl.text.trim() : null,
+      reason: _reasonCtrl.text.trim().isNotEmpty
+          ? _reasonCtrl.text.trim()
+          : null,
     );
     if (!mounted) return;
     setState(() => _submitting = false);
     Navigator.of(context).pop();
     final ok = result['error'] == null;
-    Get.snackbar(ok ? 'Thanks!' : 'Couldn\'t submit', ok ? 'Your suggestion has been sent for review.' : 'Please try again.',
-        snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(16));
+    Get.snackbar(
+      ok ? 'Thanks!' : 'Couldn\'t submit',
+      ok ? 'Your suggestion has been sent for review.' : 'Please try again.',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
   }
 
   @override
@@ -1327,26 +1597,66 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
           DropdownButtonFormField<String>(
             initialValue: _field,
             decoration: _sheetFieldDecoration('Field to correct'),
-            items: _fields.map((f) => DropdownMenuItem(value: f, child: Text(f.replaceAll('_', ' ')))).toList(),
+            items: _fields
+                .map(
+                  (f) => DropdownMenuItem(
+                    value: f,
+                    child: Text(f.replaceAll('_', ' ')),
+                  ),
+                )
+                .toList(),
             onChanged: (v) => setState(() => _field = v ?? _field),
           ),
           const SizedBox(height: 12),
-          TextField(controller: _valueCtrl, decoration: _sheetFieldDecoration('Proposed value'), maxLines: 2),
+          TextField(
+            controller: _valueCtrl,
+            decoration: _sheetFieldDecoration('Proposed value'),
+            maxLines: 2,
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _nameCtrl, decoration: _sheetFieldDecoration('Your name')),
+          TextField(
+            controller: _nameCtrl,
+            decoration: _sheetFieldDecoration('Your name'),
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _emailCtrl, decoration: _sheetFieldDecoration('Your email (optional)')),
+          TextField(
+            controller: _emailCtrl,
+            decoration: _sheetFieldDecoration('Your email (optional)'),
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _reasonCtrl, decoration: _sheetFieldDecoration('Reason (optional)'), maxLines: 2),
+          TextField(
+            controller: _reasonCtrl,
+            decoration: _sheetFieldDecoration('Reason (optional)'),
+            maxLines: 2,
+          ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _submitting ? null : _submit,
-              style: ElevatedButton.styleFrom(backgroundColor: _kBlue, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kBlue,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: _submitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Submit', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Submit',
+                      style: GoogleFonts.montserrat(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -1375,19 +1685,32 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
   Widget build(BuildContext context) {
     final words = widget.text.split(RegExp(r'\s+'));
     final overLimit = words.length > _kWordCap;
-    final shown = (_expanded || !overLimit) ? widget.text : '${words.take(_kWordCap).join(' ')}…';
+    final shown = (_expanded || !overLimit)
+        ? widget.text
+        : '${words.take(_kWordCap).join(' ')}…';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(shown, style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark, height: 1.6)),
+        Text(
+          shown,
+          style: GoogleFonts.montserrat(
+            fontSize: 13.5,
+            color: _kDark,
+            height: 1.6,
+          ),
+        ),
         if (overLimit) ...[
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () => setState(() => _expanded = !_expanded),
             child: Text(
               _expanded ? 'Show less' : 'Continue Reading',
-              style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.headingSlate),
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.headingSlate,
+              ),
             ),
           ),
         ],
@@ -1403,7 +1726,8 @@ class _ProgressUpdatesSection extends StatefulWidget {
   const _ProgressUpdatesSection({required this.project});
 
   @override
-  State<_ProgressUpdatesSection> createState() => _ProgressUpdatesSectionState();
+  State<_ProgressUpdatesSection> createState() =>
+      _ProgressUpdatesSectionState();
 }
 
 class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
@@ -1435,7 +1759,8 @@ class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
       child: Column(
         children: [
           for (int i = 0; i < _updates.length; i++) ...[
-            if (i > 0) const Divider(height: 24, thickness: 0.8, color: _kDivider),
+            if (i > 0)
+              const Divider(height: 24, thickness: 0.8, color: _kDivider),
             _ProgressUpdateCard(update: _updates[i]),
           ],
         ],
@@ -1458,10 +1783,13 @@ class _ProgressUpdateCard extends StatelessWidget {
             CircleAvatar(
               radius: 14,
               backgroundColor: AppColors.borderSlate,
-              backgroundImage: (update.authorAvatar != null && update.authorAvatar!.isNotEmpty)
+              backgroundImage:
+                  (update.authorAvatar != null &&
+                      update.authorAvatar!.isNotEmpty)
                   ? NetworkImage(update.authorAvatar!)
                   : null,
-              child: (update.authorAvatar == null || update.authorAvatar!.isEmpty)
+              child:
+                  (update.authorAvatar == null || update.authorAvatar!.isEmpty)
                   ? const Icon(Icons.person_rounded, size: 14, color: _kSubtext)
                   : null,
             ),
@@ -1469,15 +1797,29 @@ class _ProgressUpdateCard extends StatelessWidget {
             Expanded(
               child: Text(
                 update.authorName ?? 'Mjengo Hub',
-                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: _kDark),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: _kDark,
+                ),
               ),
             ),
             if (update.createdAt != null)
-              Text(update.createdAt!.split('T').first, style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext)),
+              Text(
+                update.createdAt!.split('T').first,
+                style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
+              ),
           ],
         ),
         const SizedBox(height: 8),
-        Text(update.content, style: GoogleFonts.montserrat(fontSize: 13, color: _kDark, height: 1.5)),
+        Text(
+          update.content,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: _kDark,
+            height: 1.5,
+          ),
+        ),
         if (update.media.isNotEmpty) ...[
           const SizedBox(height: 10),
           SizedBox(
@@ -1489,12 +1831,22 @@ class _ProgressUpdateCard extends StatelessWidget {
               itemBuilder: (_, i) => ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.sharp),
                 child: update.media[i].mediaType == 'image'
-                    ? NetImage(url: update.media[i].url, width: 64, height: 64, fit: BoxFit.cover, placeholderColor: _kDivider)
+                    ? NetImage(
+                        url: update.media[i].url,
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.cover,
+                        placeholderColor: _kDivider,
+                      )
                     : Container(
                         width: 64,
                         height: 64,
                         color: _kDark,
-                        child: const Icon(Icons.play_circle_fill_rounded, color: Colors.white54, size: 24),
+                        child: const Icon(
+                          Icons.play_circle_fill_rounded,
+                          color: Colors.white54,
+                          size: 24,
+                        ),
                       ),
               ),
             ),
@@ -1545,8 +1897,14 @@ class _DetailRow extends StatelessWidget {
     // Tappable stakeholder values render as a small bordered chip — matches
     // the website's own `.pd-chip` treatment for Contractor/Status links.
     final valueWidget = onTap == null
-        ? Text(value,
-            style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: _kDark))
+        ? Text(
+            value,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _kDark,
+            ),
+          )
         : GestureDetector(
             onTap: onTap,
             child: Container(
@@ -1555,9 +1913,14 @@ class _DetailRow extends StatelessWidget {
                 border: Border.all(color: AppColors.borderSlate),
                 borderRadius: BorderRadius.circular(AppRadius.chip),
               ),
-              child: Text(value,
-                  style: GoogleFonts.montserrat(
-                      fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
+              child: Text(
+                value,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.headingSlate,
+                ),
+              ),
             ),
           );
     return Padding(
@@ -1567,9 +1930,10 @@ class _DetailRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 130,
-            child: Text(label,
-                style: GoogleFonts.montserrat(
-                    fontSize: 12, color: _kSubtext)),
+            child: Text(
+              label,
+              style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
+            ),
           ),
           Expanded(child: valueWidget),
         ],
@@ -1606,31 +1970,49 @@ class _TeamStakeholdersCard extends StatelessWidget {
         children: [
           Text(
             'Project Team & Stakeholders',
-            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate),
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.headingSlate,
+            ),
           ),
           const SizedBox(height: 14),
           for (final entry in byRole.entries) ...[
             Text(
               entry.key,
-              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.captionSlate, letterSpacing: 0.4),
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.captionSlate,
+                letterSpacing: 0.4,
+              ),
             ),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: entry.value
-                  .map((m) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(AppRadius.sharp),
-                          border: Border.all(color: AppColors.borderSlate),
+                  .map(
+                    (m) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppRadius.sharp),
+                        border: Border.all(color: AppColors.borderSlate),
+                      ),
+                      child: Text(
+                        m.name,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.bodyCharcoal,
                         ),
-                        child: Text(
-                          m.name,
-                          style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal),
-                        ),
-                      ))
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 12),
@@ -1697,13 +2079,23 @@ class _FinanciersCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(f.name,
-                              style: GoogleFonts.montserrat(
-                                  fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal)),
+                          Text(
+                            f.name,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.bodyCharcoal,
+                            ),
+                          ),
                           if (f.contributionDisplay != null) ...[
                             const SizedBox(height: 2),
-                            Text(f.contributionDisplay!,
-                                style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
+                            Text(
+                              f.contributionDisplay!,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11.5,
+                                color: AppColors.captionSlate,
+                              ),
+                            ),
                           ],
                         ],
                       ),
@@ -1714,8 +2106,10 @@ class _FinanciersCard extends StatelessWidget {
                       runSpacing: 6,
                       alignment: WrapAlignment.end,
                       children: [
-                        if ((f.fundingType ?? '').isNotEmpty) _Badge(label: f.fundingType!),
-                        if (f.sharePercentage != null) _Badge(label: '${f.sharePercentage}%', filled: true),
+                        if ((f.fundingType ?? '').isNotEmpty)
+                          _Badge(label: f.fundingType!),
+                        if (f.sharePercentage != null)
+                          _Badge(label: '${f.sharePercentage}%', filled: true),
                       ],
                     ),
                   ],
@@ -1767,15 +2161,26 @@ class _StakeholdersCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(entry.key,
-                      style: GoogleFonts.montserrat(
-                          fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.headingSlate, letterSpacing: 0.3)),
+                  Text(
+                    entry.key,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.headingSlate,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: entry.value
-                        .map((s) => _StakeholderChip(stakeholder: s, onTap: () => onTapEntity(s.name, s.slug)))
+                        .map(
+                          (s) => _StakeholderChip(
+                            stakeholder: s,
+                            onTap: () => onTapEntity(s.name, s.slug),
+                          ),
+                        )
                         .toList(),
                   ),
                 ],
@@ -1785,8 +2190,14 @@ class _StakeholdersCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children:
-                  solo.map((s) => _StakeholderChip(stakeholder: s, onTap: () => onTapEntity(s.name, s.slug))).toList(),
+              children: solo
+                  .map(
+                    (s) => _StakeholderChip(
+                      stakeholder: s,
+                      onTap: () => onTapEntity(s.name, s.slug),
+                    ),
+                  )
+                  .toList(),
             ),
         ],
       ),
@@ -1813,8 +2224,14 @@ class _StakeholderChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(stakeholder.name,
-                style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal)),
+            Text(
+              stakeholder.name,
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.bodyCharcoal,
+              ),
+            ),
             if (stakeholder.isConsortiumLead) ...[
               const SizedBox(width: 6),
               const _Badge(label: 'LEAD', filled: true),
@@ -1835,7 +2252,9 @@ class _AttributionBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final submittedText = attribution.isAnonymous
         ? 'Submitted Anonymously'
-        : (attribution.submittedBy != null ? 'Submitted by ${attribution.submittedBy}' : null);
+        : (attribution.submittedBy != null
+              ? 'Submitted by ${attribution.submittedBy}'
+              : null);
 
     return Container(
       color: _kCard,
@@ -1844,11 +2263,16 @@ class _AttributionBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (submittedText != null)
-            Text(submittedText, style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext)),
+            Text(
+              submittedText,
+              style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext),
+            ),
           if (attribution.publishedBy != null) ...[
             if (submittedText != null) const SizedBox(height: 4),
-            Text('Published by ${attribution.publishedBy}',
-                style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext)),
+            Text(
+              'Published by ${attribution.publishedBy}',
+              style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext),
+            ),
           ],
         ],
       ),
@@ -1869,12 +2293,18 @@ class _QuickFactsStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final facts = <(String, String)>[
-      (project.projectType == 'private_development' ? 'Private Development' : 'Infrastructure', 'sector'),
+      (
+        project.projectType == 'private_development'
+            ? 'Private Development'
+            : 'Infrastructure',
+        'sector',
+      ),
       if (project.status != 'completed' && project.expectedEndDate != null)
         (_fmtFactDate(project.expectedEndDate!), 'Est. Completion'),
       if (project.status == 'completed' && project.actualEndDate != null)
         (_fmtFactDate(project.actualEndDate!), 'Completed'),
-      if (project.contractValue != null) (_fmtFactCurrency(project.contractValue!), 'Budget'),
+      if (project.contractValue != null)
+        (_fmtFactCurrency(project.contractValue!), 'Budget'),
     ];
 
     return Container(
@@ -1895,11 +2325,23 @@ class _QuickFactsStrip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(value,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.headingSlate)),
+                Text(
+                  value,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.headingSlate,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(label,
-                    style: GoogleFonts.montserrat(fontSize: 10, color: AppColors.captionSlate, letterSpacing: 0.3)),
+                Text(
+                  label,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10,
+                    color: AppColors.captionSlate,
+                    letterSpacing: 0.3,
+                  ),
+                ),
               ],
             ),
           );
@@ -1911,7 +2353,20 @@ class _QuickFactsStrip extends StatelessWidget {
   static String _fmtFactDate(String iso) {
     try {
       final d = DateTime.parse(iso);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       return '${months[d.month - 1]} ${d.year}';
     } catch (_) {
       return iso;
@@ -1942,54 +2397,83 @@ class _DocumentsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Project Documents',
-              style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate)),
+          Text(
+            'Project Documents',
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.headingSlate,
+            ),
+          ),
           const SizedBox(height: 12),
-          ...project.documents.map((doc) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: InkWell(
-                  onTap: () => LinkLauncher.openLink(context, doc.url),
-                  borderRadius: BorderRadius.circular(AppRadius.sharp),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.borderSlate),
-                      borderRadius: BorderRadius.circular(AppRadius.sharp),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.headingSlate,
-                            borderRadius: BorderRadius.circular(AppRadius.sharp),
-                          ),
-                          child: Text(doc.fileType,
-                              style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white)),
+          ...project.documents.map(
+            (doc) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: InkWell(
+                onTap: () => LinkLauncher.openLink(context, doc.url),
+                borderRadius: BorderRadius.circular(AppRadius.sharp),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.borderSlate),
+                    borderRadius: BorderRadius.circular(AppRadius.sharp),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.headingSlate,
+                          borderRadius: BorderRadius.circular(AppRadius.sharp),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(doc.fileName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.bodyCharcoal)),
-                              if ((doc.source ?? '').isNotEmpty)
-                                Text(doc.source!,
-                                    style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.captionSlate)),
-                            ],
+                        child: Text(
+                          doc.fileType,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
-                        const Icon(Icons.download_rounded, size: 16, color: AppColors.captionSlate),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              doc.fileName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.bodyCharcoal,
+                              ),
+                            ),
+                            if ((doc.source ?? '').isNotEmpty)
+                              Text(
+                                doc.source!,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11,
+                                  color: AppColors.captionSlate,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.download_rounded,
+                        size: 16,
+                        color: AppColors.captionSlate,
+                      ),
+                    ],
                   ),
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -2038,9 +2522,12 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
     final categorySlug = widget.project.isBuiltHistory
         ? 'built-history'
         : widget.project.projectType == 'private_development'
-            ? 'buildings'
-            : 'infrastructure';
-    final results = await _newsService.getArticles(categorySlug: categorySlug, perPage: 4);
+        ? 'buildings'
+        : 'infrastructure';
+    final results = await _newsService.getArticles(
+      categorySlug: categorySlug,
+      perPage: 4,
+    );
     if (!mounted) return;
     setState(() {
       _articles = results;
@@ -2060,11 +2547,20 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
         children: [
           Text(
             'Related Articles & Coverage',
-            style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.headingSlate),
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.headingSlate,
+            ),
           ),
           const SizedBox(height: 12),
           if (_loading)
-            const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 2)))
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
           else
             SizedBox(
               height: 168,
@@ -2072,7 +2568,8 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
                 scrollDirection: Axis.horizontal,
                 itemCount: _articles.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
-                itemBuilder: (_, i) => _RelatedArticleCard(article: _articles[i]),
+                itemBuilder: (_, i) =>
+                    _RelatedArticleCard(article: _articles[i]),
               ),
             ),
         ],
@@ -2088,7 +2585,8 @@ class _RelatedArticleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
+      onTap: () =>
+          Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
       child: Container(
         width: 190,
         decoration: BoxDecoration(
@@ -2105,16 +2603,33 @@ class _RelatedArticleCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  NetImage(url: article.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                  NetImage(
+                    url: article.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholderColor: const Color(0xFF1E3A5F),
+                  ),
                   if (article.category != null)
                     Positioned(
                       top: 6,
                       left: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(color: AppColors.accentBlue, borderRadius: BorderRadius.circular(4)),
-                        child: Text(article.category!.name.toUpperCase(),
-                            style: GoogleFonts.montserrat(fontSize: 7.5, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.3)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentBlue,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          article.category!.name.toUpperCase(),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -2129,12 +2644,22 @@ class _RelatedArticleCard extends StatelessWidget {
                     article.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.3),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.headingSlate,
+                      height: 1.3,
+                    ),
                   ),
                   if (article.readTime != null) ...[
                     const SizedBox(height: 4),
-                    Text('${article.readTime} min read',
-                        style: GoogleFonts.montserrat(fontSize: 10, color: AppColors.captionSlate)),
+                    Text(
+                      '${article.readTime} min read',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        color: AppColors.captionSlate,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -2145,4 +2670,3 @@ class _RelatedArticleCard extends StatelessWidget {
     );
   }
 }
-

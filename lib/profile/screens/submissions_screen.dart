@@ -39,7 +39,13 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  static const _tabLabels = ['Articles', 'Public Projects', 'Private Projects', 'Incidents', 'Comments'];
+  static const _tabLabels = [
+    'Articles',
+    'Public Projects',
+    'Private Projects',
+    'Incidents',
+    'Comments',
+  ];
 
   @override
   void initState() {
@@ -67,7 +73,11 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
         foregroundColor: AppColors.textDark,
         title: Text(
           'My Submissions',
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark),
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: AppColors.textDark,
+          ),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -75,8 +85,14 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
           labelColor: AppColors.accentBlue,
           unselectedLabelColor: AppColors.textSubtle,
           indicatorColor: AppColors.accentBlue,
-          labelStyle: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500),
+          labelStyle: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
           tabs: _tabLabels.map((t) => Tab(text: t)).toList(),
         ),
       ),
@@ -106,7 +122,11 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ComingSoonPlaceholder(icon: icon, title: 'Nothing here yet', message: message);
+    return ComingSoonPlaceholder(
+      icon: icon,
+      title: 'Nothing here yet',
+      message: message,
+    );
   }
 }
 
@@ -139,7 +159,11 @@ class _MiniTile extends StatelessWidget {
               child: SizedBox(
                 width: 56,
                 height: 56,
-                child: NetImage(url: imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                child: NetImage(
+                  url: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -151,14 +175,21 @@ class _MiniTile extends StatelessWidget {
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11.5,
+                      color: AppColors.textSubtle,
+                    ),
                   ),
                 ],
               ),
@@ -172,10 +203,20 @@ class _MiniTile extends StatelessWidget {
 }
 
 Widget _statusPill(String label, Color color) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-      child: Text(label, style: GoogleFonts.montserrat(fontSize: 9.5, fontWeight: FontWeight.w500, color: color)),
-    );
+  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+  decoration: BoxDecoration(
+    color: color.withValues(alpha: 0.12),
+    borderRadius: BorderRadius.circular(999),
+  ),
+  child: Text(
+    label,
+    style: GoogleFonts.montserrat(
+      fontSize: 9.5,
+      fontWeight: FontWeight.w500,
+      color: color,
+    ),
+  ),
+);
 
 // ── Articles ───────────────────────────────────────────────────────────────
 
@@ -194,22 +235,28 @@ class _MyArticlesTabState extends State<_MyArticlesTab> {
     return FutureBuilder<List<Article>>(
       future: _future,
       builder: (context, snap) {
-        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snap.hasData)
+          return const Center(child: CircularProgressIndicator());
         final items = snap.data!;
         if (items.isEmpty) {
-          return const _EmptyState(icon: Icons.article_outlined, message: 'Articles you\'ve authored will show up here.');
+          return const _EmptyState(
+            icon: Icons.article_outlined,
+            message: 'Articles you\'ve authored will show up here.',
+          );
         }
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) =>
+              const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final a = items[i];
             return _MiniTile(
               imageUrl: a.imageUrl,
               title: a.title,
               subtitle: a.timeAgo,
-              onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: a.slug),
+              onTap: () =>
+                  Get.toNamed(AppRoutes.articleDetail, arguments: a.slug),
             );
           },
         );
@@ -236,18 +283,23 @@ class _MyProjectsTabState extends State<_MyProjectsTab> {
     return FutureBuilder<List<Project>>(
       future: _future,
       builder: (context, snap) {
-        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-        final items = snap.data!.where((p) => p.projectType == widget.projectType).toList();
+        if (!snap.hasData)
+          return const Center(child: CircularProgressIndicator());
+        final items = snap.data!
+            .where((p) => p.projectType == widget.projectType)
+            .toList();
         if (items.isEmpty) {
           return const _EmptyState(
             icon: Icons.corporate_fare_rounded,
-            message: 'Projects you\'ve submitted will show up here once you add one.',
+            message:
+                'Projects you\'ve submitted will show up here once you add one.',
           );
         }
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) =>
+              const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final p = items[i];
             return _MiniTile(
@@ -255,10 +307,15 @@ class _MyProjectsTabState extends State<_MyProjectsTab> {
               title: p.title,
               subtitle: p.county ?? p.location ?? p.statusLabel,
               trailing: _statusPill(
-                p.status == 'planned' ? 'PENDING REVIEW' : p.statusLabel.toUpperCase(),
+                p.status == 'planned'
+                    ? 'PENDING REVIEW'
+                    : p.statusLabel.toUpperCase(),
                 AppColors.warning,
               ),
-              onTap: () => Get.to(() => ProjectDetailScreen(slug: p.slug), transition: Transition.cupertino),
+              onTap: () => Get.to(
+                () => ProjectDetailScreen(slug: p.slug),
+                transition: Transition.cupertino,
+              ),
             );
           },
         );
@@ -284,25 +341,29 @@ class _MyIncidentsTabState extends State<_MyIncidentsTab> {
     return FutureBuilder<List<Incident>>(
       future: _future,
       builder: (context, snap) {
-        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snap.hasData)
+          return const Center(child: CircularProgressIndicator());
         final items = snap.data!;
         if (items.isEmpty) {
           return const _EmptyState(
             icon: Icons.report_gmailerrorred_rounded,
-            message: 'Road safety and site safety incidents you\'ve reported will show up here.',
+            message:
+                'Road safety and site safety incidents you\'ve reported will show up here.',
           );
         }
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) =>
+              const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final inc = items[i];
             return _MiniTile(
               imageUrl: inc.imageUrl,
               title: inc.title,
               subtitle: inc.location ?? inc.severity,
-              onTap: () => Get.toNamed(AppRoutes.incidentDetail, arguments: inc.slug),
+              onTap: () =>
+                  Get.toNamed(AppRoutes.incidentDetail, arguments: inc.slug),
             );
           },
         );
@@ -335,15 +396,20 @@ class _MyCommentsTabState extends State<_MyCommentsTab> {
     return FutureBuilder<List<MyComment>>(
       future: _future,
       builder: (context, snap) {
-        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snap.hasData)
+          return const Center(child: CircularProgressIndicator());
         final items = snap.data!;
         if (items.isEmpty) {
-          return const _EmptyState(icon: Icons.mode_comment_outlined, message: 'Your comments and discussions will show up here.');
+          return const _EmptyState(
+            icon: Icons.mode_comment_outlined,
+            message: 'Your comments and discussions will show up here.',
+          );
         }
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           itemCount: items.length,
-          separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
+          separatorBuilder: (_, _) =>
+              const Divider(height: 1, color: AppColors.divider),
           itemBuilder: (_, i) {
             final c = items[i];
             return Padding(
@@ -353,10 +419,23 @@ class _MyCommentsTabState extends State<_MyCommentsTab> {
                 children: [
                   Row(
                     children: [
-                      _statusPill(_typeLabels[c.commentableType] ?? c.commentableType, AppColors.accentBlue),
+                      _statusPill(
+                        _typeLabels[c.commentableType] ?? c.commentableType,
+                        AppColors.accentBlue,
+                      ),
                       const SizedBox(width: 8),
-                      Icon(Icons.arrow_upward_rounded, size: 12, color: AppColors.success),
-                      Text('${c.upvotes}', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+                      Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 12,
+                        color: AppColors.success,
+                      ),
+                      Text(
+                        '${c.upvotes}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          color: AppColors.textSubtle,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -364,7 +443,11 @@ class _MyCommentsTabState extends State<_MyCommentsTab> {
                     c.content,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textDark, height: 1.4),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12.5,
+                      color: AppColors.textDark,
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),

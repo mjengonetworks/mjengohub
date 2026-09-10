@@ -12,7 +12,6 @@ import '../../shared/theme/theme_controller.dart';
 import '../../shared/services/deep_link_service.dart';
 import 'firebase_initializer.dart';
 
-
 class DependencyInjection {
   static Future<void> init() async {
     print('🚀 Starting dependency injection...');

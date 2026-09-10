@@ -10,7 +10,7 @@ class DiscoverController extends GetxController {
 
   final categories = <Category>[].obs;
   final articles = <Article>[].obs;
-  final selectedSlug = ''.obs;      // '' means "All"
+  final selectedSlug = ''.obs; // '' means "All"
   final isLoadingCats = false.obs;
   final isLoadingArticles = false.obs;
   final hasMore = true.obs;

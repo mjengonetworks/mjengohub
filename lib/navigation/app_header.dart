@@ -60,7 +60,10 @@ class AppHeader extends StatelessWidget {
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => _goToTab(0),
-                      child: Image.asset('assets/mjengo_hub_logo.png', height: 30),
+                      child: Image.asset(
+                        'assets/mjengo_hub_logo.png',
+                        height: 30,
+                      ),
                     ),
                   ),
                 ),
@@ -78,9 +81,19 @@ class AppHeader extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 18),
+                          const Icon(
+                            Icons.search_rounded,
+                            color: Color(0xFF64748B),
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Search Mjengo Hub', style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.captionSlate)),
+                          Text(
+                            'Search Mjengo Hub',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11.5,
+                              color: AppColors.captionSlate,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -91,7 +104,10 @@ class AppHeader extends StatelessWidget {
 
                 // ── Far-right actions: search, verify, notifications, profile
                 GestureDetector(
-                  onTap: () => LinkLauncher.openLink(context, 'https://mjengohub.co.ke/verify'),
+                  onTap: () => LinkLauncher.openLink(
+                    context,
+                    'https://mjengohub.co.ke/verify',
+                  ),
                   child: const _VerifiedBadgeButton(),
                 ),
                 const SizedBox(width: 4),
@@ -123,7 +139,10 @@ class _HeaderIconButton extends StatelessWidget {
         width: 36,
         height: 36,
         alignment: Alignment.center,
-        decoration: BoxDecoration(color: AppColors.mutedCanvas, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: AppColors.mutedCanvas,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Icon(icon, color: AppColors.primaryBlue, size: 19),
       ),
     );
@@ -138,7 +157,9 @@ class _VerifiedBadgeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MjengoAuthController? auth;
-    try { auth = Get.find<MjengoAuthController>(); } catch (_) {}
+    try {
+      auth = Get.find<MjengoAuthController>();
+    } catch (_) {}
     if (auth == null) return const SizedBox(width: 38, height: 38);
 
     return Obx(() {
@@ -163,12 +184,14 @@ class _NotificationBellButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     NotificationsController? ctrl;
-    try { ctrl = Get.find<NotificationsController>(); } catch (_) {}
+    try {
+      ctrl = Get.find<NotificationsController>();
+    } catch (_) {}
 
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -177,16 +200,18 @@ class _NotificationBellButton extends StatelessWidget {
             Positioned(
               top: 6,
               right: 6,
-              child: Obx(() => ctrl!.unreadCount.value > 0
-                  ? Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.danger,
-                        shape: BoxShape.circle,
-                      ),
-                    )
-                  : const SizedBox.shrink()),
+              child: Obx(
+                () => ctrl!.unreadCount.value > 0
+                    ? Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.danger,
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ),
         ],
       ),
@@ -200,7 +225,9 @@ class _ProfileAvatarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MjengoAuthController? auth;
-    try { auth = Get.find<MjengoAuthController>(); } catch (_) {}
+    try {
+      auth = Get.find<MjengoAuthController>();
+    } catch (_) {}
 
     return GestureDetector(
       onTap: () => AppHeader._goToTab(4),

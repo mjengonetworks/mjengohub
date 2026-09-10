@@ -47,7 +47,9 @@ class _MapCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.sharp),
         child: Container(
           height: 200,
-          decoration: BoxDecoration(border: Border.all(color: AppColors.borderSlate)),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.borderSlate),
+          ),
           child: child,
         ),
       ),
@@ -65,21 +67,29 @@ class _PointMap extends StatelessWidget {
       options: MapOptions(
         initialCenter: center,
         initialZoom: 14,
-        interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag),
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+        ),
       ),
       children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'ke.co.mjengohub.app',
         ),
-        MarkerLayer(markers: [
-          Marker(
-            point: center,
-            width: 34,
-            height: 34,
-            child: const Icon(Icons.location_on, color: AppColors.danger, size: 34),
-          ),
-        ]),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: center,
+              width: 34,
+              height: 34,
+              child: const Icon(
+                Icons.location_on,
+                color: AppColors.danger,
+                size: 34,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -94,31 +104,48 @@ class _RouteMap extends StatelessWidget {
     final bounds = LatLngBounds.fromPoints(route);
     return FlutterMap(
       options: MapOptions(
-        initialCameraFit: CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(24)),
-        interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag),
+        initialCameraFit: CameraFit.bounds(
+          bounds: bounds,
+          padding: const EdgeInsets.all(24),
+        ),
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+        ),
       ),
       children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'ke.co.mjengohub.app',
         ),
-        PolylineLayer(polylines: [
-          Polyline(points: route, strokeWidth: 4, color: AppColors.accentBlue),
-        ]),
-        MarkerLayer(markers: [
-          Marker(
-            point: route.first,
-            width: 26,
-            height: 26,
-            child: const Icon(Icons.trip_origin, color: AppColors.success, size: 22),
-          ),
-          Marker(
-            point: route.last,
-            width: 26,
-            height: 26,
-            child: const Icon(Icons.flag, color: AppColors.danger, size: 22),
-          ),
-        ]),
+        PolylineLayer(
+          polylines: [
+            Polyline(
+              points: route,
+              strokeWidth: 4,
+              color: AppColors.accentBlue,
+            ),
+          ],
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: route.first,
+              width: 26,
+              height: 26,
+              child: const Icon(
+                Icons.trip_origin,
+                color: AppColors.success,
+                size: 22,
+              ),
+            ),
+            Marker(
+              point: route.last,
+              width: 26,
+              height: 26,
+              child: const Icon(Icons.flag, color: AppColors.danger, size: 22),
+            ),
+          ],
+        ),
       ],
     );
   }

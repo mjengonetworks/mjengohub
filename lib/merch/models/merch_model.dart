@@ -36,15 +36,15 @@ class MerchProduct {
   });
 
   factory MerchProduct.fromJson(Map<String, dynamic> j) => MerchProduct(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        name: (j['name'] as String?) ?? '',
-        slug: (j['slug'] as String?) ?? '',
-        description: j['description'] as String?,
-        price: (j['price'] as num?)?.toDouble() ?? 0,
-        image: j['image'] as String?,
-        isInStock: j['is_in_stock'] as bool? ?? false,
-        platform: (j['platform'] as String?) ?? 'mjengohub',
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    name: (j['name'] as String?) ?? '',
+    slug: (j['slug'] as String?) ?? '',
+    description: j['description'] as String?,
+    price: (j['price'] as num?)?.toDouble() ?? 0,
+    image: j['image'] as String?,
+    isInStock: j['is_in_stock'] as bool? ?? false,
+    platform: (j['platform'] as String?) ?? 'mjengohub',
+  );
 }
 
 class MerchShoutout {
@@ -54,13 +54,19 @@ class MerchShoutout {
   final String? message;
   final String? createdAt;
 
-  const MerchShoutout({required this.id, this.userName, this.userAvatar, this.message, this.createdAt});
+  const MerchShoutout({
+    required this.id,
+    this.userName,
+    this.userAvatar,
+    this.message,
+    this.createdAt,
+  });
 
   factory MerchShoutout.fromJson(Map<String, dynamic> j) => MerchShoutout(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        userName: j['user_name'] as String?,
-        userAvatar: j['user_avatar'] as String?,
-        message: j['message'] as String?,
-        createdAt: j['created_at'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    userName: j['user_name'] as String?,
+    userAvatar: j['user_avatar'] as String?,
+    message: j['message'] as String?,
+    createdAt: j['created_at'] as String?,
+  );
 }

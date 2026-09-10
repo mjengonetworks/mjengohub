@@ -24,13 +24,38 @@ class ReviewerLevel {
   static const List<ReviewerLevel> _tiers = [
     ReviewerLevel(level: 1, name: 'Newcomer', minPoints: 0, maxPoints: 9),
     ReviewerLevel(level: 2, name: 'Contributor', minPoints: 10, maxPoints: 49),
-    ReviewerLevel(level: 3, name: 'Contributor II', minPoints: 50, maxPoints: 149),
-    ReviewerLevel(level: 4, name: 'Trusted Reviewer', minPoints: 150, maxPoints: 399),
-    ReviewerLevel(level: 5, name: 'Trusted Reviewer II', minPoints: 400, maxPoints: 999),
+    ReviewerLevel(
+      level: 3,
+      name: 'Contributor II',
+      minPoints: 50,
+      maxPoints: 149,
+    ),
+    ReviewerLevel(
+      level: 4,
+      name: 'Trusted Reviewer',
+      minPoints: 150,
+      maxPoints: 399,
+    ),
+    ReviewerLevel(
+      level: 5,
+      name: 'Trusted Reviewer II',
+      minPoints: 400,
+      maxPoints: 999,
+    ),
     ReviewerLevel(level: 6, name: 'Expert', minPoints: 1000, maxPoints: 2499),
-    ReviewerLevel(level: 7, name: 'Expert II', minPoints: 2500, maxPoints: 5999),
+    ReviewerLevel(
+      level: 7,
+      name: 'Expert II',
+      minPoints: 2500,
+      maxPoints: 5999,
+    ),
     ReviewerLevel(level: 8, name: 'Elite', minPoints: 6000, maxPoints: 14999),
-    ReviewerLevel(level: 9, name: 'Elite II', minPoints: 15000, maxPoints: 39999),
+    ReviewerLevel(
+      level: 9,
+      name: 'Elite II',
+      minPoints: 15000,
+      maxPoints: 39999,
+    ),
     ReviewerLevel(level: 10, name: 'Legend', minPoints: 40000, maxPoints: null),
   ];
 
@@ -69,14 +94,14 @@ class PointsLogEntry {
   });
 
   factory PointsLogEntry.fromJson(Map<String, dynamic> j) => PointsLogEntry(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        source: (j['source'] as String?) ?? '',
-        points: (j['points'] as num?)?.toInt() ?? 0,
-        description: j['description'] as String?,
-        createdAt: j['created_at'] != null
-            ? DateTime.tryParse(j['created_at'].toString())
-            : null,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    source: (j['source'] as String?) ?? '',
+    points: (j['points'] as num?)?.toInt() ?? 0,
+    description: j['description'] as String?,
+    createdAt: j['created_at'] != null
+        ? DateTime.tryParse(j['created_at'].toString())
+        : null,
+  );
 
   String get sourceLabel {
     switch (source) {
@@ -111,14 +136,19 @@ class PointsSummary {
   });
 
   factory PointsSummary.fromJson(Map<String, dynamic> j) {
-    final bySource = (j['points_by_source'] as Map?)?.cast<String, dynamic>() ??
+    final bySource =
+        (j['points_by_source'] as Map?)?.cast<String, dynamic>() ??
         (j['by_source'] as Map?)?.cast<String, dynamic>() ??
         {};
     int v(String k) => (bySource[k] as num?)?.toInt() ?? 0;
     return PointsSummary(
-      totalPoints: (j['total_points'] as num?)?.toInt() ??
+      totalPoints:
+          (j['total_points'] as num?)?.toInt() ??
           (j['points'] as num?)?.toInt() ??
-          (v('review') + v('upvote') + v('referral_signup') + v('referral_prime')),
+          (v('review') +
+              v('upvote') +
+              v('referral_signup') +
+              v('referral_prime')),
       fromReviews: v('review'),
       fromUpvotes: v('upvote'),
       fromReferralSignups: v('referral_signup'),
@@ -142,10 +172,12 @@ class ReferralInfo {
   });
 
   factory ReferralInfo.fromJson(Map<String, dynamic> j) {
-    final code = (j['referral_code'] as String?) ?? (j['code'] as String?) ?? '';
+    final code =
+        (j['referral_code'] as String?) ?? (j['code'] as String?) ?? '';
     return ReferralInfo(
       code: code,
-      shareUrl: (j['share_url'] as String?) ??
+      shareUrl:
+          (j['share_url'] as String?) ??
           (code.isNotEmpty
               ? 'https://mjengohub.co.ke/register?ref=$code'
               : 'https://mjengohub.co.ke'),

@@ -99,157 +99,231 @@ class _ReferralScreenState extends State<ReferralScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDark),
-        title: Text('Referrals', style: GoogleFonts.montserrat(color: AppColors.textDark, fontWeight: FontWeight.w500)),
+        title: Text(
+          'Referrals',
+          style: GoogleFonts.montserrat(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentBlue))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.accentBlue),
+            )
           : _info == null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(
-                      'Could not load your referral details. Pull to refresh or try again later.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(fontSize: 13.5, color: AppColors.textSubtle),
-                    ),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      // ── Code card ──────────────────────────────────────────
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.verifiedPillGradient,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Your referral code',
-                              style: GoogleFonts.montserrat(fontSize: 12.5, color: Colors.white70, fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _info!.code.isNotEmpty ? _info!.code : '—',
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () => _copyCode(_info!.code),
-                                  icon: const Icon(Icons.copy_rounded, color: Colors.white, size: 20),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () => SocialShareModal.show(
-                                  context,
-                                  title: 'Join me on Mjengo Hub — Kenya\'s construction industry platform:',
-                                  url: _info!.shareUrl,
-                                ),
-                                icon: const Icon(Icons.share_rounded, size: 18, color: AppColors.primaryBlue),
-                                label: Text('Share invite link', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, color: AppColors.primaryBlue)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // ── Total referred ──────────────────────────────────────
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: AppColors.accentBlue.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.people_alt_rounded, color: AppColors.accentBlue, size: 22),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('${_info!.totalReferred}', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                                  Text('friends referred', style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // ── Redeem a code ───────────────────────────────────────
-                      Text('Have a referral code?', style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Enter a friend\'s code to link your account to their referral.',
-                        style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: AppTextField(
-                              controller: _redeemCtrl,
-                              hint: 'Enter code',
-                              textCapitalization: TextCapitalization.characters,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          SizedBox(
-                            height: 46,
-                            child: ElevatedButton(
-                              onPressed: _redeeming ? null : _redeem,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryBlue,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              child: _redeeming
-                                  ? const SizedBox(
-                                      width: 18, height: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                    )
-                                  : Text('Redeem', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  'Could not load your referral details. Pull to refresh or try again later.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13.5,
+                    color: AppColors.textSubtle,
                   ),
                 ),
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  // ── Code card ──────────────────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.verifiedPillGradient,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Your referral code',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12.5,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _info!.code.isNotEmpty ? _info!.code : '—',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => _copyCode(_info!.code),
+                              icon: const Icon(
+                                Icons.copy_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => SocialShareModal.show(
+                              context,
+                              title:
+                                  'Join me on Mjengo Hub — Kenya\'s construction industry platform:',
+                              url: _info!.shareUrl,
+                            ),
+                            icon: const Icon(
+                              Icons.share_rounded,
+                              size: 18,
+                              color: AppColors.primaryBlue,
+                            ),
+                            label: Text(
+                              'Share invite link',
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.primaryBlue,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ── Total referred ──────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentBlue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.people_alt_rounded,
+                            color: AppColors.accentBlue,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_info!.totalReferred}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                              Text(
+                                'friends referred',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  color: AppColors.textSubtle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Redeem a code ───────────────────────────────────────
+                  Text(
+                    'Have a referral code?',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Enter a friend\'s code to link your account to their referral.',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      color: AppColors.textSubtle,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: AppTextField(
+                          controller: _redeemCtrl,
+                          hint: 'Enter code',
+                          textCapitalization: TextCapitalization.characters,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 46,
+                        child: ElevatedButton(
+                          onPressed: _redeeming ? null : _redeem,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: _redeeming
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Redeem',
+                                  style: GoogleFonts.montserrat(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
     );
   }
 }

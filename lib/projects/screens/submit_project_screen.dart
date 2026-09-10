@@ -35,18 +35,32 @@ import '../widgets/projects_map_view.dart';
 
 const _kStatusOptions = ['planned', 'ongoing', 'completed', 'stalled'];
 
-enum _TrackerKind { infrastructure, privateDevelopment, builtHistory, africaWorld }
+enum _TrackerKind {
+  infrastructure,
+  privateDevelopment,
+  builtHistory,
+  africaWorld,
+}
 
 extension on _TrackerKind {
   String get label => switch (this) {
-        _TrackerKind.infrastructure => 'Infrastructure',
-        _TrackerKind.privateDevelopment => 'Private Development',
-        _TrackerKind.builtHistory => 'Built History',
-        _TrackerKind.africaWorld => 'Africa & World',
-      };
+    _TrackerKind.infrastructure => 'Infrastructure',
+    _TrackerKind.privateDevelopment => 'Private Development',
+    _TrackerKind.builtHistory => 'Built History',
+    _TrackerKind.africaWorld => 'Africa & World',
+  };
 }
 
-const _kDecades = ['pre-1960s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s+'];
+const _kDecades = [
+  'pre-1960s',
+  '1960s',
+  '1970s',
+  '1980s',
+  '1990s',
+  '2000s',
+  '2010s',
+  '2020s+',
+];
 const _kHeritageCategories = <String, String>{
   'public_landmarks': 'Public Landmarks',
   'transport_civil_infrastructure': 'Transport & Civil Infrastructure',
@@ -77,7 +91,11 @@ class SubmitProjectScreen extends StatefulWidget {
   /// picks are appended).
   final Project? existingProject;
 
-  const SubmitProjectScreen({super.key, this.initialProjectType = 'infrastructure', this.existingProject});
+  const SubmitProjectScreen({
+    super.key,
+    this.initialProjectType = 'infrastructure',
+    this.existingProject,
+  });
 
   @override
   State<SubmitProjectScreen> createState() => _SubmitProjectScreenState();
@@ -124,7 +142,9 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
     final existing = widget.existingProject;
     if (existing == null) {
       _descriptionController = quill.QuillController.basic();
-      _tracker = widget.initialProjectType == 'private_development' ? _TrackerKind.privateDevelopment : _TrackerKind.infrastructure;
+      _tracker = widget.initialProjectType == 'private_development'
+          ? _TrackerKind.privateDevelopment
+          : _TrackerKind.infrastructure;
       return;
     }
 
@@ -148,10 +168,10 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
     _tracker = existing.isBuiltHistory
         ? _TrackerKind.builtHistory
         : existing.geoScope == 'global'
-            ? _TrackerKind.africaWorld
-            : existing.projectType == 'private_development'
-                ? _TrackerKind.privateDevelopment
-                : _TrackerKind.infrastructure;
+        ? _TrackerKind.africaWorld
+        : existing.projectType == 'private_development'
+        ? _TrackerKind.privateDevelopment
+        : _TrackerKind.infrastructure;
 
     final html = existing.descriptionOverview ?? existing.description ?? '';
     _descriptionController = html.trim().isEmpty
@@ -164,7 +184,18 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
 
   @override
   void dispose() {
-    for (final c in [_title, _summary, _location, _latitude, _longitude, _plusCode, _architect, _commissioningAuthority, _renovationTimeline, _country]) {
+    for (final c in [
+      _title,
+      _summary,
+      _location,
+      _latitude,
+      _longitude,
+      _plusCode,
+      _architect,
+      _commissioningAuthority,
+      _renovationTimeline,
+      _country,
+    ]) {
       c.dispose();
     }
     _descriptionController.dispose();
@@ -202,18 +233,31 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-        Get.snackbar('Location permission needed', 'Enable location access to use this feature.', snackPosition: SnackPosition.BOTTOM);
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        Get.snackbar(
+          'Location permission needed',
+          'Enable location access to use this feature.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
       if (!await Geolocator.isLocationServiceEnabled()) {
-        Get.snackbar('Location services off', 'Turn on location services to use this feature.', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Location services off',
+          'Turn on location services to use this feature.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
       final position = await Geolocator.getCurrentPosition();
       _applyLatLng(LatLng(position.latitude, position.longitude));
     } catch (e) {
-      Get.snackbar('Could not get location', 'Please try again or pick on the map instead.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Could not get location',
+        'Please try again or pick on the map instead.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -231,7 +275,9 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
     final ops = _descriptionController.document.toDelta().toJson();
     if (ops.isEmpty) return '';
     return QuillDeltaToHtmlConverter(
-      List<Map<String, dynamic>>.from(ops.map((o) => Map<String, dynamic>.from(o as Map))),
+      List<Map<String, dynamic>>.from(
+        ops.map((o) => Map<String, dynamic>.from(o as Map)),
+      ),
       ConverterOptions.forEmail(),
     ).convert();
   }
@@ -241,7 +287,9 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
     final lng = double.tryParse(_longitude.text.trim());
     final isBuiltHistory = _tracker == _TrackerKind.builtHistory;
     final isAfricaWorld = _tracker == _TrackerKind.africaWorld;
-    final projectType = _tracker == _TrackerKind.privateDevelopment ? 'private_development' : 'infrastructure';
+    final projectType = _tracker == _TrackerKind.privateDevelopment
+        ? 'private_development'
+        : 'infrastructure';
 
     return {
       'title': _title.text.trim(),
@@ -259,9 +307,12 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
         if (_decade != null) 'completion_decade': _decade,
         if (_heritageCategory != null) 'heritage_category': _heritageCategory,
         'ownership_type': _ownership,
-        if (_architect.text.trim().isNotEmpty) 'original_architect': _architect.text.trim(),
-        if (_commissioningAuthority.text.trim().isNotEmpty) 'commissioning_authority': _commissioningAuthority.text.trim(),
-        if (_renovationTimeline.text.trim().isNotEmpty) 'renovation_timeline': _renovationTimeline.text.trim(),
+        if (_architect.text.trim().isNotEmpty)
+          'original_architect': _architect.text.trim(),
+        if (_commissioningAuthority.text.trim().isNotEmpty)
+          'commissioning_authority': _commissioningAuthority.text.trim(),
+        if (_renovationTimeline.text.trim().isNotEmpty)
+          'renovation_timeline': _renovationTimeline.text.trim(),
       },
       'geo_scope': isAfricaWorld ? 'global' : 'local',
       if (isAfricaWorld) ...{
@@ -276,19 +327,26 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
     setState(() => _submitting = true);
 
     final payload = _buildPayload();
-    final res = _isEditing ? await _api.updateProject(widget.existingProject!.id, payload) : await _api.submitProject(payload);
+    final res = _isEditing
+        ? await _api.updateProject(widget.existingProject!.id, payload)
+        : await _api.submitProject(payload);
 
     if (!mounted) return;
 
     if (res['success'] == true) {
-      final projectId = _isEditing ? widget.existingProject!.id : res['id'] as int?;
+      final projectId = _isEditing
+          ? widget.existingProject!.id
+          : res['id'] as int?;
       if (projectId != null) await _uploadAllMedia(projectId);
       if (!mounted) return;
       setState(() => _submitting = false);
       Get.back(result: true);
       Get.snackbar(
         _isEditing ? 'Saved' : 'Thanks!',
-        res['message'] as String? ?? (_isEditing ? 'Project updated' : 'Project submitted for admin review'),
+        res['message'] as String? ??
+            (_isEditing
+                ? 'Project updated'
+                : 'Project submitted for admin review'),
         backgroundColor: AppColors.success,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -309,10 +367,20 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
 
   Future<void> _uploadAllMedia(int projectId) async {
     for (final m in _progressMedia) {
-      await _api.uploadProjectMedia(projectId: projectId, bytes: m.bytes, filename: m.filename, mediaKind: 'progress');
+      await _api.uploadProjectMedia(
+        projectId: projectId,
+        bytes: m.bytes,
+        filename: m.filename,
+        mediaKind: 'progress',
+      );
     }
     for (final m in _renderMedia) {
-      await _api.uploadProjectMedia(projectId: projectId, bytes: m.bytes, filename: m.filename, mediaKind: 'render');
+      await _api.uploadProjectMedia(
+        projectId: projectId,
+        bytes: m.bytes,
+        filename: m.filename,
+        mediaKind: 'render',
+      );
     }
   }
 
@@ -435,19 +503,28 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
                 AppDropdown<String>(
                   value: _ownership,
                   items: const ['public', 'private'],
-                  labelOf: (o) => o == 'public' ? 'Public Heritage' : 'Private Heritage',
+                  labelOf: (o) =>
+                      o == 'public' ? 'Public Heritage' : 'Private Heritage',
                   hint: 'Select ownership',
-                  onChanged: (v) => setState(() => _ownership = v ?? _ownership),
+                  onChanged: (v) =>
+                      setState(() => _ownership = v ?? _ownership),
                 ),
                 const SizedBox(height: 14),
                 const FieldLabel('Original Architect'),
                 AppTextField(controller: _architect, hint: 'Optional'),
                 const SizedBox(height: 14),
                 const FieldLabel('Commissioning Authority'),
-                AppTextField(controller: _commissioningAuthority, hint: 'Optional'),
+                AppTextField(
+                  controller: _commissioningAuthority,
+                  hint: 'Optional',
+                ),
                 const SizedBox(height: 14),
                 const FieldLabel('Renovation Timeline'),
-                AppTextField(controller: _renovationTimeline, hint: 'Optional', maxLines: 3),
+                AppTextField(
+                  controller: _renovationTimeline,
+                  hint: 'Optional',
+                  maxLines: 3,
+                ),
               ],
               if (_tracker == _TrackerKind.africaWorld) ...[
                 const SizedBox(height: 20),
@@ -475,14 +552,26 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
                     child: TextButton.icon(
                       onPressed: _pickOnMap,
                       icon: const Icon(Icons.map_rounded, size: 16),
-                      label: Text('Pick on map', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500)),
+                      label: Text(
+                        'Pick on map',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                   Expanded(
                     child: TextButton.icon(
                       onPressed: _useCurrentLocation,
                       icon: const Icon(Icons.my_location_rounded, size: 16),
-                      label: Text('Use current location', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500)),
+                      label: Text(
+                        'Use current location',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -494,7 +583,10 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
                     child: AppTextField(
                       controller: _latitude,
                       hint: 'Latitude',
-                      keyboard: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                      keyboard: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: true,
+                      ),
                       validator: _numberField,
                     ),
                   ),
@@ -503,14 +595,20 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
                     child: AppTextField(
                       controller: _longitude,
                       hint: 'Longitude',
-                      keyboard: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                      keyboard: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: true,
+                      ),
                       validator: _numberField,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              AppTextField(controller: _plusCode, hint: 'Plus Code (auto-filled from map)'),
+              AppTextField(
+                controller: _plusCode,
+                hint: 'Plus Code (auto-filled from map)',
+              ),
 
               const SizedBox(height: 26),
               _sectionTitle('Photos & Videos (optional)'),
@@ -544,9 +642,13 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
   }
 
   Widget _sectionTitle(String text) => Text(
-        text,
-        style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
-      );
+    text,
+    style: GoogleFonts.montserrat(
+      fontSize: 14.5,
+      fontWeight: FontWeight.w500,
+      color: AppColors.textDark,
+    ),
+  );
 }
 
 /// Unified rich-text editor (headings, bold, italics, bullets, links) — the
@@ -608,7 +710,12 @@ class _MediaPickerRow extends StatelessWidget {
   final VoidCallback onAdd;
   final void Function(int) onRemove;
 
-  const _MediaPickerRow({required this.label, required this.items, required this.onAdd, required this.onRemove});
+  const _MediaPickerRow({
+    required this.label,
+    required this.items,
+    required this.onAdd,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -618,11 +725,26 @@ class _MediaPickerRow extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(child: Text(label, style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w500, color: AppColors.textDark))),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
             TextButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_photo_alternate_rounded, size: 16),
-              label: Text('Add', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500)),
+              label: Text(
+                'Add',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),
@@ -633,18 +755,38 @@ class _MediaPickerRow extends StatelessWidget {
             children: List.generate(items.length, (i) {
               final m = items[i];
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(m.isVideo ? Icons.videocam_rounded : Icons.image_rounded, size: 14, color: AppColors.textSubtle),
+                    Icon(
+                      m.isVideo ? Icons.videocam_rounded : Icons.image_rounded,
+                      size: 14,
+                      color: AppColors.textSubtle,
+                    ),
                     const SizedBox(width: 6),
-                    Text(m.filename, style: GoogleFonts.montserrat(fontSize: 10.5, color: AppColors.textSubtle)),
+                    Text(
+                      m.filename,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10.5,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () => onRemove(i),
-                      child: const Icon(Icons.close_rounded, size: 14, color: AppColors.danger),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 14,
+                        color: AppColors.danger,
+                      ),
                     ),
                   ],
                 ),
@@ -714,8 +856,12 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
             child: Row(
               children: [
                 Container(
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ],
             ),
@@ -727,11 +873,18 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
               children: [
                 Text(
                   'Tap the map or search a location',
-                  style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textDark),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(_picked),
-                  child: Text('Use this location', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
+                  child: Text(
+                    'Use this location',
+                    style: GoogleFonts.montserrat(fontWeight: FontWeight.w500),
+                  ),
                 ),
               ],
             ),
@@ -749,19 +902,31 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
                   onSubmitted: _search,
                 ),
                 if (_searching)
-                  const Padding(padding: EdgeInsets.only(top: 8), child: LinearProgressIndicator(minHeight: 2)),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: LinearProgressIndicator(minHeight: 2),
+                  ),
                 if (_results.isNotEmpty)
                   Container(
                     margin: const EdgeInsets.only(top: 6),
                     constraints: const BoxConstraints(maxHeight: 160),
-                    decoration: BoxDecoration(border: Border.all(color: AppColors.divider), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.divider),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: _results.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
+                      separatorBuilder: (_, _) =>
+                          const Divider(height: 1, color: AppColors.divider),
                       itemBuilder: (_, i) => ListTile(
                         dense: true,
-                        title: Text(_results[i].displayName, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 12)),
+                        title: Text(
+                          _results[i].displayName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(fontSize: 12),
+                        ),
                         onTap: () => _selectResult(_results[i]),
                       ),
                     ),
@@ -784,7 +949,8 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'ke.co.mjengohub.app',
                     ),
                     MarkerLayer(
@@ -793,7 +959,11 @@ class _MapPickerSheetState extends State<_MapPickerSheet> {
                           point: _picked,
                           width: 34,
                           height: 34,
-                          child: const Icon(Icons.location_on, color: AppColors.danger, size: 34),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: AppColors.danger,
+                            size: 34,
+                          ),
                         ),
                       ],
                     ),

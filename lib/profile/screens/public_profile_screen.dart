@@ -41,7 +41,14 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Profile', style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
+        title: Text(
+          'Profile',
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: AppColors.textDark,
+          ),
+        ),
       ),
       body: FutureBuilder<PublicProfile?>(
         future: _future,
@@ -68,12 +75,18 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   _Header(profile: profile),
                   if (profile.projects.isNotEmpty) ...[
                     const SizedBox(height: 20),
-                    _SectionHeader(title: 'Projects Submitted', count: profile.projectCount),
+                    _SectionHeader(
+                      title: 'Projects Submitted',
+                      count: profile.projectCount,
+                    ),
                     ...profile.projects.map((p) => _ProjectRow(project: p)),
                   ],
                   if (profile.articles.isNotEmpty) ...[
                     const SizedBox(height: 20),
-                    _SectionHeader(title: 'Articles', count: profile.articleCount),
+                    _SectionHeader(
+                      title: 'Articles',
+                      count: profile.articleCount,
+                    ),
                     ...profile.articles.map((a) => _ArticleRow(article: a)),
                   ],
                 ],
@@ -92,7 +105,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCover = profile.coverImage != null && profile.coverImage!.isNotEmpty;
+    final hasCover =
+        profile.coverImage != null && profile.coverImage!.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -101,7 +115,12 @@ class _Header extends StatelessWidget {
           height: 110,
           decoration: BoxDecoration(
             gradient: hasCover ? null : AppColors.verifiedPillGradient,
-            image: hasCover ? DecorationImage(image: NetworkImage(profile.coverImage!), fit: BoxFit.cover) : null,
+            image: hasCover
+                ? DecorationImage(
+                    image: NetworkImage(profile.coverImage!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
           ),
         ),
         Padding(
@@ -115,8 +134,15 @@ class _Header extends StatelessWidget {
                   child: Container(
                     width: 72,
                     height: 72,
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 3)),
-                    child: NetImage(url: profile.avatar, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: NetImage(
+                      url: profile.avatar,
+                      fit: BoxFit.cover,
+                      placeholderColor: const Color(0xFF1E3A5F),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -125,26 +151,55 @@ class _Header extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 6,
                   children: [
-                    Text(profile.name, style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                    Text(
+                      profile.name,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
                     if (profile.isVerified) const PrimeBadge(),
-                    if (profile.role != null && profile.role!.toUpperCase() != 'USER') RoleBadge(role: profile.role!),
+                    if (profile.role != null &&
+                        profile.role!.toUpperCase() != 'USER')
+                      RoleBadge(role: profile.role!),
                   ],
                 ),
                 const SizedBox(height: 6),
                 ReviewerLevelBadge(points: profile.points),
                 if (profile.bio != null && profile.bio!.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text(profile.bio!, style: GoogleFonts.montserrat(fontSize: 12.5, color: AppColors.textSubtle, height: 1.5)),
+                  Text(
+                    profile.bio!,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12.5,
+                      color: AppColors.textSubtle,
+                      height: 1.5,
+                    ),
+                  ),
                 ],
-                if ((profile.mjengoNetworksUrl?.isNotEmpty ?? false) || (profile.shareBarabaraUrl?.isNotEmpty ?? false)) ...[
+                if ((profile.mjengoNetworksUrl?.isNotEmpty ?? false) ||
+                    (profile.shareBarabaraUrl?.isNotEmpty ?? false)) ...[
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     children: [
                       if (profile.mjengoNetworksUrl?.isNotEmpty ?? false)
-                        _LinkChip(label: 'Mjengo Networks', onTap: () => LinkLauncher.openLink(context, profile.mjengoNetworksUrl!)),
+                        _LinkChip(
+                          label: 'Mjengo Networks',
+                          onTap: () => LinkLauncher.openLink(
+                            context,
+                            profile.mjengoNetworksUrl!,
+                          ),
+                        ),
                       if (profile.shareBarabaraUrl?.isNotEmpty ?? false)
-                        _LinkChip(label: 'Share Barabara', onTap: () => LinkLauncher.openLink(context, profile.shareBarabaraUrl!)),
+                        _LinkChip(
+                          label: 'Share Barabara',
+                          onTap: () => LinkLauncher.openLink(
+                            context,
+                            profile.shareBarabaraUrl!,
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -172,7 +227,14 @@ class _LinkChip extends StatelessWidget {
           color: AppColors.accentBlue.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(label, style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppColors.accentBlue,
+          ),
+        ),
       ),
     );
   }
@@ -187,7 +249,14 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text('$title ($count)', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+      child: Text(
+        '$title ($count)',
+        style: GoogleFonts.montserrat(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textDark,
+        ),
+      ),
     );
   }
 }
@@ -202,11 +271,36 @@ class _ProjectRow extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: SizedBox(width: 44, height: 44, child: NetImage(url: project.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F))),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: NetImage(
+            url: project.imageUrl,
+            fit: BoxFit.cover,
+            placeholderColor: const Color(0xFF1E3A5F),
+          ),
+        ),
       ),
-      title: Text(project.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500)),
-      subtitle: Text(project.statusLabel, style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
-      onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
+      title: Text(
+        project.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        project.statusLabel,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      ),
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
     );
   }
 }
@@ -221,11 +315,30 @@ class _ArticleRow extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: SizedBox(width: 44, height: 44, child: NetImage(url: article.imageUrl, fit: BoxFit.cover)),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: NetImage(url: article.imageUrl, fit: BoxFit.cover),
+        ),
       ),
-      title: Text(article.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700)),
-      subtitle: Text(article.timeAgo, style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
-      onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
+      title: Text(
+        article.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      subtitle: Text(
+        article.timeAgo,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      ),
+      onTap: () =>
+          Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
     );
   }
 }

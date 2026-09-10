@@ -21,25 +21,25 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id        : json['id'] as int,
-      title     : json['title'] as String? ?? '',
-      message   : json['message'] as String? ?? '',
-      type      : json['type'] as String? ?? 'info',
-      isRead    : json['is_read'] as bool? ?? false,
-      actionUrl : json['action_url'] as String?,
-      createdAt : json['created_at'] != null
+      id: json['id'] as int,
+      title: json['title'] as String? ?? '',
+      message: json['message'] as String? ?? '',
+      type: json['type'] as String? ?? 'info',
+      isRead: json['is_read'] as bool? ?? false,
+      actionUrl: json['action_url'] as String?,
+      createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
     );
   }
 
   NotificationModel copyWith({bool? isRead}) => NotificationModel(
-        id        : id,
-        title     : title,
-        message   : message,
-        type      : type,
-        isRead    : isRead ?? this.isRead,
-        actionUrl : actionUrl,
-        createdAt : createdAt,
-      );
+    id: id,
+    title: title,
+    message: message,
+    type: type,
+    isRead: isRead ?? this.isRead,
+    actionUrl: actionUrl,
+    createdAt: createdAt,
+  );
 }

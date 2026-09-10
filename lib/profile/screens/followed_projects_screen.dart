@@ -24,7 +24,9 @@ class FollowedProjectsScreen extends StatefulWidget {
 
 class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
   final _service = ProjectsService();
-  late Future<List<Project>> _future = _service.getFollowedProjects(perPage: 50);
+  late Future<List<Project>> _future = _service.getFollowedProjects(
+    perPage: 50,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +36,14 @@ class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: Text('Followed Projects',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w500, fontSize: 16, color: AppColors.textDark)),
+        title: Text(
+          'Followed Projects',
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: AppColors.textDark,
+          ),
+        ),
       ),
       body: ContentWidth(
         maxWidth: 700,
@@ -47,19 +55,25 @@ class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
           child: FutureBuilder<List<Project>>(
             future: _future,
             builder: (context, snap) {
-              if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+              if (!snap.hasData)
+                return const Center(child: CircularProgressIndicator());
               final items = snap.data!;
               if (items.isEmpty) {
                 return const ComingSoonPlaceholder(
                   icon: Icons.notifications_none_rounded,
                   title: 'No followed projects yet',
-                  message: 'Tap the bell icon on any project to follow its updates.',
+                  message:
+                      'Tap the bell icon on any project to follow its updates.',
                 );
               }
               return ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.divider),
+                separatorBuilder: (_, _) =>
+                    const Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (_, i) {
                   final p = items[i];
                   return ListTile(
@@ -69,16 +83,34 @@ class _FollowedProjectsScreenState extends State<FollowedProjectsScreen> {
                       child: SizedBox(
                         width: 52,
                         height: 52,
-                        child: NetImage(url: p.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                        child: NetImage(
+                          url: p.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholderColor: const Color(0xFF1E3A5F),
+                        ),
                       ),
                     ),
-                    title: Text(p.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-                    subtitle: Text(p.county ?? p.location ?? p.statusLabel,
-                        style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle)),
-                    onTap: () => Get.to(() => ProjectDetailScreen(slug: p.slug), transition: Transition.cupertino),
+                    title: Text(
+                      p.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    subtitle: Text(
+                      p.county ?? p.location ?? p.statusLabel,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
+                    onTap: () => Get.to(
+                      () => ProjectDetailScreen(slug: p.slug),
+                      transition: Transition.cupertino,
+                    ),
                   );
                 },
               );

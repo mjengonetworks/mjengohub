@@ -428,6 +428,7 @@ class Project {
   final String? financier;
   final int progressPercent;
   final String status;
+  final String? sector;
 
   /// 'infrastructure' (public tracker, the default) or 'private_development'
   /// (Private Projects) — same `Project` row shape, filtered views. Both the
@@ -515,6 +516,7 @@ class Project {
     this.financier,
     required this.progressPercent,
     required this.status,
+    this.sector,
     this.projectType = 'infrastructure',
     this.featuredImage,
     required this.isFeatured,
@@ -591,6 +593,7 @@ class Project {
     financier: j['financier'] as String?,
     progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
     status: (j['status'] as String?) ?? 'ongoing',
+    sector: j['sector'] as String?,
     projectType: (j['project_type'] as String?) ?? 'infrastructure',
     featuredImage: j['featured_image'] as String?,
     isFeatured: (j['is_featured'] as bool?) ?? false,
@@ -734,6 +737,7 @@ class Project {
     financier: financier,
     progressPercent: progressPercent,
     status: status,
+    sector: sector,
     projectType: projectType,
     featuredImage: featuredImage,
     isFeatured: isFeatured,
@@ -808,6 +812,54 @@ class Project {
   }
 
   String get statusLabel => labelForStatus(status);
+
+  String get sectorLabel {
+    final explicit = sector?.trim();
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+    final haystack = '$title ${summary ?? ''} ${location ?? ''}'.toLowerCase();
+    if (haystack.contains(RegExp(r'\b(rail|railway|sgr|metro)\b')))
+      return 'Rail';
+    if (haystack.contains(RegExp(r'\b(port|harbour|harbor|shipping)\b')))
+      return 'Ports';
+    if (haystack.contains(
+      RegExp(r'\b(power|solar|wind|energy|electric|grid)\b'),
+    ))
+      return 'Energy';
+    if (haystack.contains(RegExp(r'\b(water|dam|pipeline|sewer|irrigation)\b')))
+      return 'Water';
+    if (haystack.contains(
+      RegExp(r'\b(road|highway|bridge|bypass|expressway)\b'),
+    ))
+      return 'Transport';
+    if (haystack.contains(
+      RegExp(r'\b(housing|residential|estate|apartment)\b'),
+    ))
+      return 'Housing';
+    if (haystack.contains(
+      RegExp(r'\b(fibre|fiber|broadband|data centre|technology)\b'),
+    ))
+      return 'ICT';
+    return 'Other';
+  }
+
+  String get budgetTier {
+    final kes = costKes;
+    if (kes != null) {
+      if (kes < 100000000) return 'Under KES 100M';
+      if (kes < 500000000) return 'KES 100M–500M';
+      if (kes < 1000000000) return 'KES 500M–1B';
+      if (kes < 5000000000) return 'KES 1B–5B';
+      return 'KES 5B+';
+    }
+    final usd = costUsdValue;
+    if (usd != null) {
+      if (usd < 1000000) return 'Under USD 1M';
+      if (usd < 5000000) return 'USD 1M–5M';
+      if (usd < 10000000) return 'USD 5M–10M';
+      return 'USD 10M+';
+    }
+    return 'Budget not listed';
+  }
 
   /// Matches the backend's `project_status_enum` exactly: planned, ongoing,
   /// completed, stalled, cancelled. The previous 'suspended' case never

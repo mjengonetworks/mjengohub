@@ -23,7 +23,12 @@ class TrackerDynamicSections extends StatefulWidget {
   final bool? isBuiltHistory;
   final String? geoScope;
 
-  const TrackerDynamicSections({super.key, this.projectType, this.isBuiltHistory, this.geoScope});
+  const TrackerDynamicSections({
+    super.key,
+    this.projectType,
+    this.isBuiltHistory,
+    this.geoScope,
+  });
 
   @override
   State<TrackerDynamicSections> createState() => _TrackerDynamicSectionsState();
@@ -37,8 +42,18 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
     geoScope: widget.geoScope,
   );
 
-  void _openFiltered(String title, Future<List<Project>> Function() fetcher, {String Function(Project)? captionOf}) {
-    Get.to(() => TrackerFilteredListScreen(title: title, fetcher: fetcher, captionOf: captionOf));
+  void _openFiltered(
+    String title,
+    Future<List<Project>> Function() fetcher, {
+    String Function(Project)? captionOf,
+  }) {
+    Get.to(
+      () => TrackerFilteredListScreen(
+        title: title,
+        fetcher: fetcher,
+        captionOf: captionOf,
+      ),
+    );
   }
 
   @override
@@ -47,7 +62,10 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
       future: _future,
       builder: (context, snap) {
         if (!snap.hasData) {
-          return const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
         }
         final sections = snap.data!;
         return Column(
@@ -62,26 +80,34 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
             if (sections.categoryPreview.isEmpty)
               const _EmptyNote('Nothing published in any category yet.')
             else
-              ...sections.categoryPreview.map((g) => _CategoryRow(
-                    group: g,
-                    onViewMore: () => _openFiltered(
-                      g.label,
-                      () => _service.getProjects(
-                        projectType: widget.projectType,
-                        isBuiltHistory: widget.isBuiltHistory,
-                        geoScope: widget.geoScope,
-                        // Built History/Africa & World use their fixed
-                        // dimension (heritage_category/region) as the
-                        // category value; Infrastructure/Private use a real
-                        // ProjectCategory slug — both map onto the same
-                        // `categorySlug`/`heritageCategory`/`region` params.
-                        categorySlug: (widget.isBuiltHistory != true && widget.geoScope == null) ? g.value : null,
-                        heritageCategory: widget.isBuiltHistory == true ? g.value : null,
-                        region: widget.geoScope == 'global' ? g.value : null,
-                        perPage: 40,
-                      ),
+              ...sections.categoryPreview.map(
+                (g) => _CategoryRow(
+                  group: g,
+                  onViewMore: () => _openFiltered(
+                    g.label,
+                    () => _service.getProjects(
+                      projectType: widget.projectType,
+                      isBuiltHistory: widget.isBuiltHistory,
+                      geoScope: widget.geoScope,
+                      // Built History/Africa & World use their fixed
+                      // dimension (heritage_category/region) as the
+                      // category value; Infrastructure/Private use a real
+                      // ProjectCategory slug — both map onto the same
+                      // `categorySlug`/`heritageCategory`/`region` params.
+                      categorySlug:
+                          (widget.isBuiltHistory != true &&
+                              widget.geoScope == null)
+                          ? g.value
+                          : null,
+                      heritageCategory: widget.isBuiltHistory == true
+                          ? g.value
+                          : null,
+                      region: widget.geoScope == 'global' ? g.value : null,
+                      perPage: 40,
                     ),
-                  )),
+                  ),
+                ),
+              ),
             const SizedBox(height: 20),
 
             // Most Viewed: the backend always returns 3 window entries
@@ -98,7 +124,14 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                       geoScope: widget.geoScope,
                       mostViewedLimit: 20,
                     )
-                    .then((s) => s.mostViewedWindows.firstWhere((w) => w.label == window.label, orElse: () => window).projects),
+                    .then(
+                      (s) => s.mostViewedWindows
+                          .firstWhere(
+                            (w) => w.label == window.label,
+                            orElse: () => window,
+                          )
+                          .projects,
+                    ),
               ),
             ),
             const SizedBox(height: 20),
@@ -112,7 +145,8 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
               if (sections.statusPreview!.isEmpty)
                 const _EmptyNote('Nothing published yet.')
               else
-                ...sections.statusPreview!.map((g) => _CategoryRow(
+                ...sections.statusPreview!.map(
+                  (g) => _CategoryRow(
                     group: g,
                     onViewMore: () => _openFiltered(
                       g.label,
@@ -124,7 +158,8 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                         perPage: 40,
                       ),
                     ),
-                  )),
+                  ),
+                ),
             ],
           ],
         );
@@ -134,11 +169,11 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
 }
 
 String _windowFullLabel(String apiLabel) => switch (apiLabel) {
-      '48h' => 'Past 48 Hours',
-      '7d' => 'Past 7 Days',
-      '30d' => 'Past 1 Month',
-      _ => apiLabel,
-    };
+  '48h' => 'Past 48 Hours',
+  '7d' => 'Past 7 Days',
+  '30d' => 'Past 1 Month',
+  _ => apiLabel,
+};
 
 class _Heading extends StatelessWidget {
   final String title;
@@ -148,7 +183,14 @@ class _Heading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-      child: Text(title, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+      child: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textDark,
+        ),
+      ),
     );
   }
 }
@@ -164,7 +206,13 @@ class _EmptyNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(message, style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
+      child: Text(
+        message,
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          color: AppColors.textSubtle,
+        ),
+      ),
     );
   }
 }
@@ -188,13 +236,26 @@ class _CategoryRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text('${group.label} (${group.totalCount})',
-                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                  child: Text(
+                    '${group.label} (${group.totalCount})',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
+                  ),
                 ),
                 if (group.totalCount > group.projects.length)
                   GestureDetector(
                     onTap: onViewMore,
-                    child: Text('View More', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+                    child: Text(
+                      'View More',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.accentBlue,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -207,7 +268,8 @@ class _CategoryRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: group.projects.length,
               separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => TrackerProjectCard(project: group.projects[i], width: 190),
+              itemBuilder: (_, i) =>
+                  TrackerProjectCard(project: group.projects[i], width: 190),
             ),
           ),
         ],
@@ -240,7 +302,14 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Most Viewed', style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+              Text(
+                'Most Viewed',
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
               _WindowToggle(
                 labels: widget.windows.map((w) => w.label).toList(),
                 index: _index,
@@ -253,7 +322,13 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
         if (window.projects.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text('No views yet in this window.', style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textSubtle)),
+            child: Text(
+              'No views yet in this window.',
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                color: AppColors.textSubtle,
+              ),
+            ),
           )
         else ...[
           SizedBox(
@@ -263,34 +338,49 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: window.projects.length,
               separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => TrackerProjectCard(project: window.projects[i], width: 190),
+              itemBuilder: (_, i) =>
+                  TrackerProjectCard(project: window.projects[i], width: 190),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 16, top: 8),
             child: GestureDetector(
               onTap: () => widget.onViewMore(window),
-              child: Text('View More', style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
+              child: Text(
+                'View More',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.accentBlue,
+                ),
+              ),
             ),
           ),
         ],
       ],
     );
   }
-
 }
 
 class _WindowToggle extends StatelessWidget {
   final List<String> labels;
   final int index;
   final ValueChanged<int> onChanged;
-  const _WindowToggle({required this.labels, required this.index, required this.onChanged});
+  const _WindowToggle({
+    required this.labels,
+    required this.index,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(999), border: Border.all(color: AppColors.divider)),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: List.generate(labels.length, (i) {
@@ -299,13 +389,25 @@ class _WindowToggle extends StatelessWidget {
             onTap: () => onChanged(i),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(color: active ? AppColors.accentBlue : Colors.transparent, borderRadius: BorderRadius.circular(999)),
+              decoration: BoxDecoration(
+                color: active ? AppColors.accentBlue : Colors.transparent,
+                borderRadius: BorderRadius.circular(999),
+              ),
               child: Text(
                 // Short label inside the toggle pill itself — the fuller
                 // "Past 48 Hours" wording is shown as the section context,
                 // this stays compact ("48h"/"7d"/"30d" abbreviated further).
-                labels[i].replaceAll('Past ', '').replaceAll(' Hours', 'h').replaceAll(' Days', 'd').replaceAll(' Month', '30d').replaceAll('1 30d', '30d'),
-                style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textSubtle),
+                labels[i]
+                    .replaceAll('Past ', '')
+                    .replaceAll(' Hours', 'h')
+                    .replaceAll(' Days', 'd')
+                    .replaceAll(' Month', '30d')
+                    .replaceAll('1 30d', '30d'),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: active ? Colors.white : AppColors.textSubtle,
+                ),
               ),
             ),
           );

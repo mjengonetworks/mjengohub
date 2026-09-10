@@ -33,11 +33,7 @@ extension ResponsiveContext on BuildContext {
 /// Centres [child] and caps it at [maxWidth] on large screens, leaving phone
 /// layouts completely untouched (no extra padding, no rebuild cost).
 class ContentWidth extends StatelessWidget {
-  const ContentWidth({
-    super.key,
-    required this.child,
-    this.maxWidth = 900,
-  });
+  const ContentWidth({super.key, required this.child, this.maxWidth = 900});
 
   final Widget child;
   final double maxWidth;

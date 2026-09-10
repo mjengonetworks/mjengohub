@@ -43,7 +43,8 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
     super.dispose();
   }
 
-  String _titleCase(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  String _titleCase(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;

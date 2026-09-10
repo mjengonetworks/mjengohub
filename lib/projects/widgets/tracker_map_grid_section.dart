@@ -18,7 +18,11 @@ class TrackerLiveMap extends StatelessWidget {
   final List<Project> projects;
   final bool loading;
 
-  const TrackerLiveMap({super.key, required this.projects, required this.loading});
+  const TrackerLiveMap({
+    super.key,
+    required this.projects,
+    required this.loading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,16 +38,14 @@ class TrackerLiveMap extends StatelessWidget {
         child: ComingSoonPlaceholder(
           icon: Icons.map_outlined,
           title: 'Nothing to map yet',
-          message: 'Entries will appear here as pins once they have a location.',
+          message:
+              'Entries will appear here as pins once they have a location.',
         ),
       );
     }
     // Full-bleed, no horizontal padding — the map is the top-of-screen
     // anchor, edge-to-edge like the website's own #pj-map.
-    return SizedBox(
-      height: 300,
-      child: ProjectsMapView(projects: projects),
-    );
+    return SizedBox(height: 300, child: ProjectsMapView(projects: projects));
   }
 }
 
@@ -62,16 +64,24 @@ class TrackerProjectsWrapGrid extends StatelessWidget {
     required this.projects,
     required this.loading,
     this.captionOf,
-    this.emptyMessage = 'No entries match these filters yet. Try broadening your search.',
+    this.emptyMessage =
+        'No entries match these filters yet. Try broadening your search.',
   });
 
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()));
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     if (projects.isEmpty) {
-      return ComingSoonPlaceholder(icon: Icons.search_off_rounded, title: 'Nothing here yet', message: emptyMessage);
+      return ComingSoonPlaceholder(
+        icon: Icons.search_off_rounded,
+        title: 'Nothing here yet',
+        message: emptyMessage,
+      );
     }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -79,7 +89,13 @@ class TrackerProjectsWrapGrid extends StatelessWidget {
         spacing: 12,
         runSpacing: 12,
         children: projects
-            .map((p) => TrackerProjectCard(project: p, captionOverride: captionOf?.call(p), width: 220))
+            .map(
+              (p) => TrackerProjectCard(
+                project: p,
+                captionOverride: captionOf?.call(p),
+                width: 220,
+              ),
+            )
             .toList(),
       ),
     );

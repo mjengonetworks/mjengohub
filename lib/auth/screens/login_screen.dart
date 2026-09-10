@@ -9,12 +9,12 @@ import '../../profile/terms_conditions_screen.dart';
 import '../controllers/mjengo_auth_controller.dart';
 
 // ── Palette ────────────────────────────────────────────────────────────────────
-const Color _accent      = Color(0xFF3B82F6);
-const Color _bg          = Color(0xFFFFFFFF);
-const Color _inputBg     = Color(0xFFF4F4FB);
+const Color _accent = Color(0xFF3B82F6);
+const Color _bg = Color(0xFFFFFFFF);
+const Color _inputBg = Color(0xFFF4F4FB);
 const Color _inputBorder = Color(0xFFE8E8F0);
-const Color _textDark    = Color(0xFF1A1A2E);
-const Color _textGray    = Color(0xFF475569);
+const Color _textDark = Color(0xFF1A1A2E);
+const Color _textGray = Color(0xFF475569);
 
 // ── Screen ─────────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
-    final size   = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
     final isDesktop = size.width >= 1024;
 
     Widget body = SafeArea(
@@ -96,8 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? _SignUpForm(key: const ValueKey('signup'))
                   : _LoginForm(key: const ValueKey('login')),
             ),
-
-            
           ],
         ),
       ),
@@ -133,9 +131,9 @@ class _LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<_LoginForm> {
   final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
-  final _formKey   = GlobalKey<FormState>();
-  bool  _obscure   = true;
+  final _passCtrl = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _obscure = true;
 
   MjengoAuthController get _ctrl => Get.find<MjengoAuthController>();
 
@@ -230,10 +228,12 @@ class _LoginFormState extends State<_LoginForm> {
           const SizedBox(height: 22),
 
           // Google
-          _GoogleButton(onTap: () async {
-            HapticFeedback.lightImpact();
-            await _ctrl.signInWithGoogle();
-          }),
+          _GoogleButton(
+            onTap: () async {
+              HapticFeedback.lightImpact();
+              await _ctrl.signInWithGoogle();
+            },
+          ),
 
           const SizedBox(height: 28),
 
@@ -241,8 +241,7 @@ class _LoginFormState extends State<_LoginForm> {
           Center(
             child: RichText(
               text: TextSpan(
-                style:
-                    GoogleFonts.montserrat(fontSize: 13, color: _textGray),
+                style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                 children: [
                   const TextSpan(text: "Don't have an account? "),
                   TextSpan(
@@ -289,13 +288,13 @@ class _SignUpForm extends StatefulWidget {
 
 class _SignUpFormState extends State<_SignUpForm> {
   final _firstCtrl = TextEditingController();
-  final _lastCtrl  = TextEditingController();
+  final _lastCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
-  final _formKey   = GlobalKey<FormState>();
-  bool  _obscure      = true;
-  bool  _acceptTerms  = false;
-  String _password    = '';
+  final _passCtrl = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _obscure = true;
+  bool _acceptTerms = false;
+  String _password = '';
 
   MjengoAuthController get _ctrl => Get.find<MjengoAuthController>();
 
@@ -403,7 +402,8 @@ class _SignUpFormState extends State<_SignUpForm> {
             validator: (v) {
               if (v == null || v.isEmpty) return 'Enter a password';
               if (v.length < 8) return 'At least 8 characters';
-              if (!RegExp(r'[A-Z]').hasMatch(v)) return 'Add an uppercase letter';
+              if (!RegExp(r'[A-Z]').hasMatch(v))
+                return 'Add an uppercase letter';
               if (!RegExp(r'[0-9]').hasMatch(v)) return 'Add a number';
               return null;
             },
@@ -440,10 +440,12 @@ class _SignUpFormState extends State<_SignUpForm> {
           const SizedBox(height: 22),
 
           // Google
-          _GoogleButton(onTap: () async {
-            HapticFeedback.lightImpact();
-            await _ctrl.signInWithGoogle();
-          }),
+          _GoogleButton(
+            onTap: () async {
+              HapticFeedback.lightImpact();
+              await _ctrl.signInWithGoogle();
+            },
+          ),
 
           const SizedBox(height: 28),
 
@@ -451,8 +453,7 @@ class _SignUpFormState extends State<_SignUpForm> {
           Center(
             child: RichText(
               text: TextSpan(
-                style:
-                    GoogleFonts.montserrat(fontSize: 13, color: _textGray),
+                style: GoogleFonts.montserrat(fontSize: 13, color: _textGray),
                 children: [
                   const TextSpan(text: 'Already have an account? '),
                   TextSpan(
@@ -512,13 +513,13 @@ class _Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        style: GoogleFonts.montserrat(
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
-          color: _textDark,
-        ),
-      );
+    text,
+    style: GoogleFonts.montserrat(
+      fontSize: 12.5,
+      fontWeight: FontWeight.w600,
+      color: _textDark,
+    ),
+  );
 }
 
 class _Field extends StatelessWidget {
@@ -563,8 +564,7 @@ class _Field extends StatelessWidget {
                 child: suffixIcon,
               )
             : null,
-        suffixIconConstraints:
-            const BoxConstraints(minWidth: 0, minHeight: 0),
+        suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -585,8 +585,10 @@ class _Field extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         errorStyle: GoogleFonts.montserrat(fontSize: 11),
       ),
       validator: validator,
@@ -599,8 +601,11 @@ class _PrimaryButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
-  const _PrimaryButton(
-      {required this.label, required this.icon, required this.onPressed});
+  const _PrimaryButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -616,14 +621,17 @@ class _PrimaryButton extends StatelessWidget {
             disabledBackgroundColor: _accent.withValues(alpha: 0.5),
             elevation: 0,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: loading
               ? const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -657,9 +665,10 @@ class _OrDivider extends StatelessWidget {
         Expanded(child: Container(height: 1, color: _inputBorder)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Text(label,
-              style:
-                  GoogleFonts.montserrat(fontSize: 12, color: _textGray)),
+          child: Text(
+            label,
+            style: GoogleFonts.montserrat(fontSize: 12, color: _textGray),
+          ),
         ),
         Expanded(child: Container(height: 1, color: _inputBorder)),
       ],
@@ -684,14 +693,17 @@ class _GoogleButton extends StatelessWidget {
             side: const BorderSide(color: _inputBorder, width: 1.5),
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: loading
               ? const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: _textGray),
+                    strokeWidth: 2,
+                    color: _textGray,
+                  ),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -761,13 +773,20 @@ class _ErrorBox extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.error_outline_rounded,
-                color: Colors.redAccent, size: 16),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.redAccent,
+              size: 16,
+            ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(msg,
-                  style: GoogleFonts.montserrat(
-                      fontSize: 12, color: Colors.red.shade700)),
+              child: Text(
+                msg,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  color: Colors.red.shade700,
+                ),
+              ),
             ),
           ],
         ),
@@ -813,15 +832,19 @@ class _TermsCheckbox extends StatelessWidget {
           child: RichText(
             text: TextSpan(
               style: GoogleFonts.montserrat(
-                  fontSize: 12, color: _textGray, height: 1.5),
+                fontSize: 12,
+                color: _textGray,
+                height: 1.5,
+              ),
               children: [
                 const TextSpan(text: 'I agree to the '),
                 TextSpan(
                   text: 'Terms & Conditions',
                   style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      color: _accent,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 12,
+                    color: _accent,
+                    fontWeight: FontWeight.w600,
+                  ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       HapticFeedback.lightImpact();
@@ -832,9 +855,10 @@ class _TermsCheckbox extends StatelessWidget {
                 TextSpan(
                   text: 'Privacy Policy',
                   style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      color: _accent,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 12,
+                    color: _accent,
+                    fontWeight: FontWeight.w600,
+                  ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       HapticFeedback.lightImpact();
@@ -870,17 +894,17 @@ class _PasswordStrengthBar extends StatelessWidget {
     final label = score <= 1
         ? 'Weak'
         : score <= 3
-            ? 'Fair'
-            : score == 4
-                ? 'Good'
-                : 'Strong';
+        ? 'Fair'
+        : score == 4
+        ? 'Good'
+        : 'Strong';
     final color = score <= 1
         ? Colors.redAccent
         : score <= 3
-            ? Colors.orange
-            : score == 4
-                ? _accent
-                : const Color(0xFF22C55E);
+        ? Colors.orange
+        : score == 4
+        ? _accent
+        : const Color(0xFF22C55E);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -904,7 +928,10 @@ class _PasswordStrengthBar extends StatelessWidget {
         Text(
           'Strength: $label',
           style: GoogleFonts.montserrat(
-              fontSize: 11, color: color, fontWeight: FontWeight.w500),
+            fontSize: 11,
+            color: color,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );

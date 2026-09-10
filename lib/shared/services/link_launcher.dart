@@ -26,7 +26,8 @@ const Set<String> _kTrinityHosts = {
   'www.mjengonetworks.com',
 };
 
-String _trinityAppName(String host) => host.contains('sharebarabara') ? 'Share Barabara' : 'Mjengo Networks';
+String _trinityAppName(String host) =>
+    host.contains('sharebarabara') ? 'Share Barabara' : 'Mjengo Networks';
 
 class LinkLauncher {
   static Future<void> openLink(BuildContext context, String url) async {
@@ -34,11 +35,13 @@ class LinkLauncher {
     if (uri == null) return;
 
     if (_kTrinityHosts.contains(uri.host.toLowerCase())) {
-      Get.to(() => WebviewCheckoutScreen(
-            title: _trinityAppName(uri.host),
-            url: url,
-            banner: _TrinityBanner(appName: _trinityAppName(uri.host)),
-          ));
+      Get.to(
+        () => WebviewCheckoutScreen(
+          title: _trinityAppName(uri.host),
+          url: url,
+          banner: _TrinityBanner(appName: _trinityAppName(uri.host)),
+        ),
+      );
       return;
     }
 
@@ -65,7 +68,11 @@ class _TrinityBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Explore our other apps — $appName',
-              style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
             ),
           ),
         ],

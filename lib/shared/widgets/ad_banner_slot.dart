@@ -34,7 +34,9 @@ class AdBannerSlot extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              slotNumber != null ? 'SPONSORED — SLOT $slotNumber' : 'SPONSORED / ADVERTISEMENT',
+              slotNumber != null
+                  ? 'SPONSORED — SLOT $slotNumber'
+                  : 'SPONSORED / ADVERTISEMENT',
               style: GoogleFonts.montserrat(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,

@@ -46,12 +46,18 @@ enum _SearchCategory {
 extension on _SearchCategory {
   String get label {
     switch (this) {
-      case _SearchCategory.articles: return 'Articles';
-      case _SearchCategory.news: return 'News';
-      case _SearchCategory.projects: return 'Projects';
-      case _SearchCategory.safetyIncidents: return 'Safety Incidents';
-      case _SearchCategory.services: return 'Services';
-      case _SearchCategory.reports: return 'Reports';
+      case _SearchCategory.articles:
+        return 'Articles';
+      case _SearchCategory.news:
+        return 'News';
+      case _SearchCategory.projects:
+        return 'Projects';
+      case _SearchCategory.safetyIncidents:
+        return 'Safety Incidents';
+      case _SearchCategory.services:
+        return 'Services';
+      case _SearchCategory.reports:
+        return 'Reports';
     }
   }
 }
@@ -102,7 +108,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onChanged(String value) {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () => _runSearch(value));
+    _debounce = Timer(
+      const Duration(milliseconds: 400),
+      () => _runSearch(value),
+    );
   }
 
   Future<void> _runSearch(String q) async {
@@ -128,10 +137,12 @@ class _SearchScreenState extends State<SearchScreen> {
     Future<List<Project>> projectsFuture = Future.value([]);
     Future<List<Incident>> incidentsRoadFuture = Future.value([]);
     Future<List<Incident>> incidentsSiteFuture = Future.value([]);
-    Future<UnifiedSearchResults> unifiedFuture =
-        Future.value(const UnifiedSearchResults());
+    Future<UnifiedSearchResults> unifiedFuture = Future.value(
+      const UnifiedSearchResults(),
+    );
 
-    if (_activeFilters.contains(_SearchCategory.articles) || _activeFilters.contains(_SearchCategory.news)) {
+    if (_activeFilters.contains(_SearchCategory.articles) ||
+        _activeFilters.contains(_SearchCategory.news)) {
       articlesFuture = _newsApi.getArticles(q: trimmed, perPage: 20);
       futures.add(articlesFuture);
     }
@@ -146,8 +157,16 @@ class _SearchScreenState extends State<SearchScreen> {
       futures.add(projectsFuture);
     }
     if (_activeFilters.contains(_SearchCategory.safetyIncidents)) {
-      incidentsRoadFuture = _incidentsApi.getIncidents(type: 'road_safety', q: trimmed, perPage: 15);
-      incidentsSiteFuture = _incidentsApi.getIncidents(type: 'site_safety', q: trimmed, perPage: 15);
+      incidentsRoadFuture = _incidentsApi.getIncidents(
+        type: 'road_safety',
+        q: trimmed,
+        perPage: 15,
+      );
+      incidentsSiteFuture = _incidentsApi.getIncidents(
+        type: 'site_safety',
+        q: trimmed,
+        perPage: 15,
+      );
       futures.addAll([incidentsRoadFuture, incidentsSiteFuture]);
     }
 
@@ -161,17 +180,25 @@ class _SearchScreenState extends State<SearchScreen> {
     final unified = await unifiedFuture;
 
     setState(() {
-      _articles = _activeFilters.contains(_SearchCategory.articles) ? allArticles : [];
+      _articles = _activeFilters.contains(_SearchCategory.articles)
+          ? allArticles
+          : [];
       _news = _activeFilters.contains(_SearchCategory.news)
           ? allArticles.where((a) => a.isBreaking).toList()
           : [];
-      _infraProjects = projectResults.where((p) => p.projectType != 'private_development').toList();
-      _privateProjects = projectResults.where((p) => p.projectType == 'private_development').toList();
+      _infraProjects = projectResults
+          .where((p) => p.projectType != 'private_development')
+          .toList();
+      _privateProjects = projectResults
+          .where((p) => p.projectType == 'private_development')
+          .toList();
       _incidents = [...roadIncidents, ...siteIncidents];
-      _services =
-          _activeFilters.contains(_SearchCategory.services) ? unified.services : [];
-      _reports =
-          _activeFilters.contains(_SearchCategory.reports) ? unified.reports : [];
+      _services = _activeFilters.contains(_SearchCategory.services)
+          ? unified.services
+          : [];
+      _reports = _activeFilters.contains(_SearchCategory.reports)
+          ? unified.reports
+          : [];
       _loading = false;
     });
   }
@@ -213,7 +240,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Get.back(),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.textDark),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                        color: AppColors.textDark,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -230,10 +261,19 @@ class _SearchScreenState extends State<SearchScreen> {
                           style: GoogleFonts.montserrat(fontSize: 13.5),
                           decoration: InputDecoration(
                             hintText: 'Search MjengoHub…',
-                            hintStyle: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
-                            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textSubtle),
+                            hintStyle: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              color: AppColors.textSubtle,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search_rounded,
+                              size: 20,
+                              color: AppColors.textSubtle,
+                            ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -246,14 +286,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: _SearchCategory.values
-                        .map((c) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _FilterChip(
-                                label: c.label,
-                                selected: _activeFilters.contains(c),
-                                onTap: () => _toggleFilter(c),
-                              ),
-                            ))
+                        .map(
+                          (c) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _FilterChip(
+                              label: c.label,
+                              selected: _activeFilters.contains(c),
+                              onTap: () => _toggleFilter(c),
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -269,16 +311,29 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildResults() {
     if (_query.length < 2) {
       return Center(
-        child: Text('Search articles, projects, services & safety reports',
-            style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
+        child: Text(
+          'Search articles, projects, services & safety reports',
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: AppColors.textSubtle,
+          ),
+        ),
       );
     }
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.accentBlue));
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.accentBlue),
+      );
     }
     if (_totalResults == 0) {
       return Center(
-        child: Text('No results for "$_query"', style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle)),
+        child: Text(
+          'No results for "$_query"',
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: AppColors.textSubtle,
+          ),
+        ),
       );
     }
     return ListView(
@@ -289,15 +344,40 @@ class _SearchScreenState extends State<SearchScreen> {
         // results are omitted entirely (the `isNotEmpty` guards below), never
         // shown as an empty container.
         if (_articles.isNotEmpty)
-          _cappedSection('Articles', _articles, (a) => _ArticleRow(a), _viewAllArticles, buttonLabel: 'Read More'),
+          _cappedSection(
+            'Articles',
+            _articles,
+            (a) => _ArticleRow(a),
+            _viewAllArticles,
+            buttonLabel: 'Read More',
+          ),
         if (_infraProjects.isNotEmpty)
-          _cappedSection('Infrastructure Projects', _infraProjects, (p) => _ProjectRow(p), () => _viewAllProjects('infrastructure'), buttonLabel: 'View More'),
+          _cappedSection(
+            'Infrastructure Projects',
+            _infraProjects,
+            (p) => _ProjectRow(p),
+            () => _viewAllProjects('infrastructure'),
+            buttonLabel: 'View More',
+          ),
         if (_privateProjects.isNotEmpty)
-          _cappedSection('Private Projects', _privateProjects, (p) => _ProjectRow(p), () => _viewAllProjects('private_development'), buttonLabel: 'View More'),
-        if (_news.isNotEmpty) _section('News', _news.map((a) => _ArticleRow(a)).toList()),
-        if (_incidents.isNotEmpty) _section('Safety Incidents', _incidents.map((i) => _IncidentRow(i)).toList()),
-        if (_services.isNotEmpty) _section('Services', _services.map((s) => _ServiceRow(s)).toList()),
-        if (_reports.isNotEmpty) _section('Reports', _reports.map((r) => _ReportRow(r)).toList()),
+          _cappedSection(
+            'Private Projects',
+            _privateProjects,
+            (p) => _ProjectRow(p),
+            () => _viewAllProjects('private_development'),
+            buttonLabel: 'View More',
+          ),
+        if (_news.isNotEmpty)
+          _section('News', _news.map((a) => _ArticleRow(a)).toList()),
+        if (_incidents.isNotEmpty)
+          _section(
+            'Safety Incidents',
+            _incidents.map((i) => _IncidentRow(i)).toList(),
+          ),
+        if (_services.isNotEmpty)
+          _section('Services', _services.map((s) => _ServiceRow(s)).toList()),
+        if (_reports.isNotEmpty)
+          _section('Reports', _reports.map((r) => _ReportRow(r)).toList()),
       ],
     );
   }
@@ -306,18 +386,33 @@ class _SearchScreenState extends State<SearchScreen> {
     final discover = Get.find<DiscoverController>();
     discover.searchController.text = _query;
     discover.onSearchSubmit(_query);
-    Get.find<MainNavController>().currentIndex.value = MainNavController.tabNews;
+    Get.find<MainNavController>().currentIndex.value =
+        MainNavController.tabNews;
   }
 
   void _viewAllProjects(String projectType) {
-    final title = projectType == 'infrastructure' ? 'Infrastructure Projects' : 'Private Projects';
-    Get.to(() => TrackerFilteredListScreen(
-          title: '$title · "$_query"',
-          fetcher: () => ProjectsService().getProjects(projectType: projectType, q: _query, perPage: 50),
-        ));
+    final title = projectType == 'infrastructure'
+        ? 'Infrastructure Projects'
+        : 'Private Projects';
+    Get.to(
+      () => TrackerFilteredListScreen(
+        title: '$title · "$_query"',
+        fetcher: () => ProjectsService().getProjects(
+          projectType: projectType,
+          q: _query,
+          perPage: 50,
+        ),
+      ),
+    );
   }
 
-  Widget _cappedSection<T>(String title, List<T> items, Widget Function(T) rowBuilder, VoidCallback onViewAll, {required String buttonLabel}) {
+  Widget _cappedSection<T>(
+    String title,
+    List<T> items,
+    Widget Function(T) rowBuilder,
+    VoidCallback onViewAll, {
+    required String buttonLabel,
+  }) {
     final shown = items.take(_kSectionCap).toList();
     return _section(
       title,
@@ -325,7 +420,14 @@ class _SearchScreenState extends State<SearchScreen> {
       trailing: items.length > _kSectionCap
           ? GestureDetector(
               onTap: onViewAll,
-              child: Text(buttonLabel, style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.accentBlue)),
+              child: Text(
+                buttonLabel,
+                style: GoogleFonts.montserrat(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.accentBlue,
+                ),
+              ),
             )
           : null,
     );
@@ -342,7 +444,15 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSubtle, letterSpacing: 0.4)),
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSubtle,
+                    letterSpacing: 0.4,
+                  ),
+                ),
                 ?trailing,
               ],
             ),
@@ -358,7 +468,11 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -370,11 +484,19 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.accentBlue : AppColors.background,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.accentBlue : AppColors.divider),
+          border: Border.all(
+            color: selected ? AppColors.accentBlue : AppColors.divider,
+          ),
         ),
         child: Center(
-          child: Text(label,
-              style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w600, color: selected ? Colors.white : AppColors.textSubtle)),
+          child: Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: selected ? Colors.white : AppColors.textSubtle,
+            ),
+          ),
         ),
       ),
     );
@@ -389,9 +511,26 @@ class _ArticleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.article_rounded, color: AppColors.accentBlue),
-      title: Text(article.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
-      subtitle: article.category != null ? Text(article.category!.name, style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)) : null,
-      onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
+      title: Text(
+        article.title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: article.category != null
+          ? Text(
+              article.category!.name,
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                color: AppColors.textSubtle,
+              ),
+            )
+          : null,
+      onTap: () =>
+          Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
     );
   }
 }
@@ -403,10 +542,30 @@ class _ProjectRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.corporate_fare_rounded, color: AppColors.accentBlue),
-      title: Text(project.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
-      subtitle: Text(project.county ?? project.location ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
-      onTap: () => Get.to(() => ProjectDetailScreen(slug: project.slug), transition: Transition.cupertino),
+      leading: const Icon(
+        Icons.corporate_fare_rounded,
+        color: AppColors.accentBlue,
+      ),
+      title: Text(
+        project.title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        project.county ?? project.location ?? '',
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      ),
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
     );
   }
 }
@@ -418,10 +577,28 @@ class _IncidentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.report_problem_rounded, color: AppColors.danger),
-      title: Text(incident.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
-      subtitle: Text(incident.county ?? incident.location ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
-      onTap: () => Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
+      leading: const Icon(
+        Icons.report_problem_rounded,
+        color: AppColors.danger,
+      ),
+      title: Text(
+        incident.title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        incident.county ?? incident.location ?? '',
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      ),
+      onTap: () =>
+          Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
     );
   }
 }
@@ -434,15 +611,26 @@ class _ServiceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.handyman_rounded, color: AppColors.primaryBlue),
-      title: Text(service.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
-      subtitle: Text(service.description ?? '',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
-      onTap: () => Get.toNamed(AppRoutes.serviceDetail, arguments: service.slug),
+      title: Text(
+        service.name,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        service.description ?? '',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      ),
+      onTap: () =>
+          Get.toNamed(AppRoutes.serviceDetail, arguments: service.slug),
     );
   }
 }
@@ -455,12 +643,22 @@ class _ReportRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.construction_rounded, color: AppColors.warning),
-      title: Text(report.title,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
-      subtitle: Text(report.location ?? '',
-          style: GoogleFonts.montserrat(fontSize: 11, color: AppColors.textSubtle)),
+      title: Text(
+        report.title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        report.location ?? '',
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: AppColors.textSubtle,
+        ),
+      ),
       onTap: () => Get.toNamed(AppRoutes.reportDetail, arguments: report.id),
     );
   }

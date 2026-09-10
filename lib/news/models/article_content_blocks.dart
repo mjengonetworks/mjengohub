@@ -9,7 +9,14 @@
 // blocks, bullets, full-width figures) is.
 library;
 
-enum ArticleBlockType { heading2, heading3, quote, bulletList, image, paragraph }
+enum ArticleBlockType {
+  heading2,
+  heading3,
+  quote,
+  bulletList,
+  image,
+  paragraph,
+}
 
 /// One inline fragment of a paragraph's text — either plain text, or a
 /// segment that was inside an `<a href="...">` tag in the source HTML.
@@ -53,9 +60,19 @@ class ArticleContentBlock {
   factory ArticleContentBlock.bulletList(List<String> items) =>
       ArticleContentBlock._(type: ArticleBlockType.bulletList, items: items);
   factory ArticleContentBlock.image(String url, {String? caption}) =>
-      ArticleContentBlock._(type: ArticleBlockType.image, imageUrl: url, imageCaption: caption);
-  factory ArticleContentBlock.paragraph(String text, {List<ArticleInlineSpan>? spans}) =>
-      ArticleContentBlock._(type: ArticleBlockType.paragraph, text: text, spans: spans);
+      ArticleContentBlock._(
+        type: ArticleBlockType.image,
+        imageUrl: url,
+        imageCaption: caption,
+      );
+  factory ArticleContentBlock.paragraph(
+    String text, {
+    List<ArticleInlineSpan>? spans,
+  }) => ArticleContentBlock._(
+    type: ArticleBlockType.paragraph,
+    text: text,
+    spans: spans,
+  );
 }
 
 final RegExp _kBlockPattern = RegExp(
@@ -71,13 +88,34 @@ final RegExp _kBlockPattern = RegExp(
   dotAll: true,
 );
 
-final RegExp _kListItemPattern = RegExp(r'<li[^>]*>(.*?)</li>', caseSensitive: false, dotAll: true);
-final RegExp _kImgTagPattern = RegExp(r'<img([^>]*)/?>', caseSensitive: false, dotAll: true);
-final RegExp _kFigcaptionPattern = RegExp(r'<figcaption[^>]*>(.*?)</figcaption>', caseSensitive: false, dotAll: true);
-final RegExp _kSrcAttr = RegExp(r'''src=["']([^"']*)["']''', caseSensitive: false);
-final RegExp _kAltAttr = RegExp(r'''alt=["']([^"']*)["']''', caseSensitive: false);
-final RegExp _kAnchorPattern =
-    RegExp(r'''<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)</a>''', caseSensitive: false, dotAll: true);
+final RegExp _kListItemPattern = RegExp(
+  r'<li[^>]*>(.*?)</li>',
+  caseSensitive: false,
+  dotAll: true,
+);
+final RegExp _kImgTagPattern = RegExp(
+  r'<img([^>]*)/?>',
+  caseSensitive: false,
+  dotAll: true,
+);
+final RegExp _kFigcaptionPattern = RegExp(
+  r'<figcaption[^>]*>(.*?)</figcaption>',
+  caseSensitive: false,
+  dotAll: true,
+);
+final RegExp _kSrcAttr = RegExp(
+  r'''src=["']([^"']*)["']''',
+  caseSensitive: false,
+);
+final RegExp _kAltAttr = RegExp(
+  r'''alt=["']([^"']*)["']''',
+  caseSensitive: false,
+);
+final RegExp _kAnchorPattern = RegExp(
+  r'''<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)</a>''',
+  caseSensitive: false,
+  dotAll: true,
+);
 
 /// Splits a paragraph's raw (pre-tag-strip) HTML into plain-text and
 /// `<a href>` link fragments, in source order. Returns a single plain-text
@@ -91,7 +129,8 @@ List<ArticleInlineSpan> _parseInlineSpans(String rawHtml) {
       if (plain.isNotEmpty) spans.add(ArticleInlineSpan(plain));
     }
     final linkText = _cleanInline(m.group(2) ?? '');
-    if (linkText.isNotEmpty) spans.add(ArticleInlineSpan(linkText, href: m.group(1)));
+    if (linkText.isNotEmpty)
+      spans.add(ArticleInlineSpan(linkText, href: m.group(1)));
     last = m.end;
   }
   if (last < rawHtml.length) {
@@ -152,8 +191,15 @@ List<ArticleContentBlock> parseArticleHtml(String? html) {
       final src = _attr(_kSrcAttr, imgTag);
       if (src != null && src.isNotEmpty) {
         final captionMatch = _kFigcaptionPattern.firstMatch(figureHtml);
-        final caption = captionMatch != null ? _cleanInline(captionMatch.group(1) ?? '') : null;
-        blocks.add(ArticleContentBlock.image(src, caption: caption?.isNotEmpty == true ? caption : null));
+        final caption = captionMatch != null
+            ? _cleanInline(captionMatch.group(1) ?? '')
+            : null;
+        blocks.add(
+          ArticleContentBlock.image(
+            src,
+            caption: caption?.isNotEmpty == true ? caption : null,
+          ),
+        );
       }
     } else if (m.group(7) != null) {
       // Standalone <img ...> not wrapped in <figure>
@@ -161,7 +207,12 @@ List<ArticleContentBlock> parseArticleHtml(String? html) {
       final src = _attr(_kSrcAttr, tag);
       if (src != null && src.isNotEmpty) {
         final alt = _attr(_kAltAttr, tag);
-        blocks.add(ArticleContentBlock.image(src, caption: (alt?.isNotEmpty == true) ? alt : null));
+        blocks.add(
+          ArticleContentBlock.image(
+            src,
+            caption: (alt?.isNotEmpty == true) ? alt : null,
+          ),
+        );
       }
     } else if (m.group(8) != null) {
       final raw = m.group(8)!;
@@ -169,7 +220,9 @@ List<ArticleContentBlock> parseArticleHtml(String? html) {
       if (text.isNotEmpty) {
         final spans = _parseInlineSpans(raw);
         final hasLink = spans.any((s) => s.href != null && s.href!.isNotEmpty);
-        blocks.add(ArticleContentBlock.paragraph(text, spans: hasLink ? spans : null));
+        blocks.add(
+          ArticleContentBlock.paragraph(text, spans: hasLink ? spans : null),
+        );
       }
     }
   }
@@ -177,7 +230,12 @@ List<ArticleContentBlock> parseArticleHtml(String? html) {
   if (blocks.isNotEmpty) return blocks;
 
   // Fallback: no recognized block tags at all — split on blank lines.
-  final plain = _cleanInline(html.replaceAll(RegExp(r'</(p|div|li|h[1-6])>', caseSensitive: false), '\n\n'));
+  final plain = _cleanInline(
+    html.replaceAll(
+      RegExp(r'</(p|div|li|h[1-6])>', caseSensitive: false),
+      '\n\n',
+    ),
+  );
   return plain
       .split(RegExp(r'\n\s*\n'))
       .map((p) => p.trim())

@@ -9,11 +9,11 @@ class NotificationsController extends GetxController {
 
   // ── State ─────────────────────────────────────────────────────────────────
   final RxList<NotificationModel> notifications = <NotificationModel>[].obs;
-  final RxInt  unreadCount   = 0.obs;
-  final RxBool isLoading     = false.obs;
+  final RxInt unreadCount = 0.obs;
+  final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
-  final RxBool hasMore       = false.obs;
-  final RxString errorMsg    = ''.obs;
+  final RxBool hasMore = false.obs;
+  final RxString errorMsg = ''.obs;
 
   int _page = 1;
   static const _perPage = 20;
@@ -39,11 +39,11 @@ class NotificationsController extends GetxController {
   Future<void> _loadInitial() async {
     _page = 1;
     isLoading.value = true;
-    errorMsg.value  = '';
+    errorMsg.value = '';
     try {
       final result = await _svc.fetchNotifications(page: 1, perPage: _perPage);
       notifications.assignAll(result.items);
-      hasMore.value   = _page < result.pages;
+      hasMore.value = _page < result.pages;
       unreadCount.value = notifications.where((n) => !n.isRead).length;
     } catch (e) {
       errorMsg.value = 'Could not load notifications.';
@@ -60,7 +60,10 @@ class NotificationsController extends GetxController {
     _page++;
     isLoadingMore.value = true;
     try {
-      final result = await _svc.fetchNotifications(page: _page, perPage: _perPage);
+      final result = await _svc.fetchNotifications(
+        page: _page,
+        perPage: _perPage,
+      );
       notifications.addAll(result.items);
       hasMore.value = _page < result.pages;
     } catch (_) {
@@ -89,7 +92,7 @@ class NotificationsController extends GetxController {
       final idx = notifications.indexWhere((x) => x.id == n.id);
       if (idx != -1) {
         notifications[idx] = n.copyWith(isRead: true);
-        unreadCount.value  = (unreadCount.value - 1).clamp(0, 9999);
+        unreadCount.value = (unreadCount.value - 1).clamp(0, 9999);
       }
     }
   }
@@ -97,7 +100,9 @@ class NotificationsController extends GetxController {
   Future<void> markAllRead() async {
     final ok = await _svc.markAllRead();
     if (ok) {
-      notifications.assignAll(notifications.map((n) => n.copyWith(isRead: true)));
+      notifications.assignAll(
+        notifications.map((n) => n.copyWith(isRead: true)),
+      );
       unreadCount.value = 0;
     }
   }

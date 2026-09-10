@@ -24,20 +24,21 @@ String _maskEmailStatic(String email) {
       ? '*' * local.length
       : '${local[0]}${'*' * (local.length - 1)}';
   final d = domain[0];
-  final maskedDomain =
-      d.length <= 2 ? '*' * d.length : '${d[0]}${'*' * (d.length - 1)}';
+  final maskedDomain = d.length <= 2
+      ? '*' * d.length
+      : '${d[0]}${'*' * (d.length - 1)}';
   return '$maskedLocal@$maskedDomain.${domain.sublist(1).join('.')}';
 }
 
 // ─── palette (matches the rest of the app) ────────────────────────────────────
-const _blue       = Color(0xFF2563EB);
-const _blueDark   = Color(0xFF1D4ED8);
-const _bg         = Color(0xFFF0F4FF);
-const _surface    = Colors.white;
-const _textPri    = Color(0xFF1A1A2E);
-const _textSec    = Color(0xFF475569);
-const _divider    = Color(0xFFEEEEF5);
-const _error      = Color(0xFFEF4444);
+const _blue = Color(0xFF2563EB);
+const _blueDark = Color(0xFF1D4ED8);
+const _bg = Color(0xFFF0F4FF);
+const _surface = Colors.white;
+const _textPri = Color(0xFF1A1A2E);
+const _textSec = Color(0xFF475569);
+const _divider = Color(0xFFEEEEF5);
+const _error = Color(0xFFEF4444);
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -52,29 +53,29 @@ class _AccountScreenState extends State<AccountScreen>
   late final TabController _tabController;
 
   // ── Profile tab controllers ────────────────────────────────────────────────
-  final _firstNameCtrl  = TextEditingController();
-  final _lastNameCtrl   = TextEditingController();
-  final _phoneCtrl      = TextEditingController();
-  final _bioCtrl        = TextEditingController();
-  final _locationCtrl   = TextEditingController();
-  final _companyCtrl    = TextEditingController();
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _bioCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _companyCtrl = TextEditingController();
   final _mjengoNetworksUrlCtrl = TextEditingController();
-  final _shareBarabaraUrlCtrl  = TextEditingController();
+  final _shareBarabaraUrlCtrl = TextEditingController();
 
   // ── Password tab controllers ───────────────────────────────────────────────
-  final _newPassCtrl     = TextEditingController();
+  final _newPassCtrl = TextEditingController();
   final _confirmPassCtrl = TextEditingController();
 
-  bool _obscureNew     = true;
+  bool _obscureNew = true;
   bool _obscureConfirm = true;
 
-  bool _profileDirty  = false;
-  bool _saving        = false;
+  bool _profileDirty = false;
+  bool _saving = false;
   bool _uploadingAvatar = false;
 
   final _picker = ImagePicker();
 
-  final _profileFormKey  = GlobalKey<FormState>();
+  final _profileFormKey = GlobalKey<FormState>();
   final _passwordFormKey = GlobalKey<FormState>();
 
   @override
@@ -86,9 +87,14 @@ class _AccountScreenState extends State<AccountScreen>
 
     // mark dirty when any profile field changes
     for (final c in [
-      _firstNameCtrl, _lastNameCtrl, _phoneCtrl,
-      _bioCtrl, _locationCtrl, _companyCtrl,
-      _mjengoNetworksUrlCtrl, _shareBarabaraUrlCtrl,
+      _firstNameCtrl,
+      _lastNameCtrl,
+      _phoneCtrl,
+      _bioCtrl,
+      _locationCtrl,
+      _companyCtrl,
+      _mjengoNetworksUrlCtrl,
+      _shareBarabaraUrlCtrl,
     ]) {
       c.addListener(_onProfileChanged);
     }
@@ -97,13 +103,13 @@ class _AccountScreenState extends State<AccountScreen>
   void _populateFields(UserModel? user) {
     if (user == null) return;
     _firstNameCtrl.text = user.firstName ?? '';
-    _lastNameCtrl.text  = user.lastName  ?? '';
-    _phoneCtrl.text     = user.phoneNumber ?? '';
-    _bioCtrl.text       = user.bio       ?? '';
-    _locationCtrl.text  = user.location  ?? '';
-    _companyCtrl.text   = user.company   ?? '';
+    _lastNameCtrl.text = user.lastName ?? '';
+    _phoneCtrl.text = user.phoneNumber ?? '';
+    _bioCtrl.text = user.bio ?? '';
+    _locationCtrl.text = user.location ?? '';
+    _companyCtrl.text = user.company ?? '';
     _mjengoNetworksUrlCtrl.text = user.mjengoNetworksUrl ?? '';
-    _shareBarabaraUrlCtrl.text  = user.shareBarabaraUrl  ?? '';
+    _shareBarabaraUrlCtrl.text = user.shareBarabaraUrl ?? '';
     _profileDirty = false;
   }
 
@@ -115,10 +121,16 @@ class _AccountScreenState extends State<AccountScreen>
   void dispose() {
     _tabController.dispose();
     for (final c in [
-      _firstNameCtrl, _lastNameCtrl, _phoneCtrl,
-      _bioCtrl, _locationCtrl, _companyCtrl,
-      _mjengoNetworksUrlCtrl, _shareBarabaraUrlCtrl,
-      _newPassCtrl, _confirmPassCtrl,
+      _firstNameCtrl,
+      _lastNameCtrl,
+      _phoneCtrl,
+      _bioCtrl,
+      _locationCtrl,
+      _companyCtrl,
+      _mjengoNetworksUrlCtrl,
+      _shareBarabaraUrlCtrl,
+      _newPassCtrl,
+      _confirmPassCtrl,
     ]) {
       c.dispose();
     }
@@ -131,19 +143,19 @@ class _AccountScreenState extends State<AccountScreen>
     setState(() => _saving = true);
 
     final ok = await _auth.updateProfile(
-      firstName : _firstNameCtrl.text.trim(),
-      lastName  : _lastNameCtrl.text.trim(),
-      phone     : _phoneCtrl.text.trim(),
-      bio       : _bioCtrl.text.trim(),
-      location  : _locationCtrl.text.trim(),
-      company   : _companyCtrl.text.trim(),
-      mjengoNetworksUrl : _mjengoNetworksUrlCtrl.text.trim(),
-      shareBarabaraUrl  : _shareBarabaraUrlCtrl.text.trim(),
+      firstName: _firstNameCtrl.text.trim(),
+      lastName: _lastNameCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim(),
+      bio: _bioCtrl.text.trim(),
+      location: _locationCtrl.text.trim(),
+      company: _companyCtrl.text.trim(),
+      mjengoNetworksUrl: _mjengoNetworksUrlCtrl.text.trim(),
+      shareBarabaraUrl: _shareBarabaraUrlCtrl.text.trim(),
     );
 
     if (!mounted) return;
     setState(() {
-      _saving       = false;
+      _saving = false;
       _profileDirty = !ok;
     });
 
@@ -151,9 +163,11 @@ class _AccountScreenState extends State<AccountScreen>
       _showSnack('Profile updated successfully', success: true);
       _populateFields(_auth.currentUser);
     } else {
-      _showSnack(_auth.errorMessage.isNotEmpty
-          ? _auth.errorMessage
-          : 'Failed to update profile');
+      _showSnack(
+        _auth.errorMessage.isNotEmpty
+            ? _auth.errorMessage
+            : 'Failed to update profile',
+      );
     }
   }
 
@@ -162,9 +176,7 @@ class _AccountScreenState extends State<AccountScreen>
     if (!_passwordFormKey.currentState!.validate()) return;
     setState(() => _saving = true);
 
-    final ok = await _auth.updateProfile(
-      password: _newPassCtrl.text,
-    );
+    final ok = await _auth.updateProfile(password: _newPassCtrl.text);
 
     if (!mounted) return;
     setState(() => _saving = false);
@@ -174,9 +186,11 @@ class _AccountScreenState extends State<AccountScreen>
       _confirmPassCtrl.clear();
       _showSnack('Password changed successfully', success: true);
     } else {
-      _showSnack(_auth.errorMessage.isNotEmpty
-          ? _auth.errorMessage
-          : 'Failed to change password');
+      _showSnack(
+        _auth.errorMessage.isNotEmpty
+            ? _auth.errorMessage
+            : 'Failed to change password',
+      );
     }
   }
 
@@ -199,7 +213,9 @@ class _AccountScreenState extends State<AccountScreen>
     _showSnack(
       ok
           ? 'Profile photo updated'
-          : (_auth.errorMessage.isNotEmpty ? _auth.errorMessage : 'Failed to upload photo'),
+          : (_auth.errorMessage.isNotEmpty
+                ? _auth.errorMessage
+                : 'Failed to upload photo'),
       success: ok,
     );
   }
@@ -217,12 +233,18 @@ class _AccountScreenState extends State<AccountScreen>
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.camera_alt_rounded, color: _blue),
-              title: Text('Camera', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              title: Text(
+                'Camera',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_rounded, color: _blue),
-              title: Text('Photo Library', style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
+              title: Text(
+                'Photo Library',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             const SizedBox(height: 8),
@@ -283,28 +305,28 @@ class _AccountScreenState extends State<AccountScreen>
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
                     _ProfileTab(
-                      formKey      : _profileFormKey,
+                      formKey: _profileFormKey,
                       firstNameCtrl: _firstNameCtrl,
-                      lastNameCtrl : _lastNameCtrl,
-                      phoneCtrl    : _phoneCtrl,
-                      bioCtrl      : _bioCtrl,
-                      locationCtrl : _locationCtrl,
-                      companyCtrl  : _companyCtrl,
+                      lastNameCtrl: _lastNameCtrl,
+                      phoneCtrl: _phoneCtrl,
+                      bioCtrl: _bioCtrl,
+                      locationCtrl: _locationCtrl,
+                      companyCtrl: _companyCtrl,
                       mjengoNetworksUrlCtrl: _mjengoNetworksUrlCtrl,
                       shareBarabaraUrlCtrl: _shareBarabaraUrlCtrl,
-                      user         : user,
-                      dirty        : _profileDirty,
-                      saving       : _saving,
-                      onSave       : _saveProfile,
+                      user: user,
+                      dirty: _profileDirty,
+                      saving: _saving,
+                      onSave: _saveProfile,
                     ),
                     _PasswordTab(
-                      formKey       : _passwordFormKey,
-                      newPassCtrl   : _newPassCtrl,
-                      confirmCtrl   : _confirmPassCtrl,
-                      obscureNew    : _obscureNew,
+                      formKey: _passwordFormKey,
+                      newPassCtrl: _newPassCtrl,
+                      confirmCtrl: _confirmPassCtrl,
+                      obscureNew: _obscureNew,
                       obscureConfirm: _obscureConfirm,
-                      saving        : _saving,
-                      onToggleNew   : () =>
+                      saving: _saving,
+                      onToggleNew: () =>
                           setState(() => _obscureNew = !_obscureNew),
                       onToggleConfirm: () =>
                           setState(() => _obscureConfirm = !_obscureConfirm),
@@ -340,10 +362,10 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials    = user?.initials ?? '?';
-    final name        = user?.fullName ?? user?.firstName ?? 'My Account';
-    final email       = _maskEmail(user?.email ?? '');
-    final hasPhoto    = user?.photoURL != null && user!.photoURL!.isNotEmpty;
+    final initials = user?.initials ?? '?';
+    final name = user?.fullName ?? user?.firstName ?? 'My Account';
+    final email = _maskEmail(user?.email ?? '');
+    final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
     final memberSince = user?.createdAt != null
         ? 'Member since ${_monthYear(user!.createdAt!)}'
         : '';
@@ -367,8 +389,11 @@ class _Hero extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: onBack,
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white, size: 20),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     padding: EdgeInsets.zero,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -396,7 +421,10 @@ class _Hero extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withValues(alpha: 0.2),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 2),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          width: 2,
+                        ),
                       ),
                       child: ClipOval(
                         child: NetImage(
@@ -422,9 +450,16 @@ class _Hero extends StatelessWidget {
                             ? const SizedBox(
                                 width: 12,
                                 height: 12,
-                                child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  color: Colors.white,
+                                ),
                               )
-                            : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 12),
+                            : const Icon(
+                                Icons.camera_alt_rounded,
+                                color: Colors.white,
+                                size: 12,
+                              ),
                       ),
                     ),
                   ],
@@ -478,15 +513,15 @@ class _Hero extends StatelessWidget {
   }
 
   Widget _initialsW(String i) => Center(
-        child: Text(
-          i,
-          style: GoogleFonts.montserrat(
-            fontSize: 26,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
-      );
+    child: Text(
+      i,
+      style: GoogleFonts.montserrat(
+        fontSize: 26,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+      ),
+    ),
+  );
 
   static String _maskEmail(String email) {
     if (email.isEmpty) return email;
@@ -498,15 +533,26 @@ class _Hero extends StatelessWidget {
         ? '*' * local.length
         : '${local[0]}${'*' * (local.length - 1)}';
     final d = domain[0];
-    final maskedDomain =
-        d.length <= 2 ? '*' * d.length : '${d[0]}${'*' * (d.length - 1)}';
+    final maskedDomain = d.length <= 2
+        ? '*' * d.length
+        : '${d[0]}${'*' * (d.length - 1)}';
     return '$maskedLocal@$maskedDomain.${domain.sublist(1).join('.')}';
   }
 
   String _monthYear(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.year}';
   }
@@ -586,168 +632,171 @@ class _ProfileTab extends StatelessWidget {
       child: ContentWidth(
         maxWidth: 600,
         child: Form(
-        key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Personal info ──────────────────────────────────────────────
-            _SectionLabel('Personal Information'),
-            const SizedBox(height: 10),
-            _Card(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _Field(
-                          controller: firstNameCtrl,
-                          label: 'First Name',
-                          icon: Icons.person_outline_rounded,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
-                          },
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Personal info ──────────────────────────────────────────────
+              _SectionLabel('Personal Information'),
+              const SizedBox(height: 10),
+              _Card(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _Field(
+                            controller: firstNameCtrl,
+                            label: 'First Name',
+                            icon: Icons.person_outline_rounded,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _Field(
-                          controller: lastNameCtrl,
-                          label: 'Last Name',
-                          icon: Icons.person_outline_rounded,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
-                          },
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _Field(
+                            controller: lastNameCtrl,
+                            label: 'Last Name',
+                            icon: Icons.person_outline_rounded,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                          ),
                         ),
+                      ],
+                    ),
+                    const Divider(height: 1, thickness: 0.8, color: _divider),
+                    _Field(
+                      controller: phoneCtrl,
+                      label: 'Phone Number',
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      hint: '+254 7XX XXX XXX',
+                    ),
+                    const Divider(height: 1, thickness: 0.8, color: _divider),
+                    _Field(
+                      controller: locationCtrl,
+                      label: 'Location',
+                      icon: Icons.location_on_outlined,
+                      hint: 'e.g. Nairobi, Kenya',
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Professional info ──────────────────────────────────────────
+              _SectionLabel('Professional Details'),
+              const SizedBox(height: 10),
+              _Card(
+                child: Column(
+                  children: [
+                    _Field(
+                      controller: companyCtrl,
+                      label: 'Company / Organisation',
+                      icon: Icons.business_outlined,
+                      hint: 'Where do you work?',
+                    ),
+                    const Divider(height: 1, thickness: 0.8, color: _divider),
+                    _Field(
+                      controller: bioCtrl,
+                      label: 'Bio',
+                      icon: Icons.notes_outlined,
+                      hint: 'Tell us about your professional background…',
+                      maxLines: 3,
+                      maxLength: 500,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Ecosystem links (self-service) ─────────────────────────────
+              _SectionLabel('Ecosystem Links'),
+              const SizedBox(height: 10),
+              _Card(
+                child: Column(
+                  children: [
+                    _Field(
+                      controller: mjengoNetworksUrlCtrl,
+                      label: 'Mjengo Networks Profile',
+                      icon: Icons.hub_rounded,
+                      hint: 'https://mjengonetworks.co.ke/...',
+                      keyboardType: TextInputType.url,
+                    ),
+                    const Divider(height: 1, thickness: 0.8, color: _divider),
+                    _Field(
+                      controller: shareBarabaraUrlCtrl,
+                      label: 'Share Barabara Profile',
+                      icon: Icons.directions_car_filled_rounded,
+                      hint: 'https://sharebarabara.co.ke/...',
+                      keyboardType: TextInputType.url,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Read-only email row ────────────────────────────────────────
+              _SectionLabel('Account Info'),
+              const SizedBox(height: 10),
+              _Card(
+                child: _ReadOnlyField(
+                  label: 'Email Address',
+                  value: _maskEmailStatic(user?.email ?? ''),
+                  icon: Icons.email_outlined,
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Verified',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF16A34A),
                       ),
-                    ],
-                  ),
-                  const Divider(height: 1, thickness: 0.8, color: _divider),
-                  _Field(
-                    controller: phoneCtrl,
-                    label: 'Phone Number',
-                    icon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    hint: '+254 7XX XXX XXX',
-                  ),
-                  const Divider(height: 1, thickness: 0.8, color: _divider),
-                  _Field(
-                    controller: locationCtrl,
-                    label: 'Location',
-                    icon: Icons.location_on_outlined,
-                    hint: 'e.g. Nairobi, Kenya',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Professional info ──────────────────────────────────────────
-            _SectionLabel('Professional Details'),
-            const SizedBox(height: 10),
-            _Card(
-              child: Column(
-                children: [
-                  _Field(
-                    controller: companyCtrl,
-                    label: 'Company / Organisation',
-                    icon: Icons.business_outlined,
-                    hint: 'Where do you work?',
-                  ),
-                  const Divider(height: 1, thickness: 0.8, color: _divider),
-                  _Field(
-                    controller: bioCtrl,
-                    label: 'Bio',
-                    icon: Icons.notes_outlined,
-                    hint: 'Tell us about your professional background…',
-                    maxLines: 3,
-                    maxLength: 500,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Ecosystem links (self-service) ─────────────────────────────
-            _SectionLabel('Ecosystem Links'),
-            const SizedBox(height: 10),
-            _Card(
-              child: Column(
-                children: [
-                  _Field(
-                    controller: mjengoNetworksUrlCtrl,
-                    label: 'Mjengo Networks Profile',
-                    icon: Icons.hub_rounded,
-                    hint: 'https://mjengonetworks.co.ke/...',
-                    keyboardType: TextInputType.url,
-                  ),
-                  const Divider(height: 1, thickness: 0.8, color: _divider),
-                  _Field(
-                    controller: shareBarabaraUrlCtrl,
-                    label: 'Share Barabara Profile',
-                    icon: Icons.directions_car_filled_rounded,
-                    hint: 'https://sharebarabara.co.ke/...',
-                    keyboardType: TextInputType.url,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Read-only email row ────────────────────────────────────────
-            _SectionLabel('Account Info'),
-            const SizedBox(height: 10),
-            _Card(
-              child: _ReadOnlyField(
-                label: 'Email Address',
-                value: _maskEmailStatic(user?.email ?? ''),
-                icon: Icons.email_outlined,
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Verified',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF16A34A),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // ── Appearance ──────────────────────────────────────────────────
-            _SectionLabel('Appearance'),
-            const SizedBox(height: 10),
-            const _Card(child: _DarkModeToggle()),
+              // ── Appearance ──────────────────────────────────────────────────
+              _SectionLabel('Appearance'),
+              const SizedBox(height: 10),
+              const _Card(child: _DarkModeToggle()),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // ── Save button ────────────────────────────────────────────────
-            _SaveButton(
-              label   : 'Save Changes',
-              enabled : dirty,
-              loading : saving,
-              onTap   : onSave,
-            ),
+              // ── Save button ────────────────────────────────────────────────
+              _SaveButton(
+                label: 'Save Changes',
+                enabled: dirty,
+                loading: saving,
+                onTap: onSave,
+              ),
 
-            const SizedBox(height: 32),
-          ],
-        ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
@@ -787,88 +836,95 @@ class _PasswordTab extends StatelessWidget {
       child: ContentWidth(
         maxWidth: 600,
         child: Form(
-        key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Info banner ────────────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _blue.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline_rounded,
-                      color: _blue, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Choose a strong password with at least 6 characters. '
-                      'You will be kept logged in after changing it.',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        color: _blue,
-                        height: 1.4,
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Info banner ────────────────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _blue.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: _blue,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Choose a strong password with at least 6 characters. '
+                        'You will be kept logged in after changing it.',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          color: _blue,
+                          height: 1.4,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            _SectionLabel('New Password'),
-            const SizedBox(height: 10),
-            _Card(
-              child: Column(
-                children: [
-                  _PasswordField(
-                    controller: newPassCtrl,
-                    label: 'New Password',
-                    obscure: obscureNew,
-                    onToggle: onToggleNew,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Enter a new password';
-                      if (v.length < 6) return 'At least 6 characters required';
-                      return null;
-                    },
-                  ),
-                  const Divider(height: 1, thickness: 0.8, color: _divider),
-                  _PasswordField(
-                    controller: confirmCtrl,
-                    label: 'Confirm Password',
-                    obscure: obscureConfirm,
-                    onToggle: onToggleConfirm,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Please confirm password';
-                      if (v != newPassCtrl.text) return 'Passwords do not match';
-                      return null;
-                    },
-                  ),
-                ],
+              _SectionLabel('New Password'),
+              const SizedBox(height: 10),
+              _Card(
+                child: Column(
+                  children: [
+                    _PasswordField(
+                      controller: newPassCtrl,
+                      label: 'New Password',
+                      obscure: obscureNew,
+                      onToggle: onToggleNew,
+                      validator: (v) {
+                        if (v == null || v.isEmpty)
+                          return 'Enter a new password';
+                        if (v.length < 6)
+                          return 'At least 6 characters required';
+                        return null;
+                      },
+                    ),
+                    const Divider(height: 1, thickness: 0.8, color: _divider),
+                    _PasswordField(
+                      controller: confirmCtrl,
+                      label: 'Confirm Password',
+                      obscure: obscureConfirm,
+                      onToggle: onToggleConfirm,
+                      validator: (v) {
+                        if (v == null || v.isEmpty)
+                          return 'Please confirm password';
+                        if (v != newPassCtrl.text)
+                          return 'Passwords do not match';
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // ── strength hints ─────────────────────────────────────────────
-            const SizedBox(height: 12),
-            _StrengthHint(controller: newPassCtrl),
+              // ── strength hints ─────────────────────────────────────────────
+              const SizedBox(height: 12),
+              _StrengthHint(controller: newPassCtrl),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            _SaveButton(
-              label  : 'Change Password',
-              enabled: true,
-              loading: saving,
-              onTap  : onSave,
-            ),
+              _SaveButton(
+                label: 'Change Password',
+                enabled: true,
+                loading: saving,
+                onTap: onSave,
+              ),
 
-            const SizedBox(height: 32),
-          ],
-        ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
@@ -906,10 +962,10 @@ class _StrengthHintState extends State<_StrengthHint> {
 
   int get _score {
     int s = 0;
-    if (_pass.length >= 6)  s++;
+    if (_pass.length >= 6) s++;
     if (_pass.length >= 10) s++;
-    if (_pass.contains(RegExp(r'[A-Z]')))  s++;
-    if (_pass.contains(RegExp(r'[0-9]')))  s++;
+    if (_pass.contains(RegExp(r'[A-Z]'))) s++;
+    if (_pass.contains(RegExp(r'[0-9]'))) s++;
     if (_pass.contains(RegExp(r'[^A-Za-z0-9]'))) s++;
     return s;
   }
@@ -917,20 +973,26 @@ class _StrengthHintState extends State<_StrengthHint> {
   Color get _color {
     switch (_score) {
       case 0:
-      case 1: return _error;
+      case 1:
+        return _error;
       case 2:
-      case 3: return const Color(0xFFF59E0B);
-      default: return const Color(0xFF22C55E);
+      case 3:
+        return const Color(0xFFF59E0B);
+      default:
+        return const Color(0xFF22C55E);
     }
   }
 
   String get _label {
     switch (_score) {
       case 0:
-      case 1: return 'Weak';
+      case 1:
+        return 'Weak';
       case 2:
-      case 3: return 'Fair';
-      default: return 'Strong';
+      case 3:
+        return 'Fair';
+      default:
+        return 'Strong';
     }
   }
 
@@ -979,17 +1041,17 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Text(
-          text,
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: _textSec,
-            letterSpacing: 0.5,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 4),
+    child: Text(
+      text,
+      style: GoogleFonts.montserrat(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: _textSec,
+        letterSpacing: 0.5,
+      ),
+    ),
+  );
 }
 
 class _DarkModeToggle extends StatelessWidget {
@@ -1023,38 +1085,44 @@ class _DarkModeToggle extends StatelessWidget {
             style: GoogleFonts.montserrat(fontSize: 11.5, color: _textSec),
           ),
           const SizedBox(height: 10),
-          Obx(() => Row(
-                children: _options.map((o) {
-                  final (pref, label) = o;
-                  final selected = theme.preference == pref;
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: pref == AppThemePreference.dark ? 0 : 8),
-                      child: GestureDetector(
-                        onTap: () => theme.setPreference(pref),
-                        child: Container(
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(vertical: 9),
-                          decoration: BoxDecoration(
-                            color: selected ? _blue : Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: selected ? _blue : const Color(0xFFE2E8F0)),
+          Obx(
+            () => Row(
+              children: _options.map((o) {
+                final (pref, label) = o;
+                final selected = theme.preference == pref;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: pref == AppThemePreference.dark ? 0 : 8,
+                    ),
+                    child: GestureDetector(
+                      onTap: () => theme.setPreference(pref),
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                        decoration: BoxDecoration(
+                          color: selected ? _blue : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selected ? _blue : const Color(0xFFE2E8F0),
                           ),
-                          child: Text(
-                            label,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              color: selected ? Colors.white : _textSec,
-                            ),
+                        ),
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: selected ? Colors.white : _textSec,
                           ),
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-              )),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         ],
       ),
     );
@@ -1067,20 +1135,20 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: _blue.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
+    decoration: BoxDecoration(
+      color: _surface,
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: _blue.withValues(alpha: 0.06),
+          blurRadius: 12,
+          offset: const Offset(0, 3),
         ),
-        clipBehavior: Clip.antiAlias,
-        child: child,
-      );
+      ],
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: child,
+  );
 }
 
 class _Field extends StatelessWidget {
@@ -1123,10 +1191,7 @@ class _Field extends StatelessWidget {
           prefixIcon: Icon(icon, size: 18, color: _textSec),
           labelText: label,
           hintText: hint,
-          labelStyle: GoogleFonts.montserrat(
-            fontSize: 12,
-            color: _textSec,
-          ),
+          labelStyle: GoogleFonts.montserrat(fontSize: 12, color: _textSec),
           hintStyle: GoogleFonts.montserrat(
             fontSize: 12,
             color: const Color(0xFF475569),
@@ -1175,10 +1240,16 @@ class _PasswordField extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: _textSec),
+          prefixIcon: const Icon(
+            Icons.lock_outline_rounded,
+            size: 18,
+            color: _textSec,
+          ),
           suffixIcon: IconButton(
             icon: Icon(
-              obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              obscure
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               size: 18,
               color: _textSec,
             ),
@@ -1229,10 +1300,7 @@ class _ReadOnlyField extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    color: _textSec,
-                  ),
+                  style: GoogleFonts.montserrat(fontSize: 11, color: _textSec),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -1285,7 +1353,7 @@ class _SaveButton extends StatelessWidget {
                     color: _blue.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),

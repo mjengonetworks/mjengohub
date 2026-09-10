@@ -88,7 +88,11 @@ class _ScrollToTopFabState extends State<ScrollToTopFab> {
                         borderRadius: BorderRadius.circular(AppRadius.sharpLg),
                         border: Border.all(color: const Color(0xFF334155)),
                       ),
-                      child: const Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 26),
+                      child: const Icon(
+                        Icons.keyboard_arrow_up,
+                        color: Colors.white,
+                        size: 26,
+                      ),
                     ),
                   ),
                 ),

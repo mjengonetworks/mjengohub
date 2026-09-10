@@ -36,13 +36,13 @@ class EntityProjectRef {
   });
 
   factory EntityProjectRef.fromJson(Map<String, dynamic> j) => EntityProjectRef(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        slug: (j['slug'] as String?) ?? '',
-        title: (j['title'] as String?) ?? '',
-        status: j['status'] as String?,
-        progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
-        featuredImage: j['featured_image'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    slug: (j['slug'] as String?) ?? '',
+    title: (j['title'] as String?) ?? '',
+    status: j['status'] as String?,
+    progressPercent: (j['progress_percent'] as num?)?.toInt() ?? 0,
+    featuredImage: j['featured_image'] as String?,
+  );
 
   String? get imageUrl {
     if (featuredImage == null || featuredImage!.isEmpty) return null;

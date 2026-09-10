@@ -41,15 +41,15 @@ class Video {
 
   factory Video.fromJson(Map<String, dynamic> j) {
     return Video(
-      id:           j['id'] as int,
-      youtubeId:    j['youtube_id'] as String,
-      title:        j['title'] as String,
-      description:  j['description'] as String? ?? '',
+      id: j['id'] as int,
+      youtubeId: j['youtube_id'] as String,
+      title: j['title'] as String,
+      description: j['description'] as String? ?? '',
       thumbnailUrl: j['thumbnail_url'] as String?,
-      duration:     j['duration'] as String?,
-      viewCount:    j['view_count'] as int? ?? 0,
-      isFeatured:   j['is_featured'] as bool? ?? false,
-      playlistId:   j['playlist_id'] as String?,
+      duration: j['duration'] as String?,
+      viewCount: j['view_count'] as int? ?? 0,
+      isFeatured: j['is_featured'] as bool? ?? false,
+      playlistId: j['playlist_id'] as String?,
       category: j['category'] != null
           ? VideoCategory.fromJson(j['category'] as Map<String, dynamic>)
           : null,
@@ -82,13 +82,13 @@ class VideoPlaylist {
   factory VideoPlaylist.fromJson(Map<String, dynamic> j) {
     final rawVideos = j['videos'] as List? ?? [];
     return VideoPlaylist(
-      id:          j['id'] as int,
-      playlistId:  j['playlist_id'] as String,
-      title:       j['title'] as String,
+      id: j['id'] as int,
+      playlistId: j['playlist_id'] as String,
+      title: j['title'] as String,
       description: j['description'] as String?,
-      thumbnailUrl:j['thumbnail_url'] as String?,
-      videoCount:  j['video_count'] as int? ?? 0,
-      videos:      rawVideos
+      thumbnailUrl: j['thumbnail_url'] as String?,
+      videoCount: j['video_count'] as int? ?? 0,
+      videos: rawVideos
           .whereType<Map<String, dynamic>>()
           .map(Video.fromJson)
           .toList(),

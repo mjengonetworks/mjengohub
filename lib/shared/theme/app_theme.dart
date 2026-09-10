@@ -101,4 +101,3 @@ class AppRadius {
   static const double sharp = 4;
   static const double sharpLg = 6;
 }
-

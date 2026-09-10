@@ -30,11 +30,11 @@ class HeroImage {
   });
 
   factory HeroImage.fromJson(Map<String, dynamic> j) => HeroImage(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        image: (j['image'] as String?) ?? '',
-        sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
-        pageKey: (j['page_key'] as String?) ?? '',
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    image: (j['image'] as String?) ?? '',
+    sortOrder: (j['sort_order'] as num?)?.toInt() ?? 0,
+    pageKey: (j['page_key'] as String?) ?? '',
+  );
 
   static const String _brokenCdnHost = 'media.mjengohub.co.ke';
   static const String _workingHost = 'mjengohub.co.ke';
@@ -61,10 +61,10 @@ class SocialLinkInfo {
   const SocialLinkInfo({required this.platform, this.label, required this.url});
 
   factory SocialLinkInfo.fromJson(Map<String, dynamic> j) => SocialLinkInfo(
-        platform: (j['platform'] as String?) ?? 'other',
-        label: j['label'] as String?,
-        url: (j['url'] as String?) ?? '',
-      );
+    platform: (j['platform'] as String?) ?? 'other',
+    label: j['label'] as String?,
+    url: (j['url'] as String?) ?? '',
+  );
 }
 
 class SiteSettings {
@@ -83,12 +83,12 @@ class SiteSettings {
   });
 
   factory SiteSettings.fromJson(Map<String, dynamic> j) => SiteSettings(
-        playStoreUrl: j['footer_playstore_url'] as String?,
-        appStoreUrl: j['footer_appstore_url'] as String?,
-        contactEmail: j['footer_contact_email'] as String?,
-        contactPhone: j['footer_contact_phone'] as String?,
-        contactLocation: j['footer_contact_location'] as String?,
-      );
+    playStoreUrl: j['footer_playstore_url'] as String?,
+    appStoreUrl: j['footer_appstore_url'] as String?,
+    contactEmail: j['footer_contact_email'] as String?,
+    contactPhone: j['footer_contact_phone'] as String?,
+    contactLocation: j['footer_contact_location'] as String?,
+  );
 }
 
 /// A headline counter shown on the website ("1,200+ projects tracked").
@@ -101,15 +101,21 @@ class SiteFigure {
   final String? suffix;
   final String? page;
 
-  const SiteFigure({required this.key, this.name, this.value, this.suffix, this.page});
+  const SiteFigure({
+    required this.key,
+    this.name,
+    this.value,
+    this.suffix,
+    this.page,
+  });
 
   factory SiteFigure.fromJson(Map<String, dynamic> j) => SiteFigure(
-        key: (j['key'] as String?) ?? '',
-        name: j['name'] as String?,
-        value: j['value']?.toString(),
-        suffix: j['suffix'] as String?,
-        page: j['page'] as String?,
-      );
+    key: (j['key'] as String?) ?? '',
+    name: j['name'] as String?,
+    value: j['value']?.toString(),
+    suffix: j['suffix'] as String?,
+    page: j['page'] as String?,
+  );
 
   /// Display form, e.g. value "1200" + suffix "+" -> "1200+".
   String get display => '${value ?? ''}${suffix ?? ''}';
@@ -139,14 +145,14 @@ class SiteAlert {
   });
 
   factory SiteAlert.fromJson(Map<String, dynamic> j) => SiteAlert(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        title: j['title'] as String?,
-        message: j['message'] as String?,
-        type: (j['type'] as String?) ?? 'info',
-        isDismissible: (j['is_dismissible'] as bool?) ?? true,
-        actionUrl: j['action_url'] as String?,
-        actionText: j['action_text'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    title: j['title'] as String?,
+    message: j['message'] as String?,
+    type: (j['type'] as String?) ?? 'info',
+    isDismissible: (j['is_dismissible'] as bool?) ?? true,
+    actionUrl: j['action_url'] as String?,
+    actionText: j['action_text'] as String?,
+  );
 }
 
 /// An admin-managed partner/ecosystem-stakeholder logo. There is a
@@ -162,14 +168,19 @@ class Partner {
   final String? logo;
   final String? websiteUrl;
 
-  const Partner({required this.id, required this.name, this.logo, this.websiteUrl});
+  const Partner({
+    required this.id,
+    required this.name,
+    this.logo,
+    this.websiteUrl,
+  });
 
   factory Partner.fromJson(Map<String, dynamic> j) => Partner(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        name: (j['name'] as String?) ?? '',
-        logo: j['logo'] as String?,
-        websiteUrl: j['website_url'] as String?,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    name: (j['name'] as String?) ?? '',
+    logo: j['logo'] as String?,
+    websiteUrl: j['website_url'] as String?,
+  );
 }
 
 class SiteService {
@@ -179,7 +190,8 @@ class SiteService {
     // Return static defaults to avoid failing network calls and ensure
     // store links are always available.
     return const SiteSettings(
-      playStoreUrl: 'https://play.google.com/store/apps/details?id=ke.co.mjengohub.app',
+      playStoreUrl:
+          'https://play.google.com/store/apps/details?id=ke.co.mjengohub.app',
       appStoreUrl: 'https://apps.apple.com/app/mjengo-hub',
     );
   }
@@ -188,11 +200,26 @@ class SiteService {
     // Return static social links to avoid failing network calls.
     return const [
       SocialLinkInfo(platform: 'twitter', url: 'https://twitter.com/mjengohub'),
-      SocialLinkInfo(platform: 'linkedin', url: 'https://linkedin.com/company/mjengohub'),
-      SocialLinkInfo(platform: 'facebook', url: 'https://facebook.com/mjengohub'),
-      SocialLinkInfo(platform: 'instagram', url: 'https://instagram.com/mjengohub'),
-      SocialLinkInfo(platform: 'youtube', url: 'https://youtube.com/@mjengohub'),
-      SocialLinkInfo(platform: 'whatsapp', url: 'https://whatsapp.com/channel/mjengohub'),
+      SocialLinkInfo(
+        platform: 'linkedin',
+        url: 'https://linkedin.com/company/mjengohub',
+      ),
+      SocialLinkInfo(
+        platform: 'facebook',
+        url: 'https://facebook.com/mjengohub',
+      ),
+      SocialLinkInfo(
+        platform: 'instagram',
+        url: 'https://instagram.com/mjengohub',
+      ),
+      SocialLinkInfo(
+        platform: 'youtube',
+        url: 'https://youtube.com/@mjengohub',
+      ),
+      SocialLinkInfo(
+        platform: 'whatsapp',
+        url: 'https://whatsapp.com/channel/mjengohub',
+      ),
     ];
   }
 
@@ -203,7 +230,11 @@ class SiteService {
       final res = await _api.getRequest('site/partners');
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is List) return data.whereType<Map<String, dynamic>>().map(Partner.fromJson).toList();
+        if (data is List)
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(Partner.fromJson)
+              .toList();
       }
     } catch (e) {
       print('❌ getPartners failed: $e');
@@ -219,8 +250,10 @@ class SiteService {
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
         if (data is List) {
-          final figures =
-              data.whereType<Map<String, dynamic>>().map(SiteFigure.fromJson).toList();
+          final figures = data
+              .whereType<Map<String, dynamic>>()
+              .map(SiteFigure.fromJson)
+              .toList();
           if (page == null || page.isEmpty) return figures;
           return figures.where((f) => f.page == page).toList();
         }
@@ -236,11 +269,17 @@ class SiteService {
   /// contract shouldn't silently depend on the backend never changing).
   Future<List<HeroImage>> getHeroImages({String pageKey = 'homepage'}) async {
     try {
-      final res = await _api.getRequest('site/hero-images', query: {'page_key': pageKey});
+      final res = await _api.getRequest(
+        'site/hero-images',
+        query: {'page_key': pageKey},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
         if (data is List) {
-          final items = data.whereType<Map<String, dynamic>>().map(HeroImage.fromJson).toList();
+          final items = data
+              .whereType<Map<String, dynamic>>()
+              .map(HeroImage.fromJson)
+              .toList();
           items.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
           return items;
         }
@@ -258,7 +297,10 @@ class SiteService {
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
         if (data is List) {
-          return data.whereType<Map<String, dynamic>>().map(SiteAlert.fromJson).toList();
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(SiteAlert.fromJson)
+              .toList();
         }
       }
     } catch (e) {
@@ -284,13 +326,20 @@ class SiteService {
         return {
           'success': true,
           'message':
-              (data is Map ? data['message'] as String? : null) ?? 'Subscribed successfully',
+              (data is Map ? data['message'] as String? : null) ??
+              'Subscribed successfully',
         };
       }
-      return {'success': false, 'message': _errorMessage(res.body, 'Could not subscribe.')};
+      return {
+        'success': false,
+        'message': _errorMessage(res.body, 'Could not subscribe.'),
+      };
     } catch (e) {
       print('❌ subscribeNewsletter failed: $e');
-      return {'success': false, 'message': 'Could not subscribe. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not subscribe. Check your connection.',
+      };
     }
   }
 
@@ -323,7 +372,8 @@ class SiteService {
           'campaign_objectives': campaignObjectives,
         if (targetAudience != null && targetAudience.isNotEmpty)
           'target_audience': targetAudience,
-        if (budgetRange != null && budgetRange.isNotEmpty) 'budget_range': budgetRange,
+        if (budgetRange != null && budgetRange.isNotEmpty)
+          'budget_range': budgetRange,
         if (campaignDuration != null && campaignDuration.isNotEmpty)
           'campaign_duration': campaignDuration,
         if (additionalInfo != null && additionalInfo.isNotEmpty)
@@ -334,7 +384,8 @@ class SiteService {
         return {
           'success': true,
           'reference': data is Map ? data['reference'] : null,
-          'message': (data is Map ? data['message'] as String? : null) ??
+          'message':
+              (data is Map ? data['message'] as String? : null) ??
               'Advertising inquiry submitted successfully',
         };
       }

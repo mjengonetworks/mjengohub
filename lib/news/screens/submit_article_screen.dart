@@ -29,7 +29,11 @@ class SubmitArticleScreen extends StatefulWidget {
   static void open(BuildContext context) {
     final auth = Get.find<MjengoAuthController>();
     if (!auth.isAuthenticated) {
-      Get.snackbar('Sign in required', 'Sign in to submit an article.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Sign in required',
+        'Sign in to submit an article.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     if (auth.currentUser?.isPrime != true) {
@@ -43,7 +47,9 @@ class SubmitArticleScreen extends StatefulWidget {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
       builder: (_) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
         child: Column(
@@ -52,17 +58,35 @@ class SubmitArticleScreen extends StatefulWidget {
             Container(
               width: 56,
               height: 56,
-              decoration: BoxDecoration(color: AppColors.primeBadge.withValues(alpha: 0.12), shape: BoxShape.circle),
-              child: const Icon(Icons.workspace_premium_rounded, color: AppColors.primeBadge, size: 28),
+              decoration: BoxDecoration(
+                color: AppColors.primeBadge.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.workspace_premium_rounded,
+                color: AppColors.primeBadge,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 16),
-            Text('Mjengo Hub Prime required', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+            Text(
+              'Mjengo Hub Prime required',
+              style: GoogleFonts.montserrat(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               'Article submissions are reserved for Prime members so we can keep editorial quality high. '
               'Upgrade to Prime to submit articles for review.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle, height: 1.5),
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: AppColors.textSubtle,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 20),
             AppSubmitButton(
@@ -70,7 +94,12 @@ class SubmitArticleScreen extends StatefulWidget {
               busy: false,
               onPressed: () {
                 Navigator.of(context).pop();
-                Get.to(() => const WebviewCheckoutScreen(title: 'Mjengo Hub Prime', nextPath: '/verify'));
+                Get.to(
+                  () => const WebviewCheckoutScreen(
+                    title: 'Mjengo Hub Prime',
+                    nextPath: '/verify',
+                  ),
+                );
               },
             ),
           ],
@@ -114,7 +143,9 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
     final ops = _contentController.document.toDelta().toJson();
     if (ops.isEmpty) return '';
     return QuillDeltaToHtmlConverter(
-      List<Map<String, dynamic>>.from(ops.map((o) => Map<String, dynamic>.from(o as Map))),
+      List<Map<String, dynamic>>.from(
+        ops.map((o) => Map<String, dynamic>.from(o as Map)),
+      ),
       ConverterOptions.forEmail(),
     ).convert();
   }
@@ -123,7 +154,11 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final html = _contentHtml();
     if (html.trim().isEmpty) {
-      Get.snackbar('Content required', 'Please write your article before submitting.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Content required',
+        'Please write your article before submitting.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     setState(() => _submitting = true);
@@ -140,11 +175,23 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
 
     if (res['success'] == true) {
       Get.back();
-      Get.snackbar('Submitted', res['message'] as String? ?? 'Article submitted for editorial review',
-          backgroundColor: AppColors.success, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(12));
+      Get.snackbar(
+        'Submitted',
+        res['message'] as String? ?? 'Article submitted for editorial review',
+        backgroundColor: AppColors.success,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(12),
+      );
     } else {
-      Get.snackbar('Could not submit', res['message'] as String? ?? 'Please try again.',
-          backgroundColor: AppColors.danger, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM, margin: const EdgeInsets.all(12));
+      Get.snackbar(
+        'Could not submit',
+        res['message'] as String? ?? 'Please try again.',
+        backgroundColor: AppColors.danger,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(12),
+      );
     }
   }
 
@@ -155,7 +202,14 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text('Submit an Article', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+        title: Text(
+          'Submit an Article',
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
       ),
       body: ContentWidth(
         maxWidth: 700,
@@ -166,31 +220,47 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
             children: [
               Text(
                 'Submissions go to our editorial team for review before they\'re published.',
-                style: GoogleFonts.montserrat(fontSize: 12.5, height: 1.5, color: AppColors.textSubtle),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  height: 1.5,
+                  color: AppColors.textSubtle,
+                ),
               ),
               const SizedBox(height: 20),
 
               const FieldLabel('Title', required: true),
-              AppTextField(controller: _title, hint: 'Article headline', validator: (v) => requiredField(v, 'Title')),
+              AppTextField(
+                controller: _title,
+                hint: 'Article headline',
+                validator: (v) => requiredField(v, 'Title'),
+              ),
               const SizedBox(height: 14),
 
               const FieldLabel('Category'),
               AppDropdown<String>(
                 value: _categorySlug,
                 items: _categories.map((c) => c.slug).toList(),
-                labelOf: (slug) => _categories.firstWhere((c) => c.slug == slug).name,
+                labelOf: (slug) =>
+                    _categories.firstWhere((c) => c.slug == slug).name,
                 hint: 'Select a category (optional)',
                 onChanged: (v) => setState(() => _categorySlug = v),
               ),
               const SizedBox(height: 14),
 
               const FieldLabel('Summary'),
-              AppTextField(controller: _summary, hint: 'A one- or two-sentence summary (optional)', maxLines: 2),
+              AppTextField(
+                controller: _summary,
+                hint: 'A one- or two-sentence summary (optional)',
+                maxLines: 2,
+              ),
               const SizedBox(height: 14),
 
               const FieldLabel('Content', required: true),
               Container(
-                decoration: BoxDecoration(border: Border.all(color: AppColors.divider), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.divider),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 clipBehavior: Clip.antiAlias,
                 child: Column(
                   children: [
@@ -212,7 +282,10 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
                       height: 260,
                       child: quill.QuillEditor.basic(
                         controller: _contentController,
-                        config: const quill.QuillEditorConfig(padding: EdgeInsets.all(10), placeholder: 'Write your article…'),
+                        config: const quill.QuillEditorConfig(
+                          padding: EdgeInsets.all(10),
+                          placeholder: 'Write your article…',
+                        ),
                       ),
                     ),
                   ],
@@ -220,7 +293,11 @@ class _SubmitArticleScreenState extends State<SubmitArticleScreen> {
               ),
 
               const SizedBox(height: 24),
-              AppSubmitButton(label: 'Submit for review', busy: _submitting, onPressed: _submit),
+              AppSubmitButton(
+                label: 'Submit for review',
+                busy: _submitting,
+                onPressed: _submit,
+              ),
               const SizedBox(height: 20),
             ],
           ),

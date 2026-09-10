@@ -40,7 +40,10 @@ class _ReadAlsoCardState extends State<ReadAlsoCard> {
 
   Future<void> _load() async {
     final categorySlug = widget.article.category?.slug;
-    var candidates = await _service.getArticles(categorySlug: categorySlug, perPage: 6);
+    var candidates = await _service.getArticles(
+      categorySlug: categorySlug,
+      perPage: 6,
+    );
     candidates = candidates.where((a) => a.id != widget.article.id).toList();
     if (candidates.isEmpty && categorySlug != null) {
       // Category had nothing else — widen to the general latest list.
@@ -60,13 +63,16 @@ class _ReadAlsoCardState extends State<ReadAlsoCard> {
     final related = _related!;
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.articleDetail, arguments: related.slug),
+      onTap: () =>
+          Get.toNamed(AppRoutes.articleDetail, arguments: related.slug),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 10),
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         decoration: BoxDecoration(
           color: const Color(0xFFFFF7ED),
-          border: const Border(left: BorderSide(color: Color(0xFFF97316), width: 4)),
+          border: const Border(
+            left: BorderSide(color: Color(0xFFF97316), width: 4),
+          ),
           borderRadius: BorderRadius.circular(AppRadius.sharp),
         ),
         child: Column(
@@ -74,14 +80,24 @@ class _ReadAlsoCardState extends State<ReadAlsoCard> {
           children: [
             Text(
               'READ ALSO',
-              style: GoogleFonts.montserrat(fontSize: 10.5, fontWeight: FontWeight.w500, color: const Color(0xFFF97316), letterSpacing: 0.6),
+              style: GoogleFonts.montserrat(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFF97316),
+                letterSpacing: 0.6,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               related.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.montserrat(fontSize: 14.5, fontWeight: FontWeight.w700, color: AppColors.headingSlate, height: 1.35),
+              style: GoogleFonts.montserrat(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: AppColors.headingSlate,
+                height: 1.35,
+              ),
             ),
           ],
         ),

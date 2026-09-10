@@ -12,13 +12,14 @@ class ContributorsService {
     int limit = 10,
   }) async {
     try {
-      final res = await _api.getRequest('contributors', query: {
-        'window': window.apiValue,
-        'limit': '$limit',
-      });
+      final res = await _api.getRequest(
+        'contributors',
+        query: {'window': window.apiValue, 'limit': '$limit'},
+      );
       if (res.statusCode == 200 && res.body != null) {
         final data = res.body['data'];
-        if (data is Map<String, dynamic>) return CommunityLeaderboards.fromJson(data);
+        if (data is Map<String, dynamic>)
+          return CommunityLeaderboards.fromJson(data);
       }
       return CommunityLeaderboards.empty;
     } catch (e) {

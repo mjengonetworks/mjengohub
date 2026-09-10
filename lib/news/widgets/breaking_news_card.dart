@@ -45,8 +45,9 @@ class BreakingNewsCard extends StatelessWidget {
           children: [
             // Thumbnail
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(14)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Stack(
@@ -59,7 +60,11 @@ class BreakingNewsCard extends StatelessWidget {
                       placeholderColor: const Color(0xFFE5E7EB),
                     ),
                     if (showPreviewBadge)
-                      const Positioned(top: 6, left: 6, child: PreviewDataBadge()),
+                      const Positioned(
+                        top: 6,
+                        left: 6,
+                        child: PreviewDataBadge(),
+                      ),
                   ],
                 ),
               ),
@@ -67,8 +72,7 @@ class BreakingNewsCard extends StatelessWidget {
 
             // Text area
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

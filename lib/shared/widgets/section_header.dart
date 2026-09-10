@@ -52,7 +52,11 @@ class SectionHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (isDemo) const Padding(padding: EdgeInsets.only(left: 8), child: PreviewDataBadge()),
+                    if (isDemo)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: PreviewDataBadge(),
+                      ),
                   ],
                 ),
               ),
@@ -71,7 +75,11 @@ class SectionHeader extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Icon(Icons.arrow_forward, size: 14, color: AppColors.accentBlue),
+                      const Icon(
+                        Icons.arrow_forward,
+                        size: 14,
+                        color: AppColors.accentBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -81,7 +89,11 @@ class SectionHeader extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               subtitle!,
-              style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.captionSlate, fontWeight: FontWeight.w500),
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                color: AppColors.captionSlate,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ],

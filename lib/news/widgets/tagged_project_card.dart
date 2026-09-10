@@ -25,7 +25,8 @@ class TaggedProjectCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 14),
       child: GestureDetector(
-        onTap: () => Get.toNamed(AppRoutes.projectDetail, arguments: project.slug),
+        onTap: () =>
+            Get.toNamed(AppRoutes.projectDetail, arguments: project.slug),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -41,17 +42,34 @@ class TaggedProjectCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    NetImage(url: project.imageUrl, fit: BoxFit.cover, placeholderColor: const Color(0xFF1E3A5F)),
+                    NetImage(
+                      url: project.imageUrl,
+                      fit: BoxFit.cover,
+                      placeholderColor: const Color(0xFF1E3A5F),
+                    ),
                     if (project.trackerLabel?.isNotEmpty == true)
                       Positioned(
                         top: 8,
                         left: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: AppColors.headingSlate, borderRadius: BorderRadius.circular(AppRadius.sharp)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.headingSlate,
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.sharp,
+                            ),
+                          ),
                           child: Text(
                             project.trackerLabel!.toUpperCase(),
-                            style: GoogleFonts.montserrat(fontSize: 9, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              letterSpacing: 0.4,
+                            ),
                           ),
                         ),
                       ),
@@ -67,13 +85,28 @@ class TaggedProjectCard extends StatelessWidget {
                         project.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.headingSlate, height: 1.3),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.headingSlate,
+                          height: 1.3,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text('View Tracker Project',
-                        style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.accentBlue)),
-                    const Icon(Icons.arrow_forward, size: 14, color: AppColors.accentBlue),
+                    Text(
+                      'View Tracker Project',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.accentBlue,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward,
+                      size: 14,
+                      color: AppColors.accentBlue,
+                    ),
                   ],
                 ),
               ),

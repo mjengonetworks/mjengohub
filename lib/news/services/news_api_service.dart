@@ -11,10 +11,10 @@ class NewsApiService {
 
   Future<List<Article>> getFeaturedArticles({int perPage = 5}) async {
     try {
-      final res = await _api.getRequest('articles', query: {
-        'featured': 'true',
-        'per_page': '$perPage',
-      });
+      final res = await _api.getRequest(
+        'articles',
+        query: {'featured': 'true', 'per_page': '$perPage'},
+      );
       return _parseArticleList(res);
     } catch (e) {
       _log('getFeaturedArticles', e);
@@ -24,10 +24,10 @@ class NewsApiService {
 
   Future<List<Article>> getBreakingNews({int perPage = 10}) async {
     try {
-      final res = await _api.getRequest('articles', query: {
-        'breaking': 'true',
-        'per_page': '$perPage',
-      });
+      final res = await _api.getRequest(
+        'articles',
+        query: {'breaking': 'true', 'per_page': '$perPage'},
+      );
       return _parseArticleList(res);
     } catch (e) {
       _log('getBreakingNews', e);
@@ -42,10 +42,7 @@ class NewsApiService {
     int perPage = 12,
   }) async {
     try {
-      final query = <String, dynamic>{
-        'page': '$page',
-        'per_page': '$perPage',
-      };
+      final query = <String, dynamic>{'page': '$page', 'per_page': '$perPage'};
       if (categorySlug != null && categorySlug.isNotEmpty) {
         query['category'] = categorySlug;
       }
@@ -95,10 +92,17 @@ class NewsApiService {
       if (res.statusCode == 200 || res.statusCode == 201) {
         return {'success': true, 'message': res.body?['message'] as String?};
       }
-      return {'success': false, 'message': _errorMessage(res.body), 'status': res.statusCode};
+      return {
+        'success': false,
+        'message': _errorMessage(res.body),
+        'status': res.statusCode,
+      };
     } catch (e) {
       _log('submitArticle', e);
-      return {'success': false, 'message': 'Could not submit article. Check your connection.'};
+      return {
+        'success': false,
+        'message': 'Could not submit article. Check your connection.',
+      };
     }
   }
 
@@ -113,7 +117,10 @@ class NewsApiService {
   /// Articles authored by the signed-in user — `GET /auth/me/articles`.
   Future<List<Article>> getMyArticles({int page = 1, int perPage = 20}) async {
     try {
-      final res = await _api.getRequest('auth/me/articles', query: {'page': '$page', 'per_page': '$perPage'});
+      final res = await _api.getRequest(
+        'auth/me/articles',
+        query: {'page': '$page', 'per_page': '$perPage'},
+      );
       return _parseArticleList(res);
     } catch (e) {
       _log('getMyArticles', e);

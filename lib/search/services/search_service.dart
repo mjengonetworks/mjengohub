@@ -40,7 +40,9 @@ class UnifiedSearchResults {
         query: (j['query'] as String?) ?? '',
         articles: _list(j['articles']).map(Article.fromJson).toList(),
         services: _list(j['services']).map(ServiceOffering.fromJson).toList(),
-        reports: _list(j['reports']).map(InfrastructureReport.fromJson).toList(),
+        reports: _list(
+          j['reports'],
+        ).map(InfrastructureReport.fromJson).toList(),
       );
 
   static Iterable<Map<String, dynamic>> _list(dynamic raw) =>

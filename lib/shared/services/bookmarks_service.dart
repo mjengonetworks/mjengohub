@@ -21,24 +21,24 @@ class BookmarkedItem {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'slug': slug,
-        'imageUrl': imageUrl,
-        'category': category,
-        'type': type,
-        'savedAt': savedAt.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'slug': slug,
+    'imageUrl': imageUrl,
+    'category': category,
+    'type': type,
+    'savedAt': savedAt.toIso8601String(),
+  };
 
   factory BookmarkedItem.fromJson(Map<String, dynamic> json) => BookmarkedItem(
-        id: json['id'] ?? '',
-        title: json['title'] ?? '',
-        slug: json['slug'] ?? '',
-        imageUrl: json['imageUrl'],
-        category: json['category'],
-        type: json['type'] ?? 'article',
-        savedAt: DateTime.tryParse(json['savedAt'] ?? '') ?? DateTime.now(),
-      );
+    id: json['id'] ?? '',
+    title: json['title'] ?? '',
+    slug: json['slug'] ?? '',
+    imageUrl: json['imageUrl'],
+    category: json['category'],
+    type: json['type'] ?? 'article',
+    savedAt: DateTime.tryParse(json['savedAt'] ?? '') ?? DateTime.now(),
+  );
 }
 
 class BookmarksService {

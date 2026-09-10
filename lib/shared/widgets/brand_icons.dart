@@ -22,14 +22,21 @@ class BrandIconWidget extends StatelessWidget {
   final BrandIcon icon;
   final Color color;
   final double size;
-  const BrandIconWidget({super.key, required this.icon, required this.color, this.size = 20});
+  const BrandIconWidget({
+    super.key,
+    required this.icon,
+    required this.color,
+    this.size = 20,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _BrandPainter(icon: icon, color: color)),
+      child: CustomPaint(
+        painter: _BrandPainter(icon: icon, color: color),
+      ),
     );
   }
 }
@@ -87,18 +94,27 @@ class _BrandPainter extends CustomPainter {
     // "i" dot + stem, left side.
     canvas.drawCircle(Offset(w * 0.22, h(s, 0.2)), w * 0.09, fill);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.13, h(s, 0.38), w * 0.18, h(s, 0.44)), Radius.circular(w * 0.05)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.13, h(s, 0.38), w * 0.18, h(s, 0.44)),
+        Radius.circular(w * 0.05),
+      ),
       fill,
     );
     // "n" -- two stems joined by an arch.
     final nLeft = w * 0.5;
     final nRight = w * 0.82;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(nLeft - w * 0.09, h(s, 0.38), w * 0.18, h(s, 0.44)), Radius.circular(w * 0.05)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(nLeft - w * 0.09, h(s, 0.38), w * 0.18, h(s, 0.44)),
+        Radius.circular(w * 0.05),
+      ),
       fill,
     );
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(nRight - w * 0.09, h(s, 0.5), w * 0.18, h(s, 0.32)), Radius.circular(w * 0.05)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(nRight - w * 0.09, h(s, 0.5), w * 0.18, h(s, 0.32)),
+        Radius.circular(w * 0.05),
+      ),
       fill,
     );
     final arch = Path()
@@ -126,7 +142,10 @@ class _BrandPainter extends CustomPainter {
   void _paintInstagram(Canvas canvas, Size s, Paint stroke, Paint fill) {
     final w = s.width;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.08, w * 0.08, w * 0.84, w * 0.84), Radius.circular(w * 0.26)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.08, w * 0.08, w * 0.84, w * 0.84),
+        Radius.circular(w * 0.26),
+      ),
       stroke,
     );
     canvas.drawCircle(Offset(w * 0.5, w * 0.5), w * 0.22, stroke);
@@ -137,20 +156,33 @@ class _BrandPainter extends CustomPainter {
   void _paintYoutube(Canvas canvas, Size s, Paint fill) {
     final w = s.width;
     final frame = Path()
-      ..addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.05, h(s, 0.18), w * 0.9, h(s, 0.64)), Radius.circular(w * 0.2)));
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(w * 0.05, h(s, 0.18), w * 0.9, h(s, 0.64)),
+          Radius.circular(w * 0.2),
+        ),
+      );
     final triangle = Path()
       ..moveTo(w * 0.42, h(s, 0.35))
       ..lineTo(w * 0.42, h(s, 0.65))
       ..lineTo(w * 0.68, h(s, 0.5))
       ..close();
-    canvas.drawPath(Path.combine(PathOperation.difference, frame, triangle), fill);
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, frame, triangle),
+      fill,
+    );
   }
 
   // WhatsApp -- rounded speech-bubble with a phone-handset silhouette.
   void _paintWhatsapp(Canvas canvas, Size s, Paint fill) {
     final w = s.width;
     final bubble = Path()
-      ..addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.08, w * 0.08, w * 0.84, w * 0.72), Radius.circular(w * 0.32)))
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(w * 0.08, w * 0.08, w * 0.84, w * 0.72),
+          Radius.circular(w * 0.32),
+        ),
+      )
       ..moveTo(w * 0.28, w * 0.72)
       ..lineTo(w * 0.18, w * 0.92)
       ..lineTo(w * 0.42, w * 0.76)
@@ -168,12 +200,15 @@ class _BrandPainter extends CustomPainter {
       ..quadraticBezierTo(w * 0.66, h(s, 0.6), w * 0.54, h(s, 0.58))
       ..quadraticBezierTo(w * 0.4, h(s, 0.54), w * 0.36, h(s, 0.36))
       ..close();
-    final white = Paint()..color = Colors.white..style = PaintingStyle.fill;
+    final white = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
     canvas.drawPath(handset, white);
   }
 
   double h(Size s, double fraction) => s.height * fraction;
 
   @override
-  bool shouldRepaint(covariant _BrandPainter oldDelegate) => oldDelegate.icon != icon || oldDelegate.color != color;
+  bool shouldRepaint(covariant _BrandPainter oldDelegate) =>
+      oldDelegate.icon != icon || oldDelegate.color != color;
 }

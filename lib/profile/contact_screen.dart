@@ -14,24 +14,24 @@ class ContactScreen extends StatefulWidget {
 
 class _ContactScreenState extends State<ContactScreen> {
   // ── Palette ────────────────────────────────────────────────────────────────
-  static const Color _bg        = Color(0xFFF4F4FB);
-  static const Color _surface   = Colors.white;
-  static const Color _primary   = Color(0xFF1A1A2E);
+  static const Color _bg = Color(0xFFF4F4FB);
+  static const Color _surface = Colors.white;
+  static const Color _primary = Color(0xFF1A1A2E);
   static const Color _secondary = Color(0xFF475569);
-  static const Color _divider   = Color(0xFFEEEEF5);
-  static const Color _accent    = Color(0xFF6C63FF);
-  static const Color _body      = Color(0xFF444444);
+  static const Color _divider = Color(0xFFEEEEF5);
+  static const Color _accent = Color(0xFF6C63FF);
+  static const Color _body = Color(0xFF444444);
 
   // ── Form state ─────────────────────────────────────────────────────────────
   final _formKey = GlobalKey<FormState>();
-  final _firstCtrl   = TextEditingController();
-  final _lastCtrl    = TextEditingController();
-  final _emailCtrl   = TextEditingController();
-  final _phoneCtrl   = TextEditingController();
+  final _firstCtrl = TextEditingController();
+  final _lastCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
   String? _inquiryType;
   bool _sending = false;
-  bool _sent    = false;
+  bool _sent = false;
 
   static const _inquiryTypes = [
     'Advertising & Partnerships',
@@ -60,30 +60,37 @@ class _ContactScreenState extends State<ContactScreen> {
     // the app's external links; tel:/mailto: intents have no "page" to
     // browse, so those still hand off to the native dialer/mail client.
     final isWebLink = uri.scheme == 'http' || uri.scheme == 'https';
-    await launchUrl(uri, mode: isWebLink ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
+    await launchUrl(
+      uri,
+      mode: isWebLink
+          ? LaunchMode.inAppBrowserView
+          : LaunchMode.externalApplication,
+    );
   }
 
   Future<void> _sendEmail() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _sending = true);
 
-    final name    = '${_firstCtrl.text.trim()} ${_lastCtrl.text.trim()}';
+    final name = '${_firstCtrl.text.trim()} ${_lastCtrl.text.trim()}';
     final subject = '[Mjengo Hub] ${_inquiryType ?? 'General Inquiry'}';
-    final body    = 'Name: $name\nEmail: ${_emailCtrl.text.trim()}'
+    final body =
+        'Name: $name\nEmail: ${_emailCtrl.text.trim()}'
         '${_phoneCtrl.text.trim().isNotEmpty ? '\nPhone: ${_phoneCtrl.text.trim()}' : ''}'
         '\n\n${_messageCtrl.text.trim()}';
 
     final uri = Uri(
       scheme: 'mailto',
       path: 'info@mjengohub.com',
-      query: 'subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
+      query:
+          'subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
     );
 
     await launchUrl(uri);
 
     setState(() {
       _sending = false;
-      _sent    = true;
+      _sent = true;
     });
 
     _formKey.currentState!.reset();
@@ -145,7 +152,11 @@ class _ContactScreenState extends State<ContactScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: const Icon(Icons.arrow_back_rounded, color: _primary, size: 24),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: _primary,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 12),
           Text(
@@ -275,20 +286,39 @@ class _ContactScreenState extends State<ContactScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: GoogleFonts.montserrat(
-                          fontSize: 13, fontWeight: FontWeight.w500, color: _primary)),
+                  Text(
+                    title,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: _primary,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: GoogleFonts.montserrat(fontSize: 11, color: _secondary)),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      color: _secondary,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(value,
-                      style: GoogleFonts.montserrat(
-                          fontSize: 12.5, fontWeight: FontWeight.w600, color: _accent)),
+                  Text(
+                    value,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: _accent,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: _secondary.withValues(alpha: 0.5), size: 20),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: _secondary.withValues(alpha: 0.5),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -322,36 +352,67 @@ class _ContactScreenState extends State<ContactScreen> {
         children: [
           Icon(icon, size: 18, color: _accent),
           const SizedBox(height: 5),
-          Text(label,
-              style: GoogleFonts.montserrat(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.5),
-                  letterSpacing: 0.5)),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.5),
+              letterSpacing: 0.5,
+            ),
+          ),
           const SizedBox(height: 3),
-          Text(value,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                  fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _stripDivider() => Container(
-      width: 0.8, height: 40, color: Colors.white.withValues(alpha: 0.12));
+    width: 0.8,
+    height: 40,
+    color: Colors.white.withValues(alpha: 0.12),
+  );
 
   // ── Social card ────────────────────────────────────────────────────────────
 
   Widget _socialCard() {
     const socials = [
-      ('LinkedIn',  Icons.work_outline_rounded,      'https://www.linkedin.com/in/mjengohub'),
-      ('Facebook',  Icons.facebook_rounded,           'https://www.facebook.com/share/1HPY3N93XK/'),
-      ('Twitter',   Icons.close_rounded,              'https://x.com/mjengohub'),
-      ('Instagram', Icons.camera_alt_outlined,        'https://instagram.com/mjengohub'),
-      ('YouTube',   Icons.play_circle_outline_rounded,'https://www.youtube.com/@mjengohubke'),
-      ('TikTok',    Icons.music_note_rounded,         'https://tiktok.com/@mjengohubke'),
-      ('WhatsApp',  Icons.chat_outlined,              'https://whatsapp.com/channel/0029VaYauR9JkK9FLwHSCH2k'),
+      (
+        'LinkedIn',
+        Icons.work_outline_rounded,
+        'https://www.linkedin.com/in/mjengohub',
+      ),
+      (
+        'Facebook',
+        Icons.facebook_rounded,
+        'https://www.facebook.com/share/1HPY3N93XK/',
+      ),
+      ('Twitter', Icons.close_rounded, 'https://x.com/mjengohub'),
+      (
+        'Instagram',
+        Icons.camera_alt_outlined,
+        'https://instagram.com/mjengohub',
+      ),
+      (
+        'YouTube',
+        Icons.play_circle_outline_rounded,
+        'https://www.youtube.com/@mjengohubke',
+      ),
+      ('TikTok', Icons.music_note_rounded, 'https://tiktok.com/@mjengohubke'),
+      (
+        'WhatsApp',
+        Icons.chat_outlined,
+        'https://whatsapp.com/channel/0029VaYauR9JkK9FLwHSCH2k',
+      ),
     ];
 
     return Container(
@@ -364,12 +425,19 @@ class _ContactScreenState extends State<ContactScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Follow Us',
-              style: GoogleFonts.montserrat(
-                  fontSize: 13, fontWeight: FontWeight.w500, color: _primary)),
+          Text(
+            'Follow Us',
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: _primary,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('Stay updated with industry news and tips.',
-              style: GoogleFonts.montserrat(fontSize: 11.5, color: _secondary)),
+          Text(
+            'Stay updated with industry news and tips.',
+            style: GoogleFonts.montserrat(fontSize: 11.5, color: _secondary),
+          ),
           const SizedBox(height: 14),
           Wrap(
             spacing: 8,
@@ -398,9 +466,14 @@ class _ContactScreenState extends State<ContactScreen> {
           children: [
             Icon(icon, size: 14, color: _accent),
             const SizedBox(width: 5),
-            Text(label,
-                style: GoogleFonts.montserrat(
-                    fontSize: 11.5, fontWeight: FontWeight.w600, color: _primary)),
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: _primary,
+              ),
+            ),
           ],
         ),
       ),
@@ -422,26 +495,32 @@ class _ContactScreenState extends State<ContactScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Send Us a Message',
-                style: GoogleFonts.montserrat(
-                    fontSize: 16, fontWeight: FontWeight.w500, color: _primary)),
+            Text(
+              'Send Us a Message',
+              style: GoogleFonts.montserrat(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: _primary,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('We\'ll get back to you shortly.',
-                style: GoogleFonts.montserrat(fontSize: 12, color: _secondary)),
+            Text(
+              'We\'ll get back to you shortly.',
+              style: GoogleFonts.montserrat(fontSize: 12, color: _secondary),
+            ),
             const SizedBox(height: 16),
             const Divider(color: _divider, height: 1, thickness: 0.8),
             const SizedBox(height: 18),
 
             // ── Success banner ────────────────────────────────────────
-            if (_sent) ...[
-              _successBanner(),
-              const SizedBox(height: 16),
-            ],
+            if (_sent) ...[_successBanner(), const SizedBox(height: 16)],
 
             // ── Name row ──────────────────────────────────────────────
             Row(
               children: [
-                Expanded(child: _field('First Name', _firstCtrl, required: true)),
+                Expanded(
+                  child: _field('First Name', _firstCtrl, required: true),
+                ),
                 const SizedBox(width: 12),
                 Expanded(child: _field('Last Name', _lastCtrl, required: true)),
               ],
@@ -449,22 +528,28 @@ class _ContactScreenState extends State<ContactScreen> {
             const SizedBox(height: 14),
 
             // ── Email ─────────────────────────────────────────────────
-            _field('Email Address', _emailCtrl,
-                required: true,
-                keyboard: TextInputType.emailAddress,
-                validator: (v) {
-              final val = v?.trim() ?? '';
-              if (val.isEmpty) return 'Required';
-              if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(val)) {
-                return 'Enter a valid email';
-              }
-              return null;
-            }),
+            _field(
+              'Email Address',
+              _emailCtrl,
+              required: true,
+              keyboard: TextInputType.emailAddress,
+              validator: (v) {
+                final val = v?.trim() ?? '';
+                if (val.isEmpty) return 'Required';
+                if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(val)) {
+                  return 'Enter a valid email';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 14),
 
             // ── Phone ─────────────────────────────────────────────────
-            _field('Phone Number (optional)', _phoneCtrl,
-                keyboard: TextInputType.phone),
+            _field(
+              'Phone Number (optional)',
+              _phoneCtrl,
+              keyboard: TextInputType.phone,
+            ),
             const SizedBox(height: 14),
 
             // ── Inquiry type dropdown ─────────────────────────────────
@@ -472,9 +557,13 @@ class _ContactScreenState extends State<ContactScreen> {
             const SizedBox(height: 14),
 
             // ── Message ───────────────────────────────────────────────
-            _field('Message', _messageCtrl,
-                required: true, maxLines: 4,
-                hint: 'Tell us about your project or enquiry…'),
+            _field(
+              'Message',
+              _messageCtrl,
+              required: true,
+              maxLines: 4,
+              hint: 'Tell us about your project or enquiry…',
+            ),
             const SizedBox(height: 20),
 
             // ── Submit ────────────────────────────────────────────────
@@ -485,8 +574,13 @@ class _ContactScreenState extends State<ContactScreen> {
               children: [
                 Icon(Icons.lock_outline_rounded, size: 12, color: _secondary),
                 const SizedBox(width: 4),
-                Text('Your information is safe and never shared.',
-                    style: GoogleFonts.montserrat(fontSize: 10.5, color: _secondary)),
+                Text(
+                  'Your information is safe and never shared.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10.5,
+                    color: _secondary,
+                  ),
+                ),
               ],
             ),
           ],
@@ -511,14 +605,19 @@ class _ContactScreenState extends State<ContactScreen> {
           text: TextSpan(
             text: label,
             style: GoogleFonts.montserrat(
-                fontSize: 11.5, fontWeight: FontWeight.w600, color: _primary),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: _primary,
+            ),
             children: required
                 ? [
                     TextSpan(
                       text: '  *',
                       style: GoogleFonts.montserrat(
-                          color: _accent, fontWeight: FontWeight.w500),
-                    )
+                        color: _accent,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ]
                 : [],
           ),
@@ -531,8 +630,14 @@ class _ContactScreenState extends State<ContactScreen> {
           style: GoogleFonts.montserrat(fontSize: 13, color: _primary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.montserrat(fontSize: 12.5, color: const Color(0xFF475569)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            hintStyle: GoogleFonts.montserrat(
+              fontSize: 12.5,
+              color: const Color(0xFF475569),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             filled: true,
             fillColor: _bg,
             border: OutlineInputBorder(
@@ -545,7 +650,10 @@ class _ContactScreenState extends State<ContactScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: _accent.withValues(alpha: 0.6), width: 1.5),
+              borderSide: BorderSide(
+                color: _accent.withValues(alpha: 0.6),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -557,10 +665,10 @@ class _ContactScreenState extends State<ContactScreen> {
             ),
             errorStyle: GoogleFonts.montserrat(fontSize: 10.5),
           ),
-          validator: validator ??
+          validator:
+              validator ??
               (required
-                  ? (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null
+                  ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
                   : null),
         ),
       ],
@@ -575,53 +683,79 @@ class _ContactScreenState extends State<ContactScreen> {
           text: TextSpan(
             text: 'Inquiry Type',
             style: GoogleFonts.montserrat(
-                fontSize: 11.5, fontWeight: FontWeight.w600, color: _primary),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: _primary,
+            ),
             children: [
               TextSpan(
                 text: '  *',
                 style: GoogleFonts.montserrat(
-                    color: _accent, fontWeight: FontWeight.w500),
-              )
+                  color: _accent,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           initialValue: _inquiryType,
-          hint: Text('Select an option…',
-              style: GoogleFonts.montserrat(
-                  fontSize: 12.5, color: const Color(0xFF475569))),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: _secondary, size: 20),
+          hint: Text(
+            'Select an option…',
+            style: GoogleFonts.montserrat(
+              fontSize: 12.5,
+              color: const Color(0xFF475569),
+            ),
+          ),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: _secondary,
+            size: 20,
+          ),
           style: GoogleFonts.montserrat(fontSize: 13, color: _primary),
           dropdownColor: _surface,
           decoration: InputDecoration(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             filled: true,
             fillColor: _bg,
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _divider)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _divider),
+            ),
             enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _divider)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _divider),
+            ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: _accent.withValues(alpha: 0.6), width: 1.5),
+              borderSide: BorderSide(
+                color: _accent.withValues(alpha: 0.6),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.redAccent)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.redAccent),
+            ),
             errorStyle: GoogleFonts.montserrat(fontSize: 10.5),
           ),
           items: _inquiryTypes
-              .map((t) => DropdownMenuItem(
-                    value: t,
-                    child: Text(t,
-                        style: GoogleFonts.montserrat(
-                            fontSize: 13, color: _primary)),
-                  ))
+              .map(
+                (t) => DropdownMenuItem(
+                  value: t,
+                  child: Text(
+                    t,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      color: _primary,
+                    ),
+                  ),
+                ),
+              )
               .toList(),
           onChanged: (v) => setState(() => _inquiryType = v),
           validator: (v) => v == null ? 'Please select a type' : null,
@@ -640,20 +774,26 @@ class _ContactScreenState extends State<ContactScreen> {
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
             : const Icon(Icons.send_rounded, size: 17, color: Colors.white),
         label: Text(
           _sending ? 'Sending…' : 'Send Message',
           style: GoogleFonts.montserrat(
-              fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: _accent,
           disabledBackgroundColor: _accent.withValues(alpha: 0.5),
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 0,
         ),
       ),
@@ -672,7 +812,10 @@ class _ContactScreenState extends State<ContactScreen> {
         icon: const Icon(Icons.open_in_new_rounded, size: 14),
         label: Text(
           'View canonical version on mjengohub.co.ke',
-          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -688,14 +831,20 @@ class _ContactScreenState extends State<ContactScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_outline_rounded,
-              color: Color(0xFF16A34A), size: 18),
+          const Icon(
+            Icons.check_circle_outline_rounded,
+            color: Color(0xFF16A34A),
+            size: 18,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Your email client has been opened. Thank you for reaching out!',
               style: GoogleFonts.montserrat(
-                  fontSize: 12, color: const Color(0xFF15803D), height: 1.4),
+                fontSize: 12,
+                color: const Color(0xFF15803D),
+                height: 1.4,
+              ),
             ),
           ),
         ],

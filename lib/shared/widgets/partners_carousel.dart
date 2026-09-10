@@ -27,7 +27,8 @@ const List<Partner> kDefaultPartners = [
   Partner(
     id: -1,
     name: 'Associated Construction',
-    logo: 'https://mjengohub.co.ke/static/images/partners/asociated-construction.jpg',
+    logo:
+        'https://mjengohub.co.ke/static/images/partners/asociated-construction.jpg',
   ),
   Partner(
     id: -2,
@@ -99,7 +100,10 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: itemCount,
         separatorBuilder: (_, _) => const SizedBox(width: 10),
-        itemBuilder: (_, i) => _PartnerLogoCard(partner: _partners[i % _partners.length], onTap: _openPartner),
+        itemBuilder: (_, i) => _PartnerLogoCard(
+          partner: _partners[i % _partners.length],
+          onTap: _openPartner,
+        ),
       ),
     );
   }
@@ -109,10 +113,26 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
 // by default and snap to full color on hover (desktop/web only; touch
 // devices simply never trigger MouseRegion, so logos stay muted there).
 const List<double> _kGreyscaleMatrix = <double>[
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0, 0, 0, 1, 0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
 ];
 
 class _PartnerLogoCard extends StatefulWidget {
@@ -129,7 +149,8 @@ class _PartnerLogoCardState extends State<_PartnerLogoCard> {
 
   @override
   Widget build(BuildContext context) {
-    final hasLogo = widget.partner.logo != null && widget.partner.logo!.isNotEmpty;
+    final hasLogo =
+        widget.partner.logo != null && widget.partner.logo!.isNotEmpty;
     final logo = NetImage(
       url: widget.partner.logo,
       fit: BoxFit.contain,
@@ -149,10 +170,19 @@ class _PartnerLogoCardState extends State<_PartnerLogoCard> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(AppRadius.sharp),
-            border: Border.all(color: _hovering ? AppColors.accentBlue : AppColors.borderSlate),
+            border: Border.all(
+              color: _hovering ? AppColors.accentBlue : AppColors.borderSlate,
+            ),
           ),
           child: hasLogo
-              ? (_hovering ? logo : ColorFiltered(colorFilter: const ColorFilter.matrix(_kGreyscaleMatrix), child: logo))
+              ? (_hovering
+                    ? logo
+                    : ColorFiltered(
+                        colorFilter: const ColorFilter.matrix(
+                          _kGreyscaleMatrix,
+                        ),
+                        child: logo,
+                      ))
               : _NameFallback(name: widget.partner.name),
         ),
       ),
@@ -171,7 +201,11 @@ class _NameFallback extends StatelessWidget {
       textAlign: TextAlign.center,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.captionSlate),
+      style: GoogleFonts.montserrat(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w500,
+        color: AppColors.captionSlate,
+      ),
     );
   }
 }

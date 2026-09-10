@@ -76,7 +76,10 @@ class _VideosScreenState extends State<VideosScreen> {
           child: Obx(() {
             if (ctrl.isLoading.value && ctrl.videos.isEmpty) {
               return const Center(
-                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(_kDark)),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(_kDark),
+                ),
               );
             }
 
@@ -92,10 +95,13 @@ class _VideosScreenState extends State<VideosScreen> {
             final hero = ctrl.featuredVideos.isNotEmpty
                 ? ctrl.featuredVideos.first
                 : (ctrl.videos.isNotEmpty ? ctrl.videos.first : null);
-            final gridVideos = hero == null ? ctrl.videos : ctrl.videos.where((v) => v.id != hero.id).toList();
+            final gridVideos = hero == null
+                ? ctrl.videos
+                : ctrl.videos.where((v) => v.id != hero.id).toList();
 
             final visible = gridVideos.take(_visibleCount).toList();
-            final canViewMore = _visibleCount < gridVideos.length || ctrl.hasMore.value;
+            final canViewMore =
+                _visibleCount < gridVideos.length || ctrl.hasMore.value;
 
             return RefreshIndicator(
               color: _kDark,
@@ -110,11 +116,23 @@ class _VideosScreenState extends State<VideosScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Media Hub', style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.w700, color: _kDark)),
+                          Text(
+                            'Media Hub',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: _kDark,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             'Watch site walkthroughs, infrastructure updates, and industry interviews',
-                            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: _kSubtext, height: 1.4),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: _kSubtext,
+                              height: 1.4,
+                            ),
                           ),
                         ],
                       ),
@@ -129,14 +147,19 @@ class _VideosScreenState extends State<VideosScreen> {
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _FeaturedVideoSpotlight(video: hero, onTap: () => openVideo(context, hero)),
+                        child: _FeaturedVideoSpotlight(
+                          video: hero,
+                          onTap: () => openVideo(context, hero),
+                        ),
                       ),
                     ),
                   ],
 
                   // ── 3. YouTube grid, capped at 6 with a "view more" ──────
                   SliverToBoxAdapter(child: const SizedBox(height: 28)),
-                  SliverToBoxAdapter(child: _SectionTitleRow(title: 'Latest Video Coverage')),
+                  SliverToBoxAdapter(
+                    child: _SectionTitleRow(title: 'Latest Video Coverage'),
+                  ),
                   SliverToBoxAdapter(child: const SizedBox(height: 14)),
 
                   if (visible.isEmpty && !ctrl.isLoading.value)
@@ -144,7 +167,13 @@ class _VideosScreenState extends State<VideosScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: Text('No videos found.', style: GoogleFonts.montserrat(fontSize: 14, color: _kSubtext)),
+                          child: Text(
+                            'No videos found.',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              color: _kSubtext,
+                            ),
+                          ),
                         ),
                       ),
                     )
@@ -156,10 +185,15 @@ class _VideosScreenState extends State<VideosScreen> {
                           crossAxisCount: context.gridColumns,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
-                          childAspectRatio: context.gridColumns == 1 ? 1.5 : 0.86,
+                          childAspectRatio: context.gridColumns == 1
+                              ? 1.5
+                              : 0.86,
                         ),
                         delegate: SliverChildBuilderDelegate(
-                          (_, i) => VideoCard(video: visible[i], onTap: () => openVideo(context, visible[i])),
+                          (_, i) => VideoCard(
+                            video: visible[i],
+                            onTap: () => openVideo(context, visible[i]),
+                          ),
                           childCount: visible.length,
                         ),
                       ),
@@ -183,12 +217,17 @@ class _VideosScreenState extends State<VideosScreen> {
                   SliverToBoxAdapter(child: const SizedBox(height: 8)),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 20,
+                      ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
                           border: Border.all(color: _kBorder),
-                          borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+                          borderRadius: BorderRadius.circular(
+                            AppRadius.sharpLg,
+                          ),
                         ),
                         child: const SocialLinksGrid(),
                       ),
@@ -248,7 +287,11 @@ class _PillTab extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  const _PillTab({required this.label, required this.isSelected, required this.onTap});
+  const _PillTab({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +358,11 @@ class _FeaturedVideoSpotlight extends StatelessWidget {
                         width: 64,
                         height: 64,
                         alignment: Alignment.center,
-                        child: const Icon(Icons.play_arrow_rounded, color: _kDark, size: 34),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: _kDark,
+                          size: 34,
+                        ),
                       ),
                     ),
                   ),
@@ -324,13 +371,22 @@ class _FeaturedVideoSpotlight extends StatelessWidget {
                       right: 10,
                       bottom: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xCC000000),
                           borderRadius: BorderRadius.circular(AppRadius.sharp),
                         ),
-                        child: Text(video.duration!,
-                            style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white)),
+                        child: Text(
+                          video.duration!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -345,17 +401,39 @@ class _FeaturedVideoSpotlight extends StatelessWidget {
         ],
         Text(
           video.title,
-          style: GoogleFonts.montserrat(fontSize: 21, fontWeight: FontWeight.w700, color: _kDark, height: 1.3),
+          style: GoogleFonts.montserrat(
+            fontSize: 21,
+            fontWeight: FontWeight.w700,
+            color: _kDark,
+            height: 1.3,
+          ),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             const Icon(Icons.smart_display_rounded, size: 14, color: _kSubtext),
             const SizedBox(width: 5),
-            Text('Mjengo Hub', style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
+            Text(
+              'Mjengo Hub',
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w400,
+                color: _kSubtext,
+              ),
+            ),
             if (video.publishedAt != null) ...[
-              Text('  ·  ', style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext)),
-              Text(_formatDate(video.publishedAt!), style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w400, color: _kSubtext)),
+              Text(
+                '  ·  ',
+                style: GoogleFonts.montserrat(fontSize: 12.5, color: _kSubtext),
+              ),
+              Text(
+                _formatDate(video.publishedAt!),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w400,
+                  color: _kSubtext,
+                ),
+              ),
             ],
           ],
         ),
@@ -365,7 +443,12 @@ class _FeaturedVideoSpotlight extends StatelessWidget {
             video.description,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w400, color: const Color(0xFF334155), height: 1.5),
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF334155),
+              height: 1.5,
+            ),
           ),
         ],
       ],
@@ -381,10 +464,18 @@ class _CategoryPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: _kDark, borderRadius: BorderRadius.circular(AppRadius.sharp)),
+      decoration: BoxDecoration(
+        color: _kDark,
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+      ),
       child: Text(
         label.toUpperCase(),
-        style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 0.4),
+        style: GoogleFonts.montserrat(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: Colors.white,
+          letterSpacing: 0.4,
+        ),
       ),
     );
   }
@@ -404,7 +495,14 @@ class _SectionTitleRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Text(title, style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w700, color: _kDark)),
+          Text(
+            title,
+            style: GoogleFonts.montserrat(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: _kDark,
+            ),
+          ),
           const SizedBox(width: 10),
           const _YoutubeBadge(),
         ],
@@ -430,7 +528,15 @@ class _YoutubeBadge extends StatelessWidget {
         children: [
           const Icon(Icons.smart_display_rounded, size: 12, color: _kYT),
           const SizedBox(width: 4),
-          Text('YOUTUBE', style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFFCC0000), letterSpacing: 0.5)),
+          Text(
+            'YOUTUBE',
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFFCC0000),
+              letterSpacing: 0.5,
+            ),
+          ),
         ],
       ),
     );
@@ -463,11 +569,18 @@ class _ViewMoreButton extends StatelessWidget {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
                   )
                 : Text(
                     'View More Videos',
-                    style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w600, color: Colors.white),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
           ),
         ),
@@ -510,8 +623,15 @@ class VideoCard extends StatelessWidget {
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.45), shape: BoxShape.circle),
-                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
                   ),
                   if (video.duration != null)
@@ -519,13 +639,22 @@ class VideoCard extends StatelessWidget {
                       right: 6,
                       bottom: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xCC000000),
                           borderRadius: BorderRadius.circular(AppRadius.sharp),
                         ),
-                        child: Text(video.duration!,
-                            style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
+                        child: Text(
+                          video.duration!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -536,7 +665,12 @@ class VideoCard extends StatelessWidget {
           if (video.category != null) ...[
             Text(
               video.category!.name.toUpperCase(),
-              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w500, color: _kSubtext, letterSpacing: 0.4),
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: _kSubtext,
+                letterSpacing: 0.4,
+              ),
             ),
             const SizedBox(height: 4),
           ],
@@ -544,13 +678,22 @@ class VideoCard extends StatelessWidget {
             video.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w600, color: _kDark, height: 1.3),
+            style: GoogleFonts.montserrat(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: _kDark,
+              height: 1.3,
+            ),
           ),
           const SizedBox(height: 4),
           if (video.publishedAt != null)
             Text(
               _formatDate(video.publishedAt!),
-              style: GoogleFonts.montserrat(fontSize: 11.5, fontWeight: FontWeight.w400, color: _kSubtext),
+              style: GoogleFonts.montserrat(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w400,
+                color: _kSubtext,
+              ),
             ),
         ],
       ),
@@ -577,7 +720,14 @@ class _PlaylistsSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Site Walkthroughs & Playlists', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w700, color: _kDark)),
+            child: Text(
+              'Site Walkthroughs & Playlists',
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: _kDark,
+              ),
+            ),
           ),
           const SizedBox(height: 14),
           SizedBox(
@@ -587,7 +737,8 @@ class _PlaylistsSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: playlists.length,
               separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (_, i) => _PlaylistCard(playlist: playlists[i], ctrl: ctrl),
+              itemBuilder: (_, i) =>
+                  _PlaylistCard(playlist: playlists[i], ctrl: ctrl),
             ),
           ),
         ],
@@ -611,7 +762,10 @@ class _PlaylistCard extends StatelessWidget {
           width: 220,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            border: Border.all(color: isSelected ? _kDark : _kBorder, width: isSelected ? 1.5 : 1),
+            border: Border.all(
+              color: isSelected ? _kDark : _kBorder,
+              width: isSelected ? 1.5 : 1,
+            ),
             borderRadius: BorderRadius.circular(AppRadius.sharpLg),
           ),
           child: Column(
@@ -632,10 +786,22 @@ class _PlaylistCard extends StatelessWidget {
                       right: 6,
                       bottom: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xCC000000), borderRadius: BorderRadius.circular(AppRadius.sharp)),
-                        child: Text('${playlist.videoCount} videos',
-                            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xCC000000),
+                          borderRadius: BorderRadius.circular(AppRadius.sharp),
+                        ),
+                        child: Text(
+                          '${playlist.videoCount} videos',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -647,7 +813,12 @@ class _PlaylistCard extends StatelessWidget {
                   playlist.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(fontSize: 12.5, fontWeight: FontWeight.w600, color: _kDark, height: 1.3),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: _kDark,
+                    height: 1.3,
+                  ),
                 ),
               ),
             ],
@@ -673,7 +844,10 @@ void openVideo(BuildContext context, Video video) {
       builder: (_) => _VideoModal(video: video),
     );
   } else {
-    Get.to(() => VideoPlayerScreen(video: video), transition: Transition.cupertino);
+    Get.to(
+      () => VideoPlayerScreen(video: video),
+      transition: Transition.cupertino,
+    );
   }
 }
 
@@ -694,7 +868,11 @@ class _VideoModalState extends State<_VideoModal> {
     _controller = YoutubePlayerController.fromVideoId(
       videoId: widget.video.youtubeId,
       autoPlay: true,
-      params: const YoutubePlayerParams(mute: false, showControls: true, showFullscreenButton: true),
+      params: const YoutubePlayerParams(
+        mute: false,
+        showControls: true,
+        showFullscreenButton: true,
+      ),
     );
   }
 
@@ -712,7 +890,9 @@ class _VideoModalState extends State<_VideoModal> {
     return Dialog(
       backgroundColor: Colors.white,
       insetPadding: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sharpLg)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+      ),
       child: SizedBox(
         width: modalWidth,
         child: Column(
@@ -728,7 +908,11 @@ class _VideoModalState extends State<_VideoModal> {
                       widget.video.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w600, color: _kDark),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _kDark,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -739,7 +923,9 @@ class _VideoModalState extends State<_VideoModal> {
               ),
             ),
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppRadius.sharpLg)),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(AppRadius.sharpLg),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: YoutubePlayer(controller: _controller),
@@ -757,6 +943,19 @@ class _VideoModalState extends State<_VideoModal> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 String _formatDate(DateTime dt) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
 }

@@ -51,7 +51,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   bool _submitting = false;
   bool _submitted = false;
 
-  String get _slug => widget.slug ?? (Get.arguments is String ? Get.arguments as String : '');
+  String get _slug =>
+      widget.slug ?? (Get.arguments is String ? Get.arguments as String : '');
 
   @override
   void initState() {
@@ -62,8 +63,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   @override
   void dispose() {
     for (final c in [
-      _name, _email, _phone, _company,
-      _projectTitle, _description, _location, _timeline,
+      _name,
+      _email,
+      _phone,
+      _company,
+      _projectTitle,
+      _description,
+      _location,
+      _timeline,
     ]) {
       c.dispose();
     }
@@ -134,71 +141,77 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : s == null
-              ? _notFound()
-              : ContentWidth(
-                  child: ListView(
-                    padding: const EdgeInsets.only(bottom: 32),
-                    children: [
-                      if (s.image != null && s.image!.isNotEmpty)
-                        NetImage(url: s.image, height: 180, width: double.infinity),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              s.name,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 21,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                            if (s.basePrice != null && s.basePrice!.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                'From KES ${s.basePrice}',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.primaryBlue,
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 12),
-                            if ((s.detailedDescription ?? s.description) != null)
-                              Text(
-                                (s.detailedDescription ?? s.description)!,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 13.5,
-                                  height: 1.6,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                            _bullets(s.whyChooseTitle ?? 'Why choose us', s.benefits),
-                            _bullets('What is included', s.features),
-                            _bullets('How it works', s.process, numbered: true),
-                            const SizedBox(height: 24),
-                            if (_submitted) _success() else _form(s),
-                          ],
+          ? _notFound()
+          : ContentWidth(
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 32),
+                children: [
+                  if (s.image != null && s.image!.isNotEmpty)
+                    NetImage(url: s.image, height: 180, width: double.infinity),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.name,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textDark,
+                          ),
                         ),
-                      ),
-                    ],
+                        if (s.basePrice != null && s.basePrice!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            'From KES ${s.basePrice}',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primaryBlue,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                        if ((s.detailedDescription ?? s.description) != null)
+                          Text(
+                            (s.detailedDescription ?? s.description)!,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13.5,
+                              height: 1.6,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        _bullets(
+                          s.whyChooseTitle ?? 'Why choose us',
+                          s.benefits,
+                        ),
+                        _bullets('What is included', s.features),
+                        _bullets('How it works', s.process, numbered: true),
+                        const SizedBox(height: 24),
+                        if (_submitted) _success() else _form(s),
+                      ],
+                    ),
                   ),
-                ),
+                ],
+              ),
+            ),
     );
   }
 
   Widget _notFound() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            'This service could not be loaded.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(fontSize: 14, color: AppColors.textSubtle),
-          ),
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Text(
+        'This service could not be loaded.',
+        textAlign: TextAlign.center,
+        style: GoogleFonts.montserrat(
+          fontSize: 14,
+          color: AppColors.textSubtle,
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _bullets(String title, List<String> items, {bool numbered = false}) {
     if (items.isEmpty) return const SizedBox.shrink();
@@ -216,71 +229,77 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         ),
         const SizedBox(height: 10),
         ...items.asMap().entries.map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    numbered
-                        ? Text(
-                            '${e.key + 1}. ',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.primaryBlue,
-                            ),
-                          )
-                        : const Padding(
-                            padding: EdgeInsets.only(top: 5, right: 8),
-                            child: Icon(Icons.check_circle,
-                                size: 14, color: AppColors.primaryBlue),
-                          ),
-                    Expanded(
-                      child: Text(
-                        e.value,
+          (e) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                numbered
+                    ? Text(
+                        '${e.key + 1}. ',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
-                          height: 1.5,
-                          color: AppColors.textDark,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primaryBlue,
+                        ),
+                      )
+                    : const Padding(
+                        padding: EdgeInsets.only(top: 5, right: 8),
+                        child: Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: AppColors.primaryBlue,
                         ),
                       ),
+                Expanded(
+                  child: Text(
+                    e.value,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: AppColors.textDark,
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _success() => Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: AppColors.success.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+    ),
+    child: Column(
+      children: [
+        const Icon(Icons.check_circle, color: AppColors.success, size: 34),
+        const SizedBox(height: 10),
+        Text(
+          'Request received',
+          style: GoogleFonts.montserrat(
+            fontSize: 15.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
         ),
-        child: Column(
-          children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 34),
-            const SizedBox(height: 10),
-            Text(
-              'Request received',
-              style: GoogleFonts.montserrat(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Our team will get back to you shortly.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(fontSize: 13, color: AppColors.textSubtle),
-            ),
-          ],
+        const SizedBox(height: 6),
+        Text(
+          'Our team will get back to you shortly.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: AppColors.textSubtle,
+          ),
         ),
-      );
+      ],
+    ),
+  );
 
   Widget _form(ServiceOffering s) {
     return Container(
