@@ -68,12 +68,20 @@ class ProjectsScreen extends StatelessWidget {
   /// 'private_development' (Private Projects) — see ProjectsController.
   final String projectType;
 
-  const ProjectsScreen({
+  ProjectsScreen({
     super.key,
     this.title = 'Infrastructure Tracker',
     this.subtitle = "Kenya's roads, bridges & public infrastructure projects",
     this.projectType = 'infrastructure',
   });
+
+  /// Backs the hero banner's "Quick Search" pill — focuses the search field
+  /// already in [_buildHeader] rather than duplicating a second search UI.
+  /// A fresh instance per pushed route (this widget isn't reused across
+  /// navigations), not disposed — same pragmatic style already used
+  /// elsewhere in this file rather than introducing a StatefulWidget just
+  /// for one FocusNode.
+  final FocusNode _searchFocusNode = FocusNode();
 
   /// Applies an incoming `{'contractor'|'consultant'|'financier': name}`
   /// filter argument (from a tapped stakeholder chip on ProjectDetailScreen)
@@ -181,6 +189,8 @@ class ProjectsScreen extends StatelessWidget {
                     // pins, tap-to-preview bottom sheet. Never gated behind a
                     // toggle and never pushed below other content.
                     const SizedBox(height: 12),
+                    _buildHeroBanner(ctrl),
+                    _buildFeaturedStrip(ctrl),
                     _buildFilterControls(context, ctrl),
                     _buildActiveEntityFilters(ctrl),
                     const SizedBox(height: 12),
@@ -249,6 +259,7 @@ class ProjectsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             // Search bar
             TextField(
+              focusNode: _searchFocusNode,
               onSubmitted: (q) => ctrl.applyFilters(
                 status: ctrl.selectedStatus.value,
                 county: ctrl.selectedCounty.value,
@@ -291,6 +302,169 @@ class ProjectsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Full-bleed hero banner at the top of the feed — background is the
+  /// first currently-loaded featured project's image (falls back to a flat
+  /// gradient, not a bundled asset: no `hero_bg.jpg`-style placeholder is
+  /// registered in pubspec.yaml/assets/, so referencing one would crash).
+  Widget _buildHeroBanner(ProjectsController ctrl) {
+    return Obx(() {
+      final featured = ctrl.projects.where((p) => p.isFeatured).toList();
+      final bgUrl = featured.isNotEmpty ? featured.first.imageUrl : null;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            height: 240,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                NetImage(
+                  url: bgUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  placeholderColor: _kDark,
+                  errorBuilder: (_) => Container(color: _kDark),
+                ),
+                DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xD10F172A), Color(0xF00F172A)],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        title == 'Infrastructure Tracker'
+                            ? "Kenya's Infrastructure Projects"
+                            : title,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Track road, bridge, building, and public '
+                        'infrastructure projects: progress, milestones, '
+                        'and ratings.',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: const Color(0xFFCBD5E1),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              final submitted = await Get.toNamed(
+                                AppRoutes.submitProject,
+                                arguments: projectType,
+                              );
+                              if (submitted == true) ctrl.fetchAll();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0284C7),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              '+ Submit a Project',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          OutlinedButton(
+                            onPressed: () => FocusScope.of(
+                              Get.context!,
+                            ).requestFocus(_searchFocusNode),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.12,
+                              ),
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white24),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                            child: Text(
+                              '🔍 Quick Search',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  /// Top-3 featured projects from the currently-loaded page (derived from
+  /// `ctrl.projects`/`Project.isFeatured` rather than a separate fetch —
+  /// there's no dedicated "featured projects" endpoint, and
+  /// `getTrackerSections` returns a differently-shaped module set, not a
+  /// flat featured list). Hidden entirely when none of the loaded rows are
+  /// featured, rather than showing an empty section.
+  Widget _buildFeaturedStrip(ProjectsController ctrl) {
+    return Obx(() {
+      final featured = ctrl.projects
+          .where((p) => p.isFeatured)
+          .take(3)
+          .toList();
+      if (featured.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Featured Projects',
+              style: GoogleFonts.montserrat(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: _kDark,
+              ),
+            ),
+            const SizedBox(height: 10),
+            for (final project in featured) ...[
+              _FeaturedProjectRowCard(project: project),
+              const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      );
+    });
   }
 
   /// Dismissible chip bar for stakeholder filters arriving from a tapped
@@ -581,6 +755,120 @@ class ProjectsScreen extends StatelessWidget {
         children: ctrl.projects
             .map((p) => _ProjectListTile(project: p))
             .toList(),
+      ),
+    );
+  }
+}
+
+// ── Featured strip row card (compact, under the hero banner) ──────────────
+
+class _FeaturedProjectRowCard extends StatelessWidget {
+  final Project project;
+  const _FeaturedProjectRowCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            NetImage(
+              url: project.imageUrl,
+              width: 76,
+              height: 76,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE0F2FE),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          project.statusLabel.toUpperCase(),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0284C7),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${project.progressPercent}%',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    project.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  if (project.county != null || project.location != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '📍 ${project.county ?? project.location}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    height: 4,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        value: project.progressPercent / 100,
+                        backgroundColor: const Color(0xFFE2E8F0),
+                        valueColor: const AlwaysStoppedAnimation(
+                          Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

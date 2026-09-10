@@ -19,7 +19,7 @@ class PrivateProjectsScreen extends StatelessWidget {
   const PrivateProjectsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) => const ProjectsScreen(
+  Widget build(BuildContext context) => ProjectsScreen(
     projectType: 'private_development',
     title: "Private Projects",
     subtitle: 'Malls, business parks, estates & mixed-use developments',

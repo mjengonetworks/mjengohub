@@ -92,7 +92,7 @@ class AppRoutes {
     GetPage(name: articleDetail, page: () => const ArticleDetailScreen()),
 
     // Projects
-    GetPage(name: projects, page: () => const ProjectsScreen()),
+    GetPage(name: projects, page: () => ProjectsScreen()),
     GetPage(
       name: projectDetail,
       page: () {

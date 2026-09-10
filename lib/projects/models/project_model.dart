@@ -453,6 +453,15 @@ class Project {
   final String? startDate;
   final String? expectedEndDate;
   final String? createdAt;
+
+  /// `updated_at` — unconfirmed against the live backend (no sampled
+  /// `GET projects/{slug}` response has carried this key as of the
+  /// 2026-09 sessions), parsed defensively like `documents`/`stakeholders`
+  /// were before they went live. Null until/unless the API actually sends
+  /// it; callers should fall back to [createdAt] rather than fabricate a
+  /// date.
+  final DateTime? updatedAt;
+
   // Present on every list row (see api.py's _project_dict) — Built History
   // and Africa & World are filtered views over this same Project row, not
   // separate content types (models.py: is_built_history/geo_scope).
@@ -535,6 +544,7 @@ class Project {
     this.startDate,
     this.expectedEndDate,
     this.createdAt,
+    this.updatedAt,
     this.plusCode,
     this.isLegacy = false,
     this.isProjectOfWeek = false,
@@ -639,6 +649,9 @@ class Project {
     startDate: j['start_date'] as String?,
     expectedEndDate: j['expected_end_date'] as String?,
     createdAt: j['created_at'] as String?,
+    updatedAt: j['updated_at'] is String
+        ? DateTime.tryParse(j['updated_at'] as String)
+        : null,
     contractValue: (j['contract_value'] as num?)?.toDouble(),
     actualEndDate: j['actual_end_date'] as String?,
     milestones:
@@ -756,6 +769,7 @@ class Project {
     startDate: startDate,
     expectedEndDate: expectedEndDate,
     createdAt: createdAt,
+    updatedAt: updatedAt,
     plusCode: plusCode,
     isLegacy: isLegacy,
     isProjectOfWeek: isProjectOfWeek,

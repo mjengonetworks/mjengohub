@@ -1,5 +1,6 @@
 import '../../shared/widgets/social_share_modal.dart';
 // lib/projects/screens/project_detail_screen.dart
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -232,6 +233,8 @@ class ProjectDetailScreen extends StatelessWidget {
                           height: 1.25,
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      _AttributionLine(project: project),
                       const SizedBox(height: 8),
                       if (project.county != null || project.location != null)
                         Text(
@@ -441,15 +444,6 @@ class ProjectDetailScreen extends StatelessWidget {
                 _ActionsCard(project: project),
 
                 const SizedBox(height: 8),
-
-                // ── Attribution — who submitted / published this project.
-                // Hidden entirely when the backend has nothing to say (no
-                // submitter, no publisher) rather than showing an empty
-                // banner ─────────────────────────────────────────────────
-                if (project.attribution?.hasContent == true) ...[
-                  _AttributionBanner(attribution: project.attribution!),
-                  const SizedBox(height: 8),
-                ],
 
                 // ── Discussion ───────────────────────────────────────────────
                 Container(
@@ -2336,42 +2330,105 @@ class _StakeholderChip extends StatelessWidget {
   }
 }
 
-// ── Attribution — submitter/publisher banner, hidden when neither is set ──
-class _AttributionBanner extends StatelessWidget {
-  final ProjectAttribution attribution;
-  const _AttributionBanner({required this.attribution});
+// ── Attribution line — "Submitted by X · Published by Y · Last Updated D
+// MMMM YYYY", directly under the hero title. Replaces the former
+// _AttributionBanner (was a standalone card lower in the body). Names are
+// tappable only when the backend actually gave us a resolvable user id
+// (`UserProfileSummary.id`) — most sampled projects only carry a bare name
+// string via `ProjectAttribution`, with no id/slug to route to, so those
+// render as plain text rather than a dead link (see project memory: entity/
+// user taps only go live once a real identifier is confirmed present).
+class _AttributionLine extends StatelessWidget {
+  final Project project;
+  const _AttributionLine({required this.project});
 
   @override
   Widget build(BuildContext context) {
-    final submittedText = attribution.isAnonymous
-        ? 'Submitted Anonymously'
-        : (attribution.submittedBy != null
-              ? 'Submitted by ${attribution.submittedBy}'
-              : null);
+    final attribution = project.attribution;
+    final submittedName = attribution?.isAnonymous == true
+        ? null
+        : (attribution?.submittedBy ?? project.submittedByProfile?.name);
+    final publishedName =
+        attribution?.publishedBy ?? project.publishedByProfile?.name;
+    final isAnonymous = attribution?.isAnonymous == true;
 
-    return Container(
-      color: _kCard,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (submittedText != null)
-            Text(
-              submittedText,
-              style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext),
-            ),
-          if (attribution.publishedBy != null) ...[
-            if (submittedText != null) const SizedBox(height: 4),
-            Text(
-              'Published by ${attribution.publishedBy}',
-              style: GoogleFonts.montserrat(fontSize: 11.5, color: _kSubtext),
-            ),
-          ],
-        ],
-      ),
+    if (submittedName == null && publishedName == null && !isAnonymous) {
+      return const SizedBox.shrink();
+    }
+
+    final updated =
+        project.updatedAt ?? DateTime.tryParse(project.createdAt ?? '');
+    final submittedUserId = int.tryParse(project.submittedByProfile?.id ?? '');
+    final publishedUserId = int.tryParse(project.publishedByProfile?.id ?? '');
+
+    final nameStyle = GoogleFonts.montserrat(
+      color: const Color(0xFF0284C7),
+      fontWeight: FontWeight.w600,
+      fontSize: 13,
+    );
+    final plainStyle = GoogleFonts.montserrat(
+      color: const Color(0xFF64748B),
+      fontSize: 13,
+    );
+
+    InlineSpan nameSpan(String label, String name, int? userId) {
+      if (userId == null) {
+        return TextSpan(text: '$label $name', style: nameStyle);
+      }
+      return TextSpan(
+        text: '$label $name',
+        style: nameStyle,
+        recognizer: TapGestureRecognizer()
+          ..onTap = () =>
+              Get.toNamed(AppRoutes.publicProfile, arguments: userId),
+      );
+    }
+
+    final spans = <InlineSpan>[];
+    if (isAnonymous) {
+      spans.add(TextSpan(text: 'Submitted anonymously', style: plainStyle));
+    } else if (submittedName != null) {
+      spans.add(nameSpan('Submitted by', submittedName, submittedUserId));
+    }
+    if (publishedName != null) {
+      if (spans.isNotEmpty) spans.add(TextSpan(text: ' · ', style: plainStyle));
+      spans.add(nameSpan('Published by', publishedName, publishedUserId));
+    }
+    if (updated != null) {
+      if (spans.isNotEmpty) spans.add(TextSpan(text: ' · ', style: plainStyle));
+      spans.add(
+        TextSpan(
+          text: 'Last Updated ${_formatFullDate(updated)}',
+          style: plainStyle,
+        ),
+      );
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }
+
+const _kMonthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+String _formatFullDate(DateTime dt) =>
+    '${dt.day} ${_kMonthNames[dt.month - 1]} ${dt.year}';
 
 // ── Quick Facts strip — compact stat chips under the hero ──────────────────
 //
