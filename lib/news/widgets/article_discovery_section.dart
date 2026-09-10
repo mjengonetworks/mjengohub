@@ -325,12 +325,19 @@ class _SectionHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        title,
-        style: GoogleFonts.montserrat(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textDark,
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 8),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
+        ),
+        child: Text(
+          title.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFFF97316),
+            letterSpacing: 1.0,
+          ),
         ),
       ),
     );
@@ -373,10 +380,10 @@ class _RelatedArticleCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.montserrat(
-                  fontSize: 12.5,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
-                  height: 1.3,
+                  height: 1.35,
                 ),
               ),
             ),
@@ -424,8 +431,8 @@ class _TrendingRow extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
                   height: 1.35,
                 ),

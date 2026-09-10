@@ -18,7 +18,6 @@ import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/entity_parsing.dart';
 import '../../shared/utils/slugify.dart';
-import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/breadcrumb_bar.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/guest_gate_sheet.dart';
@@ -167,10 +166,14 @@ class ProjectDetailScreen extends StatelessWidget {
                 Positioned(
                   left: 16,
                   bottom: 16,
-                  child: HeroTextBadge(
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 7,
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -181,7 +184,7 @@ class ProjectDetailScreen extends StatelessWidget {
                           project.statusLabel.toUpperCase(),
                           style: GoogleFonts.montserrat(
                             fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                             letterSpacing: 0.6,
                           ),
@@ -577,9 +580,23 @@ class ProjectDetailScreen extends StatelessWidget {
   // Attribution (submitter/approving admin) is scoped out: submittedBy/
   // editedBy are bare user ids with no name-resolution endpoint anywhere in
   // this app, and there's no backend toggle for submitter-only display.
+  /// Suppresses placeholder/unset values ("N/A", "TBD", "-", ...) instead of
+  /// rendering them as if they were real data — matches the website's own
+  /// omission behavior for the Project Details fact grid.
+  bool _isValidInfo(String? value) {
+    if (value == null) return false;
+    final v = value.trim().toLowerCase();
+    return v.isNotEmpty &&
+        v != 'n/a' &&
+        v != 'tbd' &&
+        v != 'null' &&
+        v != 'none' &&
+        v != '-';
+  }
+
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
-    if (project.client != null) {
+    if (_isValidInfo(project.client?.name)) {
       rows.add(
         _DetailRow(
           project.projectType == 'private_development' ? 'Developer' : 'Client',
@@ -588,7 +605,7 @@ class ProjectDetailScreen extends StatelessWidget {
         ),
       );
     }
-    if (project.contractor != null) {
+    if (_isValidInfo(project.contractor)) {
       rows.add(
         _DetailRow.entities(
           'Contractor',
@@ -599,7 +616,7 @@ class ProjectDetailScreen extends StatelessWidget {
         ),
       );
     }
-    if (project.consultant != null) {
+    if (_isValidInfo(project.consultant)) {
       rows.add(
         _DetailRow.entities(
           'Consultant',
@@ -610,7 +627,7 @@ class ProjectDetailScreen extends StatelessWidget {
         ),
       );
     }
-    if (project.financier != null) {
+    if (_isValidInfo(project.financier)) {
       rows.add(
         _DetailRow.entities(
           'Financier',
@@ -1149,8 +1166,12 @@ class _RatingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _kCard,
-      padding: _kCardPad,
+      margin: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -2952,6 +2973,34 @@ class _DiscoverProjectsSectionState extends State<_DiscoverProjectsSection> {
   }
 }
 
+/// Uppercase orange section heading with a subtle bottom divider, shared by
+/// every sidebar discovery list on this screen (Related/Latest/Trending
+/// Projects, Related Articles & Coverage) — matches the website's own
+/// sidebar heading treatment.
+class _SidebarSectionHeading extends StatelessWidget {
+  final String title;
+  const _SidebarSectionHeading(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 8),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
+      ),
+      child: Text(
+        title.toUpperCase(),
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: const Color(0xFFF97316),
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
 class _ProjectStrip extends StatelessWidget {
   final String title;
   final List<Project> projects;
@@ -2970,17 +3019,10 @@ class _ProjectStrip extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.headingSlate,
-            ),
-          ),
+          _SidebarSectionHeading(title),
           const SizedBox(height: 10),
           SizedBox(
-            height: 150,
+            height: 130,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: projects.length,
@@ -3021,10 +3063,10 @@ class _ProjectStripCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               child: SizedBox(
                 width: 130,
-                height: 84,
+                height: 60,
                 child: NetImage(
                   url: project.imageUrl,
                   fit: BoxFit.cover,
@@ -3038,9 +3080,9 @@ class _ProjectStripCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
-                fontSize: 12,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w700,
-                height: 1.3,
+                height: 1.35,
                 color: const Color(0xFF0F172A),
               ),
             ),
@@ -3116,14 +3158,7 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Related Articles & Coverage',
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.headingSlate,
-            ),
-          ),
+          const _SidebarSectionHeading('Related Articles & Coverage'),
           const SizedBox(height: 4),
           if (_loading)
             const Center(
@@ -3207,10 +3242,10 @@ class _RelatedArticleRow extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.headingSlate,
-                      height: 1.3,
+                      height: 1.35,
                     ),
                   ),
                   const SizedBox(height: 4),

@@ -177,7 +177,9 @@ class _ArticleBodyState extends State<_ArticleBody> {
         ),
 
         // 0: breadcrumb trail.
-        SliverToBoxAdapter(child: BreadcrumbBar(items: _breadcrumbItems())),
+        SliverToBoxAdapter(
+          child: _ArticleBreadcrumbBar(items: _breadcrumbItems()),
+        ),
 
         // 1-3: category pill, title, metadata row (weekday+date, read time).
         SliverToBoxAdapter(
@@ -552,6 +554,58 @@ class _SummaryCallout extends StatelessWidget {
   }
 }
 
+// -- Hardened single-line breadcrumb bar --------------------------------
+//
+// Unlike the shared BreadcrumbBar (horizontally-scrolling), this variant is
+// pinned to a fixed-height, non-scrolling row: fixed parent crumbs
+// ("Home" -> "Articles" -> category) plus an Expanded, ellipsized terminal
+// crumb for the article title, so the row can never wrap or overflow.
+class _ArticleBreadcrumbBar extends StatelessWidget {
+  final List<BreadcrumbItem> items;
+  const _ArticleBreadcrumbBar({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    final children = <Widget>[];
+    for (int i = 0; i < items.length; i++) {
+      if (i > 0) {
+        children.add(
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: Icon(
+              Icons.chevron_right,
+              size: 13,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        );
+      }
+      final item = items[i];
+      final isLast = i == items.length - 1;
+      final text = Text(
+        item.label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          color: const Color(0xFF94A3B8),
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        ),
+      );
+      final crumb = !isLast && item.onTap != null
+          ? GestureDetector(onTap: item.onTap, child: text)
+          : text;
+      children.add(isLast ? Expanded(child: crumb) : crumb);
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      color: const Color(0xFF0F172A),
+      child: Row(children: children),
+    );
+  }
+}
+
 class _CategoryPill extends StatelessWidget {
   final String name;
   const _CategoryPill({required this.name});
@@ -559,7 +613,7 @@ class _CategoryPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFF97316),
         borderRadius: BorderRadius.circular(20),
