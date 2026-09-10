@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../news/widgets/net_image.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/responsive.dart';
 import '../models/project_model.dart';
@@ -46,6 +47,12 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
   bool _loading = true;
 
   static final _regionKeys = _kRegions.keys.toList();
+
+  /// First loaded entry's photo backs the hero strip — there's no dedicated
+  /// "featured pan-African project" endpoint, same pragmatic fallback used
+  /// by BuiltHistoryScreen's hero strip.
+  String? get _heroImageUrl =>
+      _projects.isNotEmpty ? _projects.first.imageUrl : null;
 
   @override
   void initState() {
@@ -124,6 +131,9 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _AfricaWorldHeroStrip(imageUrl: _heroImageUrl),
+                  const SizedBox(height: 16),
+
                   // 1. Top interactive live map — the very first scrollable
                   // item, directly beneath the app bar (continent tabs live
                   // in the app bar itself). Never gated behind a toggle.
@@ -158,6 +168,75 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Slim 150px hero strip, matching BuiltHistoryScreen's _HeroStrip — kept
+/// local rather than shared since the two trackers' copy/imagery differ and
+/// there's no third caller to justify extracting a shared widget yet.
+class _AfricaWorldHeroStrip extends StatelessWidget {
+  final String? imageUrl;
+  const _AfricaWorldHeroStrip({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          height: 150,
+          width: double.infinity,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              NetImage(
+                url: imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                placeholderColor: AppColors.deepNavy,
+              ),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Color(0xDE000000), Color(0x8A000000)],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Africa & World Mega Projects',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Cross-border transport corridors, energy grids, '
+                      'and global engineering',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

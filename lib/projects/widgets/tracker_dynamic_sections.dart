@@ -11,9 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../news/widgets/net_image.dart';
 import '../../shared/theme/app_theme.dart';
 import '../models/project_model.dart';
 import '../models/tracker_sections_model.dart';
+import '../screens/project_detail_screen.dart';
 import '../screens/tracker_filtered_list_screen.dart';
 import '../services/projects_service.dart';
 import 'tracker_project_card.dart';
@@ -266,13 +268,110 @@ class _CategoryRow extends StatelessWidget {
             child: Column(
               children: [
                 for (final project in group.projects) ...[
-                  TrackerProjectCard(project: project, width: double.infinity),
+                  _CategoryListTile(project: project),
                   const SizedBox(height: 10),
                 ],
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Compact list row for "Browse by Category" groups (Roads, Trade, Sports,
+/// Buildings, etc.) — a larger thumbnail than a plain avatar, with the title
+/// given room to wrap to 2 lines rather than truncating early on multi-word
+/// category names.
+class _CategoryListTile extends StatelessWidget {
+  final Project project;
+  const _CategoryListTile({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.borderSlate),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: NetImage(
+                url: project.imageUrl,
+                width: 90,
+                height: 68,
+                fit: BoxFit.cover,
+                placeholderColor: const Color(0xFF1E3A5F),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    project.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  if ((project.county ?? project.location ?? project.country) !=
+                      null) ...[
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 11,
+                          color: AppColors.textSubtle,
+                        ),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            project.county ??
+                                project.location ??
+                                project.country!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10.5,
+                              color: AppColors.textSubtle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  Text(
+                    project.statusLabel,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.accentBlue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

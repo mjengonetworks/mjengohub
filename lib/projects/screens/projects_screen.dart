@@ -644,6 +644,12 @@ class ProjectsScreen extends StatelessWidget {
               ctrl.applyFilters(county: '');
             },
           ),
+        if (ctrl.selectedTypology.value.isNotEmpty)
+          (
+            'Typology',
+            ctrl.selectedTypology.value,
+            () => ctrl.selectedTypology.value = '',
+          ),
       ];
       if (active.isEmpty) return const SizedBox.shrink();
       return Padding(
@@ -726,88 +732,96 @@ class ProjectsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _LabeledFilterButton(
-                label: 'County',
-                value: ctrl.selectedCounties.isEmpty
-                    ? 'All 47 Counties'
-                    : '${ctrl.selectedCounties.length} selected',
-                icon: Icons.location_on_outlined,
-                onTap: () => _showCountySheet(context, ctrl),
-              ),
-              _LabeledFilterButton(
-                label: 'Sector',
-                value: ctrl.selectedSector.value.isEmpty
-                    ? 'All sectors'
-                    : ctrl.selectedSector.value,
-                icon: Icons.category_outlined,
-                onTap: () => _showSingleSelectSheet(
-                  context,
-                  title: 'Select Sector',
-                  options: ProjectsController.sectorOptions,
-                  selected: ctrl.selectedSector.value,
-                  onSelected: (value) => ctrl.applyFilters(sector: value),
+          if (projectType == 'private_development')
+            _buildPrivateFilterGrid(context, ctrl)
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _LabeledFilterButton(
+                  label: 'County',
+                  value: ctrl.selectedCounties.isEmpty
+                      ? 'All 47 Counties'
+                      : '${ctrl.selectedCounties.length} selected',
+                  icon: Icons.location_on_outlined,
+                  onTap: () => _showCountySheet(context, ctrl),
                 ),
-              ),
-              _LabeledFilterButton(
-                label: 'Project Status',
-                value: _statusLabel(ctrl.selectedStatus.value),
-                icon: Icons.timelapse_outlined,
-                onTap: () => _showSingleSelectSheet(
-                  context,
-                  title: 'Select Status',
-                  options: const [
-                    'Announced',
-                    'Under Construction',
-                    'Completed',
-                    'Stalled',
-                  ],
-                  values: const ['planned', 'ongoing', 'completed', 'stalled'],
-                  selected: ctrl.selectedStatus.value,
-                  onSelected: (value) => ctrl.applyFilters(status: value),
+                _LabeledFilterButton(
+                  label: 'Sector',
+                  value: ctrl.selectedSector.value.isEmpty
+                      ? 'All sectors'
+                      : ctrl.selectedSector.value,
+                  icon: Icons.category_outlined,
+                  onTap: () => _showSingleSelectSheet(
+                    context,
+                    title: 'Select Sector',
+                    options: ProjectsController.sectorOptions,
+                    selected: ctrl.selectedSector.value,
+                    onSelected: (value) => ctrl.applyFilters(sector: value),
+                  ),
                 ),
-              ),
-              _LabeledFilterButton(
-                label: 'Cost Tier',
-                value: _costTierLabel(ctrl.selectedCostTier.value),
-                icon: Icons.payments_outlined,
-                onTap: () => _showSingleSelectSheet(
-                  context,
-                  title: 'Select Cost Tier',
-                  options: const [
-                    'Under KES 100M',
-                    'KES 100M–500M',
-                    'KES 500M–1B',
-                    'KES 1B–5B',
-                    'KES 5B+',
-                    'Under USD 1M',
-                    'USD 1M–5M',
-                    'USD 5M–10M',
-                    'USD 10M+',
-                  ],
-                  values: const [
-                    '<100M',
-                    '100M-500M',
-                    '500M-1B',
-                    '1B-5B',
-                    '5B+',
-                    'usd_under_1m',
-                    'usd_1m_5m',
-                    'usd_5m_10m',
-                    'usd_10m_plus',
-                  ],
-                  selected: ctrl.selectedCostTier.value,
-                  onSelected: (value) {
-                    ctrl.selectedCostTier.value = value;
-                    ctrl.fetchAll();
-                  },
+                _LabeledFilterButton(
+                  label: 'Project Status',
+                  value: _statusLabel(ctrl.selectedStatus.value),
+                  icon: Icons.timelapse_outlined,
+                  onTap: () => _showSingleSelectSheet(
+                    context,
+                    title: 'Select Status',
+                    options: const [
+                      'Announced',
+                      'Under Construction',
+                      'Completed',
+                      'Stalled',
+                    ],
+                    values: const [
+                      'planned',
+                      'ongoing',
+                      'completed',
+                      'stalled',
+                    ],
+                    selected: ctrl.selectedStatus.value,
+                    onSelected: (value) => ctrl.applyFilters(status: value),
+                  ),
                 ),
-              ),
-            ],
-          ),
+                _LabeledFilterButton(
+                  label: 'Cost Tier',
+                  value: _costTierLabel(ctrl.selectedCostTier.value),
+                  icon: Icons.payments_outlined,
+                  onTap: () => _showSingleSelectSheet(
+                    context,
+                    title: 'Select Cost Tier',
+                    options: const [
+                      'Under KES 100M',
+                      'KES 100M–500M',
+                      'KES 500M–1B',
+                      'KES 1B–5B',
+                      'KES 5B+',
+                      'Under USD 1M',
+                      'USD 1M–5M',
+                      'USD 5M–10M',
+                      'USD 10M+',
+                    ],
+                    values: const [
+                      '<100M',
+                      '100M-500M',
+                      '500M-1B',
+                      '1B-5B',
+                      '5B+',
+                      'usd_under_1m',
+                      'usd_1m_5m',
+                      'usd_5m_10m',
+                      'usd_10m_plus',
+                    ],
+                    selected: ctrl.selectedCostTier.value,
+                    onSelected: (value) {
+                      ctrl.selectedCostTier.value = value;
+                      ctrl.fetchAll();
+                    },
+                  ),
+                ),
+              ],
+            ),
           if (ctrl.activeFilterCount > 0) ...[
             const SizedBox(height: 10),
             Text(
@@ -823,6 +837,222 @@ class ProjectsScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// Private Projects' filter architecture — a compact 2-column grid rather
+  /// than infrastructure's wrapping chip row, with more facets (typology,
+  /// developer/architect/contractor, sort) matching the web's Private
+  /// Developments Tracker filter panel. "Scope" (National/County/Regional)
+  /// from the web spec is intentionally not included here: `Project` has no
+  /// server-side scope column (only `county`, already covered by the County
+  /// facet below), so a Scope filter would be decorative rather than real —
+  /// same reasoning `_BuildingsTaxonomyFilter`'s doc comment gives for
+  /// keeping Typology client-side instead of a fabricated server param.
+  Widget _buildPrivateFilterGrid(
+    BuildContext context,
+    ProjectsController ctrl,
+  ) {
+    return GridView.count(
+      crossAxisCount: 2,
+      childAspectRatio: 3.2,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _LabeledFilterButton(
+          label: 'Typology',
+          value: ctrl.selectedTypology.value.isEmpty
+              ? 'All Typologies'
+              : ctrl.selectedTypology.value,
+          icon: Icons.apartment_outlined,
+          onTap: () => _showTypologySheet(context, ctrl),
+        ),
+        _LabeledFilterButton(
+          label: 'Status',
+          value: _privateStatusLabel(ctrl.selectedStatus.value),
+          icon: Icons.timelapse_outlined,
+          onTap: () => _showSingleSelectSheet(
+            context,
+            title: 'Select Status',
+            options: const [
+              'Planning',
+              'Under Construction',
+              'Completed',
+              'Stalled',
+            ],
+            values: const ['planned', 'ongoing', 'completed', 'stalled'],
+            selected: ctrl.selectedStatus.value,
+            onSelected: (value) => ctrl.applyFilters(status: value),
+          ),
+        ),
+        _LabeledFilterButton(
+          label: 'County',
+          value: ctrl.selectedCounties.isEmpty
+              ? 'All 47 Counties'
+              : '${ctrl.selectedCounties.length} selected',
+          icon: Icons.location_on_outlined,
+          onTap: () => _showCountySheet(context, ctrl),
+        ),
+        _LabeledFilterButton(
+          label: 'Developer / Client',
+          value: ctrl.selectedClientName.value.isNotEmpty
+              ? ctrl.selectedClientName.value
+              : (ctrl.selectedClient.value.isEmpty
+                    ? 'All Developers'
+                    : ctrl.selectedClient.value),
+          icon: Icons.business_outlined,
+          onTap: () => _showClientSheet(context, ctrl),
+        ),
+        _LabeledFilterButton(
+          label: 'Architect / Consultant',
+          value: ctrl.selectedConsultant.value.isEmpty
+              ? 'Any Consultant'
+              : ctrl.selectedConsultant.value,
+          icon: Icons.architecture_outlined,
+          onTap: () => _showFreeTextSheet(
+            context,
+            title: 'Architect / Consultant',
+            hint: 'e.g. Planet Architects',
+            initial: ctrl.selectedConsultant.value,
+            onApply: (value) => ctrl.applyFilters(consultant: value),
+          ),
+        ),
+        _LabeledFilterButton(
+          label: 'Main Contractor',
+          value: ctrl.selectedContractor.value.isEmpty
+              ? 'Any Contractor'
+              : ctrl.selectedContractor.value,
+          icon: Icons.engineering_outlined,
+          onTap: () => _showFreeTextSheet(
+            context,
+            title: 'Main Contractor',
+            hint: 'e.g. China Wu Yi',
+            initial: ctrl.selectedContractor.value,
+            onApply: (value) => ctrl.applyFilters(contractor: value),
+          ),
+        ),
+        _LabeledFilterButton(
+          label: 'Cost Range',
+          value: _costTierLabel(ctrl.selectedCostTier.value),
+          icon: Icons.payments_outlined,
+          onTap: () => _showSingleSelectSheet(
+            context,
+            title: 'Select Cost Range',
+            options: const [
+              'Under KES 100M',
+              'KES 100M–500M',
+              'KES 500M–1B',
+              'KES 1B–5B',
+              'KES 5B+',
+              'Under USD 1M',
+              'USD 1M–5M',
+              'USD 5M–10M',
+              'USD 10M+',
+            ],
+            values: const [
+              '<100M',
+              '100M-500M',
+              '500M-1B',
+              '1B-5B',
+              '5B+',
+              'usd_under_1m',
+              'usd_1m_5m',
+              'usd_5m_10m',
+              'usd_10m_plus',
+            ],
+            selected: ctrl.selectedCostTier.value,
+            onSelected: (value) {
+              ctrl.selectedCostTier.value = value;
+              ctrl.fetchAll();
+            },
+          ),
+        ),
+        _LabeledFilterButton(
+          label: 'Sort Order',
+          value: ctrl.selectedSort.value == 'trending' ? 'Trending' : 'Default',
+          icon: Icons.sort_rounded,
+          onTap: () => _showSingleSelectSheet(
+            context,
+            title: 'Sort Order',
+            options: const ['Default', 'Trending'],
+            values: const ['', 'trending'],
+            selected: ctrl.selectedSort.value,
+            onSelected: (value) => ctrl.applyFilters(sort: value),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showTypologySheet(
+    BuildContext context,
+    ProjectsController ctrl,
+  ) async {
+    final options = [
+      ...BuildingsTaxonomy.subcategories,
+      ...BuildingsTaxonomy.types,
+    ];
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _SearchableSelectSheet(
+        title: 'Select Typology',
+        options: options,
+        selected: ctrl.selectedTypology.value,
+        onSelected: (value) {
+          Navigator.pop(sheetContext);
+          ctrl.selectedTypology.value = value;
+        },
+      ),
+    );
+  }
+
+  Future<void> _showClientSheet(
+    BuildContext context,
+    ProjectsController ctrl,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _ClientSelectSheet(
+        selectedSlug: ctrl.selectedClient.value,
+        onSelected: (slug, name) {
+          Navigator.pop(sheetContext);
+          ctrl.applyFilters(client: slug, clientName: name);
+        },
+      ),
+    );
+  }
+
+  Future<void> _showFreeTextSheet(
+    BuildContext context, {
+    required String title,
+    required String hint,
+    required String initial,
+    required ValueChanged<String> onApply,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _FreeTextFilterSheet(
+        title: title,
+        hint: hint,
+        initial: initial,
+        onApply: (value) {
+          Navigator.pop(sheetContext);
+          onApply(value);
+        },
+      ),
+    );
+  }
+
+  String _privateStatusLabel(String status) => switch (status) {
+    'planned' => 'Planning',
+    'ongoing' => 'Under Construction',
+    'completed' => 'Completed',
+    'stalled' => 'Stalled',
+    _ => 'All statuses',
+  };
 
   String _statusLabel(String status) => switch (status) {
     'planned' => 'Announced',
@@ -890,7 +1120,15 @@ class ProjectsScreen extends StatelessWidget {
   }
 
   Widget _buildProjectsGrid(ProjectsController ctrl) {
-    if (ctrl.projects.isEmpty) {
+    final visible = ctrl.selectedTypology.value.isEmpty
+        ? ctrl.projects
+        : ctrl.projects
+              .where(
+                (p) =>
+                    BuildingsTaxonomy.matches(p, ctrl.selectedTypology.value),
+              )
+              .toList();
+    if (visible.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(32),
         child: Center(
@@ -904,9 +1142,7 @@ class ProjectsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        children: ctrl.projects
-            .map((p) => _ProjectListTile(project: p))
-            .toList(),
+        children: visible.map((p) => _ProjectListTile(project: p)).toList(),
       ),
     );
   }
@@ -1692,6 +1928,176 @@ class _SearchableMultiSelectSheetState
                   child: const Text('Apply County Filter'),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Developer/Client picker for Private Projects' filter grid — client is a
+/// slug-based server filter (see ProjectsService.clientSlug), so this needs
+/// a real name→slug list rather than free text; `GET clients` is the only
+/// source for that.
+class _ClientSelectSheet extends StatefulWidget {
+  final String selectedSlug;
+  final void Function(String slug, String name) onSelected;
+
+  const _ClientSelectSheet({
+    required this.selectedSlug,
+    required this.onSelected,
+  });
+
+  @override
+  State<_ClientSelectSheet> createState() => _ClientSelectSheetState();
+}
+
+class _ClientSelectSheetState extends State<_ClientSelectSheet> {
+  final _service = ProjectsService();
+  late final Future<List<ProjectClient>> _future = _service.getClients();
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * .72,
+        child: Column(
+          children: [
+            const ListTile(
+              title: Text(
+                'Select Developer / Client',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: Icon(Icons.close_rounded),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search_rounded),
+                  hintText: 'Search developers / clients',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<List<ProjectClient>>(
+                future: _future,
+                builder: (context, snap) {
+                  if (!snap.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    );
+                  }
+                  final visible = snap.data!
+                      .where(
+                        (c) =>
+                            c.name.toLowerCase().contains(_query.toLowerCase()),
+                      )
+                      .toList();
+                  if (visible.isEmpty) {
+                    return const Center(child: Text('No matches.'));
+                  }
+                  return RadioGroup<String>(
+                    groupValue: widget.selectedSlug,
+                    onChanged: (slug) {
+                      if (slug == null) return;
+                      final client = visible.firstWhere((c) => c.slug == slug);
+                      widget.onSelected(slug, client.name);
+                    },
+                    child: ListView.builder(
+                      itemCount: visible.length,
+                      itemBuilder: (_, i) => RadioListTile<String>(
+                        title: Text(visible[i].name),
+                        value: visible[i].slug,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Free-text entry for the stakeholder filters (`contractor`/`consultant`)
+/// that are plain strings server-side with no enumerated options list — see
+/// ProjectsController's doc comment on `selectedContractor`.
+class _FreeTextFilterSheet extends StatefulWidget {
+  final String title;
+  final String hint;
+  final String initial;
+  final ValueChanged<String> onApply;
+
+  const _FreeTextFilterSheet({
+    required this.title,
+    required this.hint,
+    required this.initial,
+    required this.onApply,
+  });
+
+  @override
+  State<_FreeTextFilterSheet> createState() => _FreeTextFilterSheetState();
+}
+
+class _FreeTextFilterSheetState extends State<_FreeTextFilterSheet> {
+  late final _controller = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 16 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.title,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              onSubmitted: (value) => widget.onApply(value.trim()),
+              decoration: InputDecoration(
+                hintText: widget.hint,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (widget.initial.isNotEmpty)
+                  TextButton(
+                    onPressed: () => widget.onApply(''),
+                    child: const Text('Clear'),
+                  ),
+                const Spacer(),
+                FilledButton(
+                  onPressed: () => widget.onApply(_controller.text.trim()),
+                  child: const Text('Apply'),
+                ),
+              ],
             ),
           ],
         ),

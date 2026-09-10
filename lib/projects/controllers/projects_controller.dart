@@ -58,6 +58,13 @@ class ProjectsController extends GetxController {
   /// and write [selectedStatus] directly instead.
   final selectedSort = ''.obs;
 
+  /// Private Projects' "Typology / Category" filter facet. There is no
+  /// server-side typology column on `Project` (only the free-text
+  /// `project_type`), so — same as `BuildingsTaxonomy` — this is matched
+  /// client-side against already-loaded rows rather than sent as a query
+  /// param. See [ProjectsScreen.filteredProjects].
+  final selectedTypology = ''.obs;
+
   static const sectorOptions = <String>[
     'Transport',
     'Energy',
@@ -110,6 +117,7 @@ class ProjectsController extends GetxController {
     selectedClient.value.isNotEmpty,
     selectedCategory.value.isNotEmpty,
     selectedUser.value.isNotEmpty,
+    selectedTypology.value.isNotEmpty,
   ].where((active) => active).length;
 
   /// True once any *entity* filter (as opposed to a plain display filter
@@ -249,6 +257,7 @@ class ProjectsController extends GetxController {
     selectedUser.value = '';
     selectedUserName.value = '';
     selectedSort.value = '';
+    selectedTypology.value = '';
     searchQuery.value = '';
     await fetchAll();
   }
