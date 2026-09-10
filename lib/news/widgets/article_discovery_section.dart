@@ -260,10 +260,7 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
             child: Column(
               children: [
                 for (final project in _showcaseProjects) ...[
-                  TrackerProjectCard(
-                    project: project,
-                    width: double.infinity,
-                  ),
+                  TrackerProjectCard(project: project, width: double.infinity),
                   const SizedBox(height: 10),
                 ],
               ],

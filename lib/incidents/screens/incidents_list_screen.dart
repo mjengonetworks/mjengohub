@@ -283,24 +283,21 @@ class _SearchBarState extends State<_SearchBar> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: TextField(
-              controller: _textCtrl,
-              onSubmitted: (_) => _submit(),
-              maxLines: 1,
-              textInputAction: TextInputAction.search,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                color: _kDark,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Search incidents…',
-                hintStyle: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  color: const Color(0xFF475569),
+                controller: _textCtrl,
+                onSubmitted: (_) => _submit(),
+                maxLines: 1,
+                textInputAction: TextInputAction.search,
+                style: GoogleFonts.montserrat(fontSize: 14, color: _kDark),
+                decoration: InputDecoration(
+                  hintText: 'Search incidents…',
+                  hintStyle: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    color: const Color(0xFF475569),
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
                 ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
               ),
             ),
           ),

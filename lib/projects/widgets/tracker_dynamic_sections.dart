@@ -266,10 +266,7 @@ class _CategoryRow extends StatelessWidget {
             child: Column(
               children: [
                 for (final project in group.projects) ...[
-                  TrackerProjectCard(
-                    project: project,
-                    width: double.infinity,
-                  ),
+                  TrackerProjectCard(project: project, width: double.infinity),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -339,10 +336,7 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
             child: Column(
               children: [
                 for (final project in window.projects) ...[
-                  TrackerProjectCard(
-                    project: project,
-                    width: double.infinity,
-                  ),
+                  TrackerProjectCard(project: project, width: double.infinity),
                   const SizedBox(height: 10),
                 ],
               ],

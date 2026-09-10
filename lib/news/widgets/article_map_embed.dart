@@ -67,7 +67,10 @@ class _MapCard extends StatelessWidget {
                   ),
                   child: const Text(
                     'Tap map to explore',
-                    style: TextStyle(fontSize: 11, color: AppColors.headingSlate),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.headingSlate,
+                    ),
                   ),
                 ),
               ),

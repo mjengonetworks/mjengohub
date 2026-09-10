@@ -35,101 +35,102 @@ class ProjectRouteMap extends StatelessWidget {
         child: SizedBox(
           height: 240,
           child: Stack(
-          children: [
-            FlutterMap(
-              options: MapOptions(
-                initialCameraFit: CameraFit.bounds(
-                  bounds: bounds,
-                  padding: const EdgeInsets.all(28),
-                ),
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-                ),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'ke.co.mjengohub.app',
-                ),
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: points,
-                      strokeWidth: 5,
-                      color: const Color(0xFFD97706),
-                    ),
-                  ],
-                ),
-                MarkerLayer(
-                  markers: [
-                    for (int i = 0; i < waypoints.length; i++)
-                      Marker(
-                        point: waypoints[i],
-                        width: 16,
-                        height: 16,
-                        child: _WaypointDot(index: i + 1),
-                      ),
-                    Marker(
-                      point: start,
-                      width: 30,
-                      height: 30,
-                      child: const _RoutePin(
-                        color: AppColors.success,
-                        icon: Icons.trip_origin,
-                      ),
-                    ),
-                    Marker(
-                      point: end,
-                      width: 30,
-                      height: 30,
-                      child: const _RoutePin(
-                        color: AppColors.danger,
-                        icon: Icons.flag_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-                const RichAttributionWidget(
-                  attributions: [
-                    TextSourceAttribution('OpenStreetMap contributors'),
-                  ],
-                ),
-              ],
-            ),
-            if (project.routeLengthKm != null)
-              Positioned(
-                left: 10,
-                top: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+            children: [
+              FlutterMap(
+                options: MapOptions(
+                  initialCameraFit: CameraFit.bounds(
+                    bounds: bounds,
+                    padding: const EdgeInsets.all(28),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppRadius.sharp),
-                    border: Border.all(color: AppColors.borderSlate),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1A000000),
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                  ),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'ke.co.mjengohub.app',
+                  ),
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: points,
+                        strokeWidth: 5,
+                        color: const Color(0xFFD97706),
                       ),
                     ],
                   ),
-                  child: Text(
-                    'Total Route Length: ${project.routeLengthKm!.toStringAsFixed(1)} km',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.headingSlate,
+                  MarkerLayer(
+                    markers: [
+                      for (int i = 0; i < waypoints.length; i++)
+                        Marker(
+                          point: waypoints[i],
+                          width: 16,
+                          height: 16,
+                          child: _WaypointDot(index: i + 1),
+                        ),
+                      Marker(
+                        point: start,
+                        width: 30,
+                        height: 30,
+                        child: const _RoutePin(
+                          color: AppColors.success,
+                          icon: Icons.trip_origin,
+                        ),
+                      ),
+                      Marker(
+                        point: end,
+                        width: 30,
+                        height: 30,
+                        child: const _RoutePin(
+                          color: AppColors.danger,
+                          icon: Icons.flag_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution('OpenStreetMap contributors'),
+                    ],
+                  ),
+                ],
+              ),
+              if (project.routeLengthKm != null)
+                Positioned(
+                  left: 10,
+                  top: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.sharp),
+                      border: Border.all(color: AppColors.borderSlate),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x1A000000),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      'Total Route Length: ${project.routeLengthKm!.toStringAsFixed(1)} km',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.headingSlate,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

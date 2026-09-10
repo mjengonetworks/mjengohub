@@ -131,12 +131,15 @@ class _ArticleBodyState extends State<_ArticleBody> {
       BreadcrumbItem('Home', onTap: _goToNewsTab),
       BreadcrumbItem('Articles', onTap: _goToNewsTab),
       if (category != null)
-        BreadcrumbItem(category.displayName, onTap: () {
-          try {
-            Get.find<DiscoverController>().selectCategory(category.slug);
-          } catch (_) {}
-          _goToNewsTab();
-        }),
+        BreadcrumbItem(
+          category.displayName,
+          onTap: () {
+            try {
+              Get.find<DiscoverController>().selectCategory(category.slug);
+            } catch (_) {}
+            _goToNewsTab();
+          },
+        ),
       BreadcrumbItem(widget.article.title),
     ];
   }
@@ -174,9 +177,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
         ),
 
         // 0: breadcrumb trail.
-        SliverToBoxAdapter(
-          child: BreadcrumbBar(items: _breadcrumbItems()),
-        ),
+        SliverToBoxAdapter(child: BreadcrumbBar(items: _breadcrumbItems())),
 
         // 1-3: category pill, title, metadata row (weekday+date, read time).
         SliverToBoxAdapter(
@@ -366,7 +367,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
               title: widget.article.title,
               slug: widget.article.slug,
               imageUrl: widget.article.imageUrl,
-                            category: widget.article.category?.displayName,
+              category: widget.article.category?.displayName,
               type: 'article',
               savedAt: DateTime.now(),
             ),

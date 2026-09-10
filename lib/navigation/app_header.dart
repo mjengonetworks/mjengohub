@@ -265,34 +265,38 @@ class _ProfileAvatarButton extends StatelessWidget {
           child: Container(
             width: 36,
             height: 36,
-        decoration: const BoxDecoration(
-          color: AppColors.accentBlue,
-          shape: BoxShape.circle,
-        ),
-        clipBehavior: Clip.antiAlias,
+            decoration: const BoxDecoration(
+              color: AppColors.accentBlue,
+              shape: BoxShape.circle,
+            ),
+            clipBehavior: Clip.antiAlias,
             child: auth == null
-            ? const Icon(Icons.person_rounded, color: Colors.white, size: 18)
-            : Obx(() {
-                final user = auth!.currentUser;
-                final photoUrl = user?.photoURL;
-                final initials = user?.initials ?? '?';
-                return NetImage(
-                  url: photoUrl,
-                  width: 32,
-                  height: 32,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_) => Center(
-                    child: Text(
-                      initials,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                ? const Icon(
+                    Icons.person_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  )
+                : Obx(() {
+                    final user = auth!.currentUser;
+                    final photoUrl = user?.photoURL;
+                    final initials = user?.initials ?? '?';
+                    return NetImage(
+                      url: photoUrl,
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_) => Center(
+                        child: Text(
+                          initials,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  }),
           ),
         ),
       ),

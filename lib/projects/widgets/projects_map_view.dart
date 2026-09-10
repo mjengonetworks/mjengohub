@@ -225,49 +225,54 @@ class ProjectsMapView extends StatelessWidget {
             children: [
               FlutterMap(
                 options: MapOptions(
-        initialCameraFit: located.length > 1
-            ? CameraFit.bounds(
-                bounds: bounds,
-                padding: const EdgeInsets.all(40),
-              )
-            : null,
-                  initialCenter: located.length == 1 ? points.first : kKenyaMapCenter,
+                  initialCameraFit: located.length > 1
+                      ? CameraFit.bounds(
+                          bounds: bounds,
+                          padding: const EdgeInsets.all(40),
+                        )
+                      : null,
+                  initialCenter: located.length == 1
+                      ? points.first
+                      : kKenyaMapCenter,
                   initialZoom: located.length == 1 ? 14 : 6,
                   interactionOptions: const InteractionOptions(
                     flags: InteractiveFlag.none,
                   ),
                 ),
                 children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'ke.co.mjengohub.app',
-        ),
-        PolylineLayer(
-          polylines: [
-            for (final project in located)
-              if ((project.routeCoordinates?.length ?? 0) >= 2)
-                Polyline(
-                  points: project.routeCoordinates!,
-                  strokeWidth: 5,
-                  color: const Color(0xFFD97706),
-                ),
-          ],
-        ),
-        MarkerLayer(
-          markers: located
-              .map(
-                (p) => Marker(
-                  point: LatLng(p.latitude!, p.longitude!),
-                  width: 34,
-                  height: 34,
-                  child: _ProjectPin(project: p),
-                ),
-              )
-              .toList(),
-        ),
-        const RichAttributionWidget(
-          attributions: [TextSourceAttribution('OpenStreetMap contributors')],
-        ),
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'ke.co.mjengohub.app',
+                  ),
+                  PolylineLayer(
+                    polylines: [
+                      for (final project in located)
+                        if ((project.routeCoordinates?.length ?? 0) >= 2)
+                          Polyline(
+                            points: project.routeCoordinates!,
+                            strokeWidth: 5,
+                            color: const Color(0xFFD97706),
+                          ),
+                    ],
+                  ),
+                  MarkerLayer(
+                    markers: located
+                        .map(
+                          (p) => Marker(
+                            point: LatLng(p.latitude!, p.longitude!),
+                            width: 34,
+                            height: 34,
+                            child: _ProjectPin(project: p),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution('OpenStreetMap contributors'),
+                    ],
+                  ),
                 ],
               ),
               Positioned(
@@ -284,7 +289,10 @@ class ProjectsMapView extends StatelessWidget {
                   ),
                   child: const Text(
                     'Tap map to explore',
-                    style: TextStyle(fontSize: 11, color: AppColors.headingSlate),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.headingSlate,
+                    ),
                   ),
                 ),
               ),
@@ -347,31 +355,31 @@ class ProjectMiniMap extends StatelessWidget {
         child: SizedBox(
           height: 240,
           child: FlutterMap(
-          options: MapOptions(
-            initialCenter: point,
-            initialZoom: 14,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.none,
+            options: MapOptions(
+              initialCenter: point,
+              initialZoom: 14,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.none,
+              ),
             ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'ke.co.mjengohub.app',
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: point,
+                    width: 34,
+                    height: 34,
+                    child: _ProjectPin(project: project),
+                  ),
+                ],
+              ),
+            ],
           ),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'ke.co.mjengohub.app',
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: point,
-                  width: 34,
-                  height: 34,
-                  child: _ProjectPin(project: project),
-                ),
-              ],
-            ),
-          ],
         ),
-      ),
       ),
     );
   }

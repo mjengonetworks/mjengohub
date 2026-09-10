@@ -645,7 +645,9 @@ class ProjectDetailScreen extends StatelessWidget {
         builder: (context, constraints) {
           final colWidth = (constraints.maxWidth - 12) / 2;
           return Wrap(
-            children: rows.map((r) => SizedBox(width: colWidth, child: r)).toList(),
+            children: rows
+                .map((r) => SizedBox(width: colWidth, child: r))
+                .toList(),
           );
         },
       ),

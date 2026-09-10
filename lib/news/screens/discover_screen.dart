@@ -101,24 +101,24 @@ class _SearchBar extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: TextField(
-              controller: ctrl.searchController,
-              onSubmitted: ctrl.onSearchSubmit,
-              maxLines: 1,
-              textInputAction: TextInputAction.search,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                color: const Color(0xFF111827),
-              ),
-              decoration: InputDecoration(
-                hintText: 'Search',
-                hintStyle: GoogleFonts.montserrat(
+                controller: ctrl.searchController,
+                onSubmitted: ctrl.onSearchSubmit,
+                maxLines: 1,
+                textInputAction: TextInputAction.search,
+                style: GoogleFonts.montserrat(
                   fontSize: 14,
-                  color: const Color(0xFF475569),
+                  color: const Color(0xFF111827),
                 ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    color: const Color(0xFF475569),
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
               ),
             ),
           ),
@@ -131,10 +131,10 @@ class _SearchBar extends StatelessWidget {
                       width: 40,
                       height: 40,
                       child: Icon(
-                          Icons.close_rounded,
-                          size: 18,
-                          color: Color(0xFF475569),
-                        ),
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Color(0xFF475569),
+                      ),
                     ),
                   )
                 : const SizedBox(width: 40, height: 40),

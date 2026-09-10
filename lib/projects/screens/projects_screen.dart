@@ -71,8 +71,10 @@ class ProjectsScreen extends StatelessWidget {
 
   ProjectsScreen({
     super.key,
-    this.title = 'Infrastructure Tracker',
-    this.subtitle = "Kenya's roads, bridges & public infrastructure projects",
+    this.title = "Kenya's Infrastructure Projects",
+    this.subtitle =
+        'Track road, bridge, building, and public infrastructure projects: '
+        'progress, milestones, and community ratings.',
     this.projectType = 'infrastructure',
   });
 
@@ -148,7 +150,7 @@ class ProjectsScreen extends StatelessWidget {
       return 'Projects by ${ctrl.selectedContractor.value}';
     }
     if (ctrl.selectedConsultant.value.isNotEmpty) {
-      return 'Projects by ${ctrl.selectedConsultant.value}';
+      return 'Projects Advised by ${ctrl.selectedConsultant.value}';
     }
     if (ctrl.selectedFinancier.value.isNotEmpty) {
       return 'Projects Financed by ${ctrl.selectedFinancier.value}';
@@ -176,7 +178,19 @@ class ProjectsScreen extends StatelessWidget {
       return 'Civil works executed by ${ctrl.selectedContractor.value}';
     }
     if (ctrl.selectedConsultant.value.isNotEmpty) {
-      return 'Design & consultancy works by ${ctrl.selectedConsultant.value}';
+      return 'Technical advisory and design by ${ctrl.selectedConsultant.value}';
+    }
+    if (ctrl.selectedFinancier.value.isNotEmpty) {
+      return 'Projects backed by ${ctrl.selectedFinancier.value}';
+    }
+    if (ctrl.selectedCounty.value.isNotEmpty) {
+      return 'Public works and development across ${ctrl.selectedCounty.value}';
+    }
+    if (ctrl.selectedUser.value.isNotEmpty) {
+      final name = ctrl.selectedUserName.value.isNotEmpty
+          ? ctrl.selectedUserName.value
+          : ctrl.selectedUser.value;
+      return 'Projects submitted and curated by $name';
     }
     return subtitle;
   }
@@ -204,7 +218,7 @@ class ProjectsScreen extends StatelessWidget {
           },
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(
-            'Submit',
+            '+ Submit Project',
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -1287,7 +1301,7 @@ class _ProgressBar extends StatelessWidget {
         ),
         const SizedBox(height: 3),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(2),
           child: SizedBox(
             height: 4,
             child: LinearProgressIndicator(
