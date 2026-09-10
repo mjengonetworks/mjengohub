@@ -14,6 +14,7 @@ import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/utils/entity_parsing.dart';
 import '../../shared/utils/slugify.dart';
 import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/coming_soon.dart';
@@ -251,10 +252,12 @@ class ProjectDetailScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       project.title,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                        color: _kDark,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0A2540),
                         height: 1.25,
                       ),
                     ),
@@ -504,6 +507,30 @@ class ProjectDetailScreen extends StatelessWidget {
     );
   }
 
+  /// Contractor/Consultant/Financier(free-text) taps go to the Project
+  /// Catalog filtered by that stakeholder string, matching the real
+  /// website's `.pd-chip` -> `/projects?contractor=...` behavior — not an
+  /// entity profile (see [_openEntity]), since these fields carry no real
+  /// entity slug. If a catalog screen for this project's tracker is already
+  /// on the nav stack (its ProjectsController is registered), the filter is
+  /// applied to that existing instance and the stack pops back to it rather
+  /// than pushing a duplicate route.
+  void _openStakeholderFilter(Project project, String field, String name) {
+    final route = project.projectType == 'private_development'
+        ? AppRoutes.privateProjects
+        : AppRoutes.projects;
+    if (Get.isRegistered<ProjectsController>(tag: project.projectType)) {
+      Get.find<ProjectsController>(tag: project.projectType).applyFilters(
+        contractor: field == 'contractor' ? name : null,
+        consultant: field == 'consultant' ? name : null,
+        financier: field == 'financier' ? name : null,
+      );
+      Get.until((r) => r.settings.name == route);
+    } else {
+      Get.toNamed(route, arguments: {field: name});
+    }
+  }
+
   // Attribution (submitter/approving admin) is scoped out: submittedBy/
   // editedBy are bare user ids with no name-resolution endpoint anywhere in
   // this app, and there's no backend toggle for submitter-only display.
@@ -520,28 +547,34 @@ class ProjectDetailScreen extends StatelessWidget {
     }
     if (project.contractor != null) {
       rows.add(
-        _DetailRow(
+        _DetailRow.entities(
           'Contractor',
           project.contractor!,
-          onTap: () => _openEntity(project.contractor!),
+          chips: parseEntities(project.contractor),
+          onTapChip: (name) =>
+              _openStakeholderFilter(project, 'contractor', name),
         ),
       );
     }
     if (project.consultant != null) {
       rows.add(
-        _DetailRow(
+        _DetailRow.entities(
           'Consultant',
           project.consultant!,
-          onTap: () => _openEntity(project.consultant!),
+          chips: parseEntities(project.consultant),
+          onTapChip: (name) =>
+              _openStakeholderFilter(project, 'consultant', name),
         ),
       );
     }
     if (project.financier != null) {
       rows.add(
-        _DetailRow(
+        _DetailRow.entities(
           'Financier',
           project.financier!,
-          onTap: () => _openEntity(project.financier!),
+          chips: parseEntities(project.financier),
+          onTapChip: (name) =>
+              _openStakeholderFilter(project, 'financier', name),
         ),
       );
     }
@@ -1065,7 +1098,11 @@ class _CompactRatingRow extends StatelessWidget {
     return Obx(() {
       final rated = ctrl.ratingSubmitted.value;
       return GestureDetector(
-        onTap: () => _openRatingSheet(context),
+        onTap: () => requireAuth(
+          context,
+          () => _openRatingSheet(context),
+          message: 'Sign in to rate this project',
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
@@ -1890,39 +1927,76 @@ class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
   final VoidCallback? onTap;
-  const _DetailRow(this.label, this.value, {this.onTap});
+
+  /// When set (contractor/consultant/financier — occasionally a joint
+  /// venture, e.g. "CRBC, China Roads"), each parsed name renders as its own
+  /// tappable chip via [onTapChip] instead of one chip over the raw string.
+  final List<String>? chips;
+  final void Function(String name)? onTapChip;
+
+  const _DetailRow(this.label, this.value, {this.onTap})
+    : chips = null,
+      onTapChip = null;
+
+  const _DetailRow.entities(
+    this.label,
+    this.value, {
+    required this.chips,
+    required this.onTapChip,
+  }) : onTap = null;
+
+  Widget _chip(String text, VoidCallback? onTap) {
+    // Matches the website's own `.pd-chip` treatment for Contractor/Status
+    // links.
+    if (onTap == null) {
+      return Text(
+        text,
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: _kDark,
+        ),
+      );
+    }
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppRadius.chip),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.chip),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFF0284C7)),
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+          ),
+          child: Text(
+            text,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0284C7),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Tappable stakeholder values render as a small bordered chip — matches
-    // the website's own `.pd-chip` treatment for Contractor/Status links.
-    final valueWidget = onTap == null
-        ? Text(
-            value,
-            style: GoogleFonts.montserrat(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _kDark,
-            ),
+    final entityChips = chips;
+    final valueWidget = entityChips != null
+        ? Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: entityChips.isEmpty
+                ? [_chip(value, null)]
+                : entityChips
+                      .map((name) => _chip(name, () => onTapChip!(name)))
+                      .toList(),
           )
-        : GestureDetector(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.borderSlate),
-                borderRadius: BorderRadius.circular(AppRadius.chip),
-              ),
-              child: Text(
-                value,
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.headingSlate,
-                ),
-              ),
-            ),
-          );
+        : _chip(value, onTap);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -2553,7 +2627,7 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
               color: AppColors.headingSlate,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           if (_loading)
             const Center(
               child: Padding(
@@ -2562,15 +2636,14 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
               ),
             )
           else
-            SizedBox(
-              height: 168,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _articles.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 10),
-                itemBuilder: (_, i) =>
-                    _RelatedArticleCard(article: _articles[i]),
-              ),
+            Column(
+              children: [
+                for (int i = 0; i < _articles.length; i++) ...[
+                  if (i > 0)
+                    const Divider(height: 1, color: AppColors.borderSlate),
+                  _RelatedArticleRow(article: _articles[i]),
+                ],
+              ],
             ),
         ],
       ),
@@ -2578,89 +2651,79 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
   }
 }
 
-class _RelatedArticleCard extends StatelessWidget {
+/// Compact 72x72-thumbnail row — no reading-minutes label, just the
+/// category badge, title, and a relative date (`Article.timeAgo`).
+class _RelatedArticleRow extends StatelessWidget {
   final Article article;
-  const _RelatedArticleCard({required this.article});
+  const _RelatedArticleRow({required this.article});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () =>
           Get.toNamed(AppRoutes.articleDetail, arguments: article.slug),
-      child: Container(
-        width: 190,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.sharp),
-          border: Border.all(color: AppColors.borderSlate),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  NetImage(
-                    url: article.imageUrl,
-                    fit: BoxFit.cover,
-                    placeholderColor: const Color(0xFF1E3A5F),
-                  ),
-                  if (article.category != null)
-                    Positioned(
-                      top: 6,
-                      left: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentBlue,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          article.category!.name.toUpperCase(),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 7.5,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 72,
+                height: 72,
+                child: NetImage(
+                  url: article.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8),
+            const SizedBox(width: 10),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (article.category != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentBlue,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        article.category!.name.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 4),
                   Text(
                     article.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 11.5,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w500,
                       color: AppColors.headingSlate,
                       height: 1.3,
                     ),
                   ),
-                  if (article.readTime != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '${article.readTime} min read',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 10,
-                        color: AppColors.captionSlate,
-                      ),
+                  const SizedBox(height: 4),
+                  Text(
+                    article.timeAgo,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10.5,
+                      color: AppColors.captionSlate,
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),

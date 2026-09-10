@@ -17,8 +17,21 @@ class ProjectsService {
     double? costUsdMax,
     String? sector,
     String? clientSlug,
+
+    /// Free-text stakeholder filters — `Project.contractor`/`consultant`/
+    /// `financier` are plain strings server-side (no entity linkage), so
+    /// these are matched as-is against that column, same family as
+    /// [county]/[sector]. Tapping a stakeholder name in the Info Card on
+    /// `ProjectDetailScreen` routes here rather than to an entity profile.
+    String? contractor,
+    String? consultant,
+    String? financier,
     String? q,
     bool featured = false,
+
+    /// 'trending' sorts by the backend's 48h trending window; left unset for
+    /// the default ordering everywhere else in the app.
+    String? sort,
 
     /// 'infrastructure' or 'private_development' — matches `Project.project_type`.
     /// Left unset to fetch across both (used nowhere in-app today; every
@@ -57,8 +70,18 @@ class ProjectsService {
       if (clientSlug != null && clientSlug.isNotEmpty) {
         query['client'] = clientSlug;
       }
+      if (contractor != null && contractor.isNotEmpty) {
+        query['contractor'] = contractor;
+      }
+      if (consultant != null && consultant.isNotEmpty) {
+        query['consultant'] = consultant;
+      }
+      if (financier != null && financier.isNotEmpty) {
+        query['financier'] = financier;
+      }
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';
+      if (sort != null && sort.isNotEmpty) query['sort'] = sort;
       if (projectType != null && projectType.isNotEmpty) {
         query['project_type'] = projectType;
       }

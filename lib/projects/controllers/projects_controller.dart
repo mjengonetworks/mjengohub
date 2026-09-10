@@ -24,6 +24,16 @@ class ProjectsController extends GetxController {
   final searchQuery = ''.obs;
   final selectedCostTier = ''.obs;
 
+  /// Free-text stakeholder filters — set when the catalog is opened from a
+  /// tapped entity link on ProjectDetailScreen's Info Card (Contractor/
+  /// Consultant/Financier are plain strings server-side, see
+  /// ProjectsService.getProjects). Distinct from selectedCounty/selectedSector
+  /// only in that they stack via the active-filter chip bar rather than a
+  /// filter-sheet control.
+  final selectedContractor = ''.obs;
+  final selectedConsultant = ''.obs;
+  final selectedFinancier = ''.obs;
+
   static const sectorOptions = <String>[
     'Transport',
     'Energy',
@@ -70,6 +80,9 @@ class ProjectsController extends GetxController {
     selectedSector.value.isNotEmpty,
     selectedStatus.value.isNotEmpty,
     selectedCostTier.value.isNotEmpty,
+    selectedContractor.value.isNotEmpty,
+    selectedConsultant.value.isNotEmpty,
+    selectedFinancier.value.isNotEmpty,
   ].where((active) => active).length;
 
   int _page = 1;
@@ -101,6 +114,9 @@ class ProjectsController extends GetxController {
       county: selectedCounty.value,
       counties: selectedCounties,
       sector: selectedSector.value,
+      contractor: selectedContractor.value,
+      consultant: selectedConsultant.value,
+      financier: selectedFinancier.value,
       costMin: costMin,
       costMax: costMax,
       costUsdMin: costUsdMin,
@@ -115,16 +131,26 @@ class ProjectsController extends GetxController {
     isLoading.value = false;
   }
 
+  /// Each param is applied only when explicitly passed (a null default
+  /// means "leave as-is") — an explicit `''` clears that specific filter.
+  /// This lets one filter change (e.g. a stakeholder chip's `[x]`) stack
+  /// with whatever else is already selected instead of resetting the rest.
   Future<void> applyFilters({
     String? status,
     String? county,
     String? sector,
+    String? contractor,
+    String? consultant,
+    String? financier,
     String? q,
   }) async {
-    selectedStatus.value = status ?? '';
-    selectedCounty.value = county ?? '';
-    selectedSector.value = sector ?? '';
-    searchQuery.value = q ?? '';
+    if (status != null) selectedStatus.value = status;
+    if (county != null) selectedCounty.value = county;
+    if (sector != null) selectedSector.value = sector;
+    if (contractor != null) selectedContractor.value = contractor;
+    if (consultant != null) selectedConsultant.value = consultant;
+    if (financier != null) selectedFinancier.value = financier;
+    if (q != null) searchQuery.value = q;
     await fetchAll();
   }
 
@@ -139,6 +165,9 @@ class ProjectsController extends GetxController {
     selectedCounties.clear();
     selectedSector.value = '';
     selectedCostTier.value = '';
+    selectedContractor.value = '';
+    selectedConsultant.value = '';
+    selectedFinancier.value = '';
     searchQuery.value = '';
     await fetchAll();
   }
@@ -153,6 +182,9 @@ class ProjectsController extends GetxController {
       county: selectedCounty.value,
       counties: selectedCounties,
       sector: selectedSector.value,
+      contractor: selectedContractor.value,
+      consultant: selectedConsultant.value,
+      financier: selectedFinancier.value,
       costMin: costMin,
       costMax: costMax,
       costUsdMin: costUsdMin,

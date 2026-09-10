@@ -74,12 +74,37 @@ class ProjectsScreen extends StatelessWidget {
     this.projectType = 'infrastructure',
   });
 
+  /// Applies an incoming `{'contractor'|'consultant'|'financier': name}`
+  /// filter argument (from a tapped stakeholder chip on ProjectDetailScreen)
+  /// once, without clobbering whatever else is already selected — see
+  /// ProjectsController.applyFilters. A no-op if this instance's controller
+  /// already has that exact filter applied (e.g. re-navigating here while
+  /// it's already on the stack), so it never re-triggers a fetch loop.
+  void _applyIncomingEntityArgs(ProjectsController ctrl) {
+    final args = Get.arguments;
+    if (args is! Map) return;
+    final contractor = args['contractor'] as String?;
+    final consultant = args['consultant'] as String?;
+    final financier = args['financier'] as String?;
+    final changed =
+        (contractor != null && contractor != ctrl.selectedContractor.value) ||
+        (consultant != null && consultant != ctrl.selectedConsultant.value) ||
+        (financier != null && financier != ctrl.selectedFinancier.value);
+    if (!changed) return;
+    ctrl.applyFilters(
+      contractor: contractor,
+      consultant: consultant,
+      financier: financier,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.put(
       ProjectsController(projectType: projectType),
       tag: projectType,
     );
+    _applyIncomingEntityArgs(ctrl);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -155,6 +180,7 @@ class ProjectsScreen extends StatelessWidget {
                   // toggle and never pushed below other content.
                   const SizedBox(height: 12),
                   _buildFilterControls(context, ctrl),
+                  _buildActiveEntityFilters(ctrl),
                   const SizedBox(height: 12),
 
                   // 2. Dedicated tracker control — status/county/client
@@ -262,6 +288,81 @@ class ProjectsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Dismissible chip bar for stakeholder filters arriving from a tapped
+  /// entity link on ProjectDetailScreen (e.g. "Contractor: CRBC [x]"). Each
+  /// chip clears only its own filter — the county/sector/status/cost-tier
+  /// controls above are untouched, so filters stack rather than reset.
+  Widget _buildActiveEntityFilters(ProjectsController ctrl) {
+    return Obx(() {
+      final active = <(String, String, VoidCallback)>[
+        if (ctrl.selectedContractor.value.isNotEmpty)
+          (
+            'Contractor',
+            ctrl.selectedContractor.value,
+            () => ctrl.applyFilters(contractor: ''),
+          ),
+        if (ctrl.selectedConsultant.value.isNotEmpty)
+          (
+            'Consultant',
+            ctrl.selectedConsultant.value,
+            () => ctrl.applyFilters(consultant: ''),
+          ),
+        if (ctrl.selectedFinancier.value.isNotEmpty)
+          (
+            'Financier',
+            ctrl.selectedFinancier.value,
+            () => ctrl.applyFilters(financier: ''),
+          ),
+      ];
+      if (active.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final (label, value, onClear) in active)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$label: $value',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0284C7),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: onClear,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 15,
+                        color: Color(0xFF0284C7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildFilterControls(BuildContext context, ProjectsController ctrl) {
@@ -750,11 +851,13 @@ class _ProgressBar extends StatelessWidget {
         const SizedBox(height: 3),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: value.clamp(0.0, 1.0),
-            minHeight: 5,
-            backgroundColor: _kDivider,
-            valueColor: const AlwaysStoppedAnimation<Color>(_kBlue),
+          child: SizedBox(
+            height: 4,
+            child: LinearProgressIndicator(
+              value: value.clamp(0.0, 1.0),
+              backgroundColor: _kDivider,
+              valueColor: const AlwaysStoppedAnimation<Color>(_kBlue),
+            ),
           ),
         ),
       ],
