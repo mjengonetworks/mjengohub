@@ -158146,7 +158146,7 @@ A.aEW.prototype={
 $0(){return B.AT},
 $S:247}
 A.aEX.prototype={
-$0(){return A.bUo("infrastructure","Kenya's roads, bridges & public infrastructure projects","Infrastructure Tracker")},
+$0(){return A.bUo("infrastructure","Track road, bridge, building, and public infrastructure projects: progress, milestones, and community ratings.","Kenya's Infrastructure Projects")},
 $S:971}
 A.aEY.prototype={
 $0(){$.L()
@@ -161558,7 +161558,7 @@ if(r.gk(0).length!==0){s=a.k2
 return"Projects by "+(s.gk(0).length!==0?s.gk(0):r.gk(0))}r=a.fy
 if(r.gk(0).length!==0)return"Projects by "+r.gk(0)
 r=a.go
-if(r.gk(0).length!==0)return"Projects by "+r.gk(0)
+if(r.gk(0).length!==0)return"Projects Advised by "+r.gk(0)
 r=a.id
 if(r.gk(0).length!==0)return"Projects Financed by "+r.gk(0)
 r=a.db
@@ -161571,14 +161571,20 @@ if(r.gk(0).length!==0){s=a.k2
 return"Projects commissioned or overseen by "+(s.gk(0).length!==0?s.gk(0):r.gk(0))}r=a.fy
 if(r.gk(0).length!==0)return"Civil works executed by "+r.gk(0)
 r=a.go
-if(r.gk(0).length!==0)return"Design & consultancy works by "+r.gk(0)
-return this.d},
+if(r.gk(0).length!==0)return"Technical advisory and design by "+r.gk(0)
+r=a.id
+if(r.gk(0).length!==0)return"Projects backed by "+r.gk(0)
+r=a.db
+if(r.gk(0).length!==0)return"Public works and development across "+r.gk(0)
+r=a.k4
+if(r.gk(0).length!==0){s=a.ok
+return"Projects submitted and curated by "+(s.gk(0).length!==0?s.gk(0):r.gk(0))}return this.d},
 q(a){var s,r=this,q=null,p=$.L(),o=r.e,n=t.Wo
 n=new A.HI(new A.hi(),o,A.n3(A.a([],t.th),t.hF),A.hk(!1),A.fG(""),A.fG(""),A.fG(""),A.n3(A.a([],t.s),t.N),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.fG(""),A.a([],t.EH),A.fg(q,q,q,t.X,t.xW),new A.eD(n),new A.eD(n),!1,!1)
 n.mm()
 s=A.mN(p,n,!1,o,t.DJ)
 r.aEf(s)
-o=A.bL2(B.av,q,q,B.Fb,A.k("Submit",q,q,q,q,A.l().$3$color$fontSize$fontWeight(B.h,13,B.n),q,q,q),new A.b1I(r,s))
+o=A.bL2(B.av,q,q,B.Fb,A.k("+ Submit Project",q,q,q,q,A.l().$3$color$fontSize$fontWeight(B.h,13,B.n),q,q,q),new A.b1I(r,s))
 return A.oJ(A.dG(q,B.dx,A.Y(A.a([B.hi,A.aM(new A.cP(new A.b1J(r,s,a),q),1)],t.p),B.l,B.f,B.i),q,o),B.jb,t.lu)},
 aEO(a,b){return A.Y(A.a([this.a8U(b),A.aM(new A.eo(new A.b1j(b),new A.cP(new A.b1k(this,b,a),null),null,t.WA),1)],t.p),B.l,B.f,B.i)},
 a8U(a){var s,r=this,q=null,p=A.aO(q,B.F5,B.v,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,new A.b1u(),q,q,q,q,q,q),o=a==null,n=t.p
@@ -161883,7 +161889,7 @@ $0(){return new A.km(this.a.c.c,null)},
 $S:53}
 A.aw5.prototype={
 q(a){var s=null,r=t.p
-return A.Y(A.a([A.al(A.a([A.k("Progress",s,s,s,s,A.l().$2$color$fontSize(B.aG,10),s,s,s),A.k(this.d,s,s,s,s,A.l().$3$color$fontSize$fontWeight(B.av,10,B.n),s,s,s)],r),B.l,B.c0,B.i,0),B.fb,A.dA(A.U(4),A.aW(A.acV(B.R,s,s,B.d.d5(this.c,0,1),B.tY),4,s),B.a0)],r),B.p,B.f,B.i)}}
+return A.Y(A.a([A.al(A.a([A.k("Progress",s,s,s,s,A.l().$2$color$fontSize(B.aG,10),s,s,s),A.k(this.d,s,s,s,s,A.l().$3$color$fontSize$fontWeight(B.av,10,B.n),s,s,s)],r),B.l,B.c0,B.i,0),B.fb,A.dA(A.U(2),A.aW(A.acV(B.R,s,s,B.d.d5(this.c,0,1),B.tY),4,s),B.a0)],r),B.p,B.f,B.i)}}
 A.az2.prototype={
 gaeZ(a){switch(this.c){case"completed":return B.bN
 case"ongoing":return B.av
