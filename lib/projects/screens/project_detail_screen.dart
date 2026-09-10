@@ -19,6 +19,7 @@ import '../../shared/utils/slugify.dart';
 import '../../shared/widgets/badges.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/guest_gate_sheet.dart';
+import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
@@ -192,304 +193,278 @@ class ProjectDetailScreen extends StatelessWidget {
         ),
 
         SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header info card ────────────────────────────────────────
-              Container(
-                color: _kCard,
-                padding: _kCardPad,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        // Matches the website hero's own meta row (🏗 +
-                        // contractor, plain text, not a link there either —
-                        // the full stakeholder list with tappable entity
-                        // links lives in the Project Details card below).
-                        if (project.contractor != null)
-                          Expanded(
-                            child: Text(
-                              '🏗 ${project.contractor!}',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 11,
-                                color: _kSubtext,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        else
-                          const Spacer(),
-                        if (project.averageRating != null)
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                color: Color(0xFFF59E0B),
-                                size: 16,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                project.ratingDisplay!,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: _kDark,
-                                ),
-                              ),
-                              Text(
-                                ' (${project.ratingCount})',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 11,
-                                  color: _kSubtext,
-                                ),
-                              ),
-                            ],
+          child: ContentWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Header info card ────────────────────────────────────────
+                Container(
+                  color: _kCard,
+                  padding: _kCardPad,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Matches the website hero's own meta row (🏗 +
+                      // contractor, plain text, not a link there either — the
+                      // full stakeholder list with tappable entity links lives
+                      // in the Project Details card below). Rating badge moved
+                      // out of the hero entirely — see [_RatingCard], placed
+                      // between Project Overview and Project Details.
+                      if (project.contractor != null)
+                        Text(
+                          '🏗 ${project.contractor!}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            color: _kSubtext,
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      project.title,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0A2540),
-                        height: 1.25,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (project.county != null || project.location != null)
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      const SizedBox(height: 8),
                       Text(
-                        '📍 ${project.county ?? project.location}',
+                        project.title,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          color: _kSubtext,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0A2540),
+                          height: 1.25,
                         ),
                       ),
-                    if (project.isLinear &&
-                        (project.routeData?.length ?? 0) >= 2) ...[
-                      const SizedBox(height: 12),
-                      ProjectRouteMap(project: project),
-                    ] else if (project.hasCoordinates) ...[
-                      const SizedBox(height: 12),
-                      ProjectMiniMap(project: project),
-                    ],
-                    const SizedBox(height: 16),
-
-                    // Progress bar — prominent
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: _kBg,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Project Progress',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: _kDark,
-                                ),
-                              ),
-                              Text(
-                                '${project.progressPercent}%',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: _kBlue,
-                                ),
-                              ),
-                            ],
+                      const SizedBox(height: 8),
+                      if (project.county != null || project.location != null)
+                        Text(
+                          '📍 ${project.county ?? project.location}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: _kSubtext,
                           ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: LinearProgressIndicator(
-                              value: project.progressPercent / 100,
-                              minHeight: 10,
-                              backgroundColor: _kDivider,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                _kBlue,
+                        ),
+                      if (project.isLinear &&
+                          (project.routeData?.length ?? 0) >= 2) ...[
+                        const SizedBox(height: 12),
+                        ProjectRouteMap(project: project),
+                      ] else if (project.hasCoordinates) ...[
+                        const SizedBox(height: 12),
+                        ProjectMiniMap(project: project),
+                      ],
+                      const SizedBox(height: 16),
+
+                      // Progress bar — prominent
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _kBg,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Project Progress',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: _kDark,
+                                  ),
+                                ),
+                                Text(
+                                  '${project.progressPercent}%',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: _kBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: LinearProgressIndicator(
+                                value: project.progressPercent / 100,
+                                minHeight: 10,
+                                backgroundColor: _kDivider,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  _kBlue,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Compact rating row
-                    _CompactRatingRow(ctrl: ctrl, project: project),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // ── Quick Facts strip — surfaces the fields buried lower in
-              // the fact table (est. completion, budget) plus the project
-              // type, right under the hero, for mobile scannability. The
-              // website itself keeps these only in the "Project Details"
-              // table further down; there's no separate `sector`/`category`
-              // field in the API, so project_type ('Infrastructure' /
-              // 'Private Development') stands in for it here. ────────────
-              _QuickFactsStrip(project: project),
-
-              const SizedBox(height: 8),
-
-              // ── Admin action bar (Admin/Editor/Moderator) or "Suggest an
-              // Update" entry point (everyone else, signed in) ───────────
-              _ProjectActionBar(project: project, ctrl: ctrl),
-
-              const SizedBox(height: 8),
-
-              // ── Project Summary — short admin-editable teaser, matching
-              // the website's own "Project Summary" card (kept distinct
-              // from the fuller Project Overview below it — the website
-              // shows both, not one replacing the other) ──────────────────
-              if ((project.summary ?? '').isNotEmpty) ...[
-                _buildSummaryCard(project),
-                const SizedBox(height: 8),
-              ],
-
-              // ── Project Details: stakeholders (Client/Developer,
-              // Contractor, Consultant, Financier) + dates/budget, one
-              // scannable fact table — mirrors the website's own "Project
-              // Details" table, deliberately ahead of the longform
-              // Overview below it ──────────────────────────────────────
-              _buildDetailsCard(project),
-
-              const SizedBox(height: 8),
-
-              // ── Project Team & Stakeholders (defensive — `team_members`
-              // isn't sent by the live backend yet, so this stays hidden
-              // until it is) ────────────────────────────────────────────
-              if (project.teamMembers.isNotEmpty)
-                _TeamStakeholdersCard(project: project),
-
-              if (project.teamMembers.isNotEmpty) const SizedBox(height: 8),
-
-              // ── Entity-linked stakeholders, with consortium grouping —
-              // distinct from `_TeamStakeholdersCard` above (`team_members`),
-              // this is the newer `stakeholders` array where each entry
-              // carries a real entity slug ─────────────────────────────
-              if (project.stakeholders.isNotEmpty) ...[
-                _StakeholdersCard(project: project, onTapEntity: _openEntity),
-                const SizedBox(height: 8),
-              ],
-
-              // ── Financiers — funding partners with real entity slugs,
-              // separate from the older plain-text `project.financier` field
-              // surfaced in Project Details above ──────────────────────────
-              if (project.financiers.isNotEmpty) ...[
-                _FinanciersCard(project: project, onTapEntity: _openEntity),
-                const SizedBox(height: 8),
-              ],
-
-              // ── Project Overview — the longform description, matching
-              // the website's "Project Overview" heading (was "About This
-              // Project") ──────────────────────────────────────────────
-              if ((project.descriptionOverview ?? project.description) != null)
-                _buildDescriptionCard(project),
-
-              const SizedBox(height: 8),
-
-              // ── Renders (architectural impressions) — directly below the
-              // Overview, ahead of documents/photos/milestones ───────────
-              if (project.renderGallery.isNotEmpty)
-                _buildGalleryCard(
-                  'Architectural Renders & Visualizations',
-                  project.renderGallery,
+                    ],
+                  ),
                 ),
 
-              const SizedBox(height: 8),
-
-              // ── Project Documents — official PDFs/reports/planning
-              // approvals, admin-manageable on the website. Hidden until a
-              // project actually has rows, same pattern as the entity
-              // sections above ──────────────────────────────────────────
-              if (project.documents.isNotEmpty) ...[
-                _DocumentsCard(project: project),
                 const SizedBox(height: 8),
-              ],
 
-              // ── Featured Project Photos & Videos — real on-site progress
-              // documentation ───────────────────────────────────────────
-              if (project.media.isNotEmpty)
-                _buildGalleryCard(
-                  'Featured Project Photos & Videos',
-                  project.renderGallery.isNotEmpty
-                      ? project.progressGallery
-                      : project.media,
+                // ── Quick Facts strip — surfaces the fields buried lower in
+                // the fact table (est. completion, budget) plus the project
+                // type, right under the hero, for mobile scannability. The
+                // website itself keeps these only in the "Project Details"
+                // table further down; there's no separate `sector`/`category`
+                // field in the API, so project_type ('Infrastructure' /
+                // 'Private Development') stands in for it here. ────────────
+                _QuickFactsStrip(project: project),
+
+                const SizedBox(height: 8),
+
+                // ── Admin action bar (Admin/Editor/Moderator) or "Suggest an
+                // Update" entry point (everyone else, signed in) ───────────
+                _ProjectActionBar(project: project, ctrl: ctrl),
+
+                const SizedBox(height: 8),
+
+                // ── Project Summary — short admin-editable teaser, matching
+                // the website's own "Project Summary" card (kept distinct
+                // from the fuller Project Overview below it — the website
+                // shows both, not one replacing the other) ──────────────────
+                if ((project.summary ?? '').isNotEmpty) ...[
+                  _buildSummaryCard(project),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Project Overview — the longform description, matching
+                // the website's "Project Overview" heading (was "About This
+                // Project"). Moved ahead of Project Details so the vertical
+                // hierarchy reads Overview → Rating → Details, per spec —────
+                if ((project.descriptionOverview ?? project.description) !=
+                    null) ...[
+                  _buildDescriptionCard(project),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Rating module — standalone card between Overview and
+                // Project Details, out of the hero header ─────────────────
+                _RatingCard(ctrl: ctrl, project: project),
+
+                const SizedBox(height: 8),
+
+                // ── Project Details: stakeholders (Client/Developer,
+                // Contractor, Consultant, Financier) + dates/budget, one
+                // scannable fact table — mirrors the website's own "Project
+                // Details" table ─────────────────────────────────────────
+                _buildDetailsCard(project),
+
+                const SizedBox(height: 8),
+
+                // ── Project Team & Stakeholders (defensive — `team_members`
+                // isn't sent by the live backend yet, so this stays hidden
+                // until it is) ────────────────────────────────────────────
+                if (project.teamMembers.isNotEmpty)
+                  _TeamStakeholdersCard(project: project),
+
+                if (project.teamMembers.isNotEmpty) const SizedBox(height: 8),
+
+                // ── Entity-linked stakeholders, with consortium grouping —
+                // distinct from `_TeamStakeholdersCard` above (`team_members`),
+                // this is the newer `stakeholders` array where each entry
+                // carries a real entity slug ─────────────────────────────
+                if (project.stakeholders.isNotEmpty) ...[
+                  _StakeholdersCard(project: project, onTapEntity: _openEntity),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Financiers — funding partners with real entity slugs,
+                // separate from the older plain-text `project.financier` field
+                // surfaced in Project Details above ──────────────────────────
+                if (project.financiers.isNotEmpty) ...[
+                  _FinanciersCard(project: project, onTapEntity: _openEntity),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Renders (architectural impressions) — directly below the
+                // Overview, ahead of documents/photos/milestones ───────────
+                if (project.renderGallery.isNotEmpty)
+                  _buildGalleryCard(
+                    'Architectural Renders & Visualizations',
+                    project.renderGallery,
+                  ),
+
+                const SizedBox(height: 8),
+
+                // ── Project Documents — official PDFs/reports/planning
+                // approvals, admin-manageable on the website. Hidden until a
+                // project actually has rows, same pattern as the entity
+                // sections above ──────────────────────────────────────────
+                if (project.documents.isNotEmpty) ...[
+                  _DocumentsCard(project: project),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Featured Project Photos & Videos — real on-site progress
+                // documentation ───────────────────────────────────────────
+                if (project.media.isNotEmpty)
+                  _buildGalleryCard(
+                    'Featured Project Photos & Videos',
+                    project.renderGallery.isNotEmpty
+                        ? project.progressGallery
+                        : project.media,
+                  ),
+
+                const SizedBox(height: 8),
+
+                // ── Milestones, then Documented Progress, then Discussion —
+                // grouped together as the page's final section, matching the
+                // website's fixed section order (milestones timeline first,
+                // then crowdsourced dated updates, then comments) ──────────
+                if (project.milestones.isNotEmpty) ...[
+                  _buildMilestonesCard(project),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Documented Progress Updates — GET /projects/{id}/updates
+                // already exists in ProjectsService but was never rendered
+                // anywhere; this is that missing surface. Per-update upvotes
+                // and per-update threaded comments are scoped out: neither
+                // ProjectUpdate nor any service method exposes them, and
+                // there's no comment-resource type for updates — the
+                // project-level Discussion below stays the one discussion
+                // surface.
+                _ProgressUpdatesSection(project: project),
+
+                const SizedBox(height: 8),
+
+                // ── Related Articles & Coverage — falls back to a matching
+                // category feed when the project has no explicitly tagged
+                // articles (Spec 7) ─────────────────────────────────────────
+                RelatedArticlesSection(project: project),
+
+                const SizedBox(height: 8),
+
+                // ── Suggest Edit / Report Content actions ───────────────────
+                _ActionsCard(project: project),
+
+                const SizedBox(height: 8),
+
+                // ── Attribution — who submitted / published this project.
+                // Hidden entirely when the backend has nothing to say (no
+                // submitter, no publisher) rather than showing an empty
+                // banner ─────────────────────────────────────────────────
+                if (project.attribution?.hasContent == true) ...[
+                  _AttributionBanner(attribution: project.attribution!),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Discussion ───────────────────────────────────────────────
+                Container(
+                  color: _kCard,
+                  padding: _kCardPad,
+                  child: CommentsSection(
+                    resource: CommentResource.project,
+                    resourceId: project.id,
+                    title: 'Discussion',
+                  ),
                 ),
 
-              const SizedBox(height: 8),
-
-              // ── Milestones, then Documented Progress, then Discussion —
-              // grouped together as the page's final section, matching the
-              // website's fixed section order (milestones timeline first,
-              // then crowdsourced dated updates, then comments) ──────────
-              if (project.milestones.isNotEmpty) ...[
-                _buildMilestonesCard(project),
-                const SizedBox(height: 8),
+                const SizedBox(height: 24),
               ],
-
-              // ── Documented Progress Updates — GET /projects/{id}/updates
-              // already exists in ProjectsService but was never rendered
-              // anywhere; this is that missing surface. Per-update upvotes
-              // and per-update threaded comments are scoped out: neither
-              // ProjectUpdate nor any service method exposes them, and
-              // there's no comment-resource type for updates — the
-              // project-level Discussion below stays the one discussion
-              // surface.
-              _ProgressUpdatesSection(project: project),
-
-              const SizedBox(height: 8),
-
-              // ── Related Articles & Coverage — falls back to a matching
-              // category feed when the project has no explicitly tagged
-              // articles (Spec 7) ─────────────────────────────────────────
-              RelatedArticlesSection(project: project),
-
-              const SizedBox(height: 8),
-
-              // ── Suggest Edit / Report Content actions ───────────────────
-              _ActionsCard(project: project),
-
-              const SizedBox(height: 8),
-
-              // ── Attribution — who submitted / published this project.
-              // Hidden entirely when the backend has nothing to say (no
-              // submitter, no publisher) rather than showing an empty
-              // banner ─────────────────────────────────────────────────
-              if (project.attribution?.hasContent == true) ...[
-                _AttributionBanner(attribution: project.attribution!),
-                const SizedBox(height: 8),
-              ],
-
-              // ── Discussion ───────────────────────────────────────────────
-              Container(
-                color: _kCard,
-                padding: _kCardPad,
-                child: CommentsSection(
-                  resource: CommentResource.project,
-                  resourceId: project.id,
-                  title: 'Discussion',
-                ),
-              ),
-
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ],
@@ -1078,12 +1053,13 @@ class _StatusDot extends StatelessWidget {
   }
 }
 
-// ── Compact rating row ────────────────────────────────────────────────────────
-
-class _CompactRatingRow extends StatelessWidget {
+// ── Rating card — standalone module in the body stack, between Project
+// Overview and Project Details (was a compact row inside the hero header
+// card; relocated so the hero stays focused on identity, not interaction).
+class _RatingCard extends StatelessWidget {
   final ProjectDetailController ctrl;
   final Project project;
-  const _CompactRatingRow({required this.ctrl, required this.project});
+  const _RatingCard({required this.ctrl, required this.project});
 
   void _openRatingSheet(BuildContext context) {
     showModalBottomSheet(
@@ -1095,52 +1071,95 @@ class _CompactRatingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final rated = ctrl.ratingSubmitted.value;
-      return GestureDetector(
-        onTap: () => requireAuth(
-          context,
-          () => _openRatingSheet(context),
-          message: 'Sign in to rate this project',
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: rated
-                ? const Color(0xFF16A34A).withValues(alpha: 0.08)
-                : _kBg,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                rated ? Icons.check_circle_rounded : Icons.star_border_rounded,
-                size: 17,
-                color: rated ? const Color(0xFF16A34A) : _kBlue,
+    return Container(
+      color: _kCard,
+      padding: _kCardPad,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (project.averageRating != null) ...[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.star_rounded,
+                    color: Color(0xFFF59E0B),
+                    size: 22,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    project.ratingDisplay!,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: _kDark,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '(${project.ratingCount} rating${project.ratingCount == 1 ? '' : 's'})',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      color: _kSubtext,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  rated
-                      ? 'You rated this project ${ctrl.userRating.value}/10'
-                      : 'Rate this project',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: rated ? const Color(0xFF16A34A) : _kDark,
+              const SizedBox(height: 12),
+            ],
+            Obx(() {
+              final rated = ctrl.ratingSubmitted.value;
+              return GestureDetector(
+                onTap: () => requireAuth(
+                  context,
+                  () => _openRatingSheet(context),
+                  message: 'Sign in to rate this project',
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: rated
+                        ? const Color(0xFF16A34A).withValues(alpha: 0.08)
+                        : _kBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        rated
+                            ? Icons.check_circle_rounded
+                            : Icons.star_border_rounded,
+                        size: 17,
+                        color: rated ? const Color(0xFF16A34A) : _kBlue,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          rated
+                              ? 'You rated this project ${ctrl.userRating.value}/10'
+                              : 'Rate this project',
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: rated ? const Color(0xFF16A34A) : _kDark,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              if (!rated)
-                Text(
-                  'Tap to rate',
-                  style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
-                ),
-            ],
-          ),
+              );
+            }),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
 }
 

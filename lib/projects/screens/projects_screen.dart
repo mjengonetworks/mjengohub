@@ -8,6 +8,7 @@ import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import 'project_detail_screen.dart';
@@ -171,34 +172,36 @@ class ProjectsScreen extends StatelessWidget {
               return false;
             },
             child: Obx(
-              () => ListView(
-                padding: const EdgeInsets.only(bottom: 24),
-                children: [
-                  // 1. Top interactive live map — the very first scrollable
-                  // item, directly beneath the app bar. Color-coded status
-                  // pins, tap-to-preview bottom sheet. Never gated behind a
-                  // toggle and never pushed below other content.
-                  const SizedBox(height: 12),
-                  _buildFilterControls(context, ctrl),
-                  _buildActiveEntityFilters(ctrl),
-                  const SizedBox(height: 12),
+              () => ContentWidth(
+                child: ListView(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  children: [
+                    // 1. Top interactive live map — the very first scrollable
+                    // item, directly beneath the app bar. Color-coded status
+                    // pins, tap-to-preview bottom sheet. Never gated behind a
+                    // toggle and never pushed below other content.
+                    const SizedBox(height: 12),
+                    _buildFilterControls(context, ctrl),
+                    _buildActiveEntityFilters(ctrl),
+                    const SizedBox(height: 12),
 
-                  // 2. Dedicated tracker control — status/county/client
-                  // filter chips.
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Megaprojects',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: _kDark,
+                    // 2. Dedicated tracker control — status/county/client
+                    // filter chips.
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Megaprojects',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: _kDark,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildProjectsGrid(ctrl),
-                ],
+                    const SizedBox(height: 10),
+                    _buildProjectsGrid(ctrl),
+                  ],
+                ),
               ),
             ),
           ),
@@ -324,39 +327,46 @@ class ProjectsScreen extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final (label, value, onClear) in active)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0284C7).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 260),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$label: $value',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF0284C7),
-                      ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.3),
                     ),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: onClear,
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 15,
-                        color: Color(0xFF0284C7),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '$label: $value',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0284C7),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: onClear,
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 15,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],
