@@ -56,6 +56,17 @@ class DiscoverScreen extends StatelessWidget {
           ),
 
           // ── Category tabs ─────────────────────────────────────────────
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 6),
+            child: Text(
+              'Category',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
+            ),
+          ),
           _CategoryTabs(ctrl: ctrl),
           const SizedBox(height: 8),
 
@@ -86,10 +97,13 @@ class _SearchBar extends StatelessWidget {
           const SizedBox(width: 12),
           const Icon(Icons.search_rounded, size: 20, color: Color(0xFF475569)),
           const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: TextField(
               controller: ctrl.searchController,
               onSubmitted: ctrl.onSearchSubmit,
+              maxLines: 1,
               textInputAction: TextInputAction.search,
               style: GoogleFonts.montserrat(
                 fontSize: 14,
@@ -105,6 +119,7 @@ class _SearchBar extends StatelessWidget {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
+              ),
             ),
           ),
           ValueListenableBuilder<TextEditingValue>(
@@ -112,22 +127,65 @@ class _SearchBar extends StatelessWidget {
             builder: (_, val, _) => val.text.isNotEmpty
                 ? GestureDetector(
                     onTap: ctrl.clearSearch,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: const SizedBox(
+                      width: 40,
+                      height: 40,
                       child: Icon(
-                        Icons.close_rounded,
-                        size: 18,
-                        color: Color(0xFF475569),
-                      ),
+                          Icons.close_rounded,
+                          size: 18,
+                          color: Color(0xFF475569),
+                        ),
                     ),
                   )
-                : const SizedBox(width: 8),
+                : const SizedBox(width: 40, height: 40),
           ),
           Container(height: 30, width: 1, color: const Color(0xFFE5E7EB)),
           Obx(() {
             final active = ctrl.selectedSlug.value.isNotEmpty;
             return GestureDetector(
               onTap: () => _showFilterSheet(context, ctrl),
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Icon(
+                        Icons.tune_rounded,
+                        size: 18,
+                        color: active
+                            ? AppColors.accentBlue
+                            : const Color(0xFF374151),
+                      ),
+                      if (active)
+                        Positioned(
+                          top: -3,
+                          right: -3,
+                          child: Container(
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: AppColors.accentBlue,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+// The filter icon is wrapped in a fixed hit target so it cannot compress the
+// editable search area on narrow screens.
+/*
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Stack(
@@ -163,6 +221,7 @@ class _SearchBar extends StatelessWidget {
     );
   }
 }
+*/
 
 // ── Category tabs ─────────────────────────────────────────────────────────────
 
@@ -183,7 +242,7 @@ class _CategoryTabs extends StatelessWidget {
       final catItems = ctrl.categories.map((cat) {
         final selected = ctrl.selectedSlug.value == cat.slug;
         return _TabItem(
-          label: cat.name,
+          label: cat.displayName,
           isSelected: selected,
           onTap: () => ctrl.selectCategory(cat.slug),
         );
@@ -376,7 +435,7 @@ class _FilterSheet extends StatelessWidget {
                       else
                         ...cats.map(
                           (cat) => _FilterOption(
-                            label: cat.name,
+                            label: cat.displayName,
                             icon: _categoryIcon(cat.slug),
                             isSelected: ctrl.selectedSlug.value == cat.slug,
                             onTap: () {

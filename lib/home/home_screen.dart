@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 18),
               _breakingHeader(ctrl),
               const SizedBox(height: 12),
-              SizedBox(height: 220, child: _breakingList(ctrl)),
+              _breakingList(ctrl),
 
               // ── 3. Browse Articles by Category (directly beneath news) ──────
               const SizedBox(height: 12),
@@ -358,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Latest Construction News horizontal list (capped at 4) ─────────────────
+  // ── Latest Construction News vertical list (capped at 4) ────────────────
 
   Widget _breakingList(HomeNewsController ctrl) {
     return Obx(() {
@@ -375,18 +375,21 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
       final items = ctrl.breakingNews.take(4).toList();
-      return ListView.builder(
-        scrollDirection: Axis.horizontal,
+      return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: items.length,
-        itemBuilder: (_, i) {
-          final article = items[i];
-          return BreakingNewsCard(
-            article: article,
-            onTap: () => _openArticle(article),
-            showPreviewBadge: ctrl.isShowingDemoData.value,
-          );
-        },
+        child: Column(
+          children: [
+            for (final article in items) ...[
+              BreakingNewsCard(
+                article: article,
+                onTap: () => _openArticle(article),
+                showPreviewBadge: ctrl.isShowingDemoData.value,
+                width: double.infinity,
+              ),
+              const SizedBox(height: 12),
+            ],
+          ],
+        ),
       );
     });
   }

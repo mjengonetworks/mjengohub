@@ -13,12 +13,14 @@ class BreakingNewsCard extends StatelessWidget {
   /// True when [article] is fallback/demo content rather than a live API
   /// response — shows a "PREVIEW" badge so it's never mistaken for real news.
   final bool showPreviewBadge;
+  final double width;
 
   const BreakingNewsCard({
     super.key,
     required this.article,
     this.onTap,
     this.showPreviewBadge = false,
+    this.width = 170,
   });
 
   @override
@@ -26,8 +28,10 @@ class BreakingNewsCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 170,
-        margin: const EdgeInsets.only(right: 14),
+        width: width,
+        margin: width == double.infinity
+            ? EdgeInsets.zero
+            : const EdgeInsets.only(right: 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),

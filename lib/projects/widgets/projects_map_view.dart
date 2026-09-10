@@ -214,18 +214,29 @@ class ProjectsMapView extends StatelessWidget {
         .toList();
     final bounds = LatLngBounds.fromPoints(points);
 
-    return FlutterMap(
-      options: MapOptions(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          height: 220,
+          child: Stack(
+            children: [
+              FlutterMap(
+                options: MapOptions(
         initialCameraFit: located.length > 1
             ? CameraFit.bounds(
                 bounds: bounds,
                 padding: const EdgeInsets.all(40),
               )
             : null,
-        initialCenter: located.length == 1 ? points.first : kKenyaMapCenter,
-        initialZoom: located.length == 1 ? 14 : 6,
-      ),
-      children: [
+                  initialCenter: located.length == 1 ? points.first : kKenyaMapCenter,
+                  initialZoom: located.length == 1 ? 14 : 6,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.none,
+                  ),
+                ),
+                children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'ke.co.mjengohub.app',
@@ -256,7 +267,30 @@ class ProjectsMapView extends StatelessWidget {
         const RichAttributionWidget(
           attributions: [TextSourceAttribution('OpenStreetMap contributors')],
         ),
-      ],
+                ],
+              ),
+              Positioned(
+                left: 10,
+                bottom: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Tap map to explore',
+                    style: TextStyle(fontSize: 11, color: AppColors.headingSlate),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -305,11 +339,13 @@ class ProjectMiniMap extends StatelessWidget {
     if (!project.hasCoordinates) return const SizedBox.shrink();
     final point = LatLng(project.latitude!, project.longitude!);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: SizedBox(
-        height: 160,
-        child: FlutterMap(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          height: 220,
+          child: FlutterMap(
           options: MapOptions(
             initialCenter: point,
             initialZoom: 14,
@@ -334,6 +370,7 @@ class ProjectMiniMap extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

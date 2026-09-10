@@ -20,10 +20,22 @@ class TrackerSectionGroup {
     required this.projects,
   });
 
+  String get displayLabel {
+    final value = label.trim();
+    if (value.isNotEmpty) return value;
+    const fallback = {
+      'transport': 'Transport Projects',
+      'energy': 'Energy Projects',
+      'water': 'Water Projects',
+      'housing': 'Housing Projects',
+    };
+    return fallback[value.toLowerCase()] ?? 'Infrastructure Projects';
+  }
+
   factory TrackerSectionGroup.fromJson(Map<String, dynamic> j) =>
       TrackerSectionGroup(
         value: (j['value'] as String?) ?? '',
-        label: (j['label'] as String?) ?? '',
+        label: (j['label'] as String?)?.trim() ?? '',
         totalCount: (j['total_count'] as num?)?.toInt() ?? 0,
         projects:
             (j['projects'] as List?)

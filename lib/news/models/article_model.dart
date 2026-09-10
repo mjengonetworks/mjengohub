@@ -71,10 +71,22 @@ class ArticleCategory {
     this.parent,
   });
 
+  String get displayName {
+    final value = name.trim();
+    if (value.isNotEmpty) return value;
+    const fallback = {
+      'infrastructure': 'Infrastructure',
+      'construction': 'Construction',
+      'safety': 'Safety & Compliance',
+      'business': 'Construction Business',
+    };
+    return fallback[slug.toLowerCase()] ?? 'Construction News';
+  }
+
   factory ArticleCategory.fromJson(Map<String, dynamic> json) {
     return ArticleCategory(
       id: (json['id'] as num).toInt(),
-      name: (json['name'] as String?) ?? '',
+      name: (json['name'] as String?)?.trim() ?? '',
       slug: (json['slug'] as String?) ?? '',
       parent: json['parent'] is Map
           ? ArticleCategory.fromJson(json['parent'] as Map<String, dynamic>)

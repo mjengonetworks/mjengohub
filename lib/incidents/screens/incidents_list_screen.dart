@@ -124,6 +124,17 @@ class IncidentsListScreen extends StatelessWidget {
                   // ── Search bar (matches Videos screen) ──────────────────
                   _SearchBar(ctrl: ctrl, accent: _accent),
                   const SizedBox(height: 8),
+                  const _FilterLabel('Incident Type'),
+                  Text(
+                    _title,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _kDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const _FilterLabel('County'),
                   SizedBox(
                     height: 34,
                     child: Obx(
@@ -155,7 +166,16 @@ class IncidentsListScreen extends StatelessWidget {
             ),
 
             // ── Severity tabs (underline style, matches Videos) ────────────
-            _SeverityTabs(ctrl: ctrl, accent: _accent),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 2),
+                  child: _FilterLabel('Severity'),
+                ),
+                _SeverityTabs(ctrl: ctrl, accent: _accent),
+              ],
+            ),
 
             // ── Crisis banner (road safety only) ───────────────────────────
             if (_isRoad) ...[
@@ -259,12 +279,18 @@ class _SearchBarState extends State<_SearchBar> {
           const SizedBox(width: 12),
           const Icon(Icons.search_rounded, size: 20, color: _kSubtext),
           const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: TextField(
               controller: _textCtrl,
               onSubmitted: (_) => _submit(),
+              maxLines: 1,
               textInputAction: TextInputAction.search,
-              style: GoogleFonts.montserrat(fontSize: 14, color: _kDark),
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: _kDark,
+              ),
               decoration: InputDecoration(
                 hintText: 'Search incidents…',
                 hintStyle: GoogleFonts.montserrat(
@@ -275,6 +301,7 @@ class _SearchBarState extends State<_SearchBar> {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
+              ),
             ),
           ),
           // Clear button
@@ -283,8 +310,9 @@ class _SearchBarState extends State<_SearchBar> {
             builder: (_, val, _) => val.text.isNotEmpty
                 ? GestureDetector(
                     onTap: _clear,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: const SizedBox(
+                      width: 40,
+                      height: 40,
                       child: Icon(
                         Icons.close_rounded,
                         size: 18,
@@ -292,7 +320,7 @@ class _SearchBarState extends State<_SearchBar> {
                       ),
                     ),
                   )
-                : const SizedBox(width: 12),
+                : const SizedBox(width: 40, height: 40),
           ),
         ],
       ),
@@ -303,6 +331,24 @@ class _SearchBarState extends State<_SearchBar> {
 // ═════════════════════════════════════════════════════════════════════════════
 //  SEVERITY TABS  (underline style — mirrors Videos _CategoryTabs)
 // ═════════════════════════════════════════════════════════════════════════════
+
+class _FilterLabel extends StatelessWidget {
+  final String text;
+  const _FilterLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Text(
+      text,
+      style: GoogleFonts.montserrat(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: _kSubtext,
+      ),
+    ),
+  );
+}
 
 class _SeverityTabs extends StatelessWidget {
   final IncidentsController ctrl;
@@ -468,17 +514,15 @@ class _FeaturedSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          // +18px vs. the old fixed-100 thumbnail to fit the true 16:9
-          // height at this card's 210px width, without shrinking the text
-          // area below it.
-          height: 208,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: incidents.length,
-            itemBuilder: (_, i) =>
-                _FeaturedCard(incident: incidents[i], accent: accent),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              for (final incident in incidents) ...[
+                _FeaturedCard(incident: incident, accent: accent),
+                const SizedBox(height: 12),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 20),
@@ -514,8 +558,7 @@ class _FeaturedCard extends StatelessWidget {
         transition: Transition.cupertino,
       ),
       child: Container(
-        width: 210,
-        margin: const EdgeInsets.only(right: 12),
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),

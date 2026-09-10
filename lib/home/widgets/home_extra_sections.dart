@@ -875,29 +875,30 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 232,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
-              ? ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: 3,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, _) => Container(
-                    width: 220,
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+              ? Column(
+                  children: [
+                    for (int i = 0; i < 3; i++) ...[
+                      Container(
+                        height: 220,
+                        decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 )
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _projects.take(4).length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) =>
-                      _FeaturedProjectCard(project: _projects[i]),
+              : Column(
+                  children: [
+                    for (final project in _projects.take(4)) ...[
+                      _FeaturedProjectCard(project: project),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
       ],
@@ -926,7 +927,7 @@ class _FeaturedProjectCard extends StatelessWidget {
         transition: Transition.cupertino,
       ),
       child: Container(
-        width: 220,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -1109,19 +1110,21 @@ class _BuiltHistoryPreviewSectionState
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 204,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _projects.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => TrackerProjectCard(
-                    project: _projects[i],
-                    captionOverride: _projects[i].completionDecade,
-                  ),
+              : Column(
+                  children: [
+                    for (final project in _projects) ...[
+                      TrackerProjectCard(
+                        project: project,
+                        width: double.infinity,
+                        captionOverride: project.completionDecade,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
       ],
@@ -1187,19 +1190,21 @@ class _AfricaWorldPreviewSectionState extends State<AfricaWorldPreviewSection> {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 204,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _projects.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => TrackerProjectCard(
-                    project: _projects[i],
-                    captionOverride: _projects[i].country,
-                  ),
+              : Column(
+                  children: [
+                    for (final project in _projects) ...[
+                      TrackerProjectCard(
+                        project: project,
+                        width: double.infinity,
+                        captionOverride: project.country,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
       ],
@@ -1287,17 +1292,20 @@ class _PrivateDevelopmentsShowcaseSectionState
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 204,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _projects.take(4).length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) =>
-                      TrackerProjectCard(project: _projects[i]),
+              : Column(
+                  children: [
+                    for (final project in _projects.take(4)) ...[
+                      TrackerProjectCard(
+                        project: project,
+                        width: double.infinity,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
       ],
@@ -1396,29 +1404,30 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 172,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
-              ? ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: 3,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, _) => Container(
-                    width: 200,
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+              ? Column(
+                  children: [
+                    for (int i = 0; i < 3; i++) ...[
+                      Container(
+                        height: 172,
+                        decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 )
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _incidents.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) =>
-                      _SafetyIncidentCard(incident: _incidents[i]),
+              : Column(
+                  children: [
+                    for (final incident in _incidents) ...[
+                      _SafetyIncidentCard(incident: incident),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
         const SizedBox(height: 14),
@@ -1486,7 +1495,7 @@ class _SafetyIncidentCard extends StatelessWidget {
       onTap: () =>
           Get.toNamed(AppRoutes.incidentDetail, arguments: incident.slug),
       child: Container(
-        width: 200,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -1786,16 +1795,17 @@ class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
               MainNavController.tabMedia,
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 168,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _videos.take(4).length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => _VideoCard(video: _videos[i]),
+              : Column(
+                  children: [
+                    for (final video in _videos.take(4)) ...[
+                      _VideoCard(video: video),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
       ],
@@ -1812,7 +1822,7 @@ class _VideoCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.to(() => VideoPlayerScreen(video: video)),
       child: Container(
-        width: 220,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.sharp),
@@ -1927,16 +1937,17 @@ class _MerchPreviewSectionState extends State<MerchPreviewSection> {
           onSeeAll: () => Get.to(() => const MerchScreen()),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 200,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _loading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _products.take(4).length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => _MerchCard(product: _products[i]),
+              : Column(
+                  children: [
+                    for (final product in _products.take(4)) ...[
+                      _MerchCard(product: product),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
         ),
       ],
@@ -1953,7 +1964,7 @@ class _MerchCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.to(() => const MerchScreen()),
       child: Container(
-        width: 140,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.sharp),

@@ -316,7 +316,7 @@ class ProjectsScreen extends StatelessWidget {
                 ),
               ),
               _LabeledFilterButton(
-                label: 'Status',
+                label: 'Project Status',
                 value: _statusLabel(ctrl.selectedStatus.value),
                 icon: Icons.timelapse_outlined,
                 onTap: () => _showSingleSelectSheet(

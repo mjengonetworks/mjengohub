@@ -154,7 +154,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (widget.article.category != null) ...[
-                  _CategoryPill(name: widget.article.category!.name),
+                  _CategoryPill(name: widget.article.category!.displayName),
                   const SizedBox(height: 10),
                 ],
                 Text(
@@ -334,7 +334,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
               title: widget.article.title,
               slug: widget.article.slug,
               imageUrl: widget.article.imageUrl,
-              category: widget.article.category?.name,
+                            category: widget.article.category?.displayName,
               type: 'article',
               savedAt: DateTime.now(),
             ),

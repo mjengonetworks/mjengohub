@@ -23,6 +23,10 @@ import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
 import 'contact_screen.dart';
 import '../news/screens/submit_article_screen.dart';
+import '../news/services/news_api_service.dart';
+import '../incidents/services/incidents_service.dart';
+import '../projects/services/projects_service.dart';
+import '../shared/services/bookmarks_service.dart';
 import '../shared/screens/webview_checkout_screen.dart';
 import '../shared/screens/about_screen.dart';
 import '../shared/screens/support_us_screen.dart';
@@ -74,6 +78,10 @@ class _SettingsView extends StatelessWidget {
 
               const SizedBox(height: 16),
 
+              const _ProfileMetrics(),
+
+              const SizedBox(height: 12),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: _PointsSummaryCard(user: user),
@@ -95,7 +103,7 @@ class _SettingsView extends StatelessWidget {
                 rows: [
                   _GroupRowData(
                     icon: Icons.bookmark_outline_rounded,
-                    title: 'Bookmarks & Saved Items',
+                    title: 'Saved Alerts',
                     subtitle: 'Bookmarked articles and saved projects',
                     onTap: () => Get.toNamed(AppRoutes.savedItems),
                   ),
@@ -118,7 +126,7 @@ class _SettingsView extends StatelessWidget {
 
               // ── Account ──────────────────────────────────────────────────
               _SettingsGroup(
-                title: 'Account',
+                title: 'Account Settings',
                 rows: [
                   _GroupRowData(
                     icon: Icons.notifications_none_rounded,
@@ -158,7 +166,7 @@ class _SettingsView extends StatelessWidget {
 
               // ── Legal ────────────────────────────────────────────────────
               _SettingsGroup(
-                title: 'About & Legal',
+                title: 'Legal & Terms',
                 rows: [
                   _GroupRowData(
                     icon: Icons.info_outline_rounded,
@@ -254,7 +262,8 @@ class _SettingsView extends StatelessWidget {
                 rows: [
                   _GroupRowData(
                     icon: Icons.logout_rounded,
-                    title: 'Log Out',
+                    title: 'App Version & Sign Out',
+                    subtitle: 'Mjengo Hub 1.0 · Sign out of this account',
                     titleColor: AppColors.danger,
                     iconColor: AppColors.danger,
                     onTap: onSignOut,
@@ -402,7 +411,7 @@ class _ProfileHeader extends StatefulWidget {
 
 class _ProfileHeaderState extends State<_ProfileHeader> {
   static const double _coverHeight = 150;
-  static const double _avatarSize = 84;
+  static const double _avatarSize = 72;
   static const double _ringWidth = 3;
   static const double _ringGap = 3;
 
@@ -497,10 +506,8 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
         ? user!.bio!
         : (user?.company != null && user!.company!.isNotEmpty)
         ? user!.company!
-        : (user?.email ?? '');
-    final subtitle = rawSubtitle.contains('@')
-        ? _maskEmail(rawSubtitle)
-        : rawSubtitle;
+        : '';
+    final subtitle = rawSubtitle;
     final initials = user?.initials ?? '?';
     final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
     final hasCover =
@@ -651,9 +658,9 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                   Text(
                     name,
                     style: GoogleFonts.montserrat(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.headingSlate,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0A2540),
                     ),
                   ),
                   if (user?.isPrime == true) const PrimeBadge(),
@@ -663,6 +670,30 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
               ),
               const SizedBox(height: 6),
               ReviewerLevelBadge(points: points),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(
+                    user?.isVerified == true
+                        ? Icons.verified_rounded
+                        : Icons.email_outlined,
+                    size: 14,
+                    color: const Color(0xFF64748B),
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      user?.email ?? 'Email not provided',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               if (subtitle.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Text(
@@ -719,21 +750,6 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
     );
   }
 
-  static String _maskEmail(String email) {
-    final parts = email.split('@');
-    if (parts.length != 2) return email;
-    final local = parts[0];
-    final domain = parts[1].split('.');
-    final maskedLocal = local.length <= 2
-        ? '*' * local.length
-        : '${local[0]}${'*' * (local.length - 1)}';
-    final d = domain[0];
-    final maskedDomain = d.length <= 2
-        ? '*' * d.length
-        : '${d[0]}${'*' * (d.length - 1)}';
-    return '$maskedLocal@$maskedDomain.${domain.sublist(1).join('.')}';
-  }
-
   Widget _initialsWidget(String initials) => Center(
     child: Text(
       initials,
@@ -751,6 +767,91 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
 // Points come straight off the cached UserModel (`GET auth/me`'s `points`
 // field), so this renders instantly with no network wait — the fuller
 // per-source breakdown + activity log lives behind the tap, on PointsScreen.
+
+class _ProfileMetrics extends StatelessWidget {
+  const _ProfileMetrics();
+
+  Future<List<int>> _load() async {
+    final results = await Future.wait([
+      BookmarksService.getBookmarks(),
+      ProjectsService().getMyProjects(perPage: 50),
+      NewsApiService().getMyArticles(perPage: 50),
+      IncidentsService().getMyIncidents(perPage: 50),
+    ]);
+    final bookmarks = results[0] as List<BookmarkedItem>;
+    final projects = results[1] as List;
+    final articles = results[2] as List;
+    final incidents = results[3] as List;
+    return [
+      bookmarks.where((item) => item.type == 'project').length,
+      bookmarks.where((item) => item.type == 'incident').length,
+      projects.length + articles.length + incidents.length,
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: FutureBuilder<List<int>>(
+        future: _load(),
+        builder: (_, snapshot) {
+          final values = snapshot.data ?? const [0, 0, 0];
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                _MetricCell(label: 'Saved Projects', value: values[0]),
+                _MetricCell(label: 'Watched Incidents', value: values[1]),
+                _MetricCell(label: 'Contributions', value: values[2]),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _MetricCell extends StatelessWidget {
+  final String label;
+  final int value;
+  const _MetricCell({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            '$value',
+            style: GoogleFonts.montserrat(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0A2540),
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(
+              fontSize: 10.5,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _PointsSummaryCard extends StatelessWidget {
   final UserModel? user;

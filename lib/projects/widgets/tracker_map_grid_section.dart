@@ -45,7 +45,7 @@ class TrackerLiveMap extends StatelessWidget {
     }
     // Full-bleed, no horizontal padding — the map is the top-of-screen
     // anchor, edge-to-edge like the website's own #pj-map.
-    return SizedBox(height: 300, child: ProjectsMapView(projects: projects));
+    return ProjectsMapView(projects: projects);
   }
 }
 

@@ -37,6 +37,7 @@ class AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < 390;
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.canvas,
@@ -54,7 +55,7 @@ class AppHeader extends StatelessWidget {
                 // nav-brand, which is the logo image with no adjacent
                 // wordmark text) ────────────────────────────────────────────
                 SizedBox(
-                  width: 112,
+                  width: isCompact ? 76 : 112,
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
@@ -72,8 +73,11 @@ class AppHeader extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () => Get.toNamed(AppRoutes.search),
                     child: Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.mutedCanvas,
                         borderRadius: BorderRadius.circular(12),
@@ -87,11 +91,15 @@ class AppHeader extends StatelessWidget {
                             size: 18,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Search Mjengo Hub',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 11.5,
-                              color: AppColors.captionSlate,
+                          Expanded(
+                            child: Text(
+                              'Search Mjengo Hub',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11.5,
+                                color: AppColors.captionSlate,
+                              ),
                             ),
                           ),
                         ],
@@ -103,14 +111,16 @@ class AppHeader extends StatelessWidget {
                 const SizedBox(width: 8),
 
                 // ── Far-right actions: search, verify, notifications, profile
-                GestureDetector(
-                  onTap: () => LinkLauncher.openLink(
-                    context,
-                    'https://mjengohub.co.ke/verify',
+                if (!isCompact) ...[
+                  GestureDetector(
+                    onTap: () => LinkLauncher.openLink(
+                      context,
+                      'https://mjengohub.co.ke/verify',
+                    ),
+                    child: const _VerifiedBadgeButton(),
                   ),
-                  child: const _VerifiedBadgeButton(),
-                ),
-                const SizedBox(width: 4),
+                  const SizedBox(width: 4),
+                ],
                 _NotificationBellButton(),
                 const SizedBox(width: 8),
                 _ProfileAvatarButton(),
@@ -231,15 +241,19 @@ class _ProfileAvatarButton extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => AppHeader._goToTab(4),
-      child: Container(
-        width: 32,
-        height: 32,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Center(
+          child: Container(
+            width: 36,
+            height: 36,
         decoration: const BoxDecoration(
           color: AppColors.accentBlue,
           shape: BoxShape.circle,
         ),
         clipBehavior: Clip.antiAlias,
-        child: auth == null
+            child: auth == null
             ? const Icon(Icons.person_rounded, color: Colors.white, size: 18)
             : Obx(() {
                 final user = auth!.currentUser;
@@ -262,6 +276,8 @@ class _ProfileAvatarButton extends StatelessWidget {
                   ),
                 );
               }),
+          ),
+        ),
       ),
     );
   }

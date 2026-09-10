@@ -187,17 +187,18 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
         if (_related.isNotEmpty) ...[
           _SectionHeading('Related Articles'),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 168,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _related.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => _RelatedArticleCard(
-                article: _related[i],
-                onTap: () => _openArticle(_related[i]),
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                for (final article in _related) ...[
+                  _RelatedArticleCard(
+                    article: article,
+                    onTap: () => _openArticle(article),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -211,17 +212,18 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
         if (_latest.isNotEmpty) ...[
           _SectionHeading('Latest Articles'),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 168,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _latest.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => _RelatedArticleCard(
-                article: _latest[i],
-                onTap: () => _openArticle(_latest[i]),
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                for (final article in _latest) ...[
+                  _RelatedArticleCard(
+                    article: article,
+                    onTap: () => _openArticle(article),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -253,15 +255,18 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
         if (_showcaseProjects.isNotEmpty) ...[
           _SectionHeading('Explore Projects'),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 170,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _showcaseProjects.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) =>
-                  TrackerProjectCard(project: _showcaseProjects[i], width: 190),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                for (final project in _showcaseProjects) ...[
+                  TrackerProjectCard(
+                    project: project,
+                    width: double.infinity,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 24),
@@ -345,7 +350,7 @@ class _RelatedArticleCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 200,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),

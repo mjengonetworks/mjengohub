@@ -42,15 +42,37 @@ class _MapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.sharp),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          height: 200,
+          height: 220,
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.borderSlate),
           ),
-          child: child,
+          child: Stack(
+            children: [
+              Positioned.fill(child: child),
+              Positioned(
+                left: 10,
+                bottom: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Tap map to explore',
+                    style: TextStyle(fontSize: 11, color: AppColors.headingSlate),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -68,7 +90,7 @@ class _PointMap extends StatelessWidget {
         initialCenter: center,
         initialZoom: 14,
         interactionOptions: const InteractionOptions(
-          flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+          flags: InteractiveFlag.none,
         ),
       ),
       children: [
@@ -109,7 +131,7 @@ class _RouteMap extends StatelessWidget {
           padding: const EdgeInsets.all(24),
         ),
         interactionOptions: const InteractionOptions(
-          flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+          flags: InteractiveFlag.none,
         ),
       ),
       children: [

@@ -84,7 +84,7 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                 (g) => _CategoryRow(
                   group: g,
                   onViewMore: () => _openFiltered(
-                    g.label,
+                    g.displayLabel,
                     () => _service.getProjects(
                       projectType: widget.projectType,
                       isBuiltHistory: widget.isBuiltHistory,
@@ -237,7 +237,7 @@ class _CategoryRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${group.label} (${group.totalCount})',
+                    '${group.displayLabel} (${group.totalCount})',
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -261,15 +261,18 @@ class _CategoryRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 170,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: group.projects.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) =>
-                  TrackerProjectCard(project: group.projects[i], width: 190),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                for (final project in group.projects) ...[
+                  TrackerProjectCard(
+                    project: project,
+                    width: double.infinity,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
             ),
           ),
         ],
@@ -331,15 +334,18 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
             ),
           )
         else ...[
-          SizedBox(
-            height: 170,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: window.projects.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) =>
-                  TrackerProjectCard(project: window.projects[i], width: 190),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                for (final project in window.projects) ...[
+                  TrackerProjectCard(
+                    project: project,
+                    width: double.infinity,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
             ),
           ),
           Padding(
