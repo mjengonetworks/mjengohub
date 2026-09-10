@@ -26,6 +26,13 @@ class ProjectsService {
     String? contractor,
     String? consultant,
     String? financier,
+
+    /// `submitted_by` — unconfirmed against the live backend (no documented
+    /// route for it, unlike `contractor`/`consultant`/`financier`/`client`),
+    /// wired defensively so "Contributions by {user}" works the moment the
+    /// backend adds support; degrades to an empty result set, not a crash,
+    /// if it doesn't exist yet.
+    String? submittedBy,
     String? q,
     bool featured = false,
 
@@ -78,6 +85,9 @@ class ProjectsService {
       }
       if (financier != null && financier.isNotEmpty) {
         query['financier'] = financier;
+      }
+      if (submittedBy != null && submittedBy.isNotEmpty) {
+        query['submitted_by'] = submittedBy;
       }
       if (q != null && q.isNotEmpty) query['q'] = q;
       if (featured) query['featured'] = 'true';

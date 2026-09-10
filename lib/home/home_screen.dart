@@ -23,6 +23,7 @@ import '../shared/widgets/partners_carousel.dart';
 import '../shared/widgets/responsive.dart';
 import '../shared/widgets/scroll_to_top_fab.dart';
 import '../shared/widgets/section_header.dart';
+import '../shared/widgets/sister_brands_row.dart';
 import 'widgets/home_extra_sections.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -173,10 +174,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+              // ── Sister brands (Mjengo Networks / Share Barabara) — a single
+              // horizontal row, never stacked ───────────────────────────────
+              const SizedBox(height: 14),
+              const SisterBrandsRow(),
+
               // ── 2. Latest Construction News (top 4 + Read More) ─────────────
               const SizedBox(height: 18),
               _breakingHeader(ctrl),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _breakingList(ctrl),
 
               // ── 3. Browse Articles by Category (directly beneath news) ──────

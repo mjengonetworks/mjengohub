@@ -174,14 +174,31 @@ class _VerifiedBadgeButton extends StatelessWidget {
 
     return Obx(() {
       final isPrime = auth!.currentUser?.isPrime == true;
+      if (!isPrime) {
+        return Container(
+          width: 38,
+          height: 38,
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.verified_outlined,
+            color: AppColors.textSubtle,
+            size: 21,
+          ),
+        );
+      }
       return Container(
         width: 38,
         height: 38,
         alignment: Alignment.center,
-        child: Icon(
-          Icons.verified_rounded,
-          color: isPrime ? AppColors.primaryBlue : AppColors.textSubtle,
-          size: 21,
+        child: Container(
+          width: 18,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: AppColors.primaryBlue,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check, size: 12, color: Colors.white),
         ),
       );
     });

@@ -10,7 +10,9 @@ import '../services/incidents_service.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
 import '../../news/widgets/net_image.dart';
+import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/breadcrumb_bar.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/form_fields.dart';
 
@@ -153,6 +155,22 @@ class IncidentDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              BreadcrumbBar(
+                items: [
+                  BreadcrumbItem(
+                    'Home',
+                    onTap: () => Get.until((r) => r.isFirst),
+                  ),
+                  BreadcrumbItem(
+                    'Site Safety',
+                    onTap: () => Get.offNamed(AppRoutes.siteSafety),
+                  ),
+                  BreadcrumbItem(
+                    incident.isRoadSafety ? 'Road Safety' : 'Site Safety',
+                  ),
+                  BreadcrumbItem(incident.title),
+                ],
+              ),
               // ── Stats bar ───────────────────────────────────────────────
               Container(
                 color: const Color(0xFF1A1A2E),

@@ -29,11 +29,11 @@ class ProjectRouteMap extends StatelessWidget {
     final waypoints = points.sublist(1, points.length - 1);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
-          height: 220,
+          height: 240,
           child: Stack(
           children: [
             FlutterMap(

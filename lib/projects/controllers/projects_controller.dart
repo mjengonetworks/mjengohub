@@ -34,6 +34,30 @@ class ProjectsController extends GetxController {
   final selectedConsultant = ''.obs;
   final selectedFinancier = ''.obs;
 
+  /// Client filter is keyed by slug server-side (`ProjectsService.clientSlug`)
+  /// but the entity header/dismiss-pill need a human label too, so the
+  /// display name travels alongside it rather than being re-derived.
+  final selectedClient = ''.obs;
+  final selectedClientName = ''.obs;
+
+  /// `category` — a real, distinct query param from `sector` on `GET
+  /// projects` (see ProjectsService.categorySlug).
+  final selectedCategory = ''.obs;
+
+  /// `submitted_by` — unconfirmed against the live backend (no documented
+  /// route for it), added defensively the same way `updated_at`/
+  /// `official_project_name` were on the Project model: wired end-to-end so
+  /// it works the moment the backend supports it, degrades to an empty
+  /// result set (not a crash) if it doesn't yet.
+  final selectedUser = ''.obs;
+  final selectedUserName = ''.obs;
+
+  /// '' | 'trending' — backs the Portfolio Segmentation tabs' "Trending"
+  /// option. Kept separate from [selectedStatus] because trending is a
+  /// sort, not a status filter; the "All"/"Ongoing"/"Completed" tabs read
+  /// and write [selectedStatus] directly instead.
+  final selectedSort = ''.obs;
+
   static const sectorOptions = <String>[
     'Transport',
     'Energy',
@@ -83,7 +107,23 @@ class ProjectsController extends GetxController {
     selectedContractor.value.isNotEmpty,
     selectedConsultant.value.isNotEmpty,
     selectedFinancier.value.isNotEmpty,
+    selectedClient.value.isNotEmpty,
+    selectedCategory.value.isNotEmpty,
+    selectedUser.value.isNotEmpty,
   ].where((active) => active).length;
+
+  /// True once any *entity* filter (as opposed to a plain display filter
+  /// like status/cost tier) is active — drives the contextual header,
+  /// featured-carousel bypass, and Portfolio Segmentation tabs on
+  /// ProjectsScreen.
+  bool get hasEntityFilter =>
+      selectedClient.value.isNotEmpty ||
+      selectedContractor.value.isNotEmpty ||
+      selectedConsultant.value.isNotEmpty ||
+      selectedFinancier.value.isNotEmpty ||
+      selectedCounty.value.isNotEmpty ||
+      selectedCategory.value.isNotEmpty ||
+      selectedUser.value.isNotEmpty;
 
   int _page = 1;
   bool _hasMore = true;
@@ -117,11 +157,15 @@ class ProjectsController extends GetxController {
       contractor: selectedContractor.value,
       consultant: selectedConsultant.value,
       financier: selectedFinancier.value,
+      clientSlug: selectedClient.value,
+      categorySlug: selectedCategory.value,
+      submittedBy: selectedUser.value,
       costMin: costMin,
       costMax: costMax,
       costUsdMin: costUsdMin,
       costUsdMax: costUsdMax,
       q: searchQuery.value,
+      sort: selectedSort.value.isEmpty ? null : selectedSort.value,
       page: 1,
     );
 
@@ -142,6 +186,12 @@ class ProjectsController extends GetxController {
     String? contractor,
     String? consultant,
     String? financier,
+    String? client,
+    String? clientName,
+    String? category,
+    String? user,
+    String? userName,
+    String? sort,
     String? q,
   }) async {
     if (status != null) selectedStatus.value = status;
@@ -150,8 +200,33 @@ class ProjectsController extends GetxController {
     if (contractor != null) selectedContractor.value = contractor;
     if (consultant != null) selectedConsultant.value = consultant;
     if (financier != null) selectedFinancier.value = financier;
+    if (client != null) selectedClient.value = client;
+    if (clientName != null) selectedClientName.value = clientName;
+    if (category != null) selectedCategory.value = category;
+    if (user != null) selectedUser.value = user;
+    if (userName != null) selectedUserName.value = userName;
+    if (sort != null) selectedSort.value = sort;
     if (q != null) searchQuery.value = q;
     await fetchAll();
+  }
+
+  /// Portfolio Segmentation tab selector — All/Ongoing/Completed/Trending.
+  /// Preserves every other active filter (entity chips, county, etc.) since
+  /// it only ever touches [selectedStatus]/[selectedSort].
+  Future<void> selectTab(String tab) async {
+    switch (tab) {
+      case 'ongoing':
+        await applyFilters(status: 'ongoing', sort: '');
+        break;
+      case 'completed':
+        await applyFilters(status: 'completed', sort: '');
+        break;
+      case 'trending':
+        await applyFilters(status: '', sort: 'trending');
+        break;
+      default:
+        await applyFilters(status: '', sort: '');
+    }
   }
 
   Future<void> applyCountySelection(List<String> counties) async {
@@ -168,6 +243,12 @@ class ProjectsController extends GetxController {
     selectedContractor.value = '';
     selectedConsultant.value = '';
     selectedFinancier.value = '';
+    selectedClient.value = '';
+    selectedClientName.value = '';
+    selectedCategory.value = '';
+    selectedUser.value = '';
+    selectedUserName.value = '';
+    selectedSort.value = '';
     searchQuery.value = '';
     await fetchAll();
   }
@@ -185,11 +266,15 @@ class ProjectsController extends GetxController {
       contractor: selectedContractor.value,
       consultant: selectedConsultant.value,
       financier: selectedFinancier.value,
+      clientSlug: selectedClient.value,
+      categorySlug: selectedCategory.value,
+      submittedBy: selectedUser.value,
       costMin: costMin,
       costMax: costMax,
       costUsdMin: costUsdMin,
       costUsdMax: costUsdMax,
       q: searchQuery.value,
+      sort: selectedSort.value.isEmpty ? null : selectedSort.value,
       page: _page,
     );
     projects.addAll(more);

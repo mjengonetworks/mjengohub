@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
@@ -18,6 +19,7 @@ import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/entity_parsing.dart';
 import '../../shared/utils/slugify.dart';
 import '../../shared/widgets/badges.dart';
+import '../../shared/widgets/breadcrumb_bar.dart';
 import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/guest_gate_sheet.dart';
 import '../../shared/widgets/responsive.dart';
@@ -198,6 +200,21 @@ class ProjectDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Breadcrumbs — horizontally scrolling, never wraps ────────
+                BreadcrumbBar(items: _breadcrumbs(project)),
+
+                // ── Compact map preview — fixed 240px, tight margins.
+                // Extracted from the header identity card so it reads as its
+                // own section right under the breadcrumb trail. ─────────────
+                if (project.isLinear &&
+                    (project.routeData?.length ?? 0) >= 2) ...[
+                  ProjectRouteMap(project: project),
+                  const SizedBox(height: 8),
+                ] else if (project.hasCoordinates) ...[
+                  ProjectMiniMap(project: project),
+                  const SizedBox(height: 8),
+                ],
+
                 // ── Header info card ────────────────────────────────────────
                 Container(
                   color: _kCard,
@@ -244,14 +261,6 @@ class ProjectDetailScreen extends StatelessWidget {
                             color: _kSubtext,
                           ),
                         ),
-                      if (project.isLinear &&
-                          (project.routeData?.length ?? 0) >= 2) ...[
-                        const SizedBox(height: 12),
-                        ProjectRouteMap(project: project),
-                      ] else if (project.hasCoordinates) ...[
-                        const SizedBox(height: 12),
-                        ProjectMiniMap(project: project),
-                      ],
                       const SizedBox(height: 16),
 
                       // Progress bar — prominent
@@ -334,25 +343,45 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 // ── Project Overview — the longform description, matching
                 // the website's "Project Overview" heading (was "About This
-                // Project"). Moved ahead of Project Details so the vertical
-                // hierarchy reads Overview → Rating → Details, per spec —────
+                // Project"). ──────────────────────────────────────────────
                 if ((project.descriptionOverview ?? project.description) !=
                     null) ...[
                   _buildDescriptionCard(project),
                   const SizedBox(height: 8),
                 ],
 
-                // ── Rating module — standalone card between Overview and
-                // Project Details, out of the hero header ─────────────────
-                _RatingCard(ctrl: ctrl, project: project),
-
-                const SizedBox(height: 8),
+                // ── Official Project Name — a distinct bold heading from
+                // the (possibly informal) title, shown only when the backend
+                // sends it ────────────────────────────────────────────────
+                if ((project.officialProjectName ?? '').isNotEmpty) ...[
+                  Container(
+                    color: _kCard,
+                    padding: _kCardPad,
+                    width: double.infinity,
+                    child: Text(
+                      project.officialProjectName!,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0A2540),
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
 
                 // ── Project Details: stakeholders (Client/Developer,
                 // Contractor, Consultant, Financier) + dates/budget, one
-                // scannable fact table — mirrors the website's own "Project
-                // Details" table ─────────────────────────────────────────
+                // scannable 2-column fact grid — mirrors the website's own
+                // "Project Details" table ────────────────────────────────
                 _buildDetailsCard(project),
+
+                const SizedBox(height: 8),
+
+                // ── Rating module — directly below Project Details, out of
+                // the hero header ─────────────────────────────────────────
+                _RatingCard(ctrl: ctrl, project: project),
 
                 const SizedBox(height: 8),
 
@@ -433,6 +462,14 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
+                // ── Sidebar discovery lists (stacked on mobile): Related
+                // Projects → Latest Projects → Trending Projects, each real
+                // `GET projects` queries (sector-match / newest / the
+                // backend's confirmed-live `sort=trending`) ───────────────
+                _DiscoverProjectsSection(project: project),
+
+                const SizedBox(height: 8),
+
                 // ── Related Articles & Coverage — falls back to a matching
                 // category feed when the project has no explicitly tagged
                 // articles (Spec 7) ─────────────────────────────────────────
@@ -445,10 +482,18 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── Discussion ───────────────────────────────────────────────
+                // ── Partner With Us — mirrors the Hub screen's own entry
+                // point (AppRoutes.advertise), surfaced here for readers
+                // deep in a project page ─────────────────────────────────
+                const _PartnerWithUsCard(),
+
+                const SizedBox(height: 8),
+
+                // ── Discussion — tightened top padding vs. the other cards'
+                // uniform _kCardPad ──────────────────────────────────────
                 Container(
                   color: _kCard,
-                  padding: _kCardPad,
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                   child: CommentsSection(
                     resource: CommentResource.project,
                     resourceId: project.id,
@@ -463,6 +508,35 @@ class ProjectDetailScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Home > tracker > county/sector > title (current page, non-tappable).
+  /// The tracker crumb routes back to whichever catalog this project belongs
+  /// to (Built History / Africa & World take priority over the plain
+  /// infrastructure/private split, matching how HubScreen distinguishes them).
+  List<BreadcrumbItem> _breadcrumbs(Project project) {
+    final String trackerLabel;
+    final String trackerRoute;
+    if (project.isBuiltHistory) {
+      trackerLabel = 'Built History';
+      trackerRoute = AppRoutes.builtHistory;
+    } else if (project.geoScope == 'global') {
+      trackerLabel = 'Africa & World';
+      trackerRoute = AppRoutes.africaWorld;
+    } else if (project.projectType == 'private_development') {
+      trackerLabel = 'Private Projects';
+      trackerRoute = AppRoutes.privateProjects;
+    } else {
+      trackerLabel = 'Infrastructure Tracker';
+      trackerRoute = AppRoutes.projects;
+    }
+    final middle = project.county ?? project.sector;
+    return [
+      BreadcrumbItem('Home', onTap: () => Get.until((r) => r.isFirst)),
+      BreadcrumbItem(trackerLabel, onTap: () => Get.toNamed(trackerRoute)),
+      if (middle != null && middle.isNotEmpty) BreadcrumbItem(middle),
+      BreadcrumbItem(project.title),
+    ];
   }
 
   /// Client always has a real entity slug (ProjectClient.slug); Contractor/
@@ -567,7 +641,14 @@ class ProjectDetailScreen extends StatelessWidget {
 
     return _InfoCard(
       title: 'Project Details',
-      child: Column(children: rows),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final colWidth = (constraints.maxWidth - 12) / 2;
+          return Wrap(
+            children: rows.map((r) => SizedBox(width: colWidth, child: r)).toList(),
+          );
+        },
+      ),
     );
   }
 
@@ -1365,6 +1446,73 @@ class _ActionChip extends StatelessWidget {
   }
 }
 
+// ── Partner With Us — same destination as HubScreen's utility item ────────
+class _PartnerWithUsCard extends StatelessWidget {
+  const _PartnerWithUsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      padding: _kCardPad,
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primeBadge.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+            ),
+            child: const Icon(
+              Icons.campaign_rounded,
+              color: AppColors.primeBadge,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Partner With Us',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: _kDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Reach construction professionals across Kenya',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11.5,
+                    color: _kSubtext,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () => Get.toNamed(AppRoutes.advertise),
+            child: Text(
+              'Advertise',
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: _kBlue,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SheetShell extends StatelessWidget {
   final String title;
   final Widget child;
@@ -1819,12 +1967,23 @@ class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
   }
 }
 
+/// Pulls a YouTube video id out of any of the common URL shapes
+/// (`youtube.com/watch?v=`, `youtu.be/`, `youtube.com/embed/`, `youtube.com/shorts/`).
+String? _youtubeId(String? url) {
+  if (url == null || url.trim().isEmpty) return null;
+  final match = RegExp(
+    r'(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{6,})',
+  ).firstMatch(url);
+  return match?.group(1);
+}
+
 class _ProgressUpdateCard extends StatelessWidget {
   final ProjectUpdate update;
   const _ProgressUpdateCard({required this.update});
 
   @override
   Widget build(BuildContext context) {
+    final youtubeId = _youtubeId(update.externalVideoUrl);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1870,39 +2029,108 @@ class _ProgressUpdateCard extends StatelessWidget {
             height: 1.5,
           ),
         ),
+        if (youtubeId != null) ...[
+          const SizedBox(height: 10),
+          _UpdateYoutubeEmbed(videoId: youtubeId),
+        ],
         if (update.media.isNotEmpty) ...[
           const SizedBox(height: 10),
-          SizedBox(
-            height: 64,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: update.media.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 6),
-              itemBuilder: (_, i) => ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.sharp),
-                child: update.media[i].mediaType == 'image'
-                    ? NetImage(
-                        url: update.media[i].url,
-                        width: 64,
-                        height: 64,
-                        fit: BoxFit.cover,
-                        placeholderColor: _kDivider,
-                      )
-                    : Container(
-                        width: 64,
-                        height: 64,
-                        color: _kDark,
-                        child: const Icon(
-                          Icons.play_circle_fill_rounded,
-                          color: Colors.white54,
-                          size: 24,
-                        ),
+          if (update.media.length > 1)
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
+              children: update.media
+                  .map(
+                    (m) => ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.sharp),
+                      child: m.mediaType == 'image'
+                          ? NetImage(
+                              url: m.url,
+                              fit: BoxFit.cover,
+                              placeholderColor: _kDivider,
+                            )
+                          : Container(
+                              color: _kDark,
+                              child: const Icon(
+                                Icons.play_circle_fill_rounded,
+                                color: Colors.white54,
+                                size: 22,
+                              ),
+                            ),
+                    ),
+                  )
+                  .toList(),
+            )
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              child: update.media.first.mediaType == 'image'
+                  ? NetImage(
+                      url: update.media.first.url,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      placeholderColor: _kDivider,
+                    )
+                  : Container(
+                      width: 64,
+                      height: 64,
+                      color: _kDark,
+                      child: const Icon(
+                        Icons.play_circle_fill_rounded,
+                        color: Colors.white54,
+                        size: 24,
                       ),
-              ),
+                    ),
             ),
-          ),
         ],
       ],
+    );
+  }
+}
+
+/// Inline YouTube embed for a Documented Progress update — owns its own
+/// controller so it can be disposed when this update card is removed from
+/// the tree (the list re-fetches on every screen load, nothing keeps this
+/// alive longer than the section itself).
+class _UpdateYoutubeEmbed extends StatefulWidget {
+  final String videoId;
+  const _UpdateYoutubeEmbed({required this.videoId});
+
+  @override
+  State<_UpdateYoutubeEmbed> createState() => _UpdateYoutubeEmbedState();
+}
+
+class _UpdateYoutubeEmbedState extends State<_UpdateYoutubeEmbed> {
+  late final YoutubePlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: widget.videoId,
+      autoPlay: false,
+      params: const YoutubePlayerParams(showControls: true, mute: false),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.sharp),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: YoutubePlayer(controller: _controller),
+      ),
     );
   }
 }
@@ -2010,19 +2238,20 @@ class _DetailRow extends StatelessWidget {
                       .toList(),
           )
         : _chip(value, onTap);
+    // Stacked (label above value) — fits the 2-column Project Details grid
+    // far better than the old label-column-fixed-at-130px Row, which left
+    // almost no room for the value at half card width.
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
+      padding: const EdgeInsets.only(bottom: 14, right: 12),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 130,
-            child: Text(
-              label,
-              style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
-            ),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
           ),
-          Expanded(child: valueWidget),
+          const SizedBox(height: 4),
+          valueWidget,
         ],
       ),
     );
@@ -2625,6 +2854,196 @@ class _DocumentsCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Sidebar discovery: Related → Latest → Trending Projects (Spec 5.8) ─────
+class _DiscoverProjectsSection extends StatefulWidget {
+  final Project project;
+  const _DiscoverProjectsSection({required this.project});
+
+  @override
+  State<_DiscoverProjectsSection> createState() =>
+      _DiscoverProjectsSectionState();
+}
+
+class _DiscoverProjectsSectionState extends State<_DiscoverProjectsSection> {
+  final _service = ProjectsService();
+  List<Project> _related = const [];
+  List<Project> _latest = const [];
+  List<Project> _trending = const [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final p = widget.project;
+    final results = await Future.wait([
+      p.sector != null
+          ? _service.getProjects(
+              sector: p.sector,
+              projectType: p.projectType,
+              perPage: 6,
+            )
+          : Future.value(<Project>[]),
+      _service.getProjects(projectType: p.projectType, perPage: 6),
+      _service.getProjects(
+        projectType: p.projectType,
+        sort: 'trending',
+        perPage: 6,
+      ),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _related = results[0].where((x) => x.id != p.id).take(5).toList();
+      _latest = results[1].where((x) => x.id != p.id).take(5).toList();
+      _trending = results[2].where((x) => x.id != p.id).take(5).toList();
+      _loading = false;
+    });
+  }
+
+  void _viewMore() {
+    final route = widget.project.projectType == 'private_development'
+        ? AppRoutes.privateProjects
+        : AppRoutes.projects;
+    Get.toNamed(route);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const SizedBox.shrink();
+    if (_related.isEmpty && _latest.isEmpty && _trending.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      children: [
+        if (_related.isNotEmpty) ...[
+          _ProjectStrip(
+            title: 'Related Projects',
+            projects: _related,
+            onViewMore: _viewMore,
+          ),
+          const SizedBox(height: 8),
+        ],
+        if (_latest.isNotEmpty) ...[
+          _ProjectStrip(
+            title: 'Latest Projects',
+            projects: _latest,
+            onViewMore: _viewMore,
+          ),
+          const SizedBox(height: 8),
+        ],
+        if (_trending.isNotEmpty)
+          _ProjectStrip(
+            title: 'Trending Projects',
+            projects: _trending,
+            onViewMore: _viewMore,
+          ),
+      ],
+    );
+  }
+}
+
+class _ProjectStrip extends StatelessWidget {
+  final String title;
+  final List<Project> projects;
+  final VoidCallback onViewMore;
+  const _ProjectStrip({
+    required this.title,
+    required this.projects,
+    required this.onViewMore,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      padding: _kCardPad,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.headingSlate,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 150,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: projects.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (_, i) => _ProjectStripCard(project: projects[i]),
+            ),
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: onViewMore,
+            child: Text(
+              'View More →',
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: _kBlue,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProjectStripCard extends StatelessWidget {
+  final Project project;
+  const _ProjectStripCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () =>
+          Get.toNamed(AppRoutes.projectDetail, arguments: project.slug),
+      child: SizedBox(
+        width: 130,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 130,
+                height: 84,
+                child: NetImage(
+                  url: project.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: const Color(0xFF1E3A5F),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              project.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                height: 1.3,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

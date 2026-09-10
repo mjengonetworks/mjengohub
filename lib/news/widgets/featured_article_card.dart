@@ -24,10 +24,10 @@ class PageDotIndicator extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           margin: const EdgeInsets.only(right: 6),
-          width: active ? 36 : 28,
+          width: active ? 38 : 28,
           height: 3,
           decoration: BoxDecoration(
-            color: active ? Colors.white : Colors.white.withValues(alpha: 0.4),
+            color: active ? Colors.white : Colors.white38,
             borderRadius: BorderRadius.circular(2),
           ),
         );

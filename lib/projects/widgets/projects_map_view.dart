@@ -104,8 +104,9 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                      color: const Color(0xFF0F172A),
                     ),
                   ),
                   if ((project.county ?? project.location ?? project.country) !=
@@ -340,11 +341,11 @@ class ProjectMiniMap extends StatelessWidget {
     final point = LatLng(project.latitude!, project.longitude!);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
-          height: 220,
+          height: 240,
           child: FlutterMap(
           options: MapOptions(
             initialCenter: point,

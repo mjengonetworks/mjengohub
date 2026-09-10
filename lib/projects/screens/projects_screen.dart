@@ -11,6 +11,7 @@ import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
+import '../services/projects_service.dart';
 import 'project_detail_screen.dart';
 
 const _kBlue = Color(0xFF2563EB);
@@ -83,28 +84,101 @@ class ProjectsScreen extends StatelessWidget {
   /// for one FocusNode.
   final FocusNode _searchFocusNode = FocusNode();
 
-  /// Applies an incoming `{'contractor'|'consultant'|'financier': name}`
-  /// filter argument (from a tapped stakeholder chip on ProjectDetailScreen)
-  /// once, without clobbering whatever else is already selected — see
-  /// ProjectsController.applyFilters. A no-op if this instance's controller
-  /// already has that exact filter applied (e.g. re-navigating here while
-  /// it's already on the stack), so it never re-triggers a fetch loop.
+  /// Applies incoming entity-filter arguments once, without clobbering
+  /// whatever else is already selected — see ProjectsController.applyFilters.
+  /// A no-op if this instance's controller already has the exact same
+  /// filters applied (e.g. re-navigating here while it's already on the
+  /// stack), so it never re-triggers a fetch loop.
+  ///
+  /// `Get.arguments` contract: a `Map` with any of —
+  ///   `contractor` / `consultant` / `financier` — free-text stakeholder
+  ///     names, matched as-is server-side (from a tapped Info Card chip on
+  ///     ProjectDetailScreen).
+  ///   `client` (+ optional `clientName`) — client slug for the real
+  ///     server-side `client` filter, plus a display label for the header/
+  ///     dismiss-pill since the slug alone isn't human-readable.
+  ///   `category` — the `category` query param (distinct from `sector`).
+  ///   `county` — free-text county name.
+  ///   `user` (+ optional `userName`) — `submitted_by` id/slug plus a
+  ///     display label, for "Contributions by {user}".
   void _applyIncomingEntityArgs(ProjectsController ctrl) {
     final args = Get.arguments;
     if (args is! Map) return;
     final contractor = args['contractor'] as String?;
     final consultant = args['consultant'] as String?;
     final financier = args['financier'] as String?;
+    final client = args['client'] as String?;
+    final clientName = args['clientName'] as String?;
+    final category = args['category'] as String?;
+    final county = args['county'] as String?;
+    final user = args['user'] as String?;
+    final userName = args['userName'] as String?;
     final changed =
         (contractor != null && contractor != ctrl.selectedContractor.value) ||
         (consultant != null && consultant != ctrl.selectedConsultant.value) ||
-        (financier != null && financier != ctrl.selectedFinancier.value);
+        (financier != null && financier != ctrl.selectedFinancier.value) ||
+        (client != null && client != ctrl.selectedClient.value) ||
+        (category != null && category != ctrl.selectedCategory.value) ||
+        (county != null && county != ctrl.selectedCounty.value) ||
+        (user != null && user != ctrl.selectedUser.value);
     if (!changed) return;
     ctrl.applyFilters(
       contractor: contractor,
       consultant: consultant,
       financier: financier,
+      client: client,
+      clientName: clientName,
+      category: category,
+      county: county,
+      user: user,
+      userName: userName,
     );
+  }
+
+  /// Priority-ordered contextual header title for whichever entity filter is
+  /// active; falls back to the screen's static [title] when none is.
+  String _dynamicTitle(ProjectsController ctrl) {
+    if (ctrl.selectedClient.value.isNotEmpty) {
+      final name = ctrl.selectedClientName.value.isNotEmpty
+          ? ctrl.selectedClientName.value
+          : ctrl.selectedClient.value;
+      return 'Projects by $name';
+    }
+    if (ctrl.selectedContractor.value.isNotEmpty) {
+      return 'Projects by ${ctrl.selectedContractor.value}';
+    }
+    if (ctrl.selectedConsultant.value.isNotEmpty) {
+      return 'Projects by ${ctrl.selectedConsultant.value}';
+    }
+    if (ctrl.selectedFinancier.value.isNotEmpty) {
+      return 'Projects Financed by ${ctrl.selectedFinancier.value}';
+    }
+    if (ctrl.selectedCounty.value.isNotEmpty) {
+      return 'Infrastructure Projects in ${ctrl.selectedCounty.value} County';
+    }
+    if (ctrl.selectedUser.value.isNotEmpty) {
+      final name = ctrl.selectedUserName.value.isNotEmpty
+          ? ctrl.selectedUserName.value
+          : ctrl.selectedUser.value;
+      return 'Contributions by $name';
+    }
+    return title;
+  }
+
+  String _dynamicSubtitle(ProjectsController ctrl) {
+    if (ctrl.selectedClient.value.isNotEmpty) {
+      final name = ctrl.selectedClientName.value.isNotEmpty
+          ? ctrl.selectedClientName.value
+          : ctrl.selectedClient.value;
+      return 'Projects commissioned or overseen by $name';
+    }
+    if (ctrl.selectedContractor.value.isNotEmpty) {
+      return 'Civil works executed by ${ctrl.selectedContractor.value}';
+    }
+    if (ctrl.selectedConsultant.value.isNotEmpty) {
+      return 'Design & consultancy works by ${ctrl.selectedConsultant.value}';
+    }
+    return subtitle;
   }
 
   @override
@@ -208,6 +282,7 @@ class ProjectsScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    _PortfolioTabs(ctrl: ctrl),
                     const SizedBox(height: 10),
                     _buildProjectsGrid(ctrl),
                   ],
@@ -239,22 +314,43 @@ class ProjectsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: _kDark,
-                  ),
-                ),
+                child: ctrl == null
+                    ? Text(
+                        title,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          color: _kDark,
+                        ),
+                      )
+                    : Obx(
+                        () => Text(
+                          _dynamicTitle(ctrl),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                            color: _kDark,
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
-          ),
+          ctrl == null
+              ? Text(
+                  subtitle,
+                  style: GoogleFonts.montserrat(fontSize: 12, color: _kSubtext),
+                )
+              : Obx(
+                  () => Text(
+                    _dynamicSubtitle(ctrl),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      color: _kSubtext,
+                    ),
+                  ),
+                ),
           if (ctrl != null) ...[
             const SizedBox(height: 12),
             // Search bar
@@ -310,8 +406,16 @@ class ProjectsScreen extends StatelessWidget {
   /// registered in pubspec.yaml/assets/, so referencing one would crash).
   Widget _buildHeroBanner(ProjectsController ctrl) {
     return Obx(() {
-      final featured = ctrl.projects.where((p) => p.isFeatured).toList();
-      final bgUrl = featured.isNotEmpty ? featured.first.imageUrl : null;
+      // Filtered views (a tapped client/contractor/etc.) must never show a
+      // global featured project's photo — it reads as unrelated content.
+      // Fall back to the first row of the already-filtered result set.
+      String? bgUrl;
+      if (ctrl.hasEntityFilter) {
+        bgUrl = ctrl.projects.isNotEmpty ? ctrl.projects.first.imageUrl : null;
+      } else {
+        final featured = ctrl.projects.where((p) => p.isFeatured).toList();
+        bgUrl = featured.isNotEmpty ? featured.first.imageUrl : null;
+      }
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -438,6 +542,9 @@ class ProjectsScreen extends StatelessWidget {
   /// featured, rather than showing an empty section.
   Widget _buildFeaturedStrip(ProjectsController ctrl) {
     return Obx(() {
+      // Never show generic global featured projects on a filtered view
+      // (e.g. Talanta Stadium showing up under "Projects by KeNHA").
+      if (ctrl.hasEntityFilter) return const SizedBox.shrink();
       final featured = ctrl.projects
           .where((p) => p.isFeatured)
           .take(3)
@@ -474,6 +581,14 @@ class ProjectsScreen extends StatelessWidget {
   Widget _buildActiveEntityFilters(ProjectsController ctrl) {
     return Obx(() {
       final active = <(String, String, VoidCallback)>[
+        if (ctrl.selectedClient.value.isNotEmpty)
+          (
+            'Client',
+            ctrl.selectedClientName.value.isNotEmpty
+                ? ctrl.selectedClientName.value
+                : ctrl.selectedClient.value,
+            () => ctrl.applyFilters(client: '', clientName: ''),
+          ),
         if (ctrl.selectedContractor.value.isNotEmpty)
           (
             'Contractor',
@@ -491,6 +606,29 @@ class ProjectsScreen extends StatelessWidget {
             'Financier',
             ctrl.selectedFinancier.value,
             () => ctrl.applyFilters(financier: ''),
+          ),
+        if (ctrl.selectedCategory.value.isNotEmpty)
+          (
+            'Category',
+            ctrl.selectedCategory.value,
+            () => ctrl.applyFilters(category: ''),
+          ),
+        if (ctrl.selectedUser.value.isNotEmpty)
+          (
+            'Contributor',
+            ctrl.selectedUserName.value.isNotEmpty
+                ? ctrl.selectedUserName.value
+                : ctrl.selectedUser.value,
+            () => ctrl.applyFilters(user: '', userName: ''),
+          ),
+        if (ctrl.selectedCounty.value.isNotEmpty)
+          (
+            'County',
+            ctrl.selectedCounty.value,
+            () {
+              ctrl.selectedCounties.clear();
+              ctrl.applyFilters(county: '');
+            },
           ),
       ];
       if (active.isEmpty) return const SizedBox.shrink();
@@ -520,7 +658,7 @@ class ProjectsScreen extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          '$label: $value',
+                          'Filter: $label: $value',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.montserrat(
@@ -833,8 +971,9 @@ class _FeaturedProjectRowCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
                       color: const Color(0xFF0F172A),
                     ),
                   ),
@@ -933,9 +1072,9 @@ class _FeaturedProjectCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: _kDark,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
                         height: 1.3,
                       ),
                     ),
@@ -1046,9 +1185,9 @@ class _ProjectListTile extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: _kDark,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
                         height: 1.3,
                       ),
                     ),
@@ -1541,6 +1680,161 @@ class _SearchableMultiSelectSheetState
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Portfolio Segmentation tabs — All/Ongoing/Completed/Trending, shown only
+/// on a filtered (entity) view, positioned directly above the project list.
+/// Selecting a tab preserves every other active filter since it only ever
+/// touches status/sort (see ProjectsController.selectTab).
+class _PortfolioTabs extends StatefulWidget {
+  final ProjectsController ctrl;
+  const _PortfolioTabs({required this.ctrl});
+
+  @override
+  State<_PortfolioTabs> createState() => _PortfolioTabsState();
+}
+
+class _PortfolioTabsState extends State<_PortfolioTabs> {
+  final _service = ProjectsService();
+  String _signature = '';
+  Future<Map<String, int>>? _countsFuture;
+
+  String _signatureOf(ProjectsController ctrl) => [
+    ctrl.projectType,
+    ctrl.selectedContractor.value,
+    ctrl.selectedConsultant.value,
+    ctrl.selectedFinancier.value,
+    ctrl.selectedClient.value,
+    ctrl.selectedCategory.value,
+    ctrl.selectedUser.value,
+    ctrl.selectedCounty.value,
+    ctrl.selectedSector.value,
+  ].join('|');
+
+  /// Best-effort counts, capped at 200 rows per bucket — there is no
+  /// dedicated total-count endpoint on `GET projects`, so this approximates
+  /// via the same entity filters with `perPage: 200`, same pragmatic pattern
+  /// already used elsewhere in this codebase for unconfirmed/uncapped
+  /// totals.
+  Future<Map<String, int>> _fetchCounts(ProjectsController ctrl) async {
+    Future<int> countFor(String? status) async {
+      final result = await _service.getProjects(
+        projectType: ctrl.projectType,
+        status: status,
+        county: ctrl.selectedCounty.value,
+        sector: ctrl.selectedSector.value,
+        contractor: ctrl.selectedContractor.value,
+        consultant: ctrl.selectedConsultant.value,
+        financier: ctrl.selectedFinancier.value,
+        clientSlug: ctrl.selectedClient.value,
+        categorySlug: ctrl.selectedCategory.value,
+        submittedBy: ctrl.selectedUser.value,
+        perPage: 200,
+      );
+      return result.length;
+    }
+
+    final all = await countFor(null);
+    final ongoing = await countFor('ongoing');
+    final completed = await countFor('completed');
+    return {'all': all, 'ongoing': ongoing, 'completed': completed};
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final ctrl = widget.ctrl;
+      if (!ctrl.hasEntityFilter) return const SizedBox.shrink();
+
+      final sig = _signatureOf(ctrl);
+      if (sig != _signature || _countsFuture == null) {
+        _signature = sig;
+        _countsFuture = _fetchCounts(ctrl);
+      }
+
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+        child: FutureBuilder<Map<String, int>>(
+          future: _countsFuture,
+          builder: (context, snap) {
+            final counts = snap.data;
+            String label(String base, String key) =>
+                counts == null ? base : '$base (${counts[key]})';
+            return SizedBox(
+              height: 34,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _PortfolioTabChip(
+                    label: label('All', 'all'),
+                    active:
+                        ctrl.selectedStatus.value.isEmpty &&
+                        ctrl.selectedSort.value.isEmpty,
+                    onTap: () => ctrl.selectTab(''),
+                  ),
+                  const SizedBox(width: 8),
+                  _PortfolioTabChip(
+                    label: label('Ongoing', 'ongoing'),
+                    active: ctrl.selectedStatus.value == 'ongoing',
+                    onTap: () => ctrl.selectTab('ongoing'),
+                  ),
+                  const SizedBox(width: 8),
+                  _PortfolioTabChip(
+                    label: label('Completed', 'completed'),
+                    active: ctrl.selectedStatus.value == 'completed',
+                    onTap: () => ctrl.selectTab('completed'),
+                  ),
+                  const SizedBox(width: 8),
+                  _PortfolioTabChip(
+                    label: 'Trending',
+                    active: ctrl.selectedSort.value == 'trending',
+                    onTap: () => ctrl.selectTab('trending'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    });
+  }
+}
+
+class _PortfolioTabChip extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+  const _PortfolioTabChip({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFF0284C7) : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: active ? const Color(0xFF0284C7) : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: active ? Colors.white : AppColors.captionSlate,
+          ),
         ),
       ),
     );

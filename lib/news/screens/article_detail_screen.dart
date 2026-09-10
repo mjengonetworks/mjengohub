@@ -9,10 +9,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../navigation/main_navigation.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/breadcrumb_bar.dart';
 import '../controllers/article_detail_controller.dart';
+import '../controllers/discover_controller.dart';
 import '../models/article_content_blocks.dart';
 import '../models/article_model.dart';
 import '../widgets/article_discovery_section.dart';
@@ -114,6 +117,30 @@ class _ArticleBodyState extends State<_ArticleBody> {
     if (mounted) setState(() => _isSaved = saved);
   }
 
+  void _goToNewsTab() {
+    Get.find<MainNavController>().currentIndex.value =
+        MainNavController.tabNews;
+    if (Get.currentRoute != AppRoutes.home) {
+      Get.until((route) => route.settings.name == AppRoutes.home);
+    }
+  }
+
+  List<BreadcrumbItem> _breadcrumbItems() {
+    final category = widget.article.category;
+    return [
+      BreadcrumbItem('Home', onTap: _goToNewsTab),
+      BreadcrumbItem('Articles', onTap: _goToNewsTab),
+      if (category != null)
+        BreadcrumbItem(category.displayName, onTap: () {
+          try {
+            Get.find<DiscoverController>().selectCategory(category.slug);
+          } catch (_) {}
+          _goToNewsTab();
+        }),
+      BreadcrumbItem(widget.article.title),
+    ];
+  }
+
   void _shareArticle() {
     final url = 'https://mjengohub.co.ke/news/${widget.article.slug}';
     SocialShareModal.show(
@@ -144,6 +171,11 @@ class _ArticleBodyState extends State<_ArticleBody> {
           elevation: 0,
           leading: _backButton(),
           actions: [_bookmarkButton(), _shareButton()],
+        ),
+
+        // 0: breadcrumb trail.
+        SliverToBoxAdapter(
+          child: BreadcrumbBar(items: _breadcrumbItems()),
         ),
 
         // 1-3: category pill, title, metadata row (weekday+date, read time).

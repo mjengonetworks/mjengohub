@@ -58,7 +58,7 @@ class IncidentsListScreen extends StatelessWidget {
           elevation: 2,
           icon: const Icon(Icons.add_rounded, size: 20),
           label: Text(
-            'Report Incident',
+            '+ Submit Incident',
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -606,8 +606,8 @@ class _FeaturedCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                         color: _kDark,
                         height: 1.3,
                       ),
@@ -731,8 +731,8 @@ class _IncidentTile extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                       color: _kDark,
                       height: 1.3,
                     ),

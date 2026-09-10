@@ -68,7 +68,7 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
     if (!_controller.hasClients) return;
     final max = _controller.position.maxScrollExtent;
     if (max <= 0) return;
-    final next = _controller.offset + 0.6;
+    final next = _controller.offset + 1.1;
     _controller.jumpTo(next >= max ? 0 : next);
   }
 
@@ -92,7 +92,7 @@ class _PartnersCarouselState extends State<PartnersCarousel> {
     final itemCount = _partners.length * 3;
 
     return SizedBox(
-      height: 80,
+      height: 64,
       child: ListView.separated(
         controller: _controller,
         scrollDirection: Axis.horizontal,
@@ -166,7 +166,7 @@ class _PartnerLogoCardState extends State<_PartnerLogoCard> {
         child: Container(
           width: 160,
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(AppRadius.sharp),
