@@ -1,6 +1,5 @@
 import '../../shared/widgets/social_share_modal.dart';
 // lib/projects/screens/project_detail_screen.dart
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -136,15 +135,17 @@ class ProjectDetailScreen extends StatelessWidget {
               },
               child: Container(
                 margin: const EdgeInsets.only(right: 12),
-                width: 36,
-                height: 36,
+                width: 38,
+                height: 34,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.black38,
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: const Icon(
                   Icons.share_rounded,
-                  color: Colors.white,
+                  color: Color(0xFF0F172A),
                   size: 18,
                 ),
               ),
@@ -307,6 +308,16 @@ class ProjectDetailScreen extends StatelessWidget {
                                 valueColor: const AlwaysStoppedAnimation<Color>(
                                   _kBlue,
                                 ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Admin-verified · Suggest completion update',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                color: const Color(0xFF64748B),
                               ),
                             ),
                           ],
@@ -2596,70 +2607,24 @@ class _AttributionLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final attribution = project.attribution;
-    final submittedName = attribution?.isAnonymous == true
-        ? null
-        : (attribution?.submittedBy ?? project.submittedByProfile?.name);
-    final publishedName =
-        attribution?.publishedBy ?? project.publishedByProfile?.name;
-    final isAnonymous = attribution?.isAnonymous == true;
-
-    if (submittedName == null && publishedName == null && !isAnonymous) {
-      return const SizedBox.shrink();
-    }
-
+    final name =
+        project.submittedByProfile?.name ??
+        project.attribution?.submittedBy ??
+        'MjengoHub';
     final updated =
         project.updatedAt ?? DateTime.tryParse(project.createdAt ?? '');
-    final submittedUserId = int.tryParse(project.submittedByProfile?.id ?? '');
-    final publishedUserId = int.tryParse(project.publishedByProfile?.id ?? '');
+    final formattedDate = updated != null
+        ? _formatFullDate(updated)
+        : 'recently';
 
-    final nameStyle = GoogleFonts.montserrat(
-      color: const Color(0xFF0284C7),
-      fontWeight: FontWeight.w600,
-      fontSize: 13,
-    );
-    final plainStyle = GoogleFonts.montserrat(
-      color: const Color(0xFF64748B),
-      fontSize: 13,
-    );
-
-    InlineSpan nameSpan(String label, String name, int? userId) {
-      if (userId == null) {
-        return TextSpan(text: '$label $name', style: nameStyle);
-      }
-      return TextSpan(
-        text: '$label $name',
-        style: nameStyle,
-        recognizer: TapGestureRecognizer()
-          ..onTap = () =>
-              Get.toNamed(AppRoutes.publicProfile, arguments: userId),
-      );
-    }
-
-    final spans = <InlineSpan>[];
-    if (isAnonymous) {
-      spans.add(TextSpan(text: 'Submitted anonymously', style: plainStyle));
-    } else if (submittedName != null) {
-      spans.add(nameSpan('Submitted by', submittedName, submittedUserId));
-    }
-    if (publishedName != null) {
-      if (spans.isNotEmpty) spans.add(TextSpan(text: ' · ', style: plainStyle));
-      spans.add(nameSpan('Published by', publishedName, publishedUserId));
-    }
-    if (updated != null) {
-      if (spans.isNotEmpty) spans.add(TextSpan(text: ' · ', style: plainStyle));
-      spans.add(
-        TextSpan(
-          text: 'Last Updated ${_formatFullDate(updated)}',
-          style: plainStyle,
-        ),
-      );
-    }
-
-    return Text.rich(
-      TextSpan(children: spans),
-      maxLines: 2,
+    return Text(
+      'By $name • Updated $formattedDate',
+      maxLines: 1,
       overflow: TextOverflow.ellipsis,
+      style: GoogleFonts.montserrat(
+        fontSize: 12,
+        color: const Color(0xFF64748B),
+      ),
     );
   }
 }
