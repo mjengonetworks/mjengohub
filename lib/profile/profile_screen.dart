@@ -700,7 +700,7 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                   subtitle,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
-                    color: const Color(0xFF475569),
+                    color: const Color(0xFF1E293B),
                     height: 1.4,
                   ),
                   maxLines: 2,

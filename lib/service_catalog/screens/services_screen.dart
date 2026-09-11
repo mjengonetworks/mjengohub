@@ -200,7 +200,7 @@ class _ServiceCard extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12.5,
                         height: 1.45,
-                        color: AppColors.textSubtle,
+                        color: AppColors.textDark,
                       ),
                     ),
                   ],

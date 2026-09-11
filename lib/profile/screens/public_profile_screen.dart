@@ -173,7 +173,7 @@ class _Header extends StatelessWidget {
                     profile.bio!,
                     style: GoogleFonts.montserrat(
                       fontSize: 12.5,
-                      color: AppColors.textSubtle,
+                      color: AppColors.textDark,
                       height: 1.5,
                     ),
                   ),

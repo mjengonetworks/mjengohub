@@ -742,7 +742,7 @@ class _ArticleBlockWidget extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 15,
               fontStyle: FontStyle.italic,
-              color: const Color(0xFF334155),
+              color: AppColors.bodyCharcoal,
               height: 1.6,
             ),
           ),
@@ -776,7 +776,7 @@ class _ArticleBlockWidget extends StatelessWidget {
                             item,
                             style: GoogleFonts.montserrat(
                               fontSize: 15,
-                              color: const Color(0xFF4B5563),
+                              color: AppColors.bodyCharcoal,
                               height: 1.6,
                             ),
                           ),
@@ -820,7 +820,7 @@ class _ArticleBlockWidget extends StatelessWidget {
       case ArticleBlockType.paragraph:
         final baseStyle = GoogleFonts.montserrat(
           fontSize: 15.5,
-          color: const Color(0xFF334155),
+          color: AppColors.bodyCharcoal,
           height: 1.75,
         );
         if (block.spans == null) {

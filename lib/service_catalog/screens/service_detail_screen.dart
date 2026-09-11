@@ -329,7 +329,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 12.5,
                   height: 1.5,
-                  color: AppColors.textSubtle,
+                  color: AppColors.textDark,
                 ),
               ),
             ],

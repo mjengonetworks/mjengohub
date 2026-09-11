@@ -224,7 +224,7 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.montserrat(
               fontSize: 13.5,
-              color: const Color(0xFF374151),
+              color: const Color(0xFF111827),
               height: 1.65,
             ),
           ),
@@ -232,7 +232,7 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
             widget.description,
             style: GoogleFonts.montserrat(
               fontSize: 13.5,
-              color: const Color(0xFF374151),
+              color: const Color(0xFF111827),
               height: 1.65,
             ),
           ),
