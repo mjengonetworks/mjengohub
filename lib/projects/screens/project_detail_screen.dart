@@ -136,6 +136,7 @@ class ProjectDetailScreen extends StatelessWidget {
             ),
           ),
           actions: [
+            _AdminSpeedDial(project: project, ctrl: ctrl),
             _FollowButton(project: project, ctrl: ctrl),
             GestureDetector(
               onTap: () {
@@ -958,9 +959,146 @@ class _FollowButton extends StatelessWidget {
   }
 }
 
-/// Admin/Editor/Moderator: "Add an Update", "Edit Project", publish toggle.
+/// Compact admin menu shown in the app bar (Admin/Editor/Moderator only) —
+/// replaces the old inline "ADMIN ACTIONS" row of chips in [_ProjectActionBar]
+/// with a single squircle trigger + dropdown, matching the equivalent menu on
+/// [ArticleDetailScreen].
+class _AdminSpeedDial extends StatelessWidget {
+  final Project project;
+  final ProjectDetailController ctrl;
+  const _AdminSpeedDial({required this.project, required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<MjengoAuthController>();
+    final canManage =
+        auth.isAuthenticated && auth.currentUser?.canManageProjects == true;
+    if (!canManage) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      height: 34,
+      child: PopupMenuButton<String>(
+        tooltip: 'Admin actions',
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        offset: const Offset(0, 40),
+        itemBuilder: (context) => [
+          const PopupMenuItem(
+            value: 'edit',
+            child: _AdminMenuRow(
+              icon: Icons.edit_outlined,
+              label: 'Edit Details',
+            ),
+          ),
+          const PopupMenuItem(
+            value: 'admin_web',
+            child: _AdminMenuRow(
+              icon: Icons.open_in_browser_outlined,
+              label: 'View in Web Admin',
+            ),
+          ),
+          const PopupMenuItem(
+            value: 'add_update',
+            child: _AdminMenuRow(
+              icon: Icons.add_circle_outline,
+              label: 'Add Milestone / Update',
+            ),
+          ),
+          PopupMenuItem(
+            value: 'toggle_publish',
+            child: _AdminMenuRow(
+              // Detail requests always return published rows, so this menu
+              // never has definitive "already unpublished" state to reflect —
+              // same reasoning ProjectDetailController.togglePublish already
+              // documents for not re-fetching after the toggle.
+              icon: Icons.visibility_off_outlined,
+              label: 'Unpublish',
+            ),
+          ),
+        ],
+        onSelected: (value) {
+          switch (value) {
+            case 'edit':
+              Get.to(() => SubmitProjectScreen(existingProject: project));
+            case 'admin_web':
+              LinkLauncher.openLink(
+                context,
+                'https://mjengohub.co.ke/admin/projects/${project.id}/edit',
+              );
+            case 'add_update':
+              Get.to(
+                () => PostUpdateScreen(
+                  projectId: project.id,
+                  projectTitle: project.title,
+                  isPrivileged: true,
+                ),
+              );
+            case 'toggle_publish':
+              if (!ctrl.publishToggling.value) ctrl.togglePublish();
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.admin_panel_settings_outlined,
+                color: Color(0xFF0F172A),
+                size: 16,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                'Admin',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminMenuRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _AdminMenuRow({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 17, color: const Color(0xFF334155)),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF1A1A2E),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Everyone else, signed in: "Suggest an Update" only. Signed-out users see
-/// nothing — matches the Follow button's guest handling.
+/// nothing — matches the Follow button's guest handling. Admin/Editor/
+/// Moderator actions now live in [_AdminSpeedDial] in the app bar.
 class _ProjectActionBar extends StatelessWidget {
   final Project project;
   final ProjectDetailController ctrl;
@@ -975,103 +1113,34 @@ class _ProjectActionBar extends StatelessWidget {
     final canManage =
         auth.isAuthenticated && auth.currentUser?.canManageProjects == true;
 
+    // Admin/editor/moderator actions now live in the app-bar's _AdminSpeedDial
+    // popup — nothing left for this card to show for them.
+    if (canManage) return const SizedBox.shrink();
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: _kCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: canManage
-              ? AppColors.headingSlate.withValues(alpha: 0.18)
-              : _kDivider,
-        ),
+        border: Border.all(color: _kDivider),
       ),
-      child: canManage
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.shield_rounded,
-                      size: 13,
-                      color: AppColors.headingSlate,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'ADMIN ACTIONS',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.headingSlate,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ProjectActionChip(
-                        icon: Icons.add_comment_rounded,
-                        label: 'Add an Update',
-                        dark: true,
-                        onTap: () => Get.to(
-                          () => PostUpdateScreen(
-                            projectId: project.id,
-                            projectTitle: project.title,
-                            isPrivileged: true,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _ProjectActionChip(
-                        icon: Icons.edit_rounded,
-                        label: 'Edit Project',
-                        dark: true,
-                        onTap: () => Get.to(
-                          () => SubmitProjectScreen(existingProject: project),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Obx(
-                  () => _ProjectActionChip(
-                    icon: Icons.visibility_off_rounded,
-                    label: ctrl.publishToggling.value
-                        ? 'Working…'
-                        : 'Publish / Unpublish',
-                    dark: true,
-                    onTap: ctrl.publishToggling.value
-                        ? null
-                        : ctrl.togglePublish,
-                    fullWidth: true,
-                  ),
-                ),
-              ],
-            )
-          : _ProjectActionChip(
-              icon: Icons.add_comment_outlined,
-              label: 'Suggest an Update',
-              onTap: () => requireAuth(
-                context,
-                () => Get.to(
-                  () => PostUpdateScreen(
-                    projectId: project.id,
-                    projectTitle: project.title,
-                    isPrivileged: false,
-                  ),
-                ),
-                message: 'Sign in to submit project updates',
-              ),
-              fullWidth: true,
+      child: _ProjectActionChip(
+        icon: Icons.add_comment_outlined,
+        label: 'Suggest an Update',
+        onTap: () => requireAuth(
+          context,
+          () => Get.to(
+            () => PostUpdateScreen(
+              projectId: project.id,
+              projectTitle: project.title,
+              isPrivileged: false,
             ),
+          ),
+          message: 'Sign in to submit project updates',
+        ),
+        fullWidth: true,
+      ),
     );
   }
 }

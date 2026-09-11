@@ -16,7 +16,7 @@ import '../theme/app_theme.dart';
 import '../widgets/form_fields.dart';
 import '../widgets/responsive.dart';
 
-const String _kFallbackAdvertiseEmail = 'info@mjengohub.com';
+const String _kFallbackAdvertiseEmail = 'info@mjengohub.co.ke';
 
 class AdvertiseScreen extends StatefulWidget {
   const AdvertiseScreen({super.key});

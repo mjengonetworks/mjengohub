@@ -38,7 +38,7 @@ class SupportUsScreen extends StatelessWidget {
 
   Future<void> _emailUs() async {
     final uri = Uri.parse(
-      'mailto:info@mjengohub.com?subject=Supporting%20Mjengo%20Hub',
+      'mailto:info@mjengohub.co.ke?subject=Supporting%20Mjengo%20Hub',
     );
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }

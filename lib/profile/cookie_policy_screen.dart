@@ -102,7 +102,7 @@ class CookiePolicyScreen extends StatelessWidget {
           blocks: [
             DocBullets([
               'Company: Mjengo Networks Limited',
-              'Email: info@mjengohub.com',
+              'Email: info@mjengohub.co.ke',
               'Address: Nairobi, Kenya',
               'Website: mjengohub.co.ke',
             ]),

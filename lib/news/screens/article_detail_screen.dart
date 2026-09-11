@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
 import '../../navigation/main_navigation.dart';
@@ -173,7 +174,11 @@ class _ArticleBodyState extends State<_ArticleBody> {
           surfaceTintColor: Colors.white,
           elevation: 0,
           leading: _backButton(),
-          actions: [_bookmarkButton(), _shareButton()],
+          actions: [
+            _AdminSpeedDial(article: widget.article),
+            _bookmarkButton(),
+            _shareButton(),
+          ],
         ),
 
         // 0: breadcrumb trail.
@@ -421,6 +426,48 @@ class _ArticleBodyState extends State<_ArticleBody> {
           ),
           child: const Icon(
             Icons.share_rounded,
+            color: Color(0xFF0F172A),
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Admin-only entry point into the article's web admin edit page. Unlike
+/// [ProjectDetailScreen]'s admin menu, there's no in-app article editor and
+/// no `PUT articles/{slug}`/publish-toggle route in api.py to back
+/// "Edit Details"/"Add Update"/publish-toggle items in-app, so this only
+/// offers the one action that's actually backed by something real —
+/// everything else would just be a dead menu item.
+class _AdminSpeedDial extends StatelessWidget {
+  final Article article;
+  const _AdminSpeedDial({required this.article});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<MjengoAuthController>();
+    if (!(auth.isAuthenticated && auth.currentUser?.isAdmin == true)) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8, right: 4),
+      child: GestureDetector(
+        onTap: () => LinkLauncher.openLink(
+          context,
+          'https://mjengohub.co.ke/admin/articles/${article.id}/edit',
+        ),
+        child: Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+          ),
+          child: const Icon(
+            Icons.admin_panel_settings_outlined,
             color: Color(0xFF0F172A),
             size: 20,
           ),

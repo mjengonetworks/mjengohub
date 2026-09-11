@@ -81,7 +81,7 @@ class _ContactScreenState extends State<ContactScreen> {
 
     final uri = Uri(
       scheme: 'mailto',
-      path: 'info@mjengohub.com',
+      path: 'info@mjengohub.co.ke',
       query:
           'subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
     );
@@ -231,8 +231,16 @@ class _ContactScreenState extends State<ContactScreen> {
           icon: Icons.email_outlined,
           title: 'Email Us',
           subtitle: 'We\'ll respond within 24 hours',
-          value: 'info@mjengohub.com',
-          onTap: () => _launch('mailto:info@mjengohub.com'),
+          value: 'info@mjengohub.co.ke',
+          onTap: () => _launch('mailto:info@mjengohub.co.ke'),
+        ),
+        const SizedBox(height: 10),
+        _methodCard(
+          icon: Icons.alternate_email_rounded,
+          title: 'Alternate Email',
+          subtitle: 'For billing or account-specific queries',
+          value: 'mjengohubltd@gmail.com',
+          onTap: () => _launch('mailto:mjengohubltd@gmail.com'),
         ),
         const SizedBox(height: 10),
         _methodCard(

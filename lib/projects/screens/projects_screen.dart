@@ -287,6 +287,7 @@ class ProjectsScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildFeaturedStrip(ctrl),
                     _buildFilterControls(context, ctrl),
+                    _buildEntityIntelligenceHeader(ctrl),
                     _buildActiveEntityFilters(ctrl),
                     const SizedBox(height: 12),
 
@@ -595,6 +596,50 @@ class ProjectsScreen extends StatelessWidget {
               const SizedBox(height: 10),
             ],
           ],
+        ),
+      );
+    });
+  }
+
+  /// Single-line "Financier: Government of Kenya"-style header, shown only
+  /// when a stakeholder filter is active — the per-status counts already
+  /// live in [_PortfolioTabs]'s chip labels just below, so this only adds
+  /// the missing identity line rather than duplicating those network calls.
+  Widget _buildEntityIntelligenceHeader(ProjectsController ctrl) {
+    return Obx(() {
+      final (label, value) = switch (ctrl) {
+        _ when ctrl.selectedFinancier.value.isNotEmpty => (
+          'Financier',
+          ctrl.selectedFinancier.value,
+        ),
+        _ when ctrl.selectedContractor.value.isNotEmpty => (
+          'Contractor',
+          ctrl.selectedContractor.value,
+        ),
+        _ when ctrl.selectedConsultant.value.isNotEmpty => (
+          'Consultant',
+          ctrl.selectedConsultant.value,
+        ),
+        _ when ctrl.selectedClient.value.isNotEmpty => (
+          'Client',
+          ctrl.selectedClientName.value.isNotEmpty
+              ? ctrl.selectedClientName.value
+              : ctrl.selectedClient.value,
+        ),
+        _ => (null, null),
+      };
+      if (label == null) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Text(
+          '$label: $value',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF0A2540),
+          ),
         ),
       );
     });
