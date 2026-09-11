@@ -22,6 +22,20 @@ const _kDivider = Color(0xFFEEEEF5);
 const _kCard = Colors.white;
 const _kBg = Color(0xFFF8FAFC);
 
+/// Suppresses placeholder/unset values ("N/A", "TBD", "-", ...) instead of
+/// rendering them as if they were real data — matches the guard used by
+/// project_detail_screen.dart for the same class of admin-editable fields.
+bool _isValidInfo(String? value) {
+  if (value == null) return false;
+  final v = value.trim().toLowerCase();
+  return v.isNotEmpty &&
+      v != 'n/a' &&
+      v != 'tbd' &&
+      v != 'null' &&
+      v != 'none' &&
+      v != '-';
+}
+
 class IncidentDetailScreen extends StatelessWidget {
   final String slug;
   const IncidentDetailScreen({super.key, required this.slug});
@@ -182,10 +196,11 @@ class IncidentDetailScreen extends StatelessWidget {
                   children: [
                     _SeverityBadge(severity: incident.severity),
                     const SizedBox(width: 12),
-                    if (incident.county != null || incident.location != null)
+                    if (_isValidInfo(incident.county) ||
+                        _isValidInfo(incident.location))
                       Flexible(
                         child: Text(
-                          '📍 ${incident.county ?? incident.location}',
+                          '📍 ${_isValidInfo(incident.county) ? incident.county : incident.location}',
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             color: Colors.white70,
@@ -231,7 +246,7 @@ class IncidentDetailScreen extends StatelessWidget {
               const SizedBox(height: 8),
 
               // ── Description ─────────────────────────────────────────────
-              if (incident.description != null)
+              if (_isValidInfo(incident.description))
                 _buildCard(
                   title: 'What Happened',
                   child: Text(
@@ -288,7 +303,7 @@ class IncidentDetailScreen extends StatelessWidget {
                 ),
 
               // ── Lessons Learned ──────────────────────────────────────────
-              if (incident.lessonsLearned != null)
+              if (_isValidInfo(incident.lessonsLearned))
                 _buildCard(
                   title: '💡 Lessons Learned',
                   child: Container(
@@ -314,7 +329,7 @@ class IncidentDetailScreen extends StatelessWidget {
                 ),
 
               // ── Recommendations ──────────────────────────────────────────
-              if (incident.recommendations != null)
+              if (_isValidInfo(incident.recommendations))
                 _buildCard(
                   title: '✅ Recommendations',
                   child: Text(
@@ -355,7 +370,7 @@ class IncidentDetailScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  u.title ?? 'Update',
+                                  _isValidInfo(u.title) ? u.title! : 'Update',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,

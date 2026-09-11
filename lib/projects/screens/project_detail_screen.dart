@@ -37,6 +37,21 @@ const _kDivider = Color(0xFFEEEEF5);
 const _kCard = Colors.white;
 const _kCardPad = EdgeInsets.all(20);
 
+/// Suppresses placeholder/unset values ("N/A", "TBD", "-", ...) instead of
+/// rendering them as if they were real data — matches the website's own
+/// omission behavior for project metadata. Top-level so every widget class
+/// in this file can share one guard rather than re-deriving it per class.
+bool _isValidInfo(String? value) {
+  if (value == null) return false;
+  final v = value.trim().toLowerCase();
+  return v.isNotEmpty &&
+      v != 'n/a' &&
+      v != 'tbd' &&
+      v != 'null' &&
+      v != 'none' &&
+      v != '-';
+}
+
 class ProjectDetailScreen extends StatelessWidget {
   final String slug;
   const ProjectDetailScreen({super.key, required this.slug});
@@ -257,9 +272,10 @@ class ProjectDetailScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       _AttributionLine(project: project),
                       const SizedBox(height: 8),
-                      if (project.county != null || project.location != null)
+                      if (_isValidInfo(project.county) ||
+                          _isValidInfo(project.location))
                         Text(
-                          '📍 ${project.county ?? project.location}',
+                          '📍 ${_isValidInfo(project.county) ? project.county : project.location}',
                           style: GoogleFonts.montserrat(
                             fontSize: 13,
                             color: _kSubtext,
@@ -350,7 +366,7 @@ class ProjectDetailScreen extends StatelessWidget {
                 // the website's own "Project Summary" card (kept distinct
                 // from the fuller Project Overview below it — the website
                 // shows both, not one replacing the other) ──────────────────
-                if ((project.summary ?? '').isNotEmpty) ...[
+                if (_isValidInfo(project.summary)) ...[
                   _buildSummaryCard(project),
                   const SizedBox(height: 8),
                 ],
@@ -358,8 +374,8 @@ class ProjectDetailScreen extends StatelessWidget {
                 // ── Project Overview — the longform description, matching
                 // the website's "Project Overview" heading (was "About This
                 // Project"). ──────────────────────────────────────────────
-                if ((project.descriptionOverview ?? project.description) !=
-                    null) ...[
+                if (_isValidInfo(project.descriptionOverview) ||
+                    _isValidInfo(project.description)) ...[
                   _buildDescriptionCard(project),
                   const SizedBox(height: 8),
                 ],
@@ -367,7 +383,7 @@ class ProjectDetailScreen extends StatelessWidget {
                 // ── Official Project Name — a distinct bold heading from
                 // the (possibly informal) title, shown only when the backend
                 // sends it ────────────────────────────────────────────────
-                if ((project.officialProjectName ?? '').isNotEmpty) ...[
+                if (_isValidInfo(project.officialProjectName)) ...[
                   Container(
                     color: _kCard,
                     padding: _kCardPad,
@@ -544,11 +560,13 @@ class ProjectDetailScreen extends StatelessWidget {
       trackerLabel = 'Infrastructure Tracker';
       trackerRoute = AppRoutes.projects;
     }
-    final middle = project.county ?? project.sector;
+    final middle = _isValidInfo(project.county)
+        ? project.county
+        : (_isValidInfo(project.sector) ? project.sector : null);
     return [
       BreadcrumbItem('Home', onTap: () => Get.until((r) => r.isFirst)),
       BreadcrumbItem(trackerLabel, onTap: () => Get.toNamed(trackerRoute)),
-      if (middle != null && middle.isNotEmpty) BreadcrumbItem(middle),
+      if (middle != null) BreadcrumbItem(middle),
       BreadcrumbItem(project.title),
     ];
   }
@@ -591,20 +609,6 @@ class ProjectDetailScreen extends StatelessWidget {
   // Attribution (submitter/approving admin) is scoped out: submittedBy/
   // editedBy are bare user ids with no name-resolution endpoint anywhere in
   // this app, and there's no backend toggle for submitter-only display.
-  /// Suppresses placeholder/unset values ("N/A", "TBD", "-", ...) instead of
-  /// rendering them as if they were real data — matches the website's own
-  /// omission behavior for the Project Details fact grid.
-  bool _isValidInfo(String? value) {
-    if (value == null) return false;
-    final v = value.trim().toLowerCase();
-    return v.isNotEmpty &&
-        v != 'n/a' &&
-        v != 'tbd' &&
-        v != 'null' &&
-        v != 'none' &&
-        v != '-';
-  }
-
   Widget _buildDetailsCard(Project project) {
     final rows = <_DetailRow>[];
     if (_isValidInfo(project.client?.name)) {
@@ -734,9 +738,10 @@ class ProjectDetailScreen extends StatelessWidget {
   /// Project" and conflated summary+description, dropping the description
   /// entirely whenever a summary was present).
   Widget _buildDescriptionCard(Project project) {
-    final text = (project.descriptionOverview ?? project.description ?? '')
-        .replaceAll(RegExp(r'<[^>]*>'), '')
-        .trim();
+    final raw = _isValidInfo(project.descriptionOverview)
+        ? project.descriptionOverview!
+        : project.description ?? '';
+    final text = raw.replaceAll(RegExp(r'<[^>]*>'), '').trim();
     return _InfoCard(
       title: 'Project Overview',
       child: _ExpandableDescription(text: text),
@@ -2456,7 +2461,7 @@ class _FinanciersCard extends StatelessWidget {
                       runSpacing: 6,
                       alignment: WrapAlignment.end,
                       children: [
-                        if ((f.fundingType ?? '').isNotEmpty)
+                        if (_isValidInfo(f.fundingType))
                           _Badge(label: f.fundingType!),
                         if (f.sharePercentage != null)
                           _Badge(label: '${f.sharePercentage}%', filled: true),
@@ -2819,7 +2824,7 @@ class _DocumentsCard extends StatelessWidget {
                                 color: AppColors.bodyCharcoal,
                               ),
                             ),
-                            if ((doc.source ?? '').isNotEmpty)
+                            if (_isValidInfo(doc.source))
                               Text(
                                 doc.source!,
                                 style: GoogleFonts.montserrat(
