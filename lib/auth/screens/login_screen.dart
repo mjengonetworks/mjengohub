@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import '../../point/routes/app_routes.dart';
 import '../../profile/privacy_policy_screen.dart';
 import '../../profile/terms_conditions_screen.dart';
 import '../controllers/mjengo_auth_controller.dart';
+import '../widgets/google_sign_in_button.dart';
 
 // ── Palette ────────────────────────────────────────────────────────────────────
 const Color _accent = Color(0xFF3B82F6);
@@ -228,12 +230,7 @@ class _LoginFormState extends State<_LoginForm> {
           const SizedBox(height: 22),
 
           // Google
-          _GoogleButton(
-            onTap: () async {
-              HapticFeedback.lightImpact();
-              await _ctrl.signInWithGoogle();
-            },
-          ),
+          const _GoogleSignInSection(),
 
           const SizedBox(height: 28),
 
@@ -440,12 +437,7 @@ class _SignUpFormState extends State<_SignUpForm> {
           const SizedBox(height: 22),
 
           // Google
-          _GoogleButton(
-            onTap: () async {
-              HapticFeedback.lightImpact();
-              await _ctrl.signInWithGoogle();
-            },
-          ),
+          const _GoogleSignInSection(),
 
           const SizedBox(height: 28),
 
@@ -673,6 +665,51 @@ class _OrDivider extends StatelessWidget {
         Expanded(child: Container(height: 1, color: _inputBorder)),
       ],
     );
+  }
+}
+
+/// Switches between GIS's own rendered button on web (required — GIS has no
+/// imperative sign-in on web) and the app's custom button on native
+/// platforms, which drives [MjengoAuthController.signInWithGoogle] directly.
+class _GoogleSignInSection extends StatelessWidget {
+  const _GoogleSignInSection();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!kIsWeb) {
+      return _GoogleButton(
+        onTap: () async {
+          HapticFeedback.lightImpact();
+          await Get.find<MjengoAuthController>().signInWithGoogle();
+        },
+      );
+    }
+    return Obx(() {
+      final loading = Get.find<MjengoAuthController>().isLoading;
+      return Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: IgnorePointer(
+              ignoring: loading,
+              child: Opacity(
+                opacity: loading ? 0.5 : 1,
+                child: const GoogleWebSignInButton(),
+              ),
+            ),
+          ),
+          if (loading) ...[
+            const SizedBox(height: 10),
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
+        ],
+      );
+    });
   }
 }
 

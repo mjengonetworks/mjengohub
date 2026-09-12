@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -27,6 +28,7 @@ class MjengoAuthController extends GetxController {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   late final Future<void> _googleSignInReady;
   static const List<String> _googleScopes = ['email', 'profile'];
+  StreamSubscription<GoogleSignInAuthenticationEvent>? _googleAuthEventsSub;
   // ── Getters ───────────────────────────────────────────────────────────────
 
   UserModel? get currentUser => _user.value;
@@ -52,6 +54,23 @@ class MjengoAuthController extends GetxController {
     // later call to authenticate() from the button's onTap is the *first*
     // await in that gesture — required for the popup/GIS flow to be treated
     // as user-initiated on web.
+
+    if (kIsWeb) {
+      // On web, google_sign_in_web's authenticate() throws UnimplementedError
+      // — sign-in only happens through GIS's own rendered button
+      // (GoogleWebSignInButton), and its result arrives here instead of as a
+      // return value.
+      _googleAuthEventsSub = _googleSignIn.authenticationEvents.listen(
+        _handleGoogleAuthEvent,
+        onError: _handleGoogleAuthEventError,
+      );
+    }
+  }
+
+  @override
+  void onClose() {
+    _googleAuthEventsSub?.cancel();
+    super.onClose();
   }
 
   bool get _isGoogleSignInSupported {
@@ -245,7 +264,19 @@ class MjengoAuthController extends GetxController {
 
   // ── Google sign-in ────────────────────────────────────────────────────────
 
+  /// Entry point for the native/mobile "Continue with Google" button.
+  ///
+  /// On web, `authenticate()` always throws `UnimplementedError` — GIS
+  /// requires its own rendered button instead (`GoogleWebSignInButton`), and
+  /// the result of that flow is delivered to [_handleGoogleAuthEvent] rather
+  /// than returned from a call here.
   Future<void> signInWithGoogle() async {
+    if (kIsWeb) {
+      _setError(
+        'Tap the Google button below to continue with Google on web.',
+      );
+      return;
+    }
     if (!_isGoogleSignInSupported) {
       _setError('Google sign-in is not available on this platform.');
       return;
@@ -259,66 +290,84 @@ class MjengoAuthController extends GetxController {
       final GoogleSignInAccount account = await _googleSignIn.authenticate(
         scopeHint: _googleScopes,
       );
-      final GoogleSignInAuthentication auth = account.authentication;
-      final GoogleSignInClientAuthorization? authorization = await account
-          .authorizationClient
-          .authorizationForScopes(_googleScopes);
-      final String? accessToken = authorization?.accessToken;
-      final String? token = auth.idToken ?? accessToken;
-      if (token == null) {
-        _setError(
-          'Google sign-in failed: No credentials received from Google.',
-        );
-        return;
-      }
-
-      final response = await _api.apiPost('auth/google', {
-        'access_token': accessToken,
-        'id_token': auth.idToken,
-        'token': token,
-      }, auth: false);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final body = response.body as Map<String, dynamic>;
-        final userData = body['data']['user'] as Map<String, dynamic>;
-        await _api.saveTokens(
-          body['data']['access_token'] as String,
-          body['data']['refresh_token'] as String,
-        );
-        await _api.saveUserCache(userData);
-        _user.value = _parseUser(userData);
-        _isAuthenticated.value = true;
-        Get.offAllNamed('/home');
-      } else if (response.statusCode == 403) {
-        _setError('Your account has been deactivated');
-      } else if (response.statusCode == 404) {
-        // `POST auth/google` is not implemented in api.py — the website's only
-        // Google flow is a session-based redirect (application.py
-        // `/auth/google`), which a mobile/web Flutter client can't consume.
-        // Surface that plainly instead of "an unexpected error occurred".
-        _setError(
-          'Google sign-in isn\'t available yet. '
-          'Please sign in with your email and password.',
-        );
-      } else {
-        _setError(_extractError(response.body));
-      }
-    } on UnimplementedError catch (e) {
-      // On Flutter Web, google_sign_in's authenticate() is only wired up to
-      // the browser's Google Identity Services button flow — calling it
-      // imperatively (as we do here for mobile) throws UnimplementedError
-      // rather than returning a normal failure. Surface a clean message
-      // instead of the raw error.
-      print('Google Sign-In UnimplementedError: $e');
-      _setError(
-        'Google sign-in isn\'t available on web yet. '
-        'Please use email and password or check back shortly.',
-      );
+      await _exchangeGoogleAccount(account);
     } catch (e) {
       print('Google Sign-In caught error: $e');
       _setError('Unable to sign in with Google. Please try again.');
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Handles sign-in/sign-out events streamed from GIS's rendered web button.
+  Future<void> _handleGoogleAuthEvent(
+    GoogleSignInAuthenticationEvent event,
+  ) async {
+    if (event is! GoogleSignInAuthenticationEventSignIn) return;
+
+    try {
+      _setLoading(true);
+      _setError('');
+      await _exchangeGoogleAccount(event.user);
+    } catch (e) {
+      print('Google Sign-In web event error: $e');
+      _setError('Unable to sign in with Google. Please try again.');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _handleGoogleAuthEventError(Object error) {
+    print('Google Sign-In stream error: $error');
+    _setError('Unable to sign in with Google. Please try again.');
+    _setLoading(false);
+  }
+
+  /// Exchanges an authenticated [GoogleSignInAccount] for a Mjengo Hub JWT
+  /// pair via `POST auth/google`. Shared by both the mobile imperative flow
+  /// and the web rendered-button flow.
+  Future<void> _exchangeGoogleAccount(GoogleSignInAccount account) async {
+    final GoogleSignInAuthentication auth = account.authentication;
+    final GoogleSignInClientAuthorization? authorization = await account
+        .authorizationClient
+        .authorizationForScopes(_googleScopes);
+    final String? accessToken = authorization?.accessToken;
+    final String? token = auth.idToken ?? accessToken;
+    if (token == null) {
+      _setError('Google sign-in failed: No credentials received from Google.');
+      return;
+    }
+
+    final response = await _api.apiPost('auth/google', {
+      'access_token': accessToken,
+      'id_token': auth.idToken,
+      'token': token,
+    }, auth: false);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final body = response.body as Map<String, dynamic>;
+      final userData = body['data']['user'] as Map<String, dynamic>;
+      await _api.saveTokens(
+        body['data']['access_token'] as String,
+        body['data']['refresh_token'] as String,
+      );
+      await _api.saveUserCache(userData);
+      _user.value = _parseUser(userData);
+      _isAuthenticated.value = true;
+      Get.offAllNamed('/home');
+    } else if (response.statusCode == 403) {
+      _setError('Your account has been deactivated');
+    } else if (response.statusCode == 404) {
+      // `POST auth/google` is not implemented in api.py — the website's only
+      // Google flow is a session-based redirect (application.py
+      // `/auth/google`), which a mobile/web Flutter client can't consume.
+      // Surface that plainly instead of "an unexpected error occurred".
+      _setError(
+        'Google sign-in isn\'t available yet. '
+        'Please sign in with your email and password.',
+      );
+    } else {
+      _setError(_extractError(response.body));
     }
   }
 
