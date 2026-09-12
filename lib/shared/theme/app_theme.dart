@@ -38,6 +38,10 @@ class AppColors {
   static const Color canvas = Color(0xFFF8FAFC);
   static const Color mutedCanvas = Color(0xFFF1F5F9);
 
+  // Very light ice-blue tint for the persistent top app bar — avoids a flat
+  // white bar while staying subtle enough not to compete with content.
+  static const Color headerTint = Color(0xFFF0F7FF);
+
   // Mjengo Hub Prime badge blue
   static const Color primeBadge = Color(0xFF2C5AA0);
 

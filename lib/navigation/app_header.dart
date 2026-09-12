@@ -22,7 +22,9 @@ import 'main_navigation.dart';
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
 
-  static const double _barHeight = 64;
+  /// Public so [MainNavigation] can reserve exactly this much space for
+  /// content padding regardless of the bar's current slide offset.
+  static const double barHeight = 50;
 
   /// Jumps the bottom nav to [tabIndex] and, when called from a screen pushed
   /// on top of MainNavigation (e.g. ProjectsScreen), pops back to it first —
@@ -40,13 +42,13 @@ class AppHeader extends StatelessWidget {
     final isCompact = MediaQuery.sizeOf(context).width < 390;
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.canvas,
+        color: AppColors.headerTint,
         border: Border(bottom: BorderSide(color: AppColors.divider, width: 1)),
       ),
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          height: _barHeight,
+          height: barHeight,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(

@@ -1,5 +1,6 @@
 // lib/navigation/main_navigation.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,45 +13,109 @@ import '../profile/profile_screen.dart';
 import '../shared/theme/app_theme.dart';
 import 'app_header.dart';
 
-class MainNavigation extends StatelessWidget {
+class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
+
+  @override
+  State<MainNavigation> createState() => _MainNavigationState();
+}
+
+class _MainNavigationState extends State<MainNavigation> {
+  // Shared by the top and bottom bars — X/Twitter-style: slide both away on
+  // scroll-down, bring them back on scroll-up or as soon as scrolling stops.
+  // Plain RxBool (not Get.put) since this state is local to this widget.
+  final RxBool _navVisible = true.obs;
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is UserScrollNotification) {
+      if (notification.direction == ScrollDirection.reverse) {
+        _navVisible.value = false;
+      } else if (notification.direction == ScrollDirection.forward) {
+        _navVisible.value = true;
+      }
+    } else if (notification is ScrollEndNotification) {
+      _navVisible.value = true;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.put(MainNavController(), permanent: true);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: AppColors.canvas,
-        body: Column(
-          children: [
-            const AppHeader(),
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1080),
-                  child: Obx(
-                    () => IndexedStack(
-                      index: ctrl.currentIndex.value,
-                      children: const [
-                        HomeScreen(), // MainNavController.tabHome
-                        DiscoverScreen(), // MainNavController.tabNews
-                        HubScreen(), // MainNavController.tabHub
-                        VideosScreen(), // MainNavController.tabMedia
-                        ProfileScreen(), // MainNavController.tabProfile
-                      ],
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _onScrollNotification,
+          child: Stack(
+            children: [
+              // Content sits full-bleed underneath both bars at all times so
+              // hiding/showing them never reflows or jumps the page — it just
+              // reveals/covers a strip of already-laid-out content.
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: AppHeader.barHeight,
+                    bottom: _BottomNav.barHeight + bottomInset,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1080),
+                      child: Obx(
+                        () => IndexedStack(
+                          index: ctrl.currentIndex.value,
+                          children: const [
+                            HomeScreen(), // MainNavController.tabHome
+                            DiscoverScreen(), // MainNavController.tabNews
+                            HubScreen(), // MainNavController.tabHub
+                            VideosScreen(), // MainNavController.tabMedia
+                            ProfileScreen(), // MainNavController.tabProfile
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: Obx(
-          () => _BottomNav(
-            currentIndex: ctrl.currentIndex.value,
-            onTap: (i) => ctrl.currentIndex.value = i,
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Obx(
+                  () => AnimatedSlide(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    offset: _navVisible.value
+                        ? Offset.zero
+                        : const Offset(0, -1),
+                    child: const AppHeader(),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Obx(
+                  () => AnimatedSlide(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    offset: _navVisible.value
+                        ? Offset.zero
+                        : const Offset(0, 1),
+                    child: Obx(
+                      () => _BottomNav(
+                        currentIndex: ctrl.currentIndex.value,
+                        onTap: (i) => ctrl.currentIndex.value = i,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -65,6 +130,9 @@ class _BottomNav extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   const _BottomNav({required this.currentIndex, required this.onTap});
+
+  // ~20% shorter than the original 68 — compact icons/text/labels below match.
+  static const double barHeight = 54;
 
   // Order matches MainNavController.tabHome/tabNews/tabHub/tabMedia/tabProfile.
   static const _items = [
@@ -105,7 +173,7 @@ class _BottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 68,
+          height: barHeight,
           child: Row(
             children: List.generate(
               _items.length,
@@ -162,26 +230,26 @@ class _NavItem extends StatelessWidget {
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              height: 28,
+              height: 22,
               alignment: Alignment.center,
               child: Icon(
                 isSelected ? data.activeIcon : data.inactiveIcon,
                 color: color,
-                size: 22,
+                size: 19,
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 2),
             Text(
               data.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
-                fontSize: 10.5,
+                fontSize: 9.5,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: color,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 4,
