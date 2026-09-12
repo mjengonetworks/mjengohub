@@ -755,7 +755,7 @@ class _ArticleBlockWidget extends StatelessWidget {
             block.text!,
             style: GoogleFonts.montserrat(
               fontSize: 20,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
               height: 1.3,
             ),
@@ -768,7 +768,7 @@ class _ArticleBlockWidget extends StatelessWidget {
             block.text!,
             style: GoogleFonts.montserrat(
               fontSize: 17,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
               height: 1.3,
             ),

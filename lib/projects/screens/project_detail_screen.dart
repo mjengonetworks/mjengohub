@@ -715,8 +715,8 @@ class ProjectDetailScreen extends StatelessWidget {
           Text(
             'Project Summary',
             style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: AppColors.headingSlate,
             ),
           ),
@@ -724,7 +724,8 @@ class ProjectDetailScreen extends StatelessWidget {
           Text(
             project.summary!.replaceAll(RegExp(r'<[^>]*>'), '').trim(),
             style: GoogleFonts.montserrat(
-              fontSize: 13.5,
+              fontSize: 14.5,
+              fontWeight: FontWeight.w400,
               height: 1.6,
               color: _kDark,
             ),
@@ -2001,7 +2002,8 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
         Text(
           shown,
           style: GoogleFonts.montserrat(
-            fontSize: 13.5,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w400,
             color: _kDark,
             height: 1.6,
           ),
@@ -2132,9 +2134,10 @@ class _ProgressUpdateCard extends StatelessWidget {
         Text(
           update.content,
           style: GoogleFonts.montserrat(
-            fontSize: 13,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
             color: _kDark,
-            height: 1.5,
+            height: 1.55,
           ),
         ),
         if (youtubeId != null) ...[
@@ -2259,9 +2262,9 @@ class _InfoCard extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: _kDark,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.headingSlate,
             ),
           ),
           const SizedBox(height: 12),
