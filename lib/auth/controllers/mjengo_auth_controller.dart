@@ -42,7 +42,10 @@ class MjengoAuthController extends GetxController {
     super.onInit();
     _googleSignInReady = _googleSignIn.initialize(
       clientId: kIsWeb ? _googleClientId : null,
-      serverClientId: _googleClientId,
+      // google_sign_in_web asserts serverClientId is null on web (it has no
+      // concept of a separate server client id there) — only pass it on
+      // platforms that support it.
+      serverClientId: kIsWeb ? null : _googleClientId,
     );
     _restoreSession();
     // Kick off Google Sign-In initialization eagerly (and only once) so the
@@ -300,9 +303,20 @@ class MjengoAuthController extends GetxController {
       } else {
         _setError(_extractError(response.body));
       }
+    } on UnimplementedError catch (e) {
+      // On Flutter Web, google_sign_in's authenticate() is only wired up to
+      // the browser's Google Identity Services button flow — calling it
+      // imperatively (as we do here for mobile) throws UnimplementedError
+      // rather than returning a normal failure. Surface a clean message
+      // instead of the raw error.
+      print('Google Sign-In UnimplementedError: $e');
+      _setError(
+        'Google sign-in isn\'t available on web yet. '
+        'Please use email and password or check back shortly.',
+      );
     } catch (e) {
       print('Google Sign-In caught error: $e');
-      _setError('Error: $e');
+      _setError('Unable to sign in with Google. Please try again.');
     } finally {
       _setLoading(false);
     }
