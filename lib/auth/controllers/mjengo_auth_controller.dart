@@ -272,9 +272,7 @@ class MjengoAuthController extends GetxController {
   /// than returned from a call here.
   Future<void> signInWithGoogle() async {
     if (kIsWeb) {
-      _setError(
-        'Tap the Google button below to continue with Google on web.',
-      );
+      _setError('Tap the Google button below to continue with Google on web.');
       return;
     }
     if (!_isGoogleSignInSupported) {

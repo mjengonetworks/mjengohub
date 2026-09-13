@@ -260,6 +260,7 @@ class _ProfileAvatarButton extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => AppHeader._goToTab(4),
+      behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 40,
         height: 40,

@@ -90,7 +90,7 @@ class _ReadAlsoCardState extends State<ReadAlsoCard> {
             const SizedBox(height: 4),
             Text(
               related.title,
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
                 fontSize: 14.5,

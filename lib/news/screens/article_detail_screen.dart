@@ -14,6 +14,7 @@ import '../../navigation/main_navigation.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/ad_banner_slot.dart';
 import '../../shared/widgets/breadcrumb_bar.dart';
 import '../controllers/article_detail_controller.dart';
 import '../controllers/discover_controller.dart';
@@ -300,6 +301,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
                     ReadAlsoCard(article: widget.article),
                     TaggedProjectCard(article: widget.article),
                     ArticleMapEmbed(article: widget.article),
+                    const AdBannerSlot(slotId: 'article-mid', height: 100),
                   ],
                 ),
               ),
@@ -319,6 +321,10 @@ class _ArticleBodyState extends State<_ArticleBody> {
             children: [
               const SizedBox(height: 8),
               const RelatedTrackersCard(),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: AdBannerSlot(slotId: 'article-bottom', height: 100),
+              ),
               const SizedBox(height: 24),
               ArticleDiscoverySection(article: widget.article),
               const SizedBox(height: 28),
@@ -579,19 +585,19 @@ class _SummaryCallout extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: const Color(0xFFF0F7FF),
         border: const Border(
-          top: BorderSide(color: Color(0xFFE2E8F0)),
-          right: BorderSide(color: Color(0xFFE2E8F0)),
-          bottom: BorderSide(color: Color(0xFFE2E8F0)),
-          left: BorderSide(color: Color(0xFF0F172A), width: 3),
+          top: BorderSide(color: Color(0xFFDBEAFE)),
+          right: BorderSide(color: Color(0xFFDBEAFE)),
+          bottom: BorderSide(color: Color(0xFFDBEAFE)),
+          left: BorderSide(color: Color(0xFF2563EB), width: 4),
         ),
-        borderRadius: BorderRadius.circular(AppRadius.sharp),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
         style: GoogleFonts.montserrat(
-          fontSize: 15,
+          fontSize: 14.5,
           color: const Color(0xFF1E293B),
           height: 1.6,
           fontWeight: FontWeight.w500,

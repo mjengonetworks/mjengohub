@@ -10,8 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../navigation/main_navigation.dart';
 import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
+import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
-import '../../projects/widgets/tracker_project_card.dart';
 import '../../shared/theme/app_theme.dart';
 import '../controllers/discover_controller.dart';
 import '../models/article_model.dart';
@@ -106,7 +106,8 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
   List<Article> _related = [];
   List<Article> _trending = [];
   List<Article> _latest = [];
-  List<Project> _showcaseProjects = [];
+  List<Project> _infrastructureProjects = [];
+  List<Project> _privateProjects = [];
   bool _loading = true;
 
   @override
@@ -132,6 +133,10 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
         featured: true,
         perPage: 4,
       ),
+      _projectsService.getProjects(
+        projectType: 'private_development',
+        perPage: 4,
+      ),
     ]);
     if (!mounted) return;
     final related = (results[0] as List<Article>)
@@ -149,10 +154,13 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
           .where((a) => a.slug != widget.article.slug)
           .take(4)
           .toList();
-      _showcaseProjects = results[3] as List<Project>;
+      _infrastructureProjects = results[3] as List<Project>;
+      _privateProjects = results[4] as List<Project>;
       _loading = false;
     });
   }
+
+  void _explorePrivateProjects() => Get.toNamed(AppRoutes.privateProjects);
 
   void _openArticle(Article a) =>
       Get.toNamed(AppRoutes.articleDetail, arguments: a.slug);
@@ -252,15 +260,77 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
           const SizedBox(height: 24),
         ],
 
-        if (_showcaseProjects.isNotEmpty) ...[
-          _SectionHeading('Explore Projects'),
+        if (_infrastructureProjects.isNotEmpty) ...[
+          const _TrackerPill(
+            label: 'INFRASTRUCTURE TRACKER',
+            color: Color(0xFF0284C7),
+          ),
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
-                for (final project in _showcaseProjects) ...[
-                  TrackerProjectCard(project: project, width: double.infinity),
+                for (final project in _infrastructureProjects) ...[
+                  _TrackerPreviewCard(project: project),
+                  const SizedBox(height: 10),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ViewAllButton(
+            label: 'Explore Infrastructure Projects',
+            onTap: () => Get.toNamed(AppRoutes.projects),
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        if (_privateProjects.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Private Projects Tracker',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _explorePrivateProjects,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Explore Private Projects',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.accentBlue,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.arrow_forward,
+                        size: 14,
+                        color: AppColors.accentBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                for (final project in _privateProjects) ...[
+                  _TrackerPreviewCard(project: project),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -269,6 +339,143 @@ class _ArticleDiscoverySectionState extends State<ArticleDiscoverySection> {
           const SizedBox(height: 24),
         ],
       ],
+    );
+  }
+}
+
+// ── "INFRASTRUCTURE TRACKER" style section pill ─────────────────────────────
+
+class _TrackerPill extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _TrackerPill({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Text(
+        label,
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: color,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Mini tracker card: thumbnail, title, county/location badge, progress ───
+
+class _TrackerPreviewCard extends StatelessWidget {
+  final Project project;
+  const _TrackerPreviewCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    final place = project.county ?? project.location ?? project.country;
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.borderSlate),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: 92,
+              child: NetImage(
+                url: project.imageUrl,
+                fit: BoxFit.cover,
+                placeholderColor: const Color(0xFF1E3A5F),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      project.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        if (place != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              place,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSubtle,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Expanded(
+                          child: Text(
+                            project.statusLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSubtle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: (project.progressPercent.clamp(0, 100)) / 100,
+                        minHeight: 5,
+                        backgroundColor: const Color(0xFFE2E8F0),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

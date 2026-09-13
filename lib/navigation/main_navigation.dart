@@ -220,9 +220,14 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
   });
 
+  // Rich navy for the active tab, deep slate (not a faded grey) for inactive
+  // ones so the bar reads with clear contrast against the white background.
+  static const Color _activeColor = Color(0xFF0A2540);
+  static const Color _inactiveColor = Color(0xFF334155);
+
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? AppColors.primaryBlue : const Color(0xFF94A3B8);
+    final color = isSelected ? _activeColor : _inactiveColor;
 
     return Expanded(
       child: GestureDetector(
@@ -247,9 +252,9 @@ class _NavItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
-                fontSize: 9.5,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: color,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? _activeColor : const Color(0xFF475569),
               ),
             ),
             const SizedBox(height: 2),
@@ -258,7 +263,7 @@ class _NavItem extends StatelessWidget {
               width: 4,
               height: 4,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+                color: isSelected ? _activeColor : Colors.transparent,
                 shape: BoxShape.circle,
               ),
             ),
