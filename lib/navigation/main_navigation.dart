@@ -9,6 +9,7 @@ import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
 import '../videos/screens/videos_screen.dart';
 import '../hub/screens/hub_screen.dart';
+import '../point/routes/app_routes.dart';
 import '../profile/profile_screen.dart';
 import '../shared/theme/app_theme.dart';
 import 'app_header.dart';
@@ -220,10 +221,10 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
   });
 
-  // Rich navy for the active tab, deep slate (not a faded grey) for inactive
-  // ones so the bar reads with clear contrast against the white background.
-  static const Color _activeColor = Color(0xFF0A2540);
-  static const Color _inactiveColor = Color(0xFF334155);
+  // Vibrant royal blue for the active tab, soft steel-blue (never pitch
+  // black) for inactive ones so the bar reads as unmistakably blue-tinted.
+  static const Color _activeColor = Color(0xFF1D4ED8);
+  static const Color _inactiveColor = Color(0xFF64748B);
 
   @override
   Widget build(BuildContext context) {
@@ -253,8 +254,8 @@ class _NavItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? _activeColor : const Color(0xFF475569),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? _activeColor : _inactiveColor,
               ),
             ),
             const SizedBox(height: 2),
@@ -272,6 +273,63 @@ class _NavItem extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Reusable bottom nav for screens pushed outside MainNavigation ──────────
+//
+// ArticleDetailScreen / ProjectDetailScreen are pushed as standalone routes
+// on top of MainNavigation's own Navigator entry (GetPage, not a nested
+// IndexedStack tab), so they don't automatically get the shell's bottom bar.
+// This embeds the same bar + scroll-driven show/hide behavior directly into
+// those screens' own Scaffolds instead of restructuring routing into a
+// shell/nested-navigator model, which would touch every named-route push in
+// the app for a purely visual ask.
+class PersistentBottomNav extends StatelessWidget {
+  final RxBool visible;
+  const PersistentBottomNav({super.key, required this.visible});
+
+  static double barHeight(BuildContext context) =>
+      _BottomNav.barHeight + MediaQuery.paddingOf(context).bottom;
+
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = Get.put(MainNavController(), permanent: true);
+    return Obx(
+      () => AnimatedSlide(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        offset: visible.value ? Offset.zero : const Offset(0, 1),
+        child: Obx(
+          () => _BottomNav(
+            currentIndex: ctrl.currentIndex.value,
+            onTap: (i) {
+              ctrl.currentIndex.value = i;
+              Get.offAllNamed(AppRoutes.home);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Drop this in a [NotificationListener<ScrollNotification>] to drive a
+/// [PersistentBottomNav]'s [visible] flag with the same X/Twitter-style
+/// scroll-hide behavior as the home shell (hide on scroll-start, reveal on
+/// scroll-end/idle).
+bool onDetailScreenScrollNotification(
+  ScrollNotification notification,
+  RxBool visible,
+) {
+  if (notification.depth != 0) return false;
+  if (notification is ScrollStartNotification) {
+    visible.value = false;
+  } else if (notification is ScrollEndNotification ||
+      (notification is UserScrollNotification &&
+          notification.direction == ScrollDirection.idle)) {
+    visible.value = true;
+  }
+  return false;
 }
 
 class MainNavController extends GetxController {

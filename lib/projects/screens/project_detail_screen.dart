@@ -9,6 +9,7 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../navigation/main_navigation.dart';
 import '../../news/models/article_model.dart';
 import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
@@ -64,17 +65,33 @@ class ProjectDetailScreen extends StatelessWidget {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _kBg,
-        body: Obx(() {
-          if (ctrl.isLoading.value) {
-            return const Center(
-              child: CircularProgressIndicator(color: _kBlue),
-            );
-          }
-          if (ctrl.project.value == null) {
-            return _buildError(ctrl);
-          }
-          return _buildContent(context, ctrl);
-        }),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (n) =>
+                    onDetailScreenScrollNotification(n, ctrl.navVisible),
+                child: Obx(() {
+                  if (ctrl.isLoading.value) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: _kBlue),
+                    );
+                  }
+                  if (ctrl.project.value == null) {
+                    return _buildError(ctrl);
+                  }
+                  return _buildContent(context, ctrl);
+                }),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: PersistentBottomNav(visible: ctrl.navVisible),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -532,7 +549,7 @@ class ProjectDetailScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24 + PersistentBottomNav.barHeight(context)),
               ],
             ),
           ),

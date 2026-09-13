@@ -302,6 +302,10 @@ class ProjectDetailController extends GetxController {
   final ratingSubmitted = false.obs;
   final ratingLoading = false.obs;
 
+  // Drives the persistent bottom nav's scroll-hide behavior on
+  // ProjectDetailScreen (see PersistentBottomNav in main_navigation.dart).
+  final navVisible = true.obs;
+
   final String slug;
   ProjectDetailController(this.slug);
 

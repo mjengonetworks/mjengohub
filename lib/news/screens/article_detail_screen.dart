@@ -37,6 +37,7 @@ class ArticleDetailScreen extends StatefulWidget {
 class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   late final ArticleDetailController _ctrl;
   final _scrollController = ScrollController();
+  final _navVisible = true.obs;
 
   @override
   void initState() {
@@ -60,25 +61,44 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
       child: Scaffold(
         // Clean off-white editorial backdrop.
         backgroundColor: const Color(0xFFF8FAFC),
-        body: ScrollToTopFab(
-          controller: _scrollController,
-          child: Obx(() {
-            if (_ctrl.isLoading.value) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (n) =>
+                    onDetailScreenScrollNotification(n, _navVisible),
+                child: ScrollToTopFab(
+                  controller: _scrollController,
+                  child: Obx(() {
+                    if (_ctrl.isLoading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFF111827),
+                          ),
+                        ),
+                      );
+                    }
+                    if (_ctrl.errorMessage.isNotEmpty ||
+                        _ctrl.article.value == null) {
+                      return _ErrorView(message: _ctrl.errorMessage.value);
+                    }
+                    return _ArticleBody(
+                      article: _ctrl.article.value!,
+                      scrollController: _scrollController,
+                    );
+                  }),
                 ),
-              );
-            }
-            if (_ctrl.errorMessage.isNotEmpty || _ctrl.article.value == null) {
-              return _ErrorView(message: _ctrl.errorMessage.value);
-            }
-            return _ArticleBody(
-              article: _ctrl.article.value!,
-              scrollController: _scrollController,
-            );
-          }),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: PersistentBottomNav(visible: _navVisible),
+            ),
+          ],
         ),
       ),
     );
@@ -338,7 +358,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
                   title: 'Discussion',
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24 + PersistentBottomNav.barHeight(context)),
             ],
           ),
         ),

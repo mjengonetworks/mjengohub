@@ -12,6 +12,7 @@ import '../../point/routes/app_routes.dart';
 import '../../projects/models/project_model.dart';
 import '../../projects/screens/project_detail_screen.dart';
 import '../../projects/services/projects_service.dart';
+import '../../projects/widgets/projects_map_view.dart' show statusMarkerColor;
 import '../../shared/theme/app_theme.dart';
 import '../controllers/discover_controller.dart';
 import '../models/article_model.dart';
@@ -386,6 +387,13 @@ class _TrackerPreviewCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderSlate),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Row(
@@ -427,7 +435,7 @@ class _TrackerPreviewCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: const Color(0xFFEFF6FF),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -436,38 +444,71 @@ class _TrackerPreviewCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.montserrat(
                                 fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSubtle,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1D4ED8),
                               ),
                             ),
                           ),
                           const SizedBox(width: 6),
                         ],
-                        Expanded(
-                          child: Text(
-                            project.statusLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSubtle,
-                            ),
+                        Flexible(
+                          child: Builder(
+                            builder: (_) {
+                              final statusColor = statusMarkerColor(
+                                project.status,
+                              );
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  project.statusLabel,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: statusColor,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: LinearProgressIndicator(
-                        value: (project.progressPercent.clamp(0, 100)) / 100,
-                        minHeight: 5,
-                        backgroundColor: const Color(0xFFE2E8F0),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF10B981),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: LinearProgressIndicator(
+                              value:
+                                  (project.progressPercent.clamp(0, 100)) / 100,
+                              minHeight: 5,
+                              backgroundColor: const Color(0xFFE2E8F0),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF10B981),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${project.progressPercent.clamp(0, 100).round()}%',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
