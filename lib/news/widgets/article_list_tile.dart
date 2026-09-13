@@ -63,20 +63,6 @@ class ArticleListTile extends StatelessWidget {
                           color: const Color(0xFF475569),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.remove_red_eye_outlined,
-                        size: 12,
-                        color: Color(0xFF475569),
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${article.formattedViews} views',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11.5,
-                          color: const Color(0xFF475569),
-                        ),
-                      ),
                     ],
                   ),
                 ],

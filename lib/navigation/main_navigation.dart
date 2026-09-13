@@ -27,13 +27,16 @@ class _MainNavigationState extends State<MainNavigation> {
   final RxBool _navVisible = true.obs;
 
   bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is UserScrollNotification) {
-      if (notification.direction == ScrollDirection.reverse) {
-        _navVisible.value = false;
-      } else if (notification.direction == ScrollDirection.forward) {
-        _navVisible.value = true;
-      }
-    } else if (notification is ScrollEndNotification) {
+    // Only react to the outermost scrollable — nested horizontal carousels
+    // (e.g. the home screen's PageView) bubble their own notifications up
+    // and shouldn't drive the persistent bars.
+    if (notification.depth != 0) return false;
+
+    if (notification is ScrollStartNotification) {
+      _navVisible.value = false;
+    } else if (notification is ScrollEndNotification ||
+        (notification is UserScrollNotification &&
+            notification.direction == ScrollDirection.idle)) {
       _navVisible.value = true;
     }
     return false;
