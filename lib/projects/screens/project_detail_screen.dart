@@ -289,6 +289,11 @@ class ProjectDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       _AttributionLine(project: project),
+                      if (project.upvoteCount > 0 ||
+                          project.downvoteCount > 0) ...[
+                        const SizedBox(height: 8),
+                        _VoteCountRow(project: project),
+                      ],
                       const SizedBox(height: 8),
                       if (_isValidInfo(project.county) ||
                           _isValidInfo(project.location))
@@ -327,20 +332,23 @@ class ProjectDetailScreen extends StatelessWidget {
                                   style: GoogleFonts.montserrat(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
-                                    color: _kBlue,
+                                    color: const Color(0xFF059669),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 8),
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: LinearProgressIndicator(
-                                value: project.progressPercent / 100,
-                                minHeight: 10,
-                                backgroundColor: _kDivider,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  _kBlue,
+                              borderRadius: BorderRadius.circular(999),
+                              child: SizedBox(
+                                height: 6,
+                                child: LinearProgressIndicator(
+                                  value: project.progressPercent / 100,
+                                  backgroundColor: const Color(0xFFE2E8F0),
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF10B981),
+                                      ),
                                 ),
                               ),
                             ),
@@ -768,100 +776,128 @@ class ProjectDetailScreen extends StatelessWidget {
   }
 
   Widget _buildMilestonesCard(Project project) {
+    final milestones = project.milestones;
     return _InfoCard(
       title: 'Milestones',
       child: Column(
-        children: project.milestones.map((m) {
+        children: List.generate(milestones.length, (idx) {
+          final m = milestones[idx];
+          final isLast = idx == milestones.length - 1;
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: m.isAchieved ? const Color(0xFF16A34A) : _kDivider,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    m.isAchieved
-                        ? Icons.check_rounded
-                        : Icons.radio_button_unchecked_rounded,
-                    size: 14,
-                    color: m.isAchieved ? Colors.white : _kSubtext,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        m.title,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: _kDark,
-                        ),
-                      ),
-                      if (m.milestoneDate != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          _fmtDate(m.milestoneDate!),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 11,
-                            color: _kSubtext,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: m.isAchieved
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFCBD5E1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            m.isAchieved
+                                ? Icons.check_rounded
+                                : Icons.radio_button_unchecked_rounded,
+                            size: 14,
+                            color: m.isAchieved ? Colors.white : _kSubtext,
                           ),
                         ),
-                      ],
-                      if (m.description != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          m.description!,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 12,
-                            color: _kSubtext,
-                          ),
-                        ),
-                      ],
-                      if (m.media.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 52,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: m.media.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(width: 6),
-                            itemBuilder: (_, i) => ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: m.media[i].mediaType == 'image'
-                                  ? NetImage(
-                                      url: m.media[i].url,
-                                      width: 52,
-                                      height: 52,
-                                      fit: BoxFit.cover,
-                                      placeholderColor: _kDivider,
-                                    )
-                                  : Container(
-                                      width: 52,
-                                      height: 52,
-                                      color: _kDark,
-                                      child: const Icon(
-                                        Icons.play_circle_fill_rounded,
-                                        color: Colors.white54,
-                                        size: 22,
-                                      ),
-                                    ),
+                        // ── Connecting track — unbroken vertical timeline
+                        // between sequential nodes, matching the website's
+                        // `.pd-timeline::before` line. Colored by whether
+                        // this node is achieved (leads into the next one).
+                        if (!isLast)
+                          Expanded(
+                            child: Container(
+                              width: 2,
+                              margin: const EdgeInsets.symmetric(vertical: 2),
+                              color: m.isAchieved
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFCBD5E1),
                             ),
                           ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          m.title,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _kDark,
+                          ),
+                        ),
+                        if (m.milestoneDate != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            _fmtDate(m.milestoneDate!),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              color: _kSubtext,
+                            ),
+                          ),
+                        ],
+                        if (m.description != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            m.description!,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              color: _kSubtext,
+                            ),
+                          ),
+                        ],
+                        if (m.media.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 52,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: m.media.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(width: 6),
+                              itemBuilder: (_, i) => ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: m.media[i].mediaType == 'image'
+                                    ? NetImage(
+                                        url: m.media[i].url,
+                                        width: 52,
+                                        height: 52,
+                                        fit: BoxFit.cover,
+                                        placeholderColor: _kDivider,
+                                      )
+                                    : Container(
+                                        width: 52,
+                                        height: 52,
+                                        color: _kDark,
+                                        child: const Icon(
+                                          Icons.play_circle_fill_rounded,
+                                          color: Colors.white54,
+                                          size: 22,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }).toList(),
@@ -1158,6 +1194,78 @@ class _ProjectActionBar extends StatelessWidget {
           message: 'Sign in to submit project updates',
         ),
         fullWidth: true,
+      ),
+    );
+  }
+}
+
+/// Displays `upvote_count`/`downvote_count` from the project model. Read-only
+/// by design: there is no `POST projects/{id}/vote` route in api.py (unlike
+/// comments/reports, which do have one) — the backend serializes these
+/// counts with `getattr(p, 'upvote_count', 0)`, i.e. defensively, with no
+/// corresponding write path. A tappable vote button here would either no-op
+/// silently or fake a persisted vote that resets on next load, so this stays
+/// a plain pill pair instead of wiring fabricated interactivity.
+class _VoteCountRow extends StatelessWidget {
+  final Project project;
+  const _VoteCountRow({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (project.upvoteCount > 0)
+          _VoteCountPill(
+            icon: Icons.thumb_up_alt_rounded,
+            count: project.upvoteCount,
+            color: const Color(0xFF10B981),
+          ),
+        if (project.upvoteCount > 0 && project.downvoteCount > 0)
+          const SizedBox(width: 8),
+        if (project.downvoteCount > 0)
+          _VoteCountPill(
+            icon: Icons.thumb_down_alt_rounded,
+            count: project.downvoteCount,
+            color: const Color(0xFFEF4444),
+          ),
+      ],
+    );
+  }
+}
+
+class _VoteCountPill extends StatelessWidget {
+  final IconData icon;
+  final int count;
+  final Color color;
+  const _VoteCountPill({
+    required this.icon,
+    required this.count,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            '$count',
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
