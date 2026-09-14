@@ -578,7 +578,7 @@ class _ArticleList extends StatelessWidget {
         color: const Color(0xFF111827),
         onRefresh: ctrl.refresh,
         child: ListView.separated(
-          padding: const EdgeInsets.only(top: 4, bottom: 16),
+          padding: const EdgeInsets.only(top: 4, bottom: 32),
           itemCount: ctrl.articles.length + (ctrl.hasMore.value ? 1 : 0),
           separatorBuilder: (_, _) => const Divider(
             height: 1,

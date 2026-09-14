@@ -53,7 +53,7 @@ class BreakingNewsCard extends StatelessWidget {
                 top: Radius.circular(14),
               ),
               child: AspectRatio(
-                aspectRatio: 16 / 9,
+                aspectRatio: 4 / 3,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [

@@ -11,6 +11,7 @@ import '../../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/utils/text_case.dart';
 import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
@@ -116,6 +117,7 @@ class ProjectsScreen extends StatelessWidget {
     final client = args['client'] as String?;
     final clientName = args['clientName'] as String?;
     final category = args['category'] as String?;
+    final categoryName = args['categoryName'] as String?;
     final county = args['county'] as String?;
     final user = args['user'] as String?;
     final userName = args['userName'] as String?;
@@ -135,6 +137,7 @@ class ProjectsScreen extends StatelessWidget {
       client: client,
       clientName: clientName,
       category: category,
+      categoryName: categoryName,
       county: county,
       user: user,
       userName: userName,
@@ -168,7 +171,51 @@ class ProjectsScreen extends StatelessWidget {
           : ctrl.selectedUser.value;
       return 'Contributions by $name';
     }
+    final combined = _statusCategoryHeading(ctrl);
+    if (combined != null) return combined;
     return title;
+  }
+
+  /// Status + category filter heading (e.g. "Ongoing Private Developments",
+  /// "Road Projects", "Ongoing Road Projects") — lower priority than the
+  /// entity-filter titles above (client/contractor/etc. + county), which
+  /// already give a more specific header. Category display name comes from
+  /// [ProjectsController.selectedCategoryName] (a real category label
+  /// resolved at the tap site) or, failing that, a generic Title Case of
+  /// the slug — never a hardcoded category->label table.
+  String? _statusCategoryHeading(ProjectsController ctrl) {
+    final statusPart = ctrl.selectedStatus.value.isNotEmpty
+        ? _statusLabel(ctrl.selectedStatus.value)
+        : null;
+    final categoryName = ctrl.selectedCategory.value.isEmpty
+        ? null
+        : (ctrl.selectedCategoryName.value.isNotEmpty
+              ? ctrl.selectedCategoryName.value
+              : titleCaseFromSlug(ctrl.selectedCategory.value));
+    if (statusPart == null && categoryName == null) return null;
+    final noun = categoryName != null
+        ? '$categoryName Projects'
+        : (projectType == 'private_development'
+              ? 'Private Developments'
+              : 'Infrastructure Projects');
+    return statusPart != null ? '$statusPart $noun' : noun;
+  }
+
+  String? _statusCategorySubtitle(ProjectsController ctrl) {
+    final statusPart = ctrl.selectedStatus.value.isNotEmpty
+        ? _statusLabel(ctrl.selectedStatus.value)
+        : null;
+    final categoryName = ctrl.selectedCategory.value.isEmpty
+        ? null
+        : (ctrl.selectedCategoryName.value.isNotEmpty
+              ? ctrl.selectedCategoryName.value
+              : titleCaseFromSlug(ctrl.selectedCategory.value));
+    if (statusPart == null && categoryName == null) return null;
+    final count = ctrl.projects.length;
+    var noun = 'project${count == 1 ? '' : 's'}';
+    if (categoryName != null) noun = '${categoryName.toLowerCase()} $noun';
+    if (statusPart != null) noun = '${statusPart.toLowerCase()} $noun';
+    return 'Showing $count $noun';
   }
 
   String _dynamicSubtitle(ProjectsController ctrl) {
@@ -196,6 +243,8 @@ class ProjectsScreen extends StatelessWidget {
           : ctrl.selectedUser.value;
       return 'Projects submitted and curated by $name';
     }
+    final combined = _statusCategorySubtitle(ctrl);
+    if (combined != null) return combined;
     return subtitle;
   }
 
@@ -274,7 +323,7 @@ class ProjectsScreen extends StatelessWidget {
             child: Obx(
               () => ContentWidth(
                 child: ListView(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.only(bottom: 32),
                   children: [
                     const SizedBox(height: 12),
                     _buildHeroBanner(ctrl),
@@ -1104,19 +1153,21 @@ class ProjectsScreen extends StatelessWidget {
   }
 
   String _privateStatusLabel(String status) => switch (status) {
+    '' => 'All statuses',
     'planned' => 'Planning',
     'ongoing' => 'Under Construction',
     'completed' => 'Completed',
     'stalled' => 'Stalled',
-    _ => 'All statuses',
+    _ => titleCaseFromSlug(status),
   };
 
   String _statusLabel(String status) => switch (status) {
+    '' => 'All statuses',
     'planned' => 'Announced',
     'ongoing' => 'Under Construction',
     'completed' => 'Completed',
     'stalled' => 'Stalled',
-    _ => 'All statuses',
+    _ => titleCaseFromSlug(status),
   };
 
   String _costTierLabel(String tier) => switch (tier) {
@@ -1448,7 +1499,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                 top: Radius.circular(14),
               ),
               child: AspectRatio(
-                aspectRatio: 16 / 9,
+                aspectRatio: 4 / 3,
                 child: NetImage(
                   url: project.imageUrl,
                   fit: BoxFit.cover,

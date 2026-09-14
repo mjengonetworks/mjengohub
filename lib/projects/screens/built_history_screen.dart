@@ -132,7 +132,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
             onRefresh: _load,
             child: ListView(
               controller: _scrollController,
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.only(bottom: 32),
               children: [
                 const SizedBox(height: 12),
                 TrackerHeroCarousel(
@@ -256,7 +256,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AspectRatio(
-                                  aspectRatio: 16 / 9,
+                                  aspectRatio: 4 / 3,
                                   child: NetImage(
                                     url: a.imageUrl,
                                     fit: BoxFit.cover,

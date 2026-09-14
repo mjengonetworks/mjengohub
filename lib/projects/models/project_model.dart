@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../news/models/article_model.dart';
 import '../../auth/models/user_model.dart';
+import '../../shared/utils/text_case.dart';
 
 const String _kBase = 'https://mjengohub.co.ke';
 
@@ -906,7 +907,7 @@ class Project {
       case 'cancelled':
         return 'Cancelled';
       default:
-        return status;
+        return titleCaseFromSlug(status);
     }
   }
 

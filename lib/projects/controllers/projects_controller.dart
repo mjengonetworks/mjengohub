@@ -44,6 +44,14 @@ class ProjectsController extends GetxController {
   /// projects` (see ProjectsService.categorySlug).
   final selectedCategory = ''.obs;
 
+  /// Human display name for [selectedCategory], resolved from the real
+  /// `TrackerSectionGroup.displayLabel` at the tap site (see
+  /// TrackerDynamicSections) rather than a hardcoded slug->label table, so
+  /// new backend categories render correctly with no code change. Falls
+  /// back to a generic Title Case conversion of the slug when unset (e.g.
+  /// arriving via a route argument that doesn't carry a label).
+  final selectedCategoryName = ''.obs;
+
   /// `submitted_by` — unconfirmed against the live backend (no documented
   /// route for it), added defensively the same way `updated_at`/
   /// `official_project_name` were on the Project model: wired end-to-end so
@@ -197,6 +205,7 @@ class ProjectsController extends GetxController {
     String? client,
     String? clientName,
     String? category,
+    String? categoryName,
     String? user,
     String? userName,
     String? sort,
@@ -211,6 +220,7 @@ class ProjectsController extends GetxController {
     if (client != null) selectedClient.value = client;
     if (clientName != null) selectedClientName.value = clientName;
     if (category != null) selectedCategory.value = category;
+    if (categoryName != null) selectedCategoryName.value = categoryName;
     if (user != null) selectedUser.value = user;
     if (userName != null) selectedUserName.value = userName;
     if (sort != null) selectedSort.value = sort;
@@ -254,6 +264,7 @@ class ProjectsController extends GetxController {
     selectedClient.value = '';
     selectedClientName.value = '';
     selectedCategory.value = '';
+    selectedCategoryName.value = '';
     selectedUser.value = '';
     selectedUserName.value = '';
     selectedSort.value = '';

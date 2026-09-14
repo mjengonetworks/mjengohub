@@ -613,7 +613,7 @@ class _RelatedArticleCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: 16 / 9,
+              aspectRatio: 4 / 3,
               child: NetImage(
                 url: article.imageUrl,
                 fit: BoxFit.cover,

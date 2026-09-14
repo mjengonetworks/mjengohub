@@ -44,8 +44,26 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
   final _scrollController = ScrollController();
   late final TabController _tabController;
 
-  List<Project> _projects = [];
+  List<Project> _allProjects = [];
   bool _loading = true;
+
+  /// No server-side single-country query param exists (`application.py`'s
+  /// africa_world_list() only filters by region/country/status/q as a
+  /// combined search term server-side, per this file's own header comment,
+  /// and `ProjectsService.getProjects` has no dedicated `country` param) —
+  /// same "client-side over already-loaded rows" pattern as
+  /// `BuildingsTaxonomy` on the Private Projects tracker. Country options
+  /// are derived from the currently-loaded region's rows, never hardcoded,
+  /// so this degrades gracefully as new countries appear in the data.
+  String? _country;
+
+  List<Project> get _projects => _country == null
+      ? _allProjects
+      : _allProjects.where((p) => p.country == _country).toList();
+
+  List<String> get _availableCountries =>
+      _allProjects.map((p) => p.country).whereType<String>().toSet().toList()
+        ..sort();
 
   static final _regionKeys = _kRegions.keys.toList();
 
@@ -85,9 +103,87 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
     );
     if (!mounted) return;
     setState(() {
-      _projects = projects;
+      _allProjects = projects;
+      // A country selected under one region may not exist in another —
+      // drop it rather than silently filtering to an empty grid.
+      if (_country != null && !_availableCountries.contains(_country)) {
+        _country = null;
+      }
       _loading = false;
     });
+  }
+
+  Future<void> _showCountrySheet() async {
+    final options = _availableCountries;
+    final selected = await showModalBottomSheet<String?>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'Select Country',
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text(
+                'All Countries',
+                style: GoogleFonts.montserrat(fontSize: 13.5),
+              ),
+              trailing: _country == null
+                  ? const Icon(Icons.check, color: AppColors.accentBlue)
+                  : null,
+              onTap: () => Navigator.pop(sheetContext, ''),
+            ),
+            if (options.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Text(
+                  'No countries in this region yet.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12.5,
+                    color: AppColors.textSubtle,
+                  ),
+                ),
+              )
+            else
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final country in options)
+                      ListTile(
+                        title: Text(
+                          country,
+                          style: GoogleFonts.montserrat(fontSize: 13.5),
+                        ),
+                        trailing: _country == country
+                            ? const Icon(
+                                Icons.check,
+                                color: AppColors.accentBlue,
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(sheetContext, country),
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (selected == null || !mounted) return;
+    setState(() => _country = selected.isEmpty ? null : selected);
   }
 
   @override
@@ -132,7 +228,7 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
             child: SingleChildScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              padding: const EdgeInsets.only(top: 16, bottom: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -154,7 +250,57 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
                     loading: _loading,
                     defaultCenter: kAfricaMapCenter,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+
+                  // Geographic scope is 'global' here (Africa/World), so the
+                  // Country selector applies — mirrors the web's
+                  // Kenya-scope-shows-county / global-scope-shows-country
+                  // logic (ProjectsScreen's Kenya-scoped trackers show only
+                  // a County selector, never Country; this screen is the
+                  // reverse and never shows County).
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GestureDetector(
+                      onTap: _showCountrySheet,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.divider),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.public_rounded,
+                              size: 18,
+                              color: AppColors.textSubtle,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Country: ${_country ?? 'All Countries'}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 18,
+                              color: AppColors.textSubtle,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // 3-5. Browse by Category / Most Viewed / By Status
                   TrackerDynamicSections(geoScope: 'global'),

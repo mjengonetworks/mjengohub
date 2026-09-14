@@ -2,11 +2,23 @@
 //
 // Global, multi-category search with debounced queries.
 //
-// Two sources are merged, because neither covers everything:
+// Sources are merged client-side, because no single endpoint covers
+// everything:
 //   * `GET /search` (SearchService) — articles, services and infrastructure
-//     reports, in one round trip.
-//   * per-feature endpoints — `/projects` and `/incidents`, which the unified
-//     route deliberately doesn't touch.
+//     reports, in one round trip. This endpoint's shape is unchanged
+//     server-side (still `{articles, services, reports, query}`, no
+//     pagination/type params) — see the per-category fetches below for how
+//     Infrastructure/Private/Africa & World/Built History/Profiles are
+//     actually sourced instead.
+//   * `ProjectsService.getProjects(...)` — filtered independently by
+//     `projectType`/`geoScope`/`isBuiltHistory` for the four project-based
+//     categories, since `/search` doesn't touch `/projects` at all.
+//   * `ProjectsService.getClients()` — filtered client-side by name for
+//     "Profiles/Companies"; there is no `/search`-style query endpoint for
+//     entities/clients on the live backend (`GET /entities?q=` 404s), so
+//     this category degrades to "whatever's in the clients list that
+//     matches" rather than a real server-side search.
+//   * `/incidents`, which the unified route also doesn't touch.
 //
 // Filters are applied per source so an unticked category costs no request.
 // The old "Events" filter has been dropped: the website's events live only as
@@ -17,6 +29,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../entities/screens/entity_profile_screen.dart';
 import '../../incidents/models/incident_model.dart';
 import '../../incidents/services/incidents_service.dart';
 import '../../navigation/app_header.dart';
@@ -36,8 +49,12 @@ import '../services/search_service.dart';
 
 enum _SearchCategory {
   articles,
+  infrastructureProjects,
+  privateDevelopments,
+  africaWorld,
+  builtHistory,
+  profiles,
   news,
-  projects,
   safetyIncidents,
   services,
   reports,
@@ -48,10 +65,18 @@ extension on _SearchCategory {
     switch (this) {
       case _SearchCategory.articles:
         return 'Articles';
+      case _SearchCategory.infrastructureProjects:
+        return 'Infrastructure Projects';
+      case _SearchCategory.privateDevelopments:
+        return 'Private Developments';
+      case _SearchCategory.africaWorld:
+        return 'Africa & World';
+      case _SearchCategory.builtHistory:
+        return 'Built History';
+      case _SearchCategory.profiles:
+        return 'Profiles/Companies';
       case _SearchCategory.news:
         return 'News';
-      case _SearchCategory.projects:
-        return 'Projects';
       case _SearchCategory.safetyIncidents:
         return 'Safety Incidents';
       case _SearchCategory.services:
@@ -78,14 +103,11 @@ class _SearchScreenState extends State<SearchScreen> {
   final _controller = TextEditingController();
   Timer? _debounce;
 
-  final Set<_SearchCategory> _activeFilters = {
-    _SearchCategory.articles,
-    _SearchCategory.news,
-    _SearchCategory.projects,
-    _SearchCategory.safetyIncidents,
-    _SearchCategory.services,
-    _SearchCategory.reports,
-  };
+  static const _allCategories = _SearchCategory.values;
+
+  final Set<_SearchCategory> _activeFilters = {..._allCategories};
+
+  bool get _allSelected => _activeFilters.length == _allCategories.length;
 
   bool _loading = false;
   String _query = '';
@@ -93,11 +115,14 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Article> _news = [];
   List<Project> _infraProjects = [];
   List<Project> _privateProjects = [];
+  List<Project> _africaWorldProjects = [];
+  List<Project> _builtHistoryProjects = [];
+  List<ProjectClient> _profiles = [];
   List<Incident> _incidents = [];
   List<ServiceOffering> _services = [];
   List<InfrastructureReport> _reports = [];
 
-  static const int _kSectionCap = 3;
+  static const int _kSectionCap = 6;
 
   @override
   void dispose() {
@@ -123,6 +148,9 @@ class _SearchScreenState extends State<SearchScreen> {
         _news = [];
         _infraProjects = [];
         _privateProjects = [];
+        _africaWorldProjects = [];
+        _builtHistoryProjects = [];
+        _profiles = [];
         _incidents = [];
         _services = [];
         _reports = [];
@@ -134,7 +162,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final futures = <Future>[];
     Future<List<Article>> articlesFuture = Future.value([]);
-    Future<List<Project>> projectsFuture = Future.value([]);
+    Future<List<Project>> infraFuture = Future.value([]);
+    Future<List<Project>> privateFuture = Future.value([]);
+    Future<List<Project>> africaWorldFuture = Future.value([]);
+    Future<List<Project>> builtHistoryFuture = Future.value([]);
+    Future<List<ProjectClient>> profilesFuture = Future.value([]);
     Future<List<Incident>> incidentsRoadFuture = Future.value([]);
     Future<List<Incident>> incidentsSiteFuture = Future.value([]);
     Future<UnifiedSearchResults> unifiedFuture = Future.value(
@@ -152,9 +184,49 @@ class _SearchScreenState extends State<SearchScreen> {
       unifiedFuture = _searchApi.search(trimmed);
       futures.add(unifiedFuture);
     }
-    if (_activeFilters.contains(_SearchCategory.projects)) {
-      projectsFuture = _projectsApi.getProjects(q: trimmed, perPage: 20);
-      futures.add(projectsFuture);
+    if (_activeFilters.contains(_SearchCategory.infrastructureProjects)) {
+      infraFuture = _projectsApi.getProjects(
+        projectType: 'infrastructure',
+        q: trimmed,
+        perPage: 20,
+      );
+      futures.add(infraFuture);
+    }
+    if (_activeFilters.contains(_SearchCategory.privateDevelopments)) {
+      privateFuture = _projectsApi.getProjects(
+        projectType: 'private_development',
+        q: trimmed,
+        perPage: 20,
+      );
+      futures.add(privateFuture);
+    }
+    if (_activeFilters.contains(_SearchCategory.africaWorld)) {
+      africaWorldFuture = _projectsApi.getProjects(
+        geoScope: 'global',
+        q: trimmed,
+        perPage: 20,
+      );
+      futures.add(africaWorldFuture);
+    }
+    if (_activeFilters.contains(_SearchCategory.builtHistory)) {
+      builtHistoryFuture = _projectsApi.getProjects(
+        isBuiltHistory: true,
+        q: trimmed,
+        perPage: 20,
+      );
+      futures.add(builtHistoryFuture);
+    }
+    if (_activeFilters.contains(_SearchCategory.profiles)) {
+      // `GET /entities` has no query support and `/search` doesn't cover
+      // clients/entities at all, so this matches client-side against the
+      // full clients list rather than a real server-side search — see the
+      // file header comment.
+      profilesFuture = _projectsApi.getClients().then(
+        (clients) => clients
+            .where((c) => c.name.toLowerCase().contains(trimmed.toLowerCase()))
+            .toList(),
+      );
+      futures.add(profilesFuture);
     }
     if (_activeFilters.contains(_SearchCategory.safetyIncidents)) {
       incidentsRoadFuture = _incidentsApi.getIncidents(
@@ -174,7 +246,11 @@ class _SearchScreenState extends State<SearchScreen> {
     if (!mounted) return;
 
     final allArticles = await articlesFuture;
-    final projectResults = await projectsFuture;
+    final infraResults = await infraFuture;
+    final privateResults = await privateFuture;
+    final africaWorldResults = await africaWorldFuture;
+    final builtHistoryResults = await builtHistoryFuture;
+    final profileResults = await profilesFuture;
     final roadIncidents = await incidentsRoadFuture;
     final siteIncidents = await incidentsSiteFuture;
     final unified = await unifiedFuture;
@@ -186,12 +262,11 @@ class _SearchScreenState extends State<SearchScreen> {
       _news = _activeFilters.contains(_SearchCategory.news)
           ? allArticles.where((a) => a.isBreaking).toList()
           : [];
-      _infraProjects = projectResults
-          .where((p) => p.projectType != 'private_development')
-          .toList();
-      _privateProjects = projectResults
-          .where((p) => p.projectType == 'private_development')
-          .toList();
+      _infraProjects = infraResults;
+      _privateProjects = privateResults;
+      _africaWorldProjects = africaWorldResults;
+      _builtHistoryProjects = builtHistoryResults;
+      _profiles = profileResults;
       _incidents = [...roadIncidents, ...siteIncidents];
       _services = _activeFilters.contains(_SearchCategory.services)
           ? unified.services
@@ -214,11 +289,21 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_query.length >= 2) _runSearch(_query);
   }
 
+  void _selectAll() {
+    setState(() => _activeFilters
+      ..clear()
+      ..addAll(_allCategories));
+    if (_query.length >= 2) _runSearch(_query);
+  }
+
   int get _totalResults =>
       _articles.length +
       _news.length +
       _infraProjects.length +
       _privateProjects.length +
+      _africaWorldProjects.length +
+      _builtHistoryProjects.length +
+      _profiles.length +
       _incidents.length +
       _services.length +
       _reports.length;
@@ -285,18 +370,26 @@ class _SearchScreenState extends State<SearchScreen> {
                   height: 34,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    children: _SearchCategory.values
-                        .map(
-                          (c) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _FilterChip(
-                              label: c.label,
-                              selected: _activeFilters.contains(c),
-                              onTap: () => _toggleFilter(c),
-                            ),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _FilterChip(
+                          label: 'All',
+                          selected: _allSelected,
+                          onTap: _selectAll,
+                        ),
+                      ),
+                      ..._SearchCategory.values.map(
+                        (c) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _FilterChip(
+                            label: c.label,
+                            selected: _activeFilters.contains(c),
+                            onTap: () => _toggleFilter(c),
                           ),
-                        )
-                        .toList(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -312,7 +405,8 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_query.length < 2) {
       return Center(
         child: Text(
-          'Search articles, projects, services & safety reports',
+          'Search articles, infrastructure & private projects, '
+          'Africa & World, Built History, profiles, services & reports',
           style: GoogleFonts.montserrat(
             fontSize: 13,
             color: AppColors.textSubtle,
@@ -361,10 +455,48 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         if (_privateProjects.isNotEmpty)
           _cappedSection(
-            'Private Projects',
+            'Private Developments',
             _privateProjects,
             (p) => _ProjectRow(p),
             () => _viewAllProjects('private_development'),
+            buttonLabel: 'View More',
+          ),
+        if (_africaWorldProjects.isNotEmpty)
+          _cappedSection(
+            'Africa & World',
+            _africaWorldProjects,
+            (p) => _ProjectRow(p),
+            () => _viewAllProjectQuery(
+              'Africa & World',
+              () => ProjectsService().getProjects(
+                geoScope: 'global',
+                q: _query,
+                perPage: 50,
+              ),
+            ),
+            buttonLabel: 'View More',
+          ),
+        if (_builtHistoryProjects.isNotEmpty)
+          _cappedSection(
+            'Built History',
+            _builtHistoryProjects,
+            (p) => _ProjectRow(p),
+            () => _viewAllProjectQuery(
+              'Built History',
+              () => ProjectsService().getProjects(
+                isBuiltHistory: true,
+                q: _query,
+                perPage: 50,
+              ),
+            ),
+            buttonLabel: 'View More',
+          ),
+        if (_profiles.isNotEmpty)
+          _cappedSection(
+            'Profiles/Companies',
+            _profiles,
+            (c) => _ProfileRow(c),
+            _viewAllProfiles,
             buttonLabel: 'View More',
           ),
         if (_news.isNotEmpty)
@@ -393,17 +525,33 @@ class _SearchScreenState extends State<SearchScreen> {
   void _viewAllProjects(String projectType) {
     final title = projectType == 'infrastructure'
         ? 'Infrastructure Projects'
-        : 'Private Projects';
-    Get.to(
-      () => TrackerFilteredListScreen(
-        title: '$title · "$_query"',
-        fetcher: () => ProjectsService().getProjects(
-          projectType: projectType,
-          q: _query,
-          perPage: 50,
-        ),
+        : 'Private Developments';
+    _viewAllProjectQuery(
+      title,
+      () => ProjectsService().getProjects(
+        projectType: projectType,
+        q: _query,
+        perPage: 50,
       ),
     );
+  }
+
+  void _viewAllProjectQuery(
+    String title,
+    Future<List<Project>> Function() fetcher,
+  ) {
+    Get.to(
+      () => TrackerFilteredListScreen(title: '$title · "$_query"', fetcher: fetcher),
+    );
+  }
+
+  /// No dedicated "Profiles" list screen exists — pushes a plain,
+  /// locally-built list of the already-fetched client-side matches (see the
+  /// header comment: there's no server-side entity/client search to paginate
+  /// against, so "View More" here just shows the full match set rather than
+  /// a further network fetch).
+  void _viewAllProfiles() {
+    Get.to(() => _ProfilesListScreen(query: _query, profiles: _profiles));
   }
 
   Widget _cappedSection<T>(
@@ -415,7 +563,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }) {
     final shown = items.take(_kSectionCap).toList();
     return _section(
-      title,
+      '$title (${items.length})',
       shown.map(rowBuilder).toList(),
       trailing: items.length > _kSectionCap
           ? GestureDetector(
@@ -660,6 +808,70 @@ class _ReportRow extends StatelessWidget {
         ),
       ),
       onTap: () => Get.toNamed(AppRoutes.reportDetail, arguments: report.id),
+    );
+  }
+}
+
+class _ProfileRow extends StatelessWidget {
+  final ProjectClient client;
+  const _ProfileRow(this.client);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.apartment_rounded, color: AppColors.primaryBlue),
+      title: Text(
+        client.name,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: client.clientType != null
+          ? Text(
+              client.clientType!,
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                color: AppColors.textSubtle,
+              ),
+            )
+          : null,
+      onTap: () => Get.to(
+        () => EntityProfileScreen(slug: client.slug, fallbackName: client.name),
+      ),
+    );
+  }
+}
+
+/// Full-list destination for the "Profiles/Companies" category's View More —
+/// there's no server-side pagination to fetch further pages from (see the
+/// file header comment), so this just renders every client-side match
+/// already found rather than triggering another network call.
+class _ProfilesListScreen extends StatelessWidget {
+  final String query;
+  final List<ProjectClient> profiles;
+  const _ProfilesListScreen({required this.query, required this.profiles});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: AppColors.textDark,
+        title: Text(
+          'Profiles/Companies · "$query"',
+          style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.only(bottom: 32),
+        itemCount: profiles.length,
+        itemBuilder: (_, i) => _ProfileRow(profiles[i]),
+      ),
     );
   }
 }
