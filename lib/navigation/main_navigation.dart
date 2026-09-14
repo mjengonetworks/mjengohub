@@ -221,9 +221,10 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
   });
 
-  // Resting tabs: muted Slate Blue. Active tab: Dark Navy Blue.
+  // Active tab: Dark Navy. Inactive tabs: bold Royal Blue matching the
+  // section headers.
   static const Color _activeColor = Color(0xFF0A2540);
-  static const Color _inactiveColor = Color(0xFF64748B);
+  static const Color _inactiveColor = Color(0xFF1D4ED8);
 
   @override
   Widget build(BuildContext context) {
@@ -253,7 +254,7 @@ class _NavItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: FontWeight.w700, // Bold for both active and inactive
                 color: isSelected ? _activeColor : _inactiveColor,
               ),
             ),
