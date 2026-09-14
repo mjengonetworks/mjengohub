@@ -60,7 +60,7 @@ class SectionHeader extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: titleFontSize ?? 17,
                           fontWeight: titleFontWeight ?? FontWeight.w500,
-                          color: titleColor ?? AppColors.headingSlate,
+                          color: titleColor ?? const Color(0xFF1D4ED8),
                         ),
                       ),
                     ),
