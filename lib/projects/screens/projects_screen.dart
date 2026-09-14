@@ -391,7 +391,7 @@ class ProjectsScreen extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
-                          color: _kDark,
+                          color: const Color(0xFF1D4ED8),
                         ),
                       )
                     : Obx(
@@ -400,7 +400,7 @@ class ProjectsScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 20,
                             fontWeight: FontWeight.w500,
-                            color: _kDark,
+                            color: const Color(0xFF1D4ED8),
                           ),
                         ),
                       ),

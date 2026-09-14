@@ -20,6 +20,14 @@ class SectionHeader extends StatelessWidget {
   /// live API returned nothing.
   final bool isDemo;
 
+  /// Overrides for the title/"See All" colors — default to the usual
+  /// headingSlate/accentBlue pair when omitted, so existing callers are
+  /// unaffected.
+  final Color? titleColor;
+  final Color? seeAllColor;
+  final double? titleFontSize;
+  final FontWeight? titleFontWeight;
+
   const SectionHeader({
     super.key,
     required this.title,
@@ -27,6 +35,10 @@ class SectionHeader extends StatelessWidget {
     this.onSeeAll,
     this.seeAllLabel = 'View All',
     this.isDemo = false,
+    this.titleColor,
+    this.seeAllColor,
+    this.titleFontSize,
+    this.titleFontWeight,
   });
 
   @override
@@ -46,9 +58,9 @@ class SectionHeader extends StatelessWidget {
                       child: Text(
                         title,
                         style: GoogleFonts.montserrat(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.headingSlate,
+                          fontSize: titleFontSize ?? 17,
+                          fontWeight: titleFontWeight ?? FontWeight.w500,
+                          color: titleColor ?? AppColors.headingSlate,
                         ),
                       ),
                     ),
@@ -71,14 +83,14 @@ class SectionHeader extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.accentBlue,
+                          color: seeAllColor ?? AppColors.accentBlue,
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward,
                         size: 14,
-                        color: AppColors.accentBlue,
+                        color: seeAllColor ?? AppColors.accentBlue,
                       ),
                     ],
                   ),

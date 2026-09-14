@@ -48,12 +48,20 @@ class _SectionHeader extends StatelessWidget {
   final VoidCallback? onSeeAll;
   final bool isDemo;
   final String seeAllLabel;
+  final Color? titleColor;
+  final Color? seeAllColor;
+  final double? titleFontSize;
+  final FontWeight? titleFontWeight;
 
   const _SectionHeader({
     required this.title,
     this.onSeeAll,
     this.isDemo = false,
     this.seeAllLabel = 'See All',
+    this.titleColor,
+    this.seeAllColor,
+    this.titleFontSize,
+    this.titleFontWeight,
   });
 
   @override
@@ -63,6 +71,10 @@ class _SectionHeader extends StatelessWidget {
       onSeeAll: onSeeAll,
       isDemo: isDemo,
       seeAllLabel: seeAllLabel,
+      titleColor: titleColor,
+      seeAllColor: seeAllColor,
+      titleFontSize: titleFontSize,
+      titleFontWeight: titleFontWeight,
     );
   }
 }
@@ -800,6 +812,10 @@ class FeaturedProjectsSection extends StatefulWidget {
   final bool featured;
   final String title;
   final String subtitle;
+  final Color? titleColor;
+  final Color? seeAllColor;
+  final double? titleFontSize;
+  final FontWeight? titleFontWeight;
 
   const FeaturedProjectsSection({
     super.key,
@@ -807,6 +823,10 @@ class FeaturedProjectsSection extends StatefulWidget {
     this.title = 'Featured Infrastructure Projects',
     this.subtitle =
         'Roads, bridges and major public infrastructure tracked across Kenya',
+    this.titleColor,
+    this.seeAllColor,
+    this.titleFontSize,
+    this.titleFontWeight,
   });
 
   @override
@@ -869,6 +889,10 @@ class _FeaturedProjectsSectionState extends State<FeaturedProjectsSection> {
           title: widget.title,
           onSeeAll: () => Get.toNamed(AppRoutes.projects),
           isDemo: _isDemo,
+          titleColor: widget.titleColor,
+          seeAllColor: widget.seeAllColor,
+          titleFontSize: widget.titleFontSize,
+          titleFontWeight: widget.titleFontWeight,
         ),
         const SizedBox(height: 4),
         Padding(
@@ -1231,11 +1255,19 @@ class PrivateDevelopmentsShowcaseSection extends StatefulWidget {
   /// different slice.
   final bool featured;
   final String title;
+  final Color? titleColor;
+  final Color? seeAllColor;
+  final double? titleFontSize;
+  final FontWeight? titleFontWeight;
 
   const PrivateDevelopmentsShowcaseSection({
     super.key,
     this.featured = false,
     this.title = 'Private Developments',
+    this.titleColor,
+    this.seeAllColor,
+    this.titleFontSize,
+    this.titleFontWeight,
   });
 
   @override
@@ -1286,6 +1318,10 @@ class _PrivateDevelopmentsShowcaseSectionState
           title: widget.title,
           onSeeAll: () => Get.to(() => const PrivateProjectsScreen()),
           seeAllLabel: 'View All Private Projects',
+          titleColor: widget.titleColor,
+          seeAllColor: widget.seeAllColor,
+          titleFontSize: widget.titleFontSize,
+          titleFontWeight: widget.titleFontWeight,
         ),
         const SizedBox(height: 4),
         Padding(

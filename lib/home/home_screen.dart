@@ -204,6 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Latest Infrastructure Projects',
                 subtitle:
                     'Roads, bridges and major public infrastructure tracked across Kenya',
+                titleColor: Color(0xFF1D4ED8),
+                seeAllColor: Color(0xFF1D4ED8),
+                titleFontSize: 18,
+                titleFontWeight: FontWeight.w700,
               ),
 
               // ── 6. Mjengo Networks preview card ──────────────────────────────
@@ -215,6 +219,10 @@ class _HomeScreenState extends State<HomeScreen> {
               const PrivateDevelopmentsShowcaseSection(
                 featured: false,
                 title: 'Latest Private Projects',
+                titleColor: Color(0xFF1D4ED8),
+                seeAllColor: Color(0xFF1D4ED8),
+                titleFontSize: 18,
+                titleFontWeight: FontWeight.w700,
               ),
 
               // ── 8. Partner Banner (Slot 2) ───────────────────────────────────
@@ -360,6 +368,10 @@ class _HomeScreenState extends State<HomeScreen> {
         seeAllLabel: 'Read More',
         onSeeAll: () => Get.find<MainNavController>().currentIndex.value =
             MainNavController.tabNews,
+        titleColor: const Color(0xFF1D4ED8),
+        seeAllColor: const Color(0xFF1D4ED8),
+        titleFontSize: 18,
+        titleFontWeight: FontWeight.w700,
       ),
     );
   }
