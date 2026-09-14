@@ -3,7 +3,8 @@
 // Interactive project map — the Flutter equivalent of the website's Leaflet +
 // OpenStreetMap map (templates/projects.html's #pj-map / project_detail.html's
 // #pd-mini-map): same tile source, same Nairobi-centered default view, no API
-// key required. Markers are color-coded by status; tapping one opens a
+// key required. Markers are sleek 22px pucks color-coded by sector; tapping
+// one opens a
 // compact bottom preview card (16:9 thumbnail, title, location, status
 // badge, View Details button) rather than navigating straight to the detail
 // screen, matching the website's map popup behavior.
@@ -46,6 +47,31 @@ Color statusMarkerColor(String status) {
       return AppColors.danger;
     default:
       return AppColors.textSubtle;
+  }
+}
+
+/// Category-color-coded map pin fills, keyed off [Project.sectorLabel] —
+/// mirrors the website's sector legend so the map reads at a glance without
+/// opening each pin.
+Color categoryMarkerColor(String sectorLabel) {
+  switch (sectorLabel) {
+    case 'Transport':
+    case 'Rail':
+      return const Color(0xFFEA580C); // Orange-600 — roads/highways/transport
+    case 'Energy':
+      return const Color(0xFFEAB308); // Yellow-500 — energy/power
+    case 'Water':
+      return const Color(
+        0xFF0284C7,
+      ); // Sky-600 — water & sanitation/environment
+    case 'Housing':
+      return const Color(0xFF2563EB); // Blue-600 — building/residential/housing
+    case 'Ports':
+      return const Color(0xFF059669); // Emerald-600 — aviation/maritime/ports
+    default:
+      return const Color(
+        0xFF1E293B,
+      ); // Slate/Navy — default/other infrastructure
   }
 }
 
@@ -257,8 +283,8 @@ class ProjectsMapView extends StatelessWidget {
                         .map(
                           (p) => Marker(
                             point: LatLng(p.latitude!, p.longitude!),
-                            width: 34,
-                            height: 34,
+                            width: 22,
+                            height: 22,
                             child: _ProjectPin(project: p),
                           ),
                         )
@@ -334,16 +360,19 @@ class _ProjectPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFF0F2E4D);
+    final color = categoryMarkerColor(project.sectorLabel);
     return GestureDetector(
       onTap: () => showProjectPreviewSheet(context, project),
       child: Tooltip(
-        message: '${project.title} · ${project.statusLabel}',
+        message:
+            '${project.title} · ${project.sectorLabel} · ${project.statusLabel}',
         child: Container(
+          width: 22,
+          height: 22,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.5),
+            border: Border.all(color: Colors.white, width: 2.0),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.25),
@@ -352,7 +381,16 @@ class _ProjectPin extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(Icons.location_on, color: Colors.white, size: 18),
+          child: Center(
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -395,8 +433,8 @@ class ProjectMiniMap extends StatelessWidget {
                 markers: [
                   Marker(
                     point: point,
-                    width: 34,
-                    height: 34,
+                    width: 22,
+                    height: 22,
                     child: _ProjectPin(project: project),
                   ),
                 ],
