@@ -152,7 +152,7 @@ class HubScreen extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 28,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
+                      color: AppColors.deepNavy,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -289,63 +289,90 @@ class _HubRow extends StatelessWidget {
   final _HubItem item;
   const _HubRow({required this.item});
 
+  static const Color _iconBubbleColor = Color(0xFFEFF6FF); // Ice-blue soft
+  static const Color _iconBubbleBorder = Color(0xFFDBEAFE);
+  static const Color _iconColor = Color(0xFF1D4ED8); // Vibrant Royal Blue
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => item.open(context),
-      splashColor: item.color.withValues(alpha: 0.06),
-      highlightColor: item.color.withValues(alpha: 0.04),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Row(
-          children: [
-            // Icon bubble
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: item.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(item.icon, color: item.color, size: 22),
-            ),
-            const SizedBox(width: 14),
-
-            // Text
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.label,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item.sub,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSubtle,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Chevron / external-link indicator
-            Icon(
-              item.externalUrl != null
-                  ? Icons.open_in_new_rounded
-                  : Icons.chevron_right_rounded,
-              color: AppColors.textSubtle,
-              size: item.externalUrl != null ? 18 : 22,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.borderSlate),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A0A2540),
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
           ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => item.open(context),
+          splashColor: _iconColor.withValues(alpha: 0.06),
+          highlightColor: _iconColor.withValues(alpha: 0.04),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                // Icon squircle — high-fidelity vector glyph on a fixed
+                // ice-blue/royal-blue pair, shared by every module rather
+                // than a per-item tint.
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: _iconBubbleColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _iconBubbleBorder, width: 1),
+                  ),
+                  child: Center(
+                    child: Icon(item.icon, color: _iconColor, size: 22),
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.label,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.deepNavy,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.sub,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSubtle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Chevron / external-link indicator
+                Icon(
+                  item.externalUrl != null
+                      ? Icons.open_in_new_rounded
+                      : Icons.chevron_right_rounded,
+                  color: AppColors.textSubtle,
+                  size: item.externalUrl != null ? 18 : 22,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -362,25 +389,48 @@ class _HubUtilityButton extends StatelessWidget {
   final _HubItem item;
   const _HubUtilityButton({required this.item});
 
+  static const Color _iconBubbleColor = Color(0xFFEFF6FF); // Ice-blue soft
+  static const Color _iconBubbleBorder = Color(0xFFDBEAFE);
+  static const Color _iconColor = Color(0xFF1D4ED8); // Vibrant Royal Blue
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: const Color(0xFFF8FAFC),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.sharp),
         child: InkWell(
           onTap: () => item.open(context),
           borderRadius: BorderRadius.circular(AppRadius.sharp),
           child: Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius: BorderRadius.circular(AppRadius.sharp),
               border: Border.all(color: AppColors.borderSlate),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A0A2540),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                Icon(item.icon, color: item.color, size: 18),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _iconBubbleColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: _iconBubbleBorder, width: 1),
+                  ),
+                  child: Center(
+                    child: Icon(item.icon, color: _iconColor, size: 18),
+                  ),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -391,7 +441,7 @@ class _HubUtilityButton extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.headingSlate,
+                          color: AppColors.deepNavy,
                         ),
                       ),
                       Text(
@@ -401,7 +451,7 @@ class _HubUtilityButton extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.captionSlate,
+                          color: AppColors.textSubtle,
                         ),
                       ),
                     ],
@@ -411,7 +461,7 @@ class _HubUtilityButton extends StatelessWidget {
                   item.externalUrl != null
                       ? Icons.open_in_new_rounded
                       : Icons.chevron_right_rounded,
-                  color: AppColors.captionSlate,
+                  color: AppColors.textSubtle,
                   size: 16,
                 ),
               ],
