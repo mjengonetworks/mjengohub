@@ -221,10 +221,9 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
   });
 
-  // Vibrant royal blue for the active tab, soft steel-blue (never pitch
-  // black) for inactive ones so the bar reads as unmistakably blue-tinted.
-  static const Color _activeColor = Color(0xFF1D4ED8);
-  static const Color _inactiveColor = Color(0xFF64748B);
+  // Resting tabs: solid Royal Blue. Active tab: Safety Amber accent.
+  static const Color _activeColor = Color(0xFFD97706);
+  static const Color _inactiveColor = Color(0xFF1D4ED8);
 
   @override
   Widget build(BuildContext context) {

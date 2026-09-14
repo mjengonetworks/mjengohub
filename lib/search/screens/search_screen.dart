@@ -290,9 +290,11 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _selectAll() {
-    setState(() => _activeFilters
-      ..clear()
-      ..addAll(_allCategories));
+    setState(
+      () => _activeFilters
+        ..clear()
+        ..addAll(_allCategories),
+    );
     if (_query.length >= 2) _runSearch(_query);
   }
 
@@ -541,7 +543,10 @@ class _SearchScreenState extends State<SearchScreen> {
     Future<List<Project>> Function() fetcher,
   ) {
     Get.to(
-      () => TrackerFilteredListScreen(title: '$title · "$_query"', fetcher: fetcher),
+      () => TrackerFilteredListScreen(
+        title: '$title · "$_query"',
+        fetcher: fetcher,
+      ),
     );
   }
 
@@ -819,7 +824,10 @@ class _ProfileRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.apartment_rounded, color: AppColors.primaryBlue),
+      leading: const Icon(
+        Icons.apartment_rounded,
+        color: AppColors.primaryBlue,
+      ),
       title: Text(
         client.name,
         maxLines: 2,
@@ -864,7 +872,10 @@ class _ProfilesListScreen extends StatelessWidget {
         foregroundColor: AppColors.textDark,
         title: Text(
           'Profiles/Companies · "$query"',
-          style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w600),
+          style: GoogleFonts.montserrat(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: ListView.builder(
