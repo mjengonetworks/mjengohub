@@ -18,6 +18,7 @@ import '../point/routes/app_routes.dart';
 import '../search/widgets/omnibar.dart';
 import '../shared/services/link_launcher.dart';
 import '../shared/theme/app_theme.dart';
+import '../shared/widgets/gemini_sparkle_icon.dart';
 import 'main_navigation.dart';
 
 class AppHeader extends StatelessWidget {
@@ -124,7 +125,7 @@ class AppHeader extends StatelessWidget {
                     // routes to the confirmed-live full-page SearchScreen).
                     // See lib/search/widgets/omnibar.dart.
                     IconButton(
-                      tooltip: 'Search Mjengo Hub AI',
+                      tooltip: 'Ask AI Intelligence',
                       onPressed: () => showAiSearchSheet(context),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
@@ -132,10 +133,7 @@ class AppHeader extends StatelessWidget {
                         minHeight: 34,
                       ),
                       splashRadius: 18,
-                      icon: const _HeaderIconButton(
-                        icon: Icons.auto_awesome_rounded,
-                        size: 20,
-                      ),
+                      icon: const _AiSparkleBadge(),
                     ),
 
                     const SizedBox(width: 4),
@@ -164,12 +162,39 @@ class AppHeader extends StatelessWidget {
   }
 }
 
+// ── AI trigger: multi-star sparkle on a cyan/indigo gradient badge ─────────
+
+class _AiSparkleBadge extends StatelessWidget {
+  const _AiSparkleBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [AppColors.primaryBlue, AppColors.accentBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: AppColors.accentBlue.withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: const GeminiSparkleIcon(size: 18, color: Colors.white),
+    );
+  }
+}
+
 // ── Shared icon button chrome ────────────────────────────────────────────────
 
 class _HeaderIconButton extends StatelessWidget {
   final IconData icon;
-  final double size;
-  const _HeaderIconButton({required this.icon, this.size = 19});
+  const _HeaderIconButton({required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +210,7 @@ class _HeaderIconButton extends StatelessWidget {
           color: AppColors.mutedCanvas,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppColors.primaryBlue, size: size),
+        child: Icon(icon, color: AppColors.primaryBlue, size: 19),
       ),
     );
   }
