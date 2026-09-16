@@ -890,16 +890,18 @@ class ProjectsScreen extends StatelessWidget {
                     context,
                     title: 'Select Status',
                     options: const [
-                      'Announced',
-                      'Under Construction',
-                      'Completed',
+                      'Planned',
+                      'Ongoing',
                       'Stalled',
+                      'Cancelled',
+                      'Completed',
                     ],
                     values: const [
                       'planned',
                       'ongoing',
-                      'completed',
                       'stalled',
+                      'cancelled',
+                      'completed',
                     ],
                     selected: ctrl.selectedStatus.value,
                     onSelected: (value) => ctrl.applyFilters(status: value),
@@ -1006,12 +1008,19 @@ class ProjectsScreen extends StatelessWidget {
             context,
             title: 'Select Status',
             options: const [
-              'Planning',
-              'Under Construction',
-              'Completed',
+              'Planned',
+              'Ongoing',
               'Stalled',
+              'Cancelled',
+              'Completed',
             ],
-            values: const ['planned', 'ongoing', 'completed', 'stalled'],
+            values: const [
+              'planned',
+              'ongoing',
+              'stalled',
+              'cancelled',
+              'completed',
+            ],
             selected: ctrl.selectedStatus.value,
             onSelected: (value) => ctrl.applyFilters(status: value),
           ),
@@ -1173,19 +1182,21 @@ class ProjectsScreen extends StatelessWidget {
 
   String _privateStatusLabel(String status) => switch (status) {
     '' => 'All statuses',
-    'planned' => 'Planning',
-    'ongoing' => 'Under Construction',
+    'planned' => 'Planned',
+    'ongoing' => 'Ongoing',
     'completed' => 'Completed',
     'stalled' => 'Stalled',
+    'cancelled' => 'Cancelled',
     _ => titleCaseFromSlug(status),
   };
 
   String _statusLabel(String status) => switch (status) {
     '' => 'All statuses',
-    'planned' => 'Announced',
-    'ongoing' => 'Under Construction',
+    'planned' => 'Planned',
+    'ongoing' => 'Ongoing',
     'completed' => 'Completed',
     'stalled' => 'Stalled',
+    'cancelled' => 'Cancelled',
     _ => titleCaseFromSlug(status),
   };
 

@@ -103,6 +103,8 @@ Future<void> showProjectPreviewSheet(BuildContext context, Project project) {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     placeholderColor: const Color(0xFF1E3A5F),
+                    placeholderIcon: Icons.apartment_rounded,
+                    placeholderIconColor: Colors.white70,
                   ),
                   Positioned(
                     top: 10,
@@ -192,7 +194,7 @@ Future<void> showProjectPreviewSheet(BuildContext context, Project project) {
                         ),
                       ),
                       child: Text(
-                        'View Details',
+                        'View Project',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -210,27 +212,36 @@ Future<void> showProjectPreviewSheet(BuildContext context, Project project) {
   );
 }
 
-/// Marker diameter at the fully-zoomed-in (city/street) level — matches the
-/// puck size [_ProjectPin] always rendered before zoom-dependent scaling was
-/// added.
+/// Marker diameter floor used by callers that always want the full puck
+/// size regardless of zoom (e.g. [ProjectMiniMap]'s single static marker).
 const double kMarkerFullDiameter = 22.0;
 
-/// Diameter used for the selected/active marker, regardless of zoom — always
-/// a notch above [kMarkerFullDiameter] so the active pin stays visually on
-/// top of its neighbors.
-const double kMarkerSelectedDiameter = 26.0;
+/// Extra diameter added on top of the current zoom tier's size for the
+/// selected/active marker, so it stays visually on top of its neighbors at
+/// every zoom level rather than only at the fully-zoomed-in tier.
+const double kMarkerSelectedBoost = 8.0;
 
 /// Zoom-dependent puck sizing, mirroring the website's cluster-to-pin
-/// transition: coarse country-level zooms collapse markers to plain dots,
-/// mid zooms scale up smoothly, and city-level zooms show the full puck.
+/// transition and commit 99150f5's three named tiers:
+/// - national view (zoom <= 8): lightweight 12–16px dots to avoid clutter.
+/// - county/regional (zoom 9–12): 24–28px compact pins.
+/// - city/street (zoom >= 13): 38–44px full pins with label chips.
 double markerDiameterForZoom(double zoom) {
-  if (zoom < 7.0) return 8.0;
-  if (zoom <= 11.0) {
-    final t = (zoom - 7.0) / (11.0 - 7.0);
-    return 10.0 + t * (16.0 - 10.0);
+  if (zoom <= 8.0) {
+    final t = ((zoom - 3.0) / (8.0 - 3.0)).clamp(0.0, 1.0);
+    return 12.0 + t * (16.0 - 12.0);
   }
-  return kMarkerFullDiameter;
+  if (zoom <= 12.0) {
+    final t = (zoom - 9.0) / (12.0 - 9.0);
+    return 24.0 + t.clamp(0.0, 1.0) * (28.0 - 24.0);
+  }
+  final t = ((zoom - 13.0) / (18.0 - 13.0)).clamp(0.0, 1.0);
+  return 38.0 + t * (44.0 - 38.0);
 }
+
+/// City/street zoom threshold at which pins grow to full size and gain a
+/// readable label chip, per commit 99150f5's tiering.
+const double kMarkerLabelZoomThreshold = 13.0;
 
 /// Full interactive map for a project list — every project with coordinates
 /// gets a marker; tapping one opens that project's detail page directly
@@ -342,17 +353,24 @@ class _ProjectsMapViewState extends State<ProjectsMapView> {
                   MarkerLayer(
                     markers: located.map((p) {
                       final selected = p.slug == _selectedSlug;
+                      final baseDiameter = markerDiameterForZoom(_zoom);
                       final diameter = selected
-                          ? kMarkerSelectedDiameter
-                          : markerDiameterForZoom(_zoom);
+                          ? baseDiameter + kMarkerSelectedBoost
+                          : baseDiameter;
+                      final showLabel =
+                          !selected && _zoom >= kMarkerLabelZoomThreshold;
                       return Marker(
                         point: LatLng(p.latitude!, p.longitude!),
-                        width: diameter,
-                        height: diameter,
+                        width: showLabel ? 132 : diameter,
+                        height: showLabel ? diameter + 22 : diameter,
+                        alignment: showLabel
+                            ? Alignment.topCenter
+                            : Alignment.center,
                         child: _ProjectPin(
                           project: p,
                           diameter: diameter,
                           selected: selected,
+                          showLabel: showLabel,
                           onTap: () {
                             setState(() => _selectedSlug = p.slug);
                             showProjectPreviewSheet(context, p).whenComplete(
@@ -447,56 +465,102 @@ class _ProjectPin extends StatelessWidget {
   /// used by [ProjectsMapView] to also track selection state.
   final VoidCallback? onTap;
 
+  /// Whether to render a readable label chip beneath the pin — only true at
+  /// city/street zoom ([kMarkerLabelZoomThreshold]+), matching commit
+  /// 99150f5's "full-size pins with readable labels" high-zoom tier.
+  final bool showLabel;
+
   const _ProjectPin({
     required this.project,
     this.diameter = kMarkerFullDiameter,
     this.selected = false,
+    this.showLabel = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = categoryMarkerColor(project.sectorLabel);
-    final isCoarse = !selected && diameter < 10.0;
+    final isCoarse = !selected && diameter < 20.0;
     final isFull = selected || diameter >= kMarkerFullDiameter;
     final borderWidth = isCoarse ? 1.0 : (isFull ? 2.0 : 1.5);
+
+    final pin = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: borderWidth),
+        boxShadow: isFull
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: isCoarse
+          ? null
+          : Center(
+              child: Container(
+                width: diameter * (6 / kMarkerFullDiameter),
+                height: diameter * (6 / kMarkerFullDiameter),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+    );
+
+    final child = showLabel
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              pin,
+              const SizedBox(height: 3),
+              Container(
+                constraints: const BoxConstraints(maxWidth: 128),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.95),
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  project.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+            ],
+          )
+        : pin;
 
     return GestureDetector(
       onTap: onTap ?? () => showProjectPreviewSheet(context, project),
       child: Tooltip(
         message:
             '${project.title} · ${project.sectorLabel} · ${project.statusLabel}',
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: diameter,
-          height: diameter,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: borderWidth),
-            boxShadow: isFull
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: isCoarse
-              ? null
-              : Center(
-                  child: Container(
-                    width: diameter * (6 / kMarkerFullDiameter),
-                    height: diameter * (6 / kMarkerFullDiameter),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-        ),
+        child: child,
       ),
     );
   }
