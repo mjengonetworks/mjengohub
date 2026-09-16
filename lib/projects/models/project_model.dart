@@ -398,7 +398,8 @@ class ProjectUpdate {
   /// real author and their avatar/profile link) when the submitter opted
   /// into anonymous posting, even though the backend still tracks the real
   /// [userId] for moderation.
-  String get displayAuthorName => isAnonymous ? 'Anonymous' : (authorName ?? 'Mjengo Hub');
+  String get displayAuthorName =>
+      isAnonymous ? 'Anonymous' : (authorName ?? 'Mjengo Hub');
 
   String? get displayAuthorAvatar => isAnonymous ? null : authorAvatar;
 
@@ -484,6 +485,17 @@ class Project {
   /// line when present.
   final String? officialProjectName;
 
+  /// `financing_model` (e.g. "PPP", "EPC") — unconfirmed against the live
+  /// backend as of 2026-09, parsed defensively like `officialProjectName`
+  /// above. Null until/unless the API actually sends it.
+  final String? financingModel;
+
+  /// `category` — a real, distinct field from [sector] on `GET
+  /// projects{,/slug}` (see `ProjectsService.categorySlug` /
+  /// `ProjectsController.selectedCategory`), but not yet observed present on
+  /// a live project row — parsed defensively, same as [financingModel].
+  final String? category;
+
   // Present on every list row (see api.py's _project_dict) — Built History
   // and Africa & World are filtered views over this same Project row, not
   // separate content types (models.py: is_built_history/geo_scope).
@@ -568,6 +580,8 @@ class Project {
     this.createdAt,
     this.updatedAt,
     this.officialProjectName,
+    this.financingModel,
+    this.category,
     this.plusCode,
     this.isLegacy = false,
     this.isProjectOfWeek = false,
@@ -676,6 +690,8 @@ class Project {
         ? DateTime.tryParse(j['updated_at'] as String)
         : null,
     officialProjectName: j['official_project_name'] as String?,
+    financingModel: j['financing_model'] as String?,
+    category: j['category'] as String?,
     contractValue: (j['contract_value'] as num?)?.toDouble(),
     actualEndDate: j['actual_end_date'] as String?,
     milestones:
@@ -795,6 +811,8 @@ class Project {
     createdAt: createdAt,
     updatedAt: updatedAt,
     officialProjectName: officialProjectName,
+    financingModel: financingModel,
+    category: category,
     plusCode: plusCode,
     isLegacy: isLegacy,
     isProjectOfWeek: isProjectOfWeek,

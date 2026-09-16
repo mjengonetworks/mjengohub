@@ -14,12 +14,13 @@ import '../../news/models/article_model.dart';
 import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
+import '../../point/services/gamification_service.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/entity_parsing.dart';
 import '../../shared/utils/slugify.dart';
+import '../../shared/widgets/ad_banner_slot.dart';
 import '../../shared/widgets/breadcrumb_bar.dart';
-import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/guest_gate_sheet.dart';
 import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
@@ -441,6 +442,15 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
+                // ── Mid-content ad slot + Partner With Us — same mid-page
+                // placement as article_detail_screen's 'article-mid' slot,
+                // dropped roughly halfway down the page rather than at the
+                // very bottom ─────────────────────────────────────────────
+                const AdBannerSlot(slotId: 'project-mid', height: 100),
+                const _PartnerWithUsCard(),
+
+                const SizedBox(height: 8),
+
                 // ── Project Team & Stakeholders (defensive — `team_members`
                 // isn't sent by the live backend yet, so this stays hidden
                 // until it is) ────────────────────────────────────────────
@@ -538,13 +548,6 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── Partner With Us — mirrors the Hub screen's own entry
-                // point (AppRoutes.advertise), surfaced here for readers
-                // deep in a project page ─────────────────────────────────
-                const _PartnerWithUsCard(),
-
-                const SizedBox(height: 8),
-
                 // ── Discussion — tightened top padding vs. the other cards'
                 // uniform _kCardPad ──────────────────────────────────────
                 Container(
@@ -606,6 +609,28 @@ class ProjectDetailScreen extends StatelessWidget {
       AppRoutes.entityProfile,
       arguments: {'slug': realSlug ?? slugify(name), 'fallbackName': name},
     );
+  }
+
+  /// Category-chip tap -> Project Catalog filtered by `category` (slugified
+  /// from the display value, matching `ProjectsController.selectedCategory` /
+  /// `ProjectsService.categorySlug`), same targeted-instance-vs-push
+  /// behavior as [_openStakeholderFilter].
+  void _openCategoryFilter(Project project, String categoryName) {
+    final route = project.projectType == 'private_development'
+        ? AppRoutes.privateProjects
+        : AppRoutes.projects;
+    final slug = slugify(categoryName);
+    if (Get.isRegistered<ProjectsController>(tag: project.projectType)) {
+      Get.find<ProjectsController>(
+        tag: project.projectType,
+      ).applyFilters(category: slug, categoryName: categoryName);
+      Get.until((r) => r.settings.name == route);
+    } else {
+      Get.toNamed(
+        route,
+        arguments: {'category': slug, 'categoryName': categoryName},
+      );
+    }
   }
 
   /// Contractor/Consultant/Financier(free-text) taps go to the Project
@@ -676,6 +701,18 @@ class ProjectDetailScreen extends StatelessWidget {
           chips: parseEntities(project.financier),
           onTapChip: (name) =>
               _openStakeholderFilter(project, 'financier', name),
+        ),
+      );
+    }
+    if (_isValidInfo(project.financingModel)) {
+      rows.add(_DetailRow('Financing Model', project.financingModel!));
+    }
+    if (_isValidInfo(project.category)) {
+      rows.add(
+        _DetailRow(
+          'Category',
+          project.category!,
+          onTap: () => _openCategoryFilter(project, project.category!),
         ),
       );
     }
@@ -1628,8 +1665,11 @@ class _ActionsCard extends StatelessWidget {
             child: _ActionChip(
               icon: Icons.flag_outlined,
               label: 'Report Content',
-              onTap: () => showComingSoonSnack(
-                'Copyright/content claims aren\'t available in the app yet.',
+              onTap: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => _CopyrightClaimSheet(project: project),
               ),
             ),
           ),
@@ -2060,6 +2100,115 @@ class _SuggestEditSheetState extends State<_SuggestEditSheet> {
             controller: _reasonCtrl,
             decoration: _sheetFieldDecoration('Reason (optional)'),
             maxLines: 2,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _submitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kBlue,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Submit',
+                      style: GoogleFonts.montserrat(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Reports content as infringing/inaccurate via the confirmed-live
+/// `POST copyright-claim` gamification-service route (see
+/// [GamificationService.submitCopyrightClaim]) — mirrors [_SuggestEditSheet]'s
+/// shape, minus the field/value picker.
+class _CopyrightClaimSheet extends StatefulWidget {
+  final Project project;
+  const _CopyrightClaimSheet({required this.project});
+
+  @override
+  State<_CopyrightClaimSheet> createState() => _CopyrightClaimSheetState();
+}
+
+class _CopyrightClaimSheetState extends State<_CopyrightClaimSheet> {
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _descriptionCtrl = TextEditingController();
+  bool _submitting = false;
+
+  Future<void> _submit() async {
+    if (_nameCtrl.text.trim().isEmpty || _descriptionCtrl.text.trim().isEmpty) {
+      Get.snackbar(
+        'Missing details',
+        'Please enter your name and describe the issue.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+    setState(() => _submitting = true);
+    final error = await GamificationService().submitCopyrightClaim(
+      contentType: 'project',
+      contentId: widget.project.id,
+      claimantName: _nameCtrl.text.trim(),
+      claimantEmail: _emailCtrl.text.trim().isNotEmpty
+          ? _emailCtrl.text.trim()
+          : null,
+      description: _descriptionCtrl.text.trim(),
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    Navigator.of(context).pop();
+    Get.snackbar(
+      error == null ? 'Claim submitted' : 'Couldn\'t submit',
+      error ?? 'Thanks — our team will review this content.',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _SheetShell(
+      title: 'Report Content',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _nameCtrl,
+            decoration: _sheetFieldDecoration('Your name'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _emailCtrl,
+            decoration: _sheetFieldDecoration('Your email (optional)'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _descriptionCtrl,
+            decoration: _sheetFieldDecoration(
+              'Describe the copyright or content issue',
+            ),
+            maxLines: 3,
           ),
           const SizedBox(height: 16),
           SizedBox(

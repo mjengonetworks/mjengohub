@@ -72,4 +72,39 @@ class GamificationService {
       return 'Network error — please try again.';
     }
   }
+
+  /// `POST copyright-claim` — flags a piece of content (project, article,
+  /// incident, …) as infringing. [contentType] follows the same short
+  /// singular naming `CommentResource.pathPrefix` maps from (`'project'`,
+  /// `'article'`, `'incident'`, `'mental_health_post'`). Returns null on
+  /// success, a human-readable message otherwise.
+  Future<String?> submitCopyrightClaim({
+    required String contentType,
+    required int contentId,
+    required String claimantName,
+    String? claimantEmail,
+    required String description,
+  }) async {
+    try {
+      final res = await _api.apiPost('copyright-claim', {
+        'content_type': contentType,
+        'content_id': contentId,
+        'claimant_name': claimantName,
+        if (claimantEmail != null && claimantEmail.isNotEmpty)
+          'claimant_email': claimantEmail,
+        'description': description,
+      });
+      if (res.statusCode == 200 || res.statusCode == 201) return null;
+      final body = res.body;
+      if (body is Map) {
+        return (body['error'] ??
+                body['message'] ??
+                'Could not submit this claim')
+            .toString();
+      }
+      return 'Could not submit this claim';
+    } catch (e) {
+      return 'Network error — please try again.';
+    }
+  }
 }
