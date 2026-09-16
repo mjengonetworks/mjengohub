@@ -51,7 +51,7 @@ class AppHeader extends StatelessWidget {
         child: SizedBox(
           height: barHeight,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
                 // ── Brand: logo only, routes home (mirrors the website's
@@ -111,37 +111,50 @@ class AppHeader extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(width: 4),
+                // ── Tight action cluster: AI search, verify, notifications,
+                // profile — kept to its own min-size Row so narrow screens
+                // never fight the Expanded search bar for space.
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: 4),
 
-                // AI Search (Omnibar) — AI-augmented global search, distinct
-                // from the plain-text search bar above (which routes to the
-                // confirmed-live full-page SearchScreen). See
-                // lib/search/widgets/omnibar.dart.
-                IconButton(
-                  tooltip: 'Search Mjengo Hub AI',
-                  onPressed: () => showAiSearchSheet(context),
-                  icon: const _HeaderIconButton(
-                    icon: Icons.auto_awesome_rounded,
-                    size: 22,
-                  ),
-                ),
-
-                const SizedBox(width: 4),
-
-                // ── Far-right actions: search, verify, notifications, profile
-                if (!isCompact) ...[
-                  GestureDetector(
-                    onTap: () => LinkLauncher.openLink(
-                      context,
-                      'https://mjengohub.co.ke/verify',
+                    // AI Search (Omnibar) — AI-augmented global search,
+                    // distinct from the plain-text search bar above (which
+                    // routes to the confirmed-live full-page SearchScreen).
+                    // See lib/search/widgets/omnibar.dart.
+                    IconButton(
+                      tooltip: 'Search Mjengo Hub AI',
+                      onPressed: () => showAiSearchSheet(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 34,
+                        minHeight: 34,
+                      ),
+                      splashRadius: 18,
+                      icon: const _HeaderIconButton(
+                        icon: Icons.auto_awesome_rounded,
+                        size: 20,
+                      ),
                     ),
-                    child: const _VerifiedBadgeButton(),
-                  ),
-                  const SizedBox(width: 4),
-                ],
-                _NotificationBellButton(),
-                const SizedBox(width: 8),
-                _ProfileAvatarButton(),
+
+                    const SizedBox(width: 4),
+
+                    if (!isCompact) ...[
+                      GestureDetector(
+                        onTap: () => LinkLauncher.openLink(
+                          context,
+                          'https://mjengohub.co.ke/verify',
+                        ),
+                        child: const _VerifiedBadgeButton(),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    _NotificationBellButton(),
+                    const SizedBox(width: 8),
+                    _ProfileAvatarButton(),
+                  ],
+                ),
               ],
             ),
           ),
