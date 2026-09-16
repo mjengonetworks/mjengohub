@@ -15,6 +15,7 @@ import '../news/widgets/net_image.dart';
 import '../notifications/controllers/notifications_controller.dart';
 import '../notifications/screens/notifications_screen.dart';
 import '../point/routes/app_routes.dart';
+import '../search/widgets/omnibar.dart';
 import '../shared/services/link_launcher.dart';
 import '../shared/theme/app_theme.dart';
 import 'main_navigation.dart';
@@ -110,7 +111,21 @@ class AppHeader extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
+
+                // Omnibar — AI-augmented global search, distinct from the
+                // plain-text search bar above (which routes to the
+                // confirmed-live full-page SearchScreen). See
+                // lib/search/widgets/omnibar.dart.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => showOmnibar(context),
+                  child: const _HeaderIconButton(
+                    icon: Icons.auto_awesome_rounded,
+                  ),
+                ),
+
+                const SizedBox(width: 4),
 
                 // ── Far-right actions: search, verify, notifications, profile
                 if (!isCompact) ...[

@@ -24,6 +24,21 @@ class ProjectsController extends GetxController {
   final searchQuery = ''.obs;
   final selectedCostTier = ''.obs;
 
+  /// Multi-select status facet (the Filters sheet's "Status" chips) — set
+  /// alongside/instead of [selectedStatus] when more than one status is
+  /// picked. `GET /projects` does not actually support multi-value status
+  /// server-side (repeated `status=` params only keep the first one, and a
+  /// comma-joined value matches nothing — confirmed live 2026-09-16), so
+  /// more than one selected value is served by fanning out one request per
+  /// value and merging (see [_fetchProjects]), the same pragmatic pattern
+  /// already used by [_fetchCounts] elsewhere in this file.
+  final selectedStatuses = <String>[].obs;
+
+  /// Multi-select tracker-category facet, same fan-out-and-merge treatment
+  /// as [selectedStatuses] (category multi-value support is unconfirmed
+  /// server-side too, so this doesn't rely on it either).
+  final selectedCategories = <String>[].obs;
+
   /// Free-text stakeholder filters — set when the catalog is opened from a
   /// tapped entity link on ProjectDetailScreen's Info Card (Contractor/
   /// Consultant/Financier are plain strings server-side, see
@@ -131,14 +146,14 @@ class ProjectsController extends GetxController {
   int get activeFilterCount => [
     selectedCounties.isNotEmpty,
     selectedSector.value.isNotEmpty,
-    selectedStatus.value.isNotEmpty,
+    selectedStatus.value.isNotEmpty || selectedStatuses.isNotEmpty,
     selectedCostTier.value.isNotEmpty,
     budgetRangeMin.value != null || budgetRangeMax.value != null,
     selectedContractor.value.isNotEmpty,
     selectedConsultant.value.isNotEmpty,
     selectedFinancier.value.isNotEmpty,
     selectedClient.value.isNotEmpty,
-    selectedCategory.value.isNotEmpty,
+    selectedCategory.value.isNotEmpty || selectedCategories.isNotEmpty,
     selectedUser.value.isNotEmpty,
     selectedTypologies.isNotEmpty,
   ].where((active) => active).length;
@@ -154,7 +169,21 @@ class ProjectsController extends GetxController {
       selectedFinancier.value.isNotEmpty ||
       selectedCounty.value.isNotEmpty ||
       selectedCategory.value.isNotEmpty ||
+      selectedCategories.isNotEmpty ||
       selectedUser.value.isNotEmpty;
+
+  /// Broader than [hasEntityFilter] — also true for a status or budget
+  /// bracket filter (status tab/status sheet, the fixed [BudgetTier] chips,
+  /// or the free "Cost Tier" dropdown). Drives hiding the generic discovery
+  /// content (global featured carousel/strip) on a filtered archive view —
+  /// see ProjectsScreen's hero banner/featured strip.
+  bool get hasArchiveFilter =>
+      hasEntityFilter ||
+      selectedStatus.value.isNotEmpty ||
+      selectedStatuses.isNotEmpty ||
+      selectedCostTier.value.isNotEmpty ||
+      budgetRangeMin.value != null ||
+      budgetRangeMax.value != null;
 
   int _page = 1;
   bool _hasMore = true;
@@ -173,35 +202,108 @@ class ProjectsController extends GetxController {
     return List<String>.from(kKenyaCounties);
   }
 
+  /// Whichever of status/county/category has more than one value selected —
+  /// only ever one at a time drives fan-out (see [_fetchPage]); a
+  /// simultaneous multi-select on a second facet falls back to that facet's
+  /// first value for that fetch rather than a combinatorial cross-product of
+  /// requests.
+  String? get _fanOutDimension {
+    if (selectedStatuses.length > 1) return 'status';
+    if (selectedCounties.length > 1) return 'county';
+    if (selectedCategories.length > 1) return 'category';
+    return null;
+  }
+
+  /// Backend `GET /projects` reality check (2026-09-16): `status`/`county`
+  /// only ever take a single value — repeated params keep just the first,
+  /// and a comma-joined value matches nothing. So a multi-select facet here
+  /// is served by firing one request per selected value and merging
+  /// (deduped by id), same pragmatic "best effort, capped rows" pattern
+  /// [_fetchCounts]-style helpers already use elsewhere in this app. Only
+  /// page 1 is real for a fanned-out fetch — there's no way to page a merged
+  /// multi-request result set against this backend, so [loadMore] simply
+  /// stops after it (matching `_MostViewedSection`'s "single window, no
+  /// further pages" precedent in tracker_dynamic_sections.dart).
+  Future<List<Project>> _fetchPage(int page, {required int perPage}) async {
+    final dimension = _fanOutDimension;
+    if (dimension == null) {
+      return _service.getProjects(
+        projectType: projectType,
+        status: selectedStatus.value,
+        county: selectedCounty.value,
+        sector: selectedSector.value,
+        contractor: selectedContractor.value,
+        consultant: selectedConsultant.value,
+        financier: selectedFinancier.value,
+        clientSlug: selectedClient.value,
+        categorySlug: selectedCategory.value,
+        submittedBy: selectedUser.value,
+        costMin: costMin,
+        costMax: costMax,
+        costUsdMin: costUsdMin,
+        costUsdMax: costUsdMax,
+        q: searchQuery.value,
+        sort: selectedSort.value.isEmpty ? null : selectedSort.value,
+        page: page,
+        perPage: perPage,
+      );
+    }
+    if (page > 1) return const [];
+
+    final values = switch (dimension) {
+      'status' => selectedStatuses,
+      'county' => selectedCounties,
+      _ => selectedCategories,
+    };
+    final perValue = (200 ~/ values.length).clamp(20, 200);
+    final merged = <Project>[];
+    final seenIds = <int>{};
+    for (final value in values) {
+      final batch = await _service.getProjects(
+        projectType: projectType,
+        status: dimension == 'status'
+            ? value
+            : (selectedStatus.value.isEmpty ? null : selectedStatus.value),
+        county: dimension == 'county'
+            ? value
+            : (selectedCounty.value.isEmpty ? null : selectedCounty.value),
+        sector: selectedSector.value,
+        contractor: selectedContractor.value,
+        consultant: selectedConsultant.value,
+        financier: selectedFinancier.value,
+        clientSlug: selectedClient.value,
+        categorySlug: dimension == 'category'
+            ? value
+            : (selectedCategory.value.isEmpty
+                  ? null
+                  : selectedCategory.value),
+        submittedBy: selectedUser.value,
+        costMin: costMin,
+        costMax: costMax,
+        costUsdMin: costUsdMin,
+        costUsdMax: costUsdMax,
+        q: searchQuery.value,
+        sort: selectedSort.value.isEmpty ? null : selectedSort.value,
+        page: 1,
+        perPage: perValue,
+      );
+      for (final p in batch) {
+        if (seenIds.add(p.id)) merged.add(p);
+      }
+    }
+    return merged;
+  }
+
   Future<void> fetchAll() async {
     isLoading.value = true;
     errorMessage.value = '';
     _page = 1;
     _hasMore = true;
 
-    final result = await _service.getProjects(
-      projectType: projectType,
-      status: selectedStatus.value,
-      county: selectedCounty.value,
-      counties: selectedCounties,
-      sector: selectedSector.value,
-      contractor: selectedContractor.value,
-      consultant: selectedConsultant.value,
-      financier: selectedFinancier.value,
-      clientSlug: selectedClient.value,
-      categorySlug: selectedCategory.value,
-      submittedBy: selectedUser.value,
-      costMin: costMin,
-      costMax: costMax,
-      costUsdMin: costUsdMin,
-      costUsdMax: costUsdMax,
-      q: searchQuery.value,
-      sort: selectedSort.value.isEmpty ? null : selectedSort.value,
-      page: 1,
-    );
+    final result = await _fetchPage(1, perPage: 12);
 
     projects.value = result;
-    _hasMore = result.length >= 12;
+    _hasMore = _fanOutDimension == null && result.length >= 12;
 
     isLoading.value = false;
   }
@@ -273,13 +375,40 @@ class ProjectsController extends GetxController {
     }
   }
 
+  /// County multi-select sheet — [counties].length == 1 keeps using the
+  /// plain (confirmed-working) `county` param via [selectedCounty];
+  /// length > 1 clears it and fans out via [selectedCounties] instead (see
+  /// [_fetchPage] — `GET /projects?counties=` is not actually a real
+  /// server-side filter, confirmed 2026-09-16).
   Future<void> applyCountySelection(List<String> counties) async {
     selectedCounties.assignAll(counties);
     await applyFilters(county: counties.length == 1 ? counties.first : '');
   }
 
+  /// Status multi-select sheet — same length==1-vs->1 split as
+  /// [applyCountySelection], against [selectedStatus]/[selectedStatuses].
+  Future<void> applyStatusSelection(List<String> statuses) async {
+    selectedStatuses.assignAll(statuses);
+    await applyFilters(status: statuses.length == 1 ? statuses.first : '');
+  }
+
+  /// Tracker-category multi-select sheet — same pattern again, against
+  /// [selectedCategory]/[selectedCategories]. [names] are the matching
+  /// display labels (same order as [categories]) for the archive header.
+  Future<void> applyCategorySelection(
+    List<String> categories,
+    List<String> names,
+  ) async {
+    selectedCategories.assignAll(categories);
+    await applyFilters(
+      category: categories.length == 1 ? categories.first : '',
+      categoryName: names.length == 1 ? names.first : '',
+    );
+  }
+
   Future<void> clearFilters() async {
     selectedStatus.value = '';
+    selectedStatuses.clear();
     selectedCounty.value = '';
     selectedCounties.clear();
     selectedSector.value = '';
@@ -292,6 +421,7 @@ class ProjectsController extends GetxController {
     selectedClient.value = '';
     selectedClientName.value = '';
     selectedCategory.value = '';
+    selectedCategories.clear();
     selectedCategoryName.value = '';
     selectedUser.value = '';
     selectedUserName.value = '';
@@ -305,28 +435,9 @@ class ProjectsController extends GetxController {
     if (!_hasMore || _isFetchingMore) return;
     _isFetchingMore = true;
     _page++;
-    final more = await _service.getProjects(
-      projectType: projectType,
-      status: selectedStatus.value,
-      county: selectedCounty.value,
-      counties: selectedCounties,
-      sector: selectedSector.value,
-      contractor: selectedContractor.value,
-      consultant: selectedConsultant.value,
-      financier: selectedFinancier.value,
-      clientSlug: selectedClient.value,
-      categorySlug: selectedCategory.value,
-      submittedBy: selectedUser.value,
-      costMin: costMin,
-      costMax: costMax,
-      costUsdMin: costUsdMin,
-      costUsdMax: costUsdMax,
-      q: searchQuery.value,
-      sort: selectedSort.value.isEmpty ? null : selectedSort.value,
-      page: _page,
-    );
+    final more = await _fetchPage(_page, perPage: 12);
     projects.addAll(more);
-    _hasMore = more.length >= 12;
+    _hasMore = _fanOutDimension == null && more.length >= 12;
     _isFetchingMore = false;
   }
 }

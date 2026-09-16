@@ -14,10 +14,34 @@ import '../../shared/utils/text_case.dart';
 import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
+import '../models/tracker_sections_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/tracker_hero_section.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import 'project_detail_screen.dart';
+
+/// Budget chip/badge tap -> Project Catalog filtered to that fixed
+/// [BudgetTier] bracket. Mirrors ProjectDetailScreen's `_openBudgetTier`
+/// (same targeted-instance-vs-push behavior); duplicated rather than shared
+/// since each call site already has its own `Project` in scope.
+void _openBudgetTier(Project project) {
+  final tier = project.budgetTierBracket;
+  if (tier == null) return;
+  final route = project.projectType == 'private_development'
+      ? AppRoutes.privateProjects
+      : AppRoutes.projects;
+  if (Get.isRegistered<ProjectsController>(tag: project.projectType)) {
+    Get.find<ProjectsController>(
+      tag: project.projectType,
+    ).applyBudgetFilter(tier.min, tier.max);
+    Get.until((r) => r.settings.name == route);
+  } else {
+    Get.toNamed(
+      route,
+      arguments: {'budgetMin': tier.min, 'budgetMax': ?tier.max},
+    );
+  }
+}
 
 const _kBlue = Color(0xFF2563EB);
 const _kBg = Color(0xFFF0F4FF);
@@ -178,27 +202,65 @@ class ProjectsScreen extends StatelessWidget {
           : ctrl.selectedUser.value;
       return 'Contributions by $name';
     }
+    final budget = _budgetRangeTitle(ctrl);
+    if (budget != null) return budget;
     final combined = _statusCategoryHeading(ctrl);
     if (combined != null) return combined;
     return title;
   }
 
+  /// "Projects Budgeted Between X and Y" hero title for a tapped
+  /// [BudgetTier] bracket (or an open-ended "Above KES X" when [max] is
+  /// null). Null when no budget bracket is active.
+  String? _budgetRangeTitle(ProjectsController ctrl) {
+    final min = ctrl.budgetRangeMin.value;
+    final max = ctrl.budgetRangeMax.value;
+    if (min == null && max == null) return null;
+    if (max == null) return 'Projects Budgeted Above ${_compactKes(min!)}';
+    if (min == null || min == 0) {
+      return 'Projects Budgeted Under ${_compactKes(max)}';
+    }
+    return 'Projects Budgeted Between ${_compactKes(min)} and ${_compactKes(max)}';
+  }
+
+  String? _budgetRangeSubtitle(ProjectsController ctrl, int count) {
+    if (_budgetRangeTitle(ctrl) == null) return null;
+    return 'Showing $count project${count == 1 ? '' : 's'} in this budget range';
+  }
+
+  /// Human status label honoring both single- and multi-select — "Ongoing"
+  /// for one value, "Ongoing/Planned" for several.
+  String? _activeStatusLabel(ProjectsController ctrl) {
+    if (ctrl.selectedStatuses.length > 1) {
+      return ctrl.selectedStatuses.map(_statusLabel).join('/');
+    }
+    return ctrl.selectedStatus.value.isNotEmpty
+        ? _statusLabel(ctrl.selectedStatus.value)
+        : null;
+  }
+
+  /// Human category label honoring both single- and multi-select, same
+  /// shape as [_activeStatusLabel]. [ProjectsController.selectedCategoryName]
+  /// only ever holds one real label (set at the tap site), so a multi-select
+  /// falls back to Title Case of each slug rather than a hardcoded
+  /// category->label table.
+  String? _activeCategoryLabel(ProjectsController ctrl) {
+    if (ctrl.selectedCategories.length > 1) {
+      return ctrl.selectedCategories.map(titleCaseFromSlug).join('/');
+    }
+    if (ctrl.selectedCategory.value.isEmpty) return null;
+    return ctrl.selectedCategoryName.value.isNotEmpty
+        ? ctrl.selectedCategoryName.value
+        : titleCaseFromSlug(ctrl.selectedCategory.value);
+  }
+
   /// Status + category filter heading (e.g. "Ongoing Private Developments",
   /// "Road Projects", "Ongoing Road Projects") — lower priority than the
   /// entity-filter titles above (client/contractor/etc. + county), which
-  /// already give a more specific header. Category display name comes from
-  /// [ProjectsController.selectedCategoryName] (a real category label
-  /// resolved at the tap site) or, failing that, a generic Title Case of
-  /// the slug — never a hardcoded category->label table.
+  /// already give a more specific header.
   String? _statusCategoryHeading(ProjectsController ctrl) {
-    final statusPart = ctrl.selectedStatus.value.isNotEmpty
-        ? _statusLabel(ctrl.selectedStatus.value)
-        : null;
-    final categoryName = ctrl.selectedCategory.value.isEmpty
-        ? null
-        : (ctrl.selectedCategoryName.value.isNotEmpty
-              ? ctrl.selectedCategoryName.value
-              : titleCaseFromSlug(ctrl.selectedCategory.value));
+    final statusPart = _activeStatusLabel(ctrl);
+    final categoryName = _activeCategoryLabel(ctrl);
     if (statusPart == null && categoryName == null) return null;
     final noun = categoryName != null
         ? '$categoryName Projects'
@@ -209,14 +271,8 @@ class ProjectsScreen extends StatelessWidget {
   }
 
   String? _statusCategorySubtitle(ProjectsController ctrl) {
-    final statusPart = ctrl.selectedStatus.value.isNotEmpty
-        ? _statusLabel(ctrl.selectedStatus.value)
-        : null;
-    final categoryName = ctrl.selectedCategory.value.isEmpty
-        ? null
-        : (ctrl.selectedCategoryName.value.isNotEmpty
-              ? ctrl.selectedCategoryName.value
-              : titleCaseFromSlug(ctrl.selectedCategory.value));
+    final statusPart = _activeStatusLabel(ctrl);
+    final categoryName = _activeCategoryLabel(ctrl);
     if (statusPart == null && categoryName == null) return null;
     final count = ctrl.projects.length;
     var noun = 'project${count == 1 ? '' : 's'}';
@@ -250,9 +306,22 @@ class ProjectsScreen extends StatelessWidget {
           : ctrl.selectedUser.value;
       return 'Projects submitted and curated by $name';
     }
+    final budget = _budgetRangeSubtitle(ctrl, ctrl.projects.length);
+    if (budget != null) return budget;
     final combined = _statusCategorySubtitle(ctrl);
     if (combined != null) return combined;
     return subtitle;
+  }
+
+  /// "KES 500M" / "KES 2B" compact label for a raw KES value, matching the
+  /// [BudgetTier] labels' own formatting.
+  String _compactKes(double value) {
+    if (value >= 1000000000) {
+      final b = value / 1000000000;
+      return 'KES ${b == b.roundToDouble() ? b.toInt() : b.toStringAsFixed(1)}B';
+    }
+    final m = value / 1000000;
+    return 'KES ${m == m.roundToDouble() ? m.toInt() : m.toStringAsFixed(1)}M';
   }
 
   @override
@@ -485,7 +554,7 @@ class ProjectsScreen extends StatelessWidget {
   /// unrelated content.
   Widget _buildHeroBanner(ProjectsController ctrl) {
     return Obx(() {
-      final featured = ctrl.hasEntityFilter
+      final featured = ctrl.hasArchiveFilter
           ? ctrl.projects.take(5).toList()
           : () {
               final f = ctrl.projects.where((p) => p.isFeatured).toList();
@@ -518,8 +587,11 @@ class ProjectsScreen extends StatelessWidget {
   Widget _buildFeaturedStrip(ProjectsController ctrl) {
     return Obx(() {
       // Never show generic global featured projects on a filtered view
-      // (e.g. Talanta Stadium showing up under "Projects by KeNHA").
-      if (ctrl.hasEntityFilter) return const SizedBox.shrink();
+      // (e.g. Talanta Stadium showing up under "Projects by KeNHA"), status
+      // tab, or budget bracket — any of these already scope the page to a
+      // specific archive, so a generic "Featured Projects" module would read
+      // as unrelated content.
+      if (ctrl.hasArchiveFilter) return const SizedBox.shrink();
       final featured = ctrl.projects
           .where((p) => p.isFeatured)
           .take(3)
@@ -745,6 +817,16 @@ class ProjectsScreen extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _LabeledFilterButton(
+                  label: 'Category',
+                  value: ctrl.selectedCategories.length > 1
+                      ? '${ctrl.selectedCategories.length} selected'
+                      : (ctrl.selectedCategoryName.value.isNotEmpty
+                            ? ctrl.selectedCategoryName.value
+                            : 'All categories'),
+                  icon: Icons.apartment_outlined,
+                  onTap: () => _showCategorySheet(context, ctrl),
+                ),
+                _LabeledFilterButton(
                   label: 'County',
                   value: ctrl.selectedCounties.isEmpty
                       ? 'All 47 Counties'
@@ -768,28 +850,11 @@ class ProjectsScreen extends StatelessWidget {
                 ),
                 _LabeledFilterButton(
                   label: 'Project Status',
-                  value: _statusLabel(ctrl.selectedStatus.value),
+                  value: ctrl.selectedStatuses.length > 1
+                      ? '${ctrl.selectedStatuses.length} selected'
+                      : _statusLabel(ctrl.selectedStatus.value),
                   icon: Icons.timelapse_outlined,
-                  onTap: () => _showSingleSelectSheet(
-                    context,
-                    title: 'Select Status',
-                    options: const [
-                      'Planned',
-                      'Ongoing',
-                      'Stalled',
-                      'Cancelled',
-                      'Completed',
-                    ],
-                    values: const [
-                      'planned',
-                      'ongoing',
-                      'stalled',
-                      'cancelled',
-                      'completed',
-                    ],
-                    selected: ctrl.selectedStatus.value,
-                    onSelected: (value) => ctrl.applyFilters(status: value),
-                  ),
+                  onTap: () => _showStatusSheet(context, ctrl),
                 ),
                 _LabeledFilterButton(
                   label: 'Cost Tier',
@@ -886,28 +951,11 @@ class ProjectsScreen extends StatelessWidget {
         ),
         _LabeledFilterButton(
           label: 'Status',
-          value: _privateStatusLabel(ctrl.selectedStatus.value),
+          value: ctrl.selectedStatuses.length > 1
+              ? '${ctrl.selectedStatuses.length} selected'
+              : _privateStatusLabel(ctrl.selectedStatus.value),
           icon: Icons.timelapse_outlined,
-          onTap: () => _showSingleSelectSheet(
-            context,
-            title: 'Select Status',
-            options: const [
-              'Planned',
-              'Ongoing',
-              'Stalled',
-              'Cancelled',
-              'Completed',
-            ],
-            values: const [
-              'planned',
-              'ongoing',
-              'stalled',
-              'cancelled',
-              'completed',
-            ],
-            selected: ctrl.selectedStatus.value,
-            onSelected: (value) => ctrl.applyFilters(status: value),
-          ),
+          onTap: () => _showStatusSheet(context, ctrl),
         ),
         _LabeledFilterButton(
           label: 'Developer / Client',
@@ -1112,6 +1160,62 @@ class ProjectsScreen extends StatelessWidget {
         onApply: (values) {
           Navigator.pop(sheetContext);
           ctrl.applyCountySelection(values);
+        },
+      ),
+    );
+  }
+
+  /// Multi-select tracker Category — options come from the real backend
+  /// category taxonomy (`GET /projects/tracker-sections`'s
+  /// `categoryPreview`), not a hardcoded list, so new categories the backend
+  /// adds show up automatically.
+  Future<void> _showCategorySheet(
+    BuildContext context,
+    ProjectsController ctrl,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _CategorySelectSheet(
+        projectType: projectType,
+        selected: ctrl.selectedCategories.isNotEmpty
+            ? ctrl.selectedCategories.toSet()
+            : (ctrl.selectedCategory.value.isEmpty
+                  ? <String>{}
+                  : {ctrl.selectedCategory.value}),
+        onApply: (values, names) {
+          Navigator.pop(sheetContext);
+          ctrl.applyCategorySelection(values, names);
+        },
+      ),
+    );
+  }
+
+  /// Multi-select Status — see ProjectsController.applyStatusSelection for
+  /// how more than one selected value is served (fan-out + merge, since
+  /// `GET /projects?status=` only ever takes one).
+  Future<void> _showStatusSheet(
+    BuildContext context,
+    ProjectsController ctrl,
+  ) async {
+    const options = ['Planned', 'Ongoing', 'Stalled', 'Cancelled', 'Completed'];
+    const values = ['planned', 'ongoing', 'stalled', 'cancelled', 'completed'];
+    final selected = ctrl.selectedStatuses.isNotEmpty
+        ? ctrl.selectedStatuses.toSet()
+        : (ctrl.selectedStatus.value.isEmpty
+              ? <String>{}
+              : {ctrl.selectedStatus.value});
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => _MultiSelectChipSheet(
+        title: 'Select Status',
+        options: options,
+        values: values,
+        selected: selected,
+        onApply: (chosen) {
+          Navigator.pop(sheetContext);
+          ctrl.applyStatusSelection(chosen);
         },
       ),
     );
@@ -1475,13 +1579,28 @@ class _ProjectListTile extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 6),
-                    Text(
-                      'Budget: ${project.budgetTier}',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 10.5,
-                        color: _kSubtext,
+                    if (project.budgetTierBracket != null)
+                      GestureDetector(
+                        onTap: () => _openBudgetTier(project),
+                        child: Text(
+                          'Budget: ${project.budgetTier}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: _kBlue,
+                            decoration: TextDecoration.underline,
+                            decorationColor: _kBlue,
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        'Budget: ${project.budgetTier}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10.5,
+                          color: _kSubtext,
+                        ),
                       ),
-                    ),
                     if (project.contractor != null &&
                         project.contractor!.trim().isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -2133,15 +2252,145 @@ class _FreeTextFilterSheetState extends State<_FreeTextFilterSheet> {
 /// active state — Private Projects' Typology/Category facet (client-side
 /// OR-matched, see BuildingsTaxonomy) rather than the checkbox-list style
 /// `_SearchableMultiSelectSheet` already used for County.
+/// Multi-select tracker Category sheet — fetches the real category taxonomy
+/// (`GET /projects/tracker-sections`) on open rather than a hardcoded list,
+/// since Infrastructure/Private Developments each have their own real,
+/// backend-driven categories with no fixed enum client-side.
+class _CategorySelectSheet extends StatefulWidget {
+  final String projectType;
+  final Set<String> selected;
+  final void Function(List<String> values, List<String> names) onApply;
+
+  const _CategorySelectSheet({
+    required this.projectType,
+    required this.selected,
+    required this.onApply,
+  });
+
+  @override
+  State<_CategorySelectSheet> createState() => _CategorySelectSheetState();
+}
+
+class _CategorySelectSheetState extends State<_CategorySelectSheet> {
+  final _service = ProjectsService();
+  late final Future<TrackerSections> _future = _service.getTrackerSections(
+    projectType: widget.projectType,
+  );
+  late final Set<String> _selected = {...widget.selected};
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: FutureBuilder<TrackerSections>(
+          future: _future,
+          builder: (context, snap) {
+            final groups = snap.data?.categoryPreview ?? const [];
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Select Category',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    Text('${_selected.length} selected'),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (!snap.hasData)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else if (groups.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('No categories published yet.'),
+                  )
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: groups.map((g) {
+                      final active = _selected.contains(g.value);
+                      return FilterChip(
+                        label: Text(g.displayLabel),
+                        selected: active,
+                        showCheckmark: true,
+                        onSelected: (value) => setState(() {
+                          if (value) {
+                            _selected.add(g.value);
+                          } else {
+                            _selected.remove(g.value);
+                          }
+                        }),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    if (_selected.isNotEmpty)
+                      TextButton(
+                        onPressed: () => setState(_selected.clear),
+                        child: const Text('Clear'),
+                      ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: () {
+                        final names = _selected
+                            .map(
+                              (v) => groups
+                                  .firstWhere(
+                                    (g) => g.value == v,
+                                    orElse: () => TrackerSectionGroup(
+                                      value: v,
+                                      label: titleCaseFromSlug(v),
+                                      totalCount: 0,
+                                      projects: const [],
+                                    ),
+                                  )
+                                  .displayLabel,
+                            )
+                            .toList();
+                        widget.onApply(_selected.toList(), names);
+                      },
+                      child: const Text('Apply'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _MultiSelectChipSheet extends StatefulWidget {
   final String title;
   final List<String> options;
+
+  /// Real filter values matching [options] 1:1 (e.g. status slugs behind
+  /// Title Case labels). Defaults to [options] itself when omitted, same as
+  /// [_SearchableSelectSheet]'s `values`/`options` split.
+  final List<String>? values;
   final Set<String> selected;
   final ValueChanged<List<String>> onApply;
 
   const _MultiSelectChipSheet({
     required this.title,
     required this.options,
+    this.values,
     required this.selected,
     required this.onApply,
   });
@@ -2155,6 +2404,7 @@ class _MultiSelectChipSheetState extends State<_MultiSelectChipSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final values = widget.values ?? widget.options;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -2177,21 +2427,23 @@ class _MultiSelectChipSheetState extends State<_MultiSelectChipSheet> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: widget.options.map((option) {
-                final active = _selected.contains(option);
+              children: List.generate(widget.options.length, (i) {
+                final option = widget.options[i];
+                final value = values[i];
+                final active = _selected.contains(value);
                 return FilterChip(
                   label: Text(option),
                   selected: active,
                   showCheckmark: true,
-                  onSelected: (value) => setState(() {
-                    if (value) {
-                      _selected.add(option);
+                  onSelected: (selected) => setState(() {
+                    if (selected) {
+                      _selected.add(value);
                     } else {
-                      _selected.remove(option);
+                      _selected.remove(value);
                     }
                   }),
                 );
-              }).toList(),
+              }),
             ),
             const SizedBox(height: 16),
             Row(

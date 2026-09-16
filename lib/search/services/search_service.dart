@@ -14,6 +14,7 @@ import '../../news/models/article_model.dart';
 import '../../reports/models/report_model.dart';
 import '../../service_catalog/models/service_model.dart';
 import '../../services/base_service.dart';
+import '../models/ai_search_models.dart';
 
 /// Minimum query length accepted by `GET /search`.
 const int kMinSearchLength = 2;
@@ -67,5 +68,31 @@ class SearchService {
       print('❌ search("$q") failed: $e');
     }
     return const UnifiedSearchResults();
+  }
+
+  /// Omnibar's AI-augmented search — `GET ai-search?q=`. **Not confirmed
+  /// live** (see doc comment on [AISearchResponse]); returns an empty
+  /// response on any failure (404 included), same try/catch-and-degrade
+  /// pattern as [search], never throws into the caller.
+  Future<AISearchResponse> fetchAISearch(String query) async {
+    final q = query.trim();
+    if (q.length < kMinSearchLength) return const AISearchResponse();
+    try {
+      final res = await _api.getRequest('ai-search', query: {'q': q});
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body['data'];
+        if (data is Map<String, dynamic>) {
+          return AISearchResponse.fromJson(data);
+        }
+        if (res.body is Map<String, dynamic>) {
+          return AISearchResponse.fromJson(
+            res.body as Map<String, dynamic>,
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ fetchAISearch("$q") failed: $e');
+    }
+    return AISearchResponse(query: q);
   }
 }

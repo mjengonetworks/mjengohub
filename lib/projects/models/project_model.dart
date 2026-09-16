@@ -7,6 +7,31 @@ import '../../shared/utils/text_case.dart';
 
 const String _kBase = 'https://mjengohub.co.ke';
 
+/// The four fixed KES budget brackets a tappable budget chip/badge (project
+/// card, detail-screen quick fact) always links to: Under 500M, 500M–2B,
+/// 2B–10B, Above 10B. Deliberately separate from [Project.budgetTier]'s
+/// display-only 5-tier scheme (which backs the "Cost Tier" filter dropdown
+/// and its own labels) — this is the fixed catalog-navigation scheme
+/// requested for clickable budget ranges specifically.
+enum BudgetTier {
+  under500m(0, 500000000, 'Under KES 500M'),
+  m500ToB2(500000000, 2000000000, 'KES 500M – 2B'),
+  b2ToB10(2000000000, 10000000000, 'KES 2B – 10B'),
+  above10b(10000000000, null, 'Above KES 10B');
+
+  final double min;
+  final double? max;
+  final String label;
+  const BudgetTier(this.min, this.max, this.label);
+
+  factory BudgetTier.of(double kes) {
+    if (kes < 500000000) return BudgetTier.under500m;
+    if (kes < 2000000000) return BudgetTier.m500ToB2;
+    if (kes < 10000000000) return BudgetTier.b2ToB10;
+    return BudgetTier.above10b;
+  }
+}
+
 List<LatLng>? _parseRoute(dynamic v) {
   if (v is! List) return null;
   final points = <LatLng>[];
@@ -917,6 +942,15 @@ class Project {
       return 'USD 10M+';
     }
     return 'Budget not listed';
+  }
+
+  /// The fixed [BudgetTier] bracket containing [costKes] — null when there's
+  /// no KES cost to bracket (mirrors [budgetTier]'s KES-only tap target;
+  /// USD-only projects show the same non-tappable "Budget: ..." text they
+  /// always have, since [BudgetTier] is KES-denominated).
+  BudgetTier? get budgetTierBracket {
+    final kes = costKes;
+    return kes == null ? null : BudgetTier.of(kes);
   }
 
   /// Matches the backend's `project_status_enum` exactly: planned, ongoing,

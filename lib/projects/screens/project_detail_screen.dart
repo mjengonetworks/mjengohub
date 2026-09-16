@@ -675,32 +675,27 @@ class ProjectDetailScreen extends StatelessWidget {
     }
   }
 
-  /// Budget quick-fact chip tap -> Project Catalog filtered to the KES
-  /// bracket containing this project's `contractValue`: Under 100M,
-  /// 100M–1B, 1B–10B, or 10B+ (open-ended, so [max] is null). Same
-  /// targeted-instance-vs-push behavior as [_openStakeholderFilter].
+  /// Budget quick-fact chip tap -> Project Catalog filtered to the fixed KES
+  /// bracket containing this project's `contractValue`: Under 500M,
+  /// 500M–2B, 2B–10B, or Above 10B (open-ended, so [max] is null). Matches
+  /// [BudgetTier.of]/`_openBudgetTier` used everywhere else a budget chip is
+  /// tappable (project cards, other budget badges) so the same four tiers
+  /// are the only ones ever linked to. Same targeted-instance-vs-push
+  /// behavior as [_openStakeholderFilter].
   void _openBudgetFilter(Project project, double value) {
-    final route = project.projectType == 'private_development'
+    final tier = BudgetTier.of(value);
+    _openBudgetTier(project.projectType, tier);
+  }
+
+  void _openBudgetTier(String projectType, BudgetTier tier) {
+    final route = projectType == 'private_development'
         ? AppRoutes.privateProjects
         : AppRoutes.projects;
-    final double min;
-    final double? max;
-    if (value < 100000000) {
-      min = 0;
-      max = 100000000;
-    } else if (value < 1000000000) {
-      min = 100000000;
-      max = 1000000000;
-    } else if (value < 10000000000) {
-      min = 1000000000;
-      max = 10000000000;
-    } else {
-      min = 10000000000;
-      max = null;
-    }
-    if (Get.isRegistered<ProjectsController>(tag: project.projectType)) {
+    final min = tier.min;
+    final max = tier.max;
+    if (Get.isRegistered<ProjectsController>(tag: projectType)) {
       Get.find<ProjectsController>(
-        tag: project.projectType,
+        tag: projectType,
       ).applyBudgetFilter(min, max);
       Get.until((r) => r.settings.name == route);
     } else {
@@ -774,7 +769,13 @@ class ProjectDetailScreen extends StatelessWidget {
     }
     if (project.contractValue != null) {
       rows.add(
-        _DetailRow('Contract Value', _fmtCurrency(project.contractValue!)),
+        _DetailRow(
+          'Contract Value',
+          _fmtCurrency(project.contractValue!),
+          onTap: project.budgetTierBracket == null
+              ? null
+              : () => _openBudgetFilter(project, project.contractValue!),
+        ),
       );
     }
     if (project.startDate != null) {

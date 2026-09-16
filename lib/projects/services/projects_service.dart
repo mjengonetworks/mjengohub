@@ -10,7 +10,6 @@ class ProjectsService {
   Future<List<Project>> getProjects({
     String? status,
     String? county,
-    List<String>? counties,
     double? costMin,
     double? costMax,
     double? costUsdMin,
@@ -66,9 +65,6 @@ class ProjectsService {
       final query = <String, dynamic>{'page': '$page', 'per_page': '$perPage'};
       if (status != null && status.isNotEmpty) query['status'] = status;
       if (county != null && county.isNotEmpty) query['county'] = county;
-      if (counties != null && counties.isNotEmpty) {
-        query['counties'] = counties.join(',');
-      }
       if (costMin != null) query['cost_min'] = '$costMin';
       if (costMax != null) query['cost_max'] = '$costMax';
       if (costUsdMin != null) query['cost_usd_min'] = '$costUsdMin';
