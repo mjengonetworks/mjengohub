@@ -108,6 +108,11 @@ class ProjectsScreen extends StatelessWidget {
   ///   `county` — free-text county name.
   ///   `user` (+ optional `userName`) — `submitted_by` id/slug plus a
   ///     display label, for "Contributions by {user}".
+  ///   `budgetMin` / `budgetMax` (either may be absent for an open-ended
+  ///     bracket) — the dynamic KES range from a tapped Budget quick-fact
+  ///     chip on ProjectDetailScreen; applied separately below via
+  ///     `applyBudgetFilter` since it's mutually exclusive with the entity
+  ///     filters' single combined fetch (see that method).
   void _applyIncomingEntityArgs(ProjectsController ctrl) {
     final args = Get.arguments;
     if (args is! Map) return;
@@ -129,19 +134,29 @@ class ProjectsScreen extends StatelessWidget {
         (category != null && category != ctrl.selectedCategory.value) ||
         (county != null && county != ctrl.selectedCounty.value) ||
         (user != null && user != ctrl.selectedUser.value);
-    if (!changed) return;
-    ctrl.applyFilters(
-      contractor: contractor,
-      consultant: consultant,
-      financier: financier,
-      client: client,
-      clientName: clientName,
-      category: category,
-      categoryName: categoryName,
-      county: county,
-      user: user,
-      userName: userName,
-    );
+    if (changed) {
+      ctrl.applyFilters(
+        contractor: contractor,
+        consultant: consultant,
+        financier: financier,
+        client: client,
+        clientName: clientName,
+        category: category,
+        categoryName: categoryName,
+        county: county,
+        user: user,
+        userName: userName,
+      );
+    }
+
+    if (args.containsKey('budgetMin') || args.containsKey('budgetMax')) {
+      final budgetMin = (args['budgetMin'] as num?)?.toDouble();
+      final budgetMax = (args['budgetMax'] as num?)?.toDouble();
+      if (budgetMin != ctrl.budgetRangeMin.value ||
+          budgetMax != ctrl.budgetRangeMax.value) {
+        ctrl.applyBudgetFilter(budgetMin, budgetMax);
+      }
+    }
   }
 
   /// Priority-ordered contextual header title for whichever entity filter is
@@ -922,6 +937,8 @@ class ProjectsScreen extends StatelessWidget {
                     selected: ctrl.selectedCostTier.value,
                     onSelected: (value) {
                       ctrl.selectedCostTier.value = value;
+                      ctrl.budgetRangeMin.value = null;
+                      ctrl.budgetRangeMax.value = null;
                       ctrl.fetchAll();
                     },
                   ),
@@ -1069,6 +1086,8 @@ class ProjectsScreen extends StatelessWidget {
             selected: ctrl.selectedCostTier.value,
             onSelected: (value) {
               ctrl.selectedCostTier.value = value;
+              ctrl.budgetRangeMin.value = null;
+              ctrl.budgetRangeMax.value = null;
               ctrl.fetchAll();
             },
           ),

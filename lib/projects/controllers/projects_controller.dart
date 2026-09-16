@@ -84,20 +84,34 @@ class ProjectsController extends GetxController {
     'Other',
   ];
 
-  double? get costMin => switch (selectedCostTier.value) {
-    '100M-500M' => 100000000,
-    '500M-1B' => 500000000,
-    '1B-5B' => 1000000000,
-    '5B+' => 5000000000,
-    _ => selectedCostTier.value == '<100M' ? 0 : null,
-  };
-  double? get costMax => switch (selectedCostTier.value) {
-    '<100M' => 100000000,
-    '100M-500M' => 500000000,
-    '500M-1B' => 1000000000,
-    '1B-5B' => 5000000000,
-    _ => null,
-  };
+  /// Explicit KES range set by tapping the Budget quick-fact chip on
+  /// ProjectDetailScreen (see `_openBudgetFilter`) — a dynamic bracket
+  /// computed around one project's actual `contractValue`, distinct from
+  /// the four fixed [selectedCostTier] presets below. Takes priority over
+  /// [selectedCostTier] whenever set; setting a tier clears this and vice
+  /// versa (see [applyBudgetFilter]/[applyFilters]) so the two never both
+  /// constrain the query at once.
+  final budgetRangeMin = Rxn<double>();
+  final budgetRangeMax = Rxn<double>();
+
+  double? get costMin =>
+      budgetRangeMin.value ??
+      switch (selectedCostTier.value) {
+        '100M-500M' => 100000000,
+        '500M-1B' => 500000000,
+        '1B-5B' => 1000000000,
+        '5B+' => 5000000000,
+        _ => selectedCostTier.value == '<100M' ? 0 : null,
+      };
+  double? get costMax =>
+      budgetRangeMax.value ??
+      switch (selectedCostTier.value) {
+        '<100M' => 100000000,
+        '100M-500M' => 500000000,
+        '500M-1B' => 1000000000,
+        '1B-5B' => 5000000000,
+        _ => null,
+      };
 
   double? get costUsdMin => switch (selectedCostTier.value) {
     'usd_under_1m' => 0,
@@ -119,6 +133,7 @@ class ProjectsController extends GetxController {
     selectedSector.value.isNotEmpty,
     selectedStatus.value.isNotEmpty,
     selectedCostTier.value.isNotEmpty,
+    budgetRangeMin.value != null || budgetRangeMax.value != null,
     selectedContractor.value.isNotEmpty,
     selectedConsultant.value.isNotEmpty,
     selectedFinancier.value.isNotEmpty,
@@ -228,6 +243,17 @@ class ProjectsController extends GetxController {
     await fetchAll();
   }
 
+  /// Sets the dynamic KES budget bracket from the Budget quick-fact chip on
+  /// ProjectDetailScreen (`min`/`max` — either end may be null for an
+  /// open-ended bracket, e.g. "10B+"). Clears [selectedCostTier] since the
+  /// two are mutually exclusive (see [costMin]/[costMax]).
+  Future<void> applyBudgetFilter(double? min, double? max) async {
+    selectedCostTier.value = '';
+    budgetRangeMin.value = min;
+    budgetRangeMax.value = max;
+    await fetchAll();
+  }
+
   /// Portfolio Segmentation tab selector — All/Ongoing/Completed/Trending.
   /// Preserves every other active filter (entity chips, county, etc.) since
   /// it only ever touches [selectedStatus]/[selectedSort].
@@ -258,6 +284,8 @@ class ProjectsController extends GetxController {
     selectedCounties.clear();
     selectedSector.value = '';
     selectedCostTier.value = '';
+    budgetRangeMin.value = null;
+    budgetRangeMax.value = null;
     selectedContractor.value = '';
     selectedConsultant.value = '';
     selectedFinancier.value = '';
@@ -410,5 +438,63 @@ class ProjectDetailController extends GetxController {
       );
     }
     ratingLoading.value = false;
+  }
+
+  /// Locally tracked active vote direction ('up'/'down'/null) — the backend
+  /// envelope has no per-user vote field to restore this from on reload, so
+  /// it only reflects votes cast in this session, same as [userRating].
+  final activeVote = Rxn<String>();
+  final voteLoading = false.obs;
+
+  /// Optimistic up/down vote — flips the local counts and active state
+  /// immediately, rolls back and snackbars on failure. Tapping the
+  /// already-active direction again is treated as a no-op (there's no
+  /// unvote route), matching the fire-once behavior of [submitRating].
+  Future<void> vote(String direction) async {
+    final current = project.value;
+    if (current == null || voteLoading.value) return;
+    if (activeVote.value == direction) return;
+
+    final prevVote = activeVote.value;
+    final prevUpvotes = current.upvoteCount;
+    final prevDownvotes = current.downvoteCount;
+
+    var nextUpvotes = prevUpvotes;
+    var nextDownvotes = prevDownvotes;
+    if (prevVote == 'up') nextUpvotes--;
+    if (prevVote == 'down') nextDownvotes--;
+    if (direction == 'up') nextUpvotes++;
+    if (direction == 'down') nextDownvotes++;
+
+    voteLoading.value = true;
+    activeVote.value = direction;
+    project.value = current.copyWith(
+      upvoteCount: nextUpvotes,
+      downvoteCount: nextDownvotes,
+    );
+
+    final result = await _service.voteProject(current.id, direction);
+    if (result['success'] == true) {
+      final upvotes = (result['upvotes'] as num?)?.toInt();
+      final downvotes = (result['downvotes'] as num?)?.toInt();
+      if (upvotes != null && downvotes != null) {
+        project.value = project.value?.copyWith(
+          upvoteCount: upvotes,
+          downvoteCount: downvotes,
+        );
+      }
+    } else {
+      activeVote.value = prevVote;
+      project.value = project.value?.copyWith(
+        upvoteCount: prevUpvotes,
+        downvoteCount: prevDownvotes,
+      );
+      Get.snackbar(
+        'Error',
+        'Could not record your vote. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+    voteLoading.value = false;
   }
 }

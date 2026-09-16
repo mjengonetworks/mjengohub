@@ -290,11 +290,8 @@ class ProjectDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       _AttributionLine(project: project),
-                      if (project.upvoteCount > 0 ||
-                          project.downvoteCount > 0) ...[
-                        const SizedBox(height: 8),
-                        _VoteCountRow(project: project),
-                      ],
+                      const SizedBox(height: 8),
+                      _VoteCountRow(project: project, ctrl: ctrl),
                       const SizedBox(height: 8),
                       if (_isValidInfo(project.county) ||
                           _isValidInfo(project.location))
@@ -379,7 +376,11 @@ class ProjectDetailScreen extends StatelessWidget {
                 // table further down; there's no separate `sector`/`category`
                 // field in the API, so project_type ('Infrastructure' /
                 // 'Private Development') stands in for it here. ────────────
-                _QuickFactsStrip(project: project),
+                _QuickFactsStrip(
+                  project: project,
+                  onTapBudget: () =>
+                      _openBudgetFilter(project, project.contractValue!),
+                ),
 
                 const SizedBox(height: 8),
 
@@ -633,15 +634,25 @@ class ProjectDetailScreen extends StatelessWidget {
     }
   }
 
-  /// Contractor/Consultant/Financier(free-text) taps go to the Project
-  /// Catalog filtered by that stakeholder string, matching the real
-  /// website's `.pd-chip` -> `/projects?contractor=...` behavior — not an
-  /// entity profile (see [_openEntity]), since these fields carry no real
-  /// entity slug. If a catalog screen for this project's tracker is already
-  /// on the nav stack (its ProjectsController is registered), the filter is
-  /// applied to that existing instance and the stack pops back to it rather
-  /// than pushing a duplicate route.
-  void _openStakeholderFilter(Project project, String field, String name) {
+  /// Contractor/Consultant/Financier(free-text)/Client taps go to the
+  /// Project Catalog filtered by that stakeholder, matching the real
+  /// website's `.pd-chip` -> `/projects?contractor=...` behavior. If a
+  /// catalog screen for this project's tracker is already on the nav stack
+  /// (its ProjectsController is registered), the filter is applied to that
+  /// existing instance and the stack pops back to it rather than pushing a
+  /// duplicate route.
+  ///
+  /// [field] == 'client' is the one entity-linked case here (matched by real
+  /// slug via `ProjectsController.applyFilters(client: ...)`, not free text)
+  /// — [slug] carries that; the others ignore it. See also [_openEntity],
+  /// which is what Client/Developer used to route to (its own profile page)
+  /// before this catalog-filter tap replaced it.
+  void _openStakeholderFilter(
+    Project project,
+    String field,
+    String name, [
+    String? slug,
+  ]) {
     final route = project.projectType == 'private_development'
         ? AppRoutes.privateProjects
         : AppRoutes.projects;
@@ -650,10 +661,50 @@ class ProjectDetailScreen extends StatelessWidget {
         contractor: field == 'contractor' ? name : null,
         consultant: field == 'consultant' ? name : null,
         financier: field == 'financier' ? name : null,
+        client: field == 'client' ? (slug ?? slugify(name)) : null,
+        clientName: field == 'client' ? name : null,
       );
       Get.until((r) => r.settings.name == route);
     } else {
-      Get.toNamed(route, arguments: {field: name});
+      Get.toNamed(
+        route,
+        arguments: field == 'client'
+            ? {'client': slug ?? slugify(name), 'clientName': name}
+            : {field: name},
+      );
+    }
+  }
+
+  /// Budget quick-fact chip tap -> Project Catalog filtered to the KES
+  /// bracket containing this project's `contractValue`: Under 100M,
+  /// 100M–1B, 1B–10B, or 10B+ (open-ended, so [max] is null). Same
+  /// targeted-instance-vs-push behavior as [_openStakeholderFilter].
+  void _openBudgetFilter(Project project, double value) {
+    final route = project.projectType == 'private_development'
+        ? AppRoutes.privateProjects
+        : AppRoutes.projects;
+    final double min;
+    final double? max;
+    if (value < 100000000) {
+      min = 0;
+      max = 100000000;
+    } else if (value < 1000000000) {
+      min = 100000000;
+      max = 1000000000;
+    } else if (value < 10000000000) {
+      min = 1000000000;
+      max = 10000000000;
+    } else {
+      min = 10000000000;
+      max = null;
+    }
+    if (Get.isRegistered<ProjectsController>(tag: project.projectType)) {
+      Get.find<ProjectsController>(
+        tag: project.projectType,
+      ).applyBudgetFilter(min, max);
+      Get.until((r) => r.settings.name == route);
+    } else {
+      Get.toNamed(route, arguments: {'budgetMin': min, 'budgetMax': ?max});
     }
   }
 
@@ -667,7 +718,12 @@ class ProjectDetailScreen extends StatelessWidget {
         _DetailRow(
           project.projectType == 'private_development' ? 'Developer' : 'Client',
           project.client!.name,
-          onTap: () => _openEntity(project.client!.name, project.client!.slug),
+          onTap: () => _openStakeholderFilter(
+            project,
+            'client',
+            project.client!.name,
+            project.client!.slug,
+          ),
         ),
       );
     }
@@ -1236,38 +1292,41 @@ class _ProjectActionBar extends StatelessWidget {
   }
 }
 
-/// Displays `upvote_count`/`downvote_count` from the project model. Read-only
-/// by design: there is no `POST projects/{id}/vote` route in api.py (unlike
-/// comments/reports, which do have one) — the backend serializes these
-/// counts with `getattr(p, 'upvote_count', 0)`, i.e. defensively, with no
-/// corresponding write path. A tappable vote button here would either no-op
-/// silently or fake a persisted vote that resets on next load, so this stays
-/// a plain pill pair instead of wiring fabricated interactivity.
+/// Tappable up/down vote pair, backed by `POST projects/{id}/vote` via
+/// [ProjectDetailController.vote] — optimistic count/active-state update
+/// with rollback on failure (see the controller for details). Reads live
+/// counts from [ProjectDetailController.project] rather than the [project]
+/// snapshot passed in, so it reflects the optimistic update immediately.
 class _VoteCountRow extends StatelessWidget {
   final Project project;
-  const _VoteCountRow({required this.project});
+  final ProjectDetailController ctrl;
+  const _VoteCountRow({required this.project, required this.ctrl});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (project.upvoteCount > 0)
+    return Obx(() {
+      final current = ctrl.project.value ?? project;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           _VoteCountPill(
             icon: Icons.thumb_up_alt_rounded,
-            count: project.upvoteCount,
+            count: current.upvoteCount,
             color: const Color(0xFF10B981),
+            active: ctrl.activeVote.value == 'up',
+            onTap: ctrl.voteLoading.value ? null : () => ctrl.vote('up'),
           ),
-        if (project.upvoteCount > 0 && project.downvoteCount > 0)
           const SizedBox(width: 8),
-        if (project.downvoteCount > 0)
           _VoteCountPill(
             icon: Icons.thumb_down_alt_rounded,
-            count: project.downvoteCount,
+            count: current.downvoteCount,
             color: const Color(0xFFEF4444),
+            active: ctrl.activeVote.value == 'down',
+            onTap: ctrl.voteLoading.value ? null : () => ctrl.vote('down'),
           ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
 
@@ -1275,34 +1334,42 @@ class _VoteCountPill extends StatelessWidget {
   final IconData icon;
   final int count;
   final Color color;
+  final bool active;
+  final VoidCallback? onTap;
   const _VoteCountPill({
     required this.icon,
     required this.count,
     required this.color,
+    required this.active,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(
-            '$count',
-            style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: color,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: active ? 0.22 : 0.1),
+          borderRadius: BorderRadius.circular(999),
+          border: active ? Border.all(color: color, width: 1) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: GoogleFonts.montserrat(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -3018,23 +3085,29 @@ String _formatFullDate(DateTime dt) =>
 // empty shell.
 class _QuickFactsStrip extends StatelessWidget {
   final Project project;
-  const _QuickFactsStrip({required this.project});
+
+  /// Invoked when the Budget fact chip is tapped — only ever wired when
+  /// that chip is present (`project.contractValue != null`), see
+  /// [ProjectDetailScreen._openBudgetFilter].
+  final VoidCallback onTapBudget;
+  const _QuickFactsStrip({required this.project, required this.onTapBudget});
 
   @override
   Widget build(BuildContext context) {
-    final facts = <(String, String)>[
+    final facts = <(String, String, VoidCallback?)>[
       (
         project.projectType == 'private_development'
             ? 'Private Development'
             : 'Infrastructure',
         'sector',
+        null,
       ),
       if (project.status != 'completed' && project.expectedEndDate != null)
-        (_fmtFactDate(project.expectedEndDate!), 'Est. Completion'),
+        (_fmtFactDate(project.expectedEndDate!), 'Est. Completion', null),
       if (project.status == 'completed' && project.actualEndDate != null)
-        (_fmtFactDate(project.actualEndDate!), 'Completed'),
+        (_fmtFactDate(project.actualEndDate!), 'Completed', null),
       if (project.contractValue != null)
-        (_fmtFactCurrency(project.contractValue!), 'Budget'),
+        (_fmtFactCurrency(project.contractValue!), 'Budget', onTapBudget),
     ];
 
     return Container(
@@ -3044,35 +3117,63 @@ class _QuickFactsStrip extends StatelessWidget {
         spacing: 10,
         runSpacing: 10,
         children: facts.map((f) {
-          final (value, label) = f;
-          return Container(
+          final (value, label, onTap) = f;
+          final chip = Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppRadius.sharp),
-              border: Border.all(color: AppColors.borderSlate),
+              border: Border.all(
+                color: onTap != null ? _kBlue : AppColors.borderSlate,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  value,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.headingSlate,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      value,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.headingSlate,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        color: AppColors.captionSlate,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 10,
-                    color: AppColors.captionSlate,
-                    letterSpacing: 0.3,
+                if (onTap != null) ...[
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.filter_alt_outlined,
+                    size: 14,
+                    color: _kBlue,
                   ),
-                ),
+                ],
               ],
+            ),
+          );
+          if (onTap == null) return chip;
+          return Tooltip(
+            message: 'Find projects in a similar budget range',
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(AppRadius.sharp),
+                child: chip,
+              ),
             ),
           );
         }).toList(),

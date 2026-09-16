@@ -523,6 +523,27 @@ class ProjectsService {
     }
   }
 
+  /// Casts an up/down vote on a project — `POST /projects/{id}/vote`.
+  /// [direction] is 'up' or 'down'. Returns the raw envelope so the caller
+  /// can read `success`/`upvotes`/`downvotes` directly.
+  Future<Map<String, dynamic>> voteProject(
+    int projectId,
+    String direction,
+  ) async {
+    try {
+      final res = await _api.postRequest('projects/$projectId/vote', {
+        'direction': direction,
+      });
+      if ((res.statusCode == 200 || res.statusCode == 201) && res.body is Map) {
+        return Map<String, dynamic>.from(res.body as Map);
+      }
+      return {'success': false};
+    } catch (e) {
+      print('ProjectsService.voteProject error: $e');
+      return {'success': false};
+    }
+  }
+
   String _errorMessage(dynamic body) {
     if (body is Map) {
       final msg = body['message'] ?? body['error'];

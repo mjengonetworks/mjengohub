@@ -151,9 +151,7 @@ class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
             if (_loadingMore)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
-                child: Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
               ),
           ],
         ),

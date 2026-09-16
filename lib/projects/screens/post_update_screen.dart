@@ -151,9 +151,7 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final content = _useRichEditor
-        ? _richContentHtml()
-        : _content.text.trim();
+    final content = _useRichEditor ? _richContentHtml() : _content.text.trim();
     if (content.trim().isEmpty) {
       Get.snackbar(
         'Content required',
