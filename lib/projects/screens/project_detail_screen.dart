@@ -241,18 +241,6 @@ class ProjectDetailScreen extends StatelessWidget {
                 // ── Breadcrumbs — horizontally scrolling, never wraps ────────
                 BreadcrumbBar(items: _breadcrumbs(project)),
 
-                // ── Compact map preview — fixed 240px, tight margins.
-                // Extracted from the header identity card so it reads as its
-                // own section right under the breadcrumb trail. ─────────────
-                if (project.isLinear &&
-                    (project.routeData?.length ?? 0) >= 2) ...[
-                  ProjectRouteMap(project: project),
-                  const SizedBox(height: 8),
-                ] else if (project.hasCoordinates) ...[
-                  ProjectMiniMap(project: project),
-                  const SizedBox(height: 8),
-                ],
-
                 // ── Header info card ────────────────────────────────────────
                 Container(
                   color: _kCard,
@@ -369,27 +357,6 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── Quick Facts strip — surfaces the fields buried lower in
-                // the fact table (est. completion, budget) plus the project
-                // type, right under the hero, for mobile scannability. The
-                // website itself keeps these only in the "Project Details"
-                // table further down; there's no separate `sector`/`category`
-                // field in the API, so project_type ('Infrastructure' /
-                // 'Private Development') stands in for it here. ────────────
-                _QuickFactsStrip(
-                  project: project,
-                  onTapBudget: () =>
-                      _openBudgetFilter(project, project.contractValue!),
-                ),
-
-                const SizedBox(height: 8),
-
-                // ── Admin action bar (Admin/Editor/Moderator) or "Suggest an
-                // Update" entry point (everyone else, signed in) ───────────
-                _ProjectActionBar(project: project, ctrl: ctrl),
-
-                const SizedBox(height: 8),
-
                 // ── Project Summary — short admin-editable teaser, matching
                 // the website's own "Project Summary" card (kept distinct
                 // from the fuller Project Overview below it — the website
@@ -407,6 +374,40 @@ class ProjectDetailScreen extends StatelessWidget {
                   _buildDescriptionCard(project),
                   const SizedBox(height: 8),
                 ],
+
+                // ── Compact map preview — fixed 240px, tight margins,
+                // directly below the summary/overview text and above the
+                // Project Details fact grid, matching the website's own
+                // sequence ────────────────────────────────────────────────
+                if (project.isLinear &&
+                    (project.routeData?.length ?? 0) >= 2) ...[
+                  ProjectRouteMap(project: project),
+                  const SizedBox(height: 8),
+                ] else if (project.hasCoordinates) ...[
+                  ProjectMiniMap(project: project),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Quick Facts strip — surfaces the fields buried lower in
+                // the fact table (est. completion, budget) plus the project
+                // type, for mobile scannability. The website itself keeps
+                // these only in the "Project Details" table further down;
+                // there's no separate `sector`/`category` field in the API,
+                // so project_type ('Infrastructure' / 'Private Development')
+                // stands in for it here. ─────────────────────────────────
+                _QuickFactsStrip(
+                  project: project,
+                  onTapBudget: () =>
+                      _openBudgetFilter(project, project.contractValue!),
+                ),
+
+                const SizedBox(height: 8),
+
+                // ── Admin action bar (Admin/Editor/Moderator) or "Suggest an
+                // Update" entry point (everyone else, signed in) ───────────
+                _ProjectActionBar(project: project, ctrl: ctrl),
+
+                const SizedBox(height: 8),
 
                 // ── Official Project Name — a distinct bold heading from
                 // the (possibly informal) title, shown only when the backend
@@ -443,12 +444,45 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── Mid-content ad slot + Partner With Us — same mid-page
-                // placement as article_detail_screen's 'article-mid' slot,
-                // dropped roughly halfway down the page rather than at the
-                // very bottom ─────────────────────────────────────────────
+                // ── Milestones, then Documented Progress Updates — grouped
+                // together immediately after Rating, matching the website's
+                // fixed section order (milestones timeline first, then
+                // crowdsourced dated updates) ────────────────────────────
+                if (project.milestones.isNotEmpty) ...[
+                  _buildMilestonesCard(project),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Documented Progress Updates — GET /projects/{id}/updates
+                // already exists in ProjectsService but was never rendered
+                // anywhere; this is that missing surface. Per-update upvotes
+                // and per-update threaded comments are scoped out: neither
+                // ProjectUpdate nor any service method exposes them, and
+                // there's no comment-resource type for updates — the
+                // project-level Discussion below stays the one discussion
+                // surface.
+                _ProgressUpdatesSection(project: project),
+
+                const SizedBox(height: 8),
+
+                // ── Mid-content ad slot + Partner With Us — directly below
+                // Documented Progress, ahead of Discussion ────────────────
                 const AdBannerSlot(slotId: 'project-mid', height: 100),
                 const _PartnerWithUsCard(),
+
+                const SizedBox(height: 8),
+
+                // ── Discussion — tightened top padding vs. the other cards'
+                // uniform _kCardPad ──────────────────────────────────────
+                Container(
+                  color: _kCard,
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                  child: CommentsSection(
+                    resource: CommentResource.project,
+                    resourceId: project.id,
+                    title: 'Discussion',
+                  ),
+                ),
 
                 const SizedBox(height: 8),
 
@@ -477,8 +511,7 @@ class ProjectDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                 ],
 
-                // ── Renders (architectural impressions) — directly below the
-                // Overview, ahead of documents/photos/milestones ───────────
+                // ── Renders (architectural impressions) ─────────────────────
                 if (project.renderGallery.isNotEmpty)
                   _buildGalleryCard(
                     'Architectural Renders & Visualizations',
@@ -508,27 +541,6 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── Milestones, then Documented Progress, then Discussion —
-                // grouped together as the page's final section, matching the
-                // website's fixed section order (milestones timeline first,
-                // then crowdsourced dated updates, then comments) ──────────
-                if (project.milestones.isNotEmpty) ...[
-                  _buildMilestonesCard(project),
-                  const SizedBox(height: 8),
-                ],
-
-                // ── Documented Progress Updates — GET /projects/{id}/updates
-                // already exists in ProjectsService but was never rendered
-                // anywhere; this is that missing surface. Per-update upvotes
-                // and per-update threaded comments are scoped out: neither
-                // ProjectUpdate nor any service method exposes them, and
-                // there's no comment-resource type for updates — the
-                // project-level Discussion below stays the one discussion
-                // surface.
-                _ProgressUpdatesSection(project: project),
-
-                const SizedBox(height: 8),
-
                 // ── Sidebar discovery lists (stacked on mobile): Related
                 // Projects → Latest Projects → Trending Projects, each real
                 // `GET projects` queries (sector-match / newest / the
@@ -546,20 +558,6 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 // ── Suggest Edit / Report Content actions ───────────────────
                 _ActionsCard(project: project),
-
-                const SizedBox(height: 8),
-
-                // ── Discussion — tightened top padding vs. the other cards'
-                // uniform _kCardPad ──────────────────────────────────────
-                Container(
-                  color: _kCard,
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                  child: CommentsSection(
-                    resource: CommentResource.project,
-                    resourceId: project.id,
-                    title: 'Discussion',
-                  ),
-                ),
 
                 SizedBox(height: 24 + PersistentBottomNav.barHeight(context)),
               ],
