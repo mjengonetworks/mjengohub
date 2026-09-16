@@ -42,6 +42,15 @@ String _decadeLabel(String d) => d == 'pre-1960s'
     ? '2020s+'
     : d;
 
+enum _SortBy {
+  newest('Newest'),
+  recentlyUpdated('Recently Updated'),
+  budgetHighToLow('Budget: High to Low');
+
+  final String label;
+  const _SortBy(this.label);
+}
+
 class BuiltHistoryScreen extends StatefulWidget {
   const BuiltHistoryScreen({super.key});
 
@@ -56,6 +65,34 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
 
   String? _decade;
   String _ownership = 'all'; // 'all' | 'public' | 'private'
+
+  /// No server-side sort param on `built_history_list()`, so "Sort By" is a
+  /// client-side sort of the already-loaded page — applied in [_applySort],
+  /// re-run after every fetch and whenever the user changes it.
+  _SortBy _sortBy = _SortBy.newest;
+
+  void _applySort() {
+    switch (_sortBy) {
+      case _SortBy.newest:
+        _projects.sort(
+          (a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''),
+        );
+        break;
+      case _SortBy.recentlyUpdated:
+        _projects.sort((a, b) {
+          final au = a.updatedAt ?? DateTime.tryParse(a.createdAt ?? '');
+          final bu = b.updatedAt ?? DateTime.tryParse(b.createdAt ?? '');
+          if (au == null && bu == null) return 0;
+          if (au == null) return 1;
+          if (bu == null) return -1;
+          return bu.compareTo(au);
+        });
+        break;
+      case _SortBy.budgetHighToLow:
+        _projects.sort((a, b) => (b.costKes ?? 0).compareTo(a.costKes ?? 0));
+        break;
+    }
+  }
 
   /// Tracker-scoped search term from the hero's "Quick Search" field.
   String _query = '';
@@ -105,6 +142,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
     if (!mounted) return;
     setState(() {
       _projects = projects;
+      _applySort();
       _loading = false;
     });
   }
@@ -152,13 +190,9 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // 1. Top interactive live map — the very first scrollable
-                // item, directly beneath the app bar. Never gated behind a
-                // toggle, never pushed below other content.
-                TrackerLiveMap(projects: _projects, loading: _loading),
-                const SizedBox(height: 20),
-
-                // 2. Dedicated tracker control — ownership + decade chips.
+                // Dedicated tracker control — ownership + decade chips, plus
+                // Sort By — the explicit filter bar, directly above the
+                // list/grid feed (list-first, not map-dominated).
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Wrap(
@@ -188,6 +222,39 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                           _ownership = 'private';
                           _load();
                         }),
+                      ),
+                      GestureDetector(
+                        onTap: _showSortSheet,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: AppColors.divider),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.sort_rounded,
+                                size: 15,
+                                color: AppColors.textSubtle,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Sort: ${_sortBy.label}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSubtle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -316,12 +383,60 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                   captionOf: (p) => p.completionDecade ?? p.statusLabel,
                   emptyMessage: 'No Built History entries match this filter.',
                 ),
+
+                // Interactive live map — moved below the primary feed so the
+                // list/grid is the default view, matching the website.
+                const SizedBox(height: 20),
+                TrackerLiveMap(projects: _projects, loading: _loading),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _showSortSheet() async {
+    final selected = await showModalBottomSheet<_SortBy>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'Sort By',
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            for (final option in _SortBy.values)
+              ListTile(
+                title: Text(
+                  option.label,
+                  style: GoogleFonts.montserrat(fontSize: 13.5),
+                ),
+                trailing: _sortBy == option
+                    ? const Icon(Icons.check, color: AppColors.accentBlue)
+                    : null,
+                onTap: () => Navigator.pop(sheetContext, option),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (selected == null || !mounted) return;
+    setState(() {
+      _sortBy = selected;
+      _applySort();
+    });
   }
 
   Widget _chip(String label, bool selected, VoidCallback onTap) =>

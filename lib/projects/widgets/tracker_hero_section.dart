@@ -149,7 +149,10 @@ class _TrackerHeroSectionState extends State<TrackerHeroSection> {
             widget.subtitle,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(fontSize: 12.5, color: Colors.white70),
+            style: GoogleFonts.montserrat(
+              fontSize: 12.5,
+              color: Colors.white70,
+            ),
           ),
           const SizedBox(height: 14),
           Row(
@@ -213,7 +216,10 @@ class _TrackerHeroSectionState extends State<TrackerHeroSection> {
                 controller: _searchController,
                 focusNode: _searchFocus,
                 onSubmitted: widget.onSearch,
-                style: GoogleFonts.montserrat(fontSize: 13.5, color: Colors.white),
+                style: GoogleFonts.montserrat(
+                  fontSize: 13.5,
+                  color: Colors.white,
+                ),
                 cursorColor: Colors.white,
                 decoration: InputDecoration(
                   hintText: widget.searchHint,

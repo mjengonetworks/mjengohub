@@ -9,9 +9,13 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../news/widgets/net_image.dart';
+import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/utils/slugify.dart';
 import '../models/project_model.dart';
 import '../screens/project_detail_screen.dart';
+
+const Color _kContractorBlue = Color(0xFF0284C7);
 
 class TrackerProjectCard extends StatelessWidget {
   final Project project;
@@ -123,6 +127,59 @@ class TrackerProjectCard extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentBlue.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      project.sectorLabel,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accentBlue,
+                      ),
+                    ),
+                  ),
+                  if (project.contractor != null &&
+                      project.contractor!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 5),
+                    GestureDetector(
+                      onTap: () => Get.toNamed(
+                        AppRoutes.entityProfile,
+                        arguments: {
+                          'slug': slugify(project.contractor!),
+                          'fallbackName': project.contractor!,
+                        },
+                      ),
+                      child: Text(
+                        project.contractor!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: _kContractorBlue,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (project.budgetTierBracket != null ||
+                      project.costUsdValue != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      project.budgetTier,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10.5,
+                        color: AppColors.textSubtle,
+                      ),
                     ),
                   ],
                 ],

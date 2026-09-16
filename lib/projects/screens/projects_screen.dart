@@ -404,20 +404,15 @@ class ProjectsScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildHeroBanner(ctrl),
                     const SizedBox(height: 16),
-                    // Interactive live map — color-coded status pins,
-                    // tap-to-preview bottom sheet. Always rendered (see
-                    // TrackerLiveMap/ProjectsMapView), never unmounted when
-                    // the current filter matches zero pins.
-                    TrackerLiveMap(projects: ctrl.projects, loading: false),
-                    const SizedBox(height: 16),
                     _buildFeaturedStrip(ctrl),
                     _buildFilterControls(context, ctrl),
                     _buildEntityIntelligenceHeader(ctrl),
                     _buildActiveEntityFilters(ctrl),
                     const SizedBox(height: 12),
 
-                    // 2. Dedicated tracker control — status/county/client
-                    // filter chips.
+                    // Dedicated tracker control — status/county/client
+                    // filter chips, directly above the primary list/grid
+                    // feed (list-first, not map-dominated).
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
@@ -432,6 +427,15 @@ class ProjectsScreen extends StatelessWidget {
                     _PortfolioTabs(ctrl: ctrl),
                     const SizedBox(height: 10),
                     _buildProjectsGrid(ctrl),
+
+                    // Interactive live map — color-coded status pins,
+                    // tap-to-preview bottom sheet. Always rendered (see
+                    // TrackerLiveMap/ProjectsMapView), never unmounted when
+                    // the current filter matches zero pins. Moved below the
+                    // primary feed so the list/grid is the default view,
+                    // matching the website.
+                    const SizedBox(height: 20),
+                    TrackerLiveMap(projects: ctrl.projects, loading: false),
                   ],
                 ),
               ),
@@ -894,6 +898,33 @@ class ProjectsScreen extends StatelessWidget {
                     },
                   ),
                 ),
+                _LabeledFilterButton(
+                  label: 'Sort By',
+                  value: _sortLabel(ctrl),
+                  icon: Icons.sort_rounded,
+                  onTap: () => _showSingleSelectSheet(
+                    context,
+                    title: 'Sort By',
+                    options: const [
+                      'Default',
+                      'Trending',
+                      'Newest',
+                      'Recently Updated',
+                      'Budget: High to Low',
+                    ],
+                    values: const [
+                      '',
+                      'trending',
+                      'newest',
+                      'recently_updated',
+                      'budget_desc',
+                    ],
+                    selected: ctrl.selectedSort.value == 'trending'
+                        ? 'trending'
+                        : ctrl.clientSortBy.value,
+                    onSelected: (value) => _applySort(ctrl, value),
+                  ),
+                ),
               ],
             ),
           if (ctrl.activeFilterCount > 0) ...[
@@ -1034,20 +1065,64 @@ class ProjectsScreen extends StatelessWidget {
           ),
         ),
         _LabeledFilterButton(
-          label: 'Sort Order',
-          value: ctrl.selectedSort.value == 'trending' ? 'Trending' : 'Default',
+          label: 'Sort By',
+          value: _sortLabel(ctrl),
           icon: Icons.sort_rounded,
           onTap: () => _showSingleSelectSheet(
             context,
-            title: 'Sort Order',
-            options: const ['Default', 'Trending'],
-            values: const ['', 'trending'],
-            selected: ctrl.selectedSort.value,
-            onSelected: (value) => ctrl.applyFilters(sort: value),
+            title: 'Sort By',
+            options: const [
+              'Default',
+              'Trending',
+              'Newest',
+              'Recently Updated',
+              'Budget: High to Low',
+            ],
+            values: const [
+              '',
+              'trending',
+              'newest',
+              'recently_updated',
+              'budget_desc',
+            ],
+            selected: ctrl.selectedSort.value == 'trending'
+                ? 'trending'
+                : ctrl.clientSortBy.value,
+            onSelected: (value) => _applySort(ctrl, value),
           ),
         ),
       ],
     );
+  }
+
+  /// Server-side `trending` and the client-side options share one dropdown
+  /// (see `ProjectsController.clientSortBy`'s doc comment) — this resolves
+  /// which one is currently active for display, and [_applySort] below
+  /// keeps the two mutually exclusive.
+  String _sortLabel(ProjectsController ctrl) {
+    if (ctrl.selectedSort.value == 'trending') return 'Trending';
+    switch (ctrl.clientSortBy.value) {
+      case 'newest':
+        return 'Newest';
+      case 'recently_updated':
+        return 'Recently Updated';
+      case 'budget_desc':
+        return 'Budget: High to Low';
+      default:
+        return 'Default';
+    }
+  }
+
+  void _applySort(ProjectsController ctrl, String value) {
+    if (value == 'trending' || value.isEmpty) {
+      ctrl.clientSortBy.value = '';
+      ctrl.applyFilters(sort: value);
+    } else {
+      ctrl.clientSortBy.value = value;
+      if (ctrl.selectedSort.value == 'trending') {
+        ctrl.applyFilters(sort: '');
+      }
+    }
   }
 
   Future<void> _showTypologySheet(
@@ -1246,7 +1321,7 @@ class ProjectsScreen extends StatelessWidget {
   }
 
   Widget _buildProjectsGrid(ProjectsController ctrl) {
-    final visible = ctrl.selectedTypologies.isEmpty
+    final filtered = ctrl.selectedTypologies.isEmpty
         ? ctrl.projects
         : ctrl.projects
               .where(
@@ -1255,6 +1330,7 @@ class ProjectsScreen extends StatelessWidget {
                 ),
               )
               .toList();
+    final visible = _sorted(filtered, ctrl.clientSortBy.value);
     if (visible.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(32),
@@ -2656,4 +2732,30 @@ class _FilterChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Client-side sort for the "Sort By" filter-bar control — see
+/// `ProjectsController.clientSortBy`'s doc comment for why this isn't a
+/// server-side `sort=` param.
+List<Project> _sorted(List<Project> projects, String sortBy) {
+  final sorted = [...projects];
+  switch (sortBy) {
+    case 'newest':
+      sorted.sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
+      break;
+    case 'recently_updated':
+      sorted.sort((a, b) {
+        final au = a.updatedAt ?? DateTime.tryParse(a.createdAt ?? '');
+        final bu = b.updatedAt ?? DateTime.tryParse(b.createdAt ?? '');
+        if (au == null && bu == null) return 0;
+        if (au == null) return 1;
+        if (bu == null) return -1;
+        return bu.compareTo(au);
+      });
+      break;
+    case 'budget_desc':
+      sorted.sort((a, b) => (b.costKes ?? 0).compareTo(a.costKes ?? 0));
+      break;
+  }
+  return sorted;
 }

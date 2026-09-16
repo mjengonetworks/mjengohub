@@ -81,6 +81,14 @@ class ProjectsController extends GetxController {
   /// and write [selectedStatus] directly instead.
   final selectedSort = ''.obs;
 
+  /// '' | 'newest' | 'recently_updated' | 'budget_desc' — the "Sort By"
+  /// filter-bar control. `GET /projects` has no confirmed server param for
+  /// any of these beyond `sort=trending` (see [selectedSort]), so this is
+  /// applied as a client-side sort of the already-loaded page in
+  /// ProjectsScreen's `_buildProjectsGrid`, same pragmatic pattern as
+  /// [selectedTypologies].
+  final clientSortBy = ''.obs;
+
   /// Private Projects' "Typology / Category" filter facet — multi-select
   /// (OR-matched). There is no server-side typology column on `Project`
   /// (only the free-text `project_type`), so — same as `BuildingsTaxonomy`
@@ -274,9 +282,7 @@ class ProjectsController extends GetxController {
         clientSlug: selectedClient.value,
         categorySlug: dimension == 'category'
             ? value
-            : (selectedCategory.value.isEmpty
-                  ? null
-                  : selectedCategory.value),
+            : (selectedCategory.value.isEmpty ? null : selectedCategory.value),
         submittedBy: selectedUser.value,
         costMin: costMin,
         costMax: costMax,

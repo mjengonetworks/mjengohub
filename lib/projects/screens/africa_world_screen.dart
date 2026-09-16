@@ -21,6 +21,15 @@ import '../widgets/tracker_hero_section.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
+enum _SortBy {
+  newest('Newest'),
+  recentlyUpdated('Recently Updated'),
+  budgetHighToLow('Budget: High to Low');
+
+  final String label;
+  const _SortBy(this.label);
+}
+
 const _kRegions = <String, String>{
   'east_africa': 'East Africa',
   'africa': 'Africa',
@@ -62,9 +71,36 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
   /// search.
   String _query = '';
 
-  List<Project> get _projects => _country == null
-      ? _allProjects
-      : _allProjects.where((p) => p.country == _country).toList();
+  /// No server-side sort param beyond region/country/status/q (see the
+  /// Country selector comment above), so "Sort By" is a client-side sort of
+  /// the already-loaded region page, same pragmatic pattern as `_country`.
+  _SortBy _sortBy = _SortBy.newest;
+
+  List<Project> get _projects {
+    final base = _country == null
+        ? _allProjects
+        : _allProjects.where((p) => p.country == _country).toList();
+    final sorted = [...base];
+    switch (_sortBy) {
+      case _SortBy.newest:
+        sorted.sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
+        break;
+      case _SortBy.recentlyUpdated:
+        sorted.sort((a, b) {
+          final au = a.updatedAt ?? DateTime.tryParse(a.createdAt ?? '');
+          final bu = b.updatedAt ?? DateTime.tryParse(b.createdAt ?? '');
+          if (au == null && bu == null) return 0;
+          if (au == null) return 1;
+          if (bu == null) return -1;
+          return bu.compareTo(au);
+        });
+        break;
+      case _SortBy.budgetHighToLow:
+        sorted.sort((a, b) => (b.costKes ?? 0).compareTo(a.costKes ?? 0));
+        break;
+    }
+    return sorted;
+  }
 
   List<String> get _availableCountries =>
       _allProjects.map((p) => p.country).whereType<String>().toSet().toList()
@@ -190,6 +226,46 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
     setState(() => _country = selected.isEmpty ? null : selected);
   }
 
+  Future<void> _showSortSheet() async {
+    final selected = await showModalBottomSheet<_SortBy>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'Sort By',
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            for (final option in _SortBy.values)
+              ListTile(
+                title: Text(
+                  option.label,
+                  style: GoogleFonts.montserrat(fontSize: 13.5),
+                ),
+                trailing: _sortBy == option
+                    ? const Icon(Icons.check, color: AppColors.accentBlue)
+                    : null,
+                onTap: () => Navigator.pop(sheetContext, option),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (selected == null || !mounted) return;
+    setState(() => _sortBy = selected);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -253,62 +329,105 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
                   ),
                   const SizedBox(height: 16),
 
-                  // 1. Top interactive live map — the very first scrollable
-                  // item, directly beneath the app bar (continent tabs live
-                  // in the app bar itself). Never gated behind a toggle.
-                  TrackerLiveMap(
-                    projects: _projects,
-                    loading: _loading,
-                    defaultCenter: kAfricaMapCenter,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Geographic scope is 'global' here (Africa/World), so the
-                  // Country selector applies — mirrors the web's
-                  // Kenya-scope-shows-county / global-scope-shows-country
-                  // logic (ProjectsScreen's Kenya-scoped trackers show only
-                  // a County selector, never Country; this screen is the
-                  // reverse and never shows County).
+                  // Explicit labeled filter bar — Country + Sort By — directly
+                  // above the list/grid feed, ahead of the live map (list-
+                  // first, not map-dominated). Geographic scope is 'global'
+                  // here (Africa/World), so the Country selector applies —
+                  // mirrors the web's Kenya-scope-shows-county /
+                  // global-scope-shows-country logic (ProjectsScreen's
+                  // Kenya-scoped trackers show only a County selector, never
+                  // Country; this screen is the reverse and never shows
+                  // County).
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: GestureDetector(
-                      onTap: _showCountrySheet,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.divider),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.public_rounded,
-                              size: 18,
-                              color: AppColors.textSubtle,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Country: ${_country ?? 'All Countries'}',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textDark,
-                                ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _showCountrySheet,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppColors.divider),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.public_rounded,
+                                    size: 18,
+                                    color: AppColors.textSubtle,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Country: ${_country ?? 'All Countries'}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 18,
+                                    color: AppColors.textSubtle,
+                                  ),
+                                ],
                               ),
                             ),
-                            const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 18,
-                              color: AppColors.textSubtle,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _showSortSheet,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppColors.divider),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.sort_rounded,
+                                    size: 18,
+                                    color: AppColors.textSubtle,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _sortBy.label,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 18,
+                                    color: AppColors.textSubtle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -317,7 +436,8 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
                   TrackerDynamicSections(geoScope: 'global'),
 
                   // 6. All entries grid for the selected region, mirrors
-                  // africa_world.html's .aw-views.
+                  // africa_world.html's .aw-views — the primary list/grid
+                  // feed, shown first (list-first, not map-dominated).
                   const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -337,6 +457,15 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
                     captionOf: (p) => p.country ?? p.statusLabel,
                     emptyMessage:
                         'No Africa & World entries in this region yet.',
+                  ),
+
+                  // Interactive live map — moved below the primary feed so
+                  // the list/grid is the default view, matching the website.
+                  const SizedBox(height: 20),
+                  TrackerLiveMap(
+                    projects: _projects,
+                    loading: _loading,
+                    defaultCenter: kAfricaMapCenter,
                   ),
                 ],
               ),
