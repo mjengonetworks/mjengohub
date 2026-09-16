@@ -113,15 +113,19 @@ class AppHeader extends StatelessWidget {
 
                 const SizedBox(width: 4),
 
-                // Omnibar — AI-augmented global search, distinct from the
-                // plain-text search bar above (which routes to the
+                // AI Search (Omnibar) — AI-augmented global search, distinct
+                // from the plain-text search bar above (which routes to the
                 // confirmed-live full-page SearchScreen). See
                 // lib/search/widgets/omnibar.dart.
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => showOmnibar(context),
-                  child: const _HeaderIconButton(
-                    icon: Icons.auto_awesome_rounded,
+                Tooltip(
+                  message: 'Mjengo AI Search',
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => showAiSearchSheet(context),
+                    child: const _HeaderIconButton(
+                      icon: Icons.auto_awesome_rounded,
+                      size: 22,
+                    ),
                   ),
                 ),
 
@@ -154,7 +158,8 @@ class AppHeader extends StatelessWidget {
 
 class _HeaderIconButton extends StatelessWidget {
   final IconData icon;
-  const _HeaderIconButton({required this.icon});
+  final double size;
+  const _HeaderIconButton({required this.icon, this.size = 19});
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +175,7 @@ class _HeaderIconButton extends StatelessWidget {
           color: AppColors.mutedCanvas,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppColors.primaryBlue, size: 19),
+        child: Icon(icon, color: AppColors.primaryBlue, size: size),
       ),
     );
   }

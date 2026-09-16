@@ -21,15 +21,11 @@ import '../services/search_service.dart';
 
 const _kDebounce = Duration(milliseconds: 250);
 
-const _starterChips = [
-  'Bamburi cement price Nairobi',
-  'NCA compliance requirements for contractors',
-  'Curing time for concrete slab',
-];
+const _starterChips = ['NCA compliance', 'Cement prices', 'KeNHA projects'];
 
 /// Opens the Omnibar as a near-fullscreen modal sheet with an autofocus
 /// search field.
-void showOmnibar(BuildContext context) {
+void showAiSearchSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
