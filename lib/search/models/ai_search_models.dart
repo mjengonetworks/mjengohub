@@ -14,14 +14,21 @@ class AISearchResultItem {
   final String id;
   final String title;
 
-  /// Free-text role/subtitle — e.g. a Directory entry's role ("Contractor"),
-  /// or a Guide's category label.
+  /// Free-text role/subtitle — e.g. an agency's role ("Contractor",
+  /// "Implementing Agency"), or a Guide's category label.
   final String? subtitle;
   final String? imageUrl;
   final String? county;
 
-  /// Slug used to build the navigation target (article slug, entity slug).
+  /// Slug used to build the navigation target (article slug, project slug,
+  /// or entity slug).
   final String? slug;
+
+  /// Disambiguates a "Projects & Agencies" row — 'project' routes to
+  /// `ProjectDetailScreen`, 'agency'/'entity' routes to `EntityProfileScreen`.
+  /// Falls back to 'project' when absent (see [_ResultTile] in omnibar.dart)
+  /// since that's the more common row in that section.
+  final String? type;
 
   const AISearchResultItem({
     required this.id,
@@ -30,6 +37,7 @@ class AISearchResultItem {
     this.imageUrl,
     this.county,
     this.slug,
+    this.type,
   });
 
   factory AISearchResultItem.fromJson(Map<String, dynamic> j) =>
@@ -40,10 +48,11 @@ class AISearchResultItem {
         imageUrl: (j['image'] ?? j['image_url'] ?? j['logo'])?.toString(),
         county: j['county']?.toString(),
         slug: j['slug']?.toString(),
+        type: (j['type'] ?? j['result_type'])?.toString(),
       );
 }
 
-/// One results section ("Guides & Insights", "Directory", "Materials", …).
+/// One results section ("Guides & Insights" or "Projects & Agencies").
 /// [items] is always a real (possibly empty) list — never omitted — so a
 /// category with no matches degrades to "not rendered" at the widget layer
 /// rather than a null-check crash.
@@ -70,8 +79,11 @@ class AISearchCategory {
 
   static String _labelFor(String key) => switch (key) {
     'guides' || 'articles' || 'insights' => 'Guides & Insights',
-    'directory' || 'entities' || 'contractors' => 'Directory',
-    'materials' => 'Materials',
+    'projects' ||
+    'agencies' ||
+    'directory' ||
+    'entities' ||
+    'contractors' => 'Projects & Agencies',
     _ => key,
   };
 }
@@ -91,14 +103,32 @@ class AISearchResponse {
       (aiSummary == null || aiSummary!.trim().isEmpty) &&
       categories.every((c) => c.items.isEmpty);
 
+  /// Only two sections are ever shown — "Guides & Insights" and "Projects &
+  /// Agencies" — merged by [AISearchCategory._labelFor] regardless of which
+  /// raw key name the backend actually ships (unconfirmed live, see the
+  /// class doc comment above), so 'projects'/'agencies'/'directory' all land
+  /// in the same "Projects & Agencies" bucket instead of three separate
+  /// sections with the same title.
   factory AISearchResponse.fromJson(Map<String, dynamic> j) {
-    const knownKeys = ['guides', 'directory', 'materials'];
-    final categories = <AISearchCategory>[];
+    const knownKeys = [
+      'guides',
+      'articles',
+      'insights',
+      'projects',
+      'agencies',
+      'directory',
+      'entities',
+      'contractors',
+    ];
+    final byLabel = <String, List<AISearchResultItem>>{};
     for (final key in knownKeys) {
-      if (j.containsKey(key)) {
-        categories.add(AISearchCategory.fromJson(key, j[key]));
-      }
+      if (!j.containsKey(key)) continue;
+      final parsed = AISearchCategory.fromJson(key, j[key]);
+      byLabel.putIfAbsent(parsed.label, () => []).addAll(parsed.items);
     }
+    final categories = byLabel.entries
+        .map((e) => AISearchCategory(key: e.key, label: e.key, items: e.value))
+        .toList();
     return AISearchResponse(
       query: (j['query'] as String?) ?? '',
       aiSummary: (j['ai_summary'] as String?)?.trim().isEmpty == true

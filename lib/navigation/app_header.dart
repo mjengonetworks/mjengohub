@@ -117,15 +117,12 @@ class AppHeader extends StatelessWidget {
                 // from the plain-text search bar above (which routes to the
                 // confirmed-live full-page SearchScreen). See
                 // lib/search/widgets/omnibar.dart.
-                Tooltip(
-                  message: 'Mjengo AI Search',
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => showAiSearchSheet(context),
-                    child: const _HeaderIconButton(
-                      icon: Icons.auto_awesome_rounded,
-                      size: 22,
-                    ),
+                IconButton(
+                  tooltip: 'Search Mjengo Hub AI',
+                  onPressed: () => showAiSearchSheet(context),
+                  icon: const _HeaderIconButton(
+                    icon: Icons.auto_awesome_rounded,
+                    size: 22,
                   ),
                 ),
 

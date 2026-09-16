@@ -21,7 +21,12 @@ import '../services/search_service.dart';
 
 const _kDebounce = Duration(milliseconds: 250);
 
-const _starterChips = ['NCA compliance', 'Cement prices', 'KeNHA projects'];
+const _starterChips = [
+  'Nairobi Expressway',
+  'KeNHA tenders & roads',
+  'Affordable Housing Programme',
+  'NCA compliance guides',
+];
 
 /// Opens the Omnibar as a near-fullscreen modal sheet with an autofocus
 /// search field.
@@ -30,6 +35,7 @@ void showAiSearchSheet(BuildContext context) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.4),
     builder: (_) => const _OmnibarSheet(),
   );
 }
@@ -92,14 +98,22 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
   Widget build(BuildContext context) {
     final viewInsets = MediaQuery.viewInsetsOf(context);
     final topPadding = MediaQuery.paddingOf(context).top;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
+    final fieldFill = isDark ? AppColorsDark.card : AppColors.mutedCanvas;
+    final divider = isDark ? AppColorsDark.border : AppColors.divider;
+    final textColor = isDark ? AppColorsDark.headingText : AppColors.textDark;
+    final captionColor = isDark
+        ? AppColorsDark.secondaryText
+        : AppColors.captionSlate;
     return AnimatedPadding(
       duration: const Duration(milliseconds: 150),
       padding: EdgeInsets.only(bottom: viewInsets.bottom),
       child: Container(
         height: MediaQuery.sizeOf(context).height - topPadding - 24,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
@@ -108,7 +122,7 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.divider,
+                color: divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -127,12 +141,12 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: textColor,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded),
+                    icon: Icon(Icons.close_rounded, color: textColor),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -142,32 +156,36 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.mutedCanvas,
+                  color: fieldFill,
                   borderRadius: BorderRadius.circular(AppRadius.chip),
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(color: divider),
                 ),
                 child: TextField(
                   controller: _controller,
                   focusNode: _focusNode,
                   autofocus: true,
                   onChanged: _onChanged,
-                  style: GoogleFonts.montserrat(fontSize: 14),
+                  style: GoogleFonts.montserrat(fontSize: 14, color: textColor),
                   decoration: InputDecoration(
                     hintText:
-                        'Ask about prices, compliance, materials, contractors…',
+                        'Search projects, contractors, agencies, or articles...',
                     hintStyle: GoogleFonts.montserrat(
                       fontSize: 13,
-                      color: AppColors.captionSlate,
+                      color: captionColor,
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search_rounded,
-                      color: AppColors.captionSlate,
+                      color: captionColor,
                       size: 20,
                     ),
                     suffixIcon: _controller.text.isEmpty
                         ? null
                         : IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18),
+                            icon: Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: captionColor,
+                            ),
                             onPressed: () => _onChanged(
                               (_controller..clear()).text,
                             ),
@@ -209,33 +227,25 @@ class _EmptyState extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final chip in _starterChips)
-              GestureDetector(
-                onTap: () => onChipTap(chip),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 9,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.mutedCanvas,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: Text(
-                    chip,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12.5,
-                      color: AppColors.bodyCharcoal,
-                    ),
-                  ),
+        SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _starterChips.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final chip = _starterChips[i];
+              return ActionChip(
+                label: Text(
+                  chip,
+                  style: GoogleFonts.montserrat(fontSize: 12.5),
                 ),
-              ),
-          ],
+                backgroundColor: AppColors.mutedCanvas,
+                side: const BorderSide(color: AppColors.divider),
+                onPressed: () => onChipTap(chip),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -390,7 +400,7 @@ class _CategorySection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           for (final item in category.items) ...[
-            _ResultTile(categoryKey: category.key, item: item),
+            _ResultTile(sectionLabel: category.label, item: item),
             const SizedBox(height: 8),
           ],
         ],
@@ -400,25 +410,29 @@ class _CategorySection extends StatelessWidget {
 }
 
 class _ResultTile extends StatelessWidget {
-  final String categoryKey;
+  final String sectionLabel;
   final AISearchResultItem item;
-  const _ResultTile({required this.categoryKey, required this.item});
+  const _ResultTile({required this.sectionLabel, required this.item});
 
+  /// Routes by [AISearchResultItem.type] first ('project'/'article'/
+  /// 'agency'/'entity') when the backend sends one; falls back to inferring
+  /// from [sectionLabel] otherwise — "Guides & Insights" rows are always
+  /// articles, "Projects & Agencies" rows default to a project (the more
+  /// common row there) unless [type] says 'agency'/'entity'.
   void _open() {
-    switch (categoryKey) {
-      case 'guides':
-        if (item.slug != null && item.slug!.isNotEmpty) {
-          Get.toNamed(AppRoutes.articleDetail, arguments: item.slug);
-        }
-        break;
-      case 'directory':
-        if (item.slug != null && item.slug!.isNotEmpty) {
-          Get.toNamed(
-            AppRoutes.entityProfile,
-            arguments: {'slug': item.slug, 'fallbackName': item.title},
-          );
-        }
-        break;
+    final slug = item.slug;
+    if (slug == null || slug.isEmpty) return;
+    final isGuide = sectionLabel == 'Guides & Insights';
+    final type = item.type;
+    if (type == 'article' || (type == null && isGuide)) {
+      Get.toNamed(AppRoutes.articleDetail, arguments: slug);
+    } else if (type == 'agency' || type == 'entity') {
+      Get.toNamed(
+        AppRoutes.entityProfile,
+        arguments: {'slug': slug, 'fallbackName': item.title},
+      );
+    } else {
+      Get.toNamed(AppRoutes.projectDetail, arguments: slug);
     }
   }
 
