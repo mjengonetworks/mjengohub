@@ -366,12 +366,16 @@ class ProjectsService {
   /// at 300 words server-side.
   Future<Map<String, dynamic>> postProjectUpdate({
     required int projectId,
+    required String title,
     required String content,
     String? externalVideoUrl,
+    bool isAnonymous = false,
   }) async {
     try {
       final res = await _api.postRequest('projects/$projectId/updates', {
+        'title': title,
         'content': content,
+        'is_anonymous': isAnonymous,
         if (externalVideoUrl != null && externalVideoUrl.isNotEmpty)
           'external_video_url': externalVideoUrl,
       });

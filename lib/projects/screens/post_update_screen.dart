@@ -13,8 +13,10 @@
 // ProjectsService.uploadUpdateMedia) since the media endpoint for updates
 // isn't confirmed live — the update text always posts regardless.
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../shared/screens/webview_checkout_screen.dart';
@@ -53,40 +55,74 @@ class PostUpdateScreen extends StatefulWidget {
 class _PostUpdateScreenState extends State<PostUpdateScreen> {
   final _service = ProjectsService();
   final _formKey = GlobalKey<FormState>();
+  final _title = TextEditingController();
   final _content = TextEditingController();
   final _videoUrl = TextEditingController();
+  late final quill.QuillController _richContent = quill.QuillController.basic();
   bool _submitting = false;
   int _wordCount = 0;
   final List<PickedMedia> _photos = [];
   bool _showUpgradeBanner = false;
+  bool _isAnonymous = false;
 
   bool get _isPrime =>
       Get.find<MjengoAuthController>().currentUser?.isPrime == true;
   int get _wordCap => _isPrime ? kUpdateWordCap : kFreeUpdateWordCap;
   int get _photoCap => _isPrime ? kPrimePhotoCap : kFreePhotoCap;
 
+  // Admin/Editor/Moderator get the full rich-text toolbar (preserved
+  // formatting for official updates); everyone else gets a plain
+  // multiline field — simpler to write in and nothing to sanitize server-side.
+  bool get _useRichEditor => widget.isPrivileged;
+
   @override
   void initState() {
     super.initState();
-    _content.addListener(() {
-      final count = _content.text.trim().isEmpty
-          ? 0
-          : _content.text.trim().split(RegExp(r'\s+')).length;
-      setState(() {
-        _wordCount = count;
-        if (!_isPrime && count > kFreeUpdateWordCap) _showUpgradeBanner = true;
-      });
+    _content.addListener(_recountPlain);
+    _richContent.document.changes.listen((_) => _recountRich());
+  }
+
+  void _recountPlain() {
+    final count = _content.text.trim().isEmpty
+        ? 0
+        : _content.text.trim().split(RegExp(r'\s+')).length;
+    setState(() {
+      _wordCount = count;
+      if (!_isPrime && count > kFreeUpdateWordCap) _showUpgradeBanner = true;
     });
+  }
+
+  void _recountRich() {
+    final text = _richContent.document.toPlainText().trim();
+    final count = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
+    setState(() => _wordCount = count);
+  }
+
+  String _richContentHtml() {
+    final ops = _richContent.document.toDelta().toJson();
+    if (ops.isEmpty) return '';
+    return QuillDeltaToHtmlConverter(
+      List<Map<String, dynamic>>.from(
+        ops.map((o) => Map<String, dynamic>.from(o as Map)),
+      ),
+      ConverterOptions.forEmail(),
+    ).convert();
   }
 
   @override
   void dispose() {
+    _title.dispose();
     _content.dispose();
     _videoUrl.dispose();
+    _richContent.dispose();
     super.dispose();
   }
 
+  String? _validateTitle(String? v) =>
+      (v == null || v.trim().isEmpty) ? 'Title is required' : null;
+
   String? _validateContent(String? v) {
+    if (_useRichEditor) return null;
     final text = (v ?? '').trim();
     if (text.isEmpty) return 'Update content is required';
     if (text.split(RegExp(r'\s+')).length > _wordCap) {
@@ -115,12 +151,25 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final content = _useRichEditor
+        ? _richContentHtml()
+        : _content.text.trim();
+    if (content.trim().isEmpty) {
+      Get.snackbar(
+        'Content required',
+        'Please write your update before submitting.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
     setState(() => _submitting = true);
 
     final res = await _service.postProjectUpdate(
       projectId: widget.projectId,
-      content: _content.text.trim(),
+      title: _title.text.trim(),
+      content: content,
       externalVideoUrl: _videoUrl.text.trim(),
+      isAnonymous: _isAnonymous,
     );
 
     if (res['success'] == true) {
@@ -209,24 +258,98 @@ class _PostUpdateScreenState extends State<PostUpdateScreen> {
               ),
               const SizedBox(height: 20),
 
-              const FieldLabel('Update', required: true),
+              const FieldLabel('Title', required: true),
               AppTextField(
-                controller: _content,
-                hint: 'What\'s new on this project?',
-                maxLines: 8,
-                validator: _validateContent,
+                controller: _title,
+                hint: 'A short headline for this update',
+                validator: _validateTitle,
               ),
+              const SizedBox(height: 14),
+
+              const FieldLabel('Update', required: true),
+              if (_useRichEditor)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.divider),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      quill.QuillSimpleToolbar(
+                        controller: _richContent,
+                        config: const quill.QuillSimpleToolbarConfig(
+                          showFontFamily: false,
+                          showFontSize: false,
+                          showSubscript: false,
+                          showSuperscript: false,
+                          showSearchButton: false,
+                          showBackgroundColorButton: false,
+                          showColorButton: false,
+                          multiRowsDisplay: false,
+                        ),
+                      ),
+                      const Divider(height: 1, color: AppColors.divider),
+                      SizedBox(
+                        height: 220,
+                        child: quill.QuillEditor.basic(
+                          controller: _richContent,
+                          config: const quill.QuillEditorConfig(
+                            padding: EdgeInsets.all(10),
+                            placeholder: 'What\'s new on this project?',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                AppTextField(
+                  controller: _content,
+                  hint: 'What\'s new on this project?',
+                  maxLines: 8,
+                  validator: _validateContent,
+                ),
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    '$_wordCount / $_wordCap words',
+                    _useRichEditor
+                        ? '$_wordCount words'
+                        : '$_wordCount / $_wordCap words',
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
                       color: over ? AppColors.danger : AppColors.textSubtle,
                     ),
                   ),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Anonymous submission',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                  Switch.adaptive(
+                    value: _isAnonymous,
+                    onChanged: (v) => setState(() => _isAnonymous = v),
+                  ),
+                ],
+              ),
+              Text(
+                'Your name will be hidden from other users. Mjengo Hub still keeps a record of who submitted it.',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  color: AppColors.textSubtle,
                 ),
               ),
               const SizedBox(height: 14),

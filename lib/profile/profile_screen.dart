@@ -18,7 +18,7 @@ import '../shared/widgets/badges.dart';
 import '../shared/widgets/form_fields.dart';
 import '../shared/widgets/responsive.dart';
 import 'account_screen.dart';
-import '../notifications/screens/notifications_screen.dart';
+import 'screens/notification_settings_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
 import 'contact_screen.dart';
@@ -130,10 +130,11 @@ class _SettingsView extends StatelessWidget {
                 rows: [
                   _GroupRowData(
                     icon: Icons.notifications_none_rounded,
-                    title: 'Notification Preferences',
+                    title: 'Notification Settings',
+                    subtitle: 'Choose which updates you receive',
                     onTap: () => Navigator.of(Get.context!).push(
                       MaterialPageRoute(
-                        builder: (_) => const NotificationsScreen(),
+                        builder: (_) => const NotificationSettingsScreen(),
                       ),
                     ),
                   ),

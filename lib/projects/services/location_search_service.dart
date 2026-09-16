@@ -38,7 +38,11 @@ class LocationSearchService {
         },
       );
       if (res.statusCode != 200) return [];
-      final data = jsonDecode(res.body);
+      // Decode explicitly as UTF-8 rather than trusting `res.body`'s
+      // encoding auto-detection, which falls back to Latin-1 when the
+      // response's Content-Type omits a charset — silently mangling
+      // non-ASCII place names (accents, Arabic/Amharic script, etc.).
+      final data = jsonDecode(utf8.decode(res.bodyBytes));
       if (data is! List) return [];
       return data
           .whereType<Map<String, dynamic>>()

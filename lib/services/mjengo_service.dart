@@ -37,7 +37,10 @@ class MjengoService extends GetConnect {
       // which is a forbidden header on web and causes request failures.
       final method = req.method.toUpperCase();
       if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
-        req.headers['Content-Type'] = 'application/json';
+        // See BaseService's identical comment: without an explicit charset,
+        // dart:io defaults the outgoing body encoding to Latin-1 on native
+        // builds, corrupting non-ASCII submissions.
+        req.headers['Content-Type'] = 'application/json; charset=utf-8';
       }
       final token = await getAccessToken();
       if (token != null) req.headers['Authorization'] = 'Bearer $token';
@@ -110,7 +113,10 @@ class MjengoService extends GetConnect {
           .timeout(const Duration(seconds: 20));
 
       if (res.statusCode == 200) {
-        final decoded = jsonDecode(res.body);
+        // Explicit UTF-8 decode, not `res.body`'s auto-detection (which
+        // falls back to Latin-1 without a response charset) — matches the
+        // rest of this app's UTF-8 handling.
+        final decoded = jsonDecode(utf8.decode(res.bodyBytes));
         // Unpacked step by step rather than with a null-aware index inside a
         // ternary: Dart can't disambiguate `cond ? a?[b] : c` and fails to parse.
         Object? token;
@@ -199,7 +205,7 @@ class MjengoService extends GetConnect {
           body,
           headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
           },
         );
         return _wrap(response);

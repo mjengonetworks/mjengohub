@@ -470,10 +470,11 @@ class _SearchScreenState extends State<SearchScreen> {
             (p) => _ProjectRow(p),
             () => _viewAllProjectQuery(
               'Africa & World',
-              () => ProjectsService().getProjects(
+              (page) => ProjectsService().getProjects(
                 geoScope: 'global',
                 q: _query,
-                perPage: 50,
+                page: page,
+                perPage: 20,
               ),
             ),
             buttonLabel: 'View More',
@@ -485,10 +486,11 @@ class _SearchScreenState extends State<SearchScreen> {
             (p) => _ProjectRow(p),
             () => _viewAllProjectQuery(
               'Built History',
-              () => ProjectsService().getProjects(
+              (page) => ProjectsService().getProjects(
                 isBuiltHistory: true,
                 q: _query,
-                perPage: 50,
+                page: page,
+                perPage: 20,
               ),
             ),
             buttonLabel: 'View More',
@@ -530,22 +532,24 @@ class _SearchScreenState extends State<SearchScreen> {
         : 'Private Developments';
     _viewAllProjectQuery(
       title,
-      () => ProjectsService().getProjects(
+      (page) => ProjectsService().getProjects(
         projectType: projectType,
         q: _query,
-        perPage: 50,
+        page: page,
+        perPage: 20,
       ),
     );
   }
 
   void _viewAllProjectQuery(
     String title,
-    Future<List<Project>> Function() fetcher,
+    Future<List<Project>> Function(int page) fetcher,
   ) {
     Get.to(
       () => TrackerFilteredListScreen(
         title: '$title · "$_query"',
         fetcher: fetcher,
+        perPage: 20,
       ),
     );
   }

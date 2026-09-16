@@ -9,6 +9,7 @@ import '../../shared/theme/app_theme.dart';
 import '../controllers/notifications_controller.dart';
 import '../models/notification_model.dart';
 import '../models/notification_preferences.dart';
+import '../services/notifications_service.dart';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const _blue = Color(0xFF2563EB);
@@ -128,9 +129,26 @@ class _PreferencePanel extends StatefulWidget {
 }
 
 class _PreferencePanelState extends State<_PreferencePanel> {
+  final _svc = NotificationsService();
   NotificationPreferences preferences = const NotificationPreferences();
+  bool _saving = false;
 
-  void _set(NotificationPreferences next) => setState(() => preferences = next);
+  @override
+  void initState() {
+    super.initState();
+    _svc.getPreferences().then((p) {
+      if (mounted) setState(() => preferences = p);
+    });
+  }
+
+  Future<void> _set(NotificationPreferences next) async {
+    setState(() {
+      preferences = next;
+      _saving = true;
+    });
+    await _svc.updatePreferences(next);
+    if (mounted) setState(() => _saving = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,55 +159,29 @@ class _PreferencePanelState extends State<_PreferencePanel> {
         'Push notification settings',
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
-      subtitle: const Text('Choose the updates you want to receive'),
+      subtitle: Text(
+        _saving ? 'Saving…' : 'Choose the updates you want to receive',
+      ),
       children: [
         _toggle(
           'Master push notifications',
           preferences.pushEnabled,
-          (v) => _set(
-            NotificationPreferences(
-              pushEnabled: v,
-              infrastructureProjects: preferences.infrastructureProjects,
-              safetyIncidents: preferences.safetyIncidents,
-              editorialArticles: preferences.editorialArticles,
-            ),
-          ),
+          (v) => _set(preferences.copyWith(pushEnabled: v)),
         ),
         _toggle(
-          'Infrastructure and road projects',
-          preferences.infrastructureProjects,
-          (v) => _set(
-            NotificationPreferences(
-              pushEnabled: preferences.pushEnabled,
-              infrastructureProjects: v,
-              safetyIncidents: preferences.safetyIncidents,
-              editorialArticles: preferences.editorialArticles,
-            ),
-          ),
+          'Breaking News & Major Projects',
+          preferences.breakingNewsMajorProjects,
+          (v) => _set(preferences.copyWith(breakingNewsMajorProjects: v)),
         ),
         _toggle(
-          'Safety incidents',
-          preferences.safetyIncidents,
-          (v) => _set(
-            NotificationPreferences(
-              pushEnabled: preferences.pushEnabled,
-              infrastructureProjects: preferences.infrastructureProjects,
-              safetyIncidents: v,
-              editorialArticles: preferences.editorialArticles,
-            ),
-          ),
+          'Documented Progress Updates',
+          preferences.documentedProgressUpdates,
+          (v) => _set(preferences.copyWith(documentedProgressUpdates: v)),
         ),
         _toggle(
-          'Editorial articles',
-          preferences.editorialArticles,
-          (v) => _set(
-            NotificationPreferences(
-              pushEnabled: preferences.pushEnabled,
-              infrastructureProjects: preferences.infrastructureProjects,
-              safetyIncidents: preferences.safetyIncidents,
-              editorialArticles: v,
-            ),
-          ),
+          'Site Safety Alerts',
+          preferences.siteSafetyAlerts,
+          (v) => _set(preferences.copyWith(siteSafetyAlerts: v)),
         ),
       ],
     );

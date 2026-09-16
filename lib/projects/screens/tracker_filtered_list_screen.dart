@@ -1,8 +1,15 @@
 // lib/projects/screens/tracker_filtered_list_screen.dart
 //
 // Generic "View More" destination for the three tracker dynamic sections
-// (Browse by Category, Most Viewed, By Status) — one screen, parameterized
-// by a fetch callback, rather than three near-identical screens.
+// (Browse by Category, Most Viewed, By Status) and the Search screen's
+// per-category "View More"/"View All" actions — one screen, parameterized
+// by a page-aware fetch callback, rather than several near-identical
+// screens.
+//
+// Pagination: [fetcher] is called with an incrementing page number; results
+// are appended to the existing list (never replacing it), and a short page
+// (fewer than [perPage] items) marks the end of the list. Scrolling near the
+// bottom triggers the next page automatically.
 import 'package:flutter/material.dart';
 
 import '../../shared/theme/app_theme.dart';
@@ -13,14 +20,16 @@ import '../widgets/tracker_project_card.dart';
 
 class TrackerFilteredListScreen extends StatefulWidget {
   final String title;
-  final Future<List<Project>> Function() fetcher;
+  final Future<List<Project>> Function(int page) fetcher;
   final String Function(Project)? captionOf;
+  final int perPage;
 
   const TrackerFilteredListScreen({
     super.key,
     required this.title,
     required this.fetcher,
     this.captionOf,
+    this.perPage = 20,
   });
 
   @override
@@ -29,7 +38,62 @@ class TrackerFilteredListScreen extends StatefulWidget {
 }
 
 class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
-  late Future<List<Project>> _future = widget.fetcher();
+  final _scrollController = ScrollController();
+  final List<Project> _items = [];
+  int _page = 1;
+  bool _initialLoading = true;
+  bool _loadingMore = false;
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _loadFirstPage();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_hasMore || _loadingMore || _initialLoading) return;
+    final threshold = _scrollController.position.maxScrollExtent - 300;
+    if (_scrollController.position.pixels >= threshold) _loadMore();
+  }
+
+  Future<void> _loadFirstPage() async {
+    setState(() {
+      _initialLoading = true;
+      _page = 1;
+      _hasMore = true;
+    });
+    final result = await widget.fetcher(1);
+    if (!mounted) return;
+    setState(() {
+      _items
+        ..clear()
+        ..addAll(result);
+      _hasMore = result.length >= widget.perPage;
+      _initialLoading = false;
+    });
+  }
+
+  Future<void> _loadMore() async {
+    setState(() => _loadingMore = true);
+    final nextPage = _page + 1;
+    final result = await widget.fetcher(nextPage);
+    if (!mounted) return;
+    setState(() {
+      _items.addAll(result);
+      _page = nextPage;
+      _hasMore = result.length >= widget.perPage;
+      _loadingMore = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,45 +112,50 @@ class _TrackerFilteredListScreenState extends State<TrackerFilteredListScreen> {
           ),
         ),
       ),
-      body: ContentWidth(
-        maxWidth: 900,
-        child: FutureBuilder<List<Project>>(
-          future: _future,
-          builder: (context, snap) {
-            if (!snap.hasData)
-              return const Center(child: CircularProgressIndicator());
-            final items = snap.data!;
-            if (items.isEmpty) {
-              return const ComingSoonPlaceholder(
-                icon: Icons.folder_off_rounded,
-                title: 'Nothing here yet',
-                message: 'No projects match this filter.',
-              );
-            }
-            return RefreshIndicator(
-              onRefresh: () async {
-                setState(() => _future = widget.fetcher());
-                await _future;
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: items
-                      .map(
-                        (p) => TrackerProjectCard(
-                          project: p,
-                          captionOverride: widget.captionOf?.call(p),
-                          width: 220,
-                        ),
-                      )
-                      .toList(),
+      body: ContentWidth(maxWidth: 900, child: _buildBody()),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_initialLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_items.isEmpty) {
+      return const ComingSoonPlaceholder(
+        icon: Icons.folder_off_rounded,
+        title: 'Nothing here yet',
+        message: 'No projects match this filter.',
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _loadFirstPage,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: _items
+                  .map(
+                    (p) => TrackerProjectCard(
+                      project: p,
+                      captionOverride: widget.captionOf?.call(p),
+                      width: 220,
+                    ),
+                  )
+                  .toList(),
+            ),
+            if (_loadingMore)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-            );
-          },
+          ],
         ),
       ),
     );

@@ -26,7 +26,12 @@ class BaseService extends GetConnect {
       request.headers['Accept'] = 'application/json';
       final method = request.method.toUpperCase();
       if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
-        request.headers['Content-Type'] = 'application/json';
+        // Explicit charset matters here: dart:io's HttpClientRequest falls
+        // back to Latin-1 for the outgoing body encoding whenever the
+        // Content-Type charset is unset, which would corrupt non-ASCII
+        // submissions (Turkish/accented characters, emoji) on native
+        // builds before they ever reach the server.
+        request.headers['Content-Type'] = 'application/json; charset=utf-8';
       }
 
       final token = await _getToken();

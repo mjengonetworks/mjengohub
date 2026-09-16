@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import '../../services/mjengo_service.dart';
 import '../models/notification_model.dart';
+import '../models/notification_preferences.dart';
 
 class NotificationsService {
   final MjengoService _api = Get.find<MjengoService>();
@@ -60,5 +61,51 @@ class NotificationsService {
   Future<bool> clearAll() async {
     final res = await _api.apiDelete('notifications');
     return res.statusCode == 200;
+  }
+
+  // ── Notification preferences ──────────────────────────────────────────────
+  Future<NotificationPreferences> getPreferences() async {
+    try {
+      final res = await _api.apiGet('user/notification-preferences');
+      if (res.statusCode == 200 && res.body is Map<String, dynamic>) {
+        final data = (res.body as Map<String, dynamic>)['data'];
+        if (data is Map<String, dynamic>) {
+          return NotificationPreferences.fromJson(data);
+        }
+      }
+    } catch (e) {
+      print('NotificationsService.getPreferences error: $e');
+    }
+    return const NotificationPreferences();
+  }
+
+  Future<bool> updatePreferences(NotificationPreferences prefs) async {
+    try {
+      final res = await _api.apiPost(
+        'user/notification-preferences',
+        prefs.toJson(),
+      );
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      print('NotificationsService.updatePreferences error: $e');
+      return false;
+    }
+  }
+
+  // ── FCM device token registration ─────────────────────────────────────────
+  // `POST notifications/subscribe` is unconfirmed against api.py, same status
+  // as the preferences endpoint above — degrades silently on failure like
+  // every other best-effort call in this app.
+  Future<bool> registerDeviceToken(String token, {String? platform}) async {
+    try {
+      final res = await _api.apiPost('notifications/subscribe', {
+        'token': token,
+        if (platform != null) 'platform': platform,
+      });
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      print('NotificationsService.registerDeviceToken error: $e');
+      return false;
+    }
   }
 }

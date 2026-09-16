@@ -2228,19 +2228,20 @@ class _ProgressUpdateCard extends StatelessWidget {
               radius: 14,
               backgroundColor: AppColors.borderSlate,
               backgroundImage:
-                  (update.authorAvatar != null &&
-                      update.authorAvatar!.isNotEmpty)
-                  ? NetworkImage(update.authorAvatar!)
+                  (update.displayAuthorAvatar != null &&
+                      update.displayAuthorAvatar!.isNotEmpty)
+                  ? NetworkImage(update.displayAuthorAvatar!)
                   : null,
               child:
-                  (update.authorAvatar == null || update.authorAvatar!.isEmpty)
+                  (update.displayAuthorAvatar == null ||
+                      update.displayAuthorAvatar!.isEmpty)
                   ? const Icon(Icons.person_rounded, size: 14, color: _kSubtext)
                   : null,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                update.authorName ?? 'Mjengo Hub',
+                update.displayAuthorName,
                 style: GoogleFonts.montserrat(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
@@ -2255,6 +2256,17 @@ class _ProgressUpdateCard extends StatelessWidget {
               ),
           ],
         ),
+        if (update.title != null && update.title!.trim().isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            update.title!,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: _kDark,
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           update.content,

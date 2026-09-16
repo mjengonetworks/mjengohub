@@ -46,14 +46,16 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
 
   void _openFiltered(
     String title,
-    Future<List<Project>> Function() fetcher, {
+    Future<List<Project>> Function(int page) fetcher, {
     String Function(Project)? captionOf,
+    int perPage = 40,
   }) {
     Get.to(
       () => TrackerFilteredListScreen(
         title: title,
         fetcher: fetcher,
         captionOf: captionOf,
+        perPage: perPage,
       ),
     );
   }
@@ -87,7 +89,7 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                   group: g,
                   onViewMore: () => _openFiltered(
                     g.displayLabel,
-                    () => _service.getProjects(
+                    (page) => _service.getProjects(
                       projectType: widget.projectType,
                       isBuiltHistory: widget.isBuiltHistory,
                       geoScope: widget.geoScope,
@@ -105,6 +107,7 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                           ? g.value
                           : null,
                       region: widget.geoScope == 'global' ? g.value : null,
+                      page: page,
                       perPage: 40,
                     ),
                   ),
@@ -117,23 +120,30 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
             // this section always renders too.
             _MostViewedSection(
               windows: sections.mostViewedWindows,
+              // The backend has no page/offset concept for "most viewed" —
+              // it's a fixed top-N window, not a paginated list — so only
+              // page 1 returns data; later pages report empty to stop the
+              // list screen's infinite scroll after that single fetch.
               onViewMore: (window) => _openFiltered(
                 'Most Viewed — ${_windowFullLabel(window.label)}',
-                () => _service
-                    .getTrackerSections(
-                      projectType: widget.projectType,
-                      isBuiltHistory: widget.isBuiltHistory,
-                      geoScope: widget.geoScope,
-                      mostViewedLimit: 20,
-                    )
-                    .then(
-                      (s) => s.mostViewedWindows
-                          .firstWhere(
-                            (w) => w.label == window.label,
-                            orElse: () => window,
+                (page) => page > 1
+                    ? Future.value(const <Project>[])
+                    : _service
+                          .getTrackerSections(
+                            projectType: widget.projectType,
+                            isBuiltHistory: widget.isBuiltHistory,
+                            geoScope: widget.geoScope,
+                            mostViewedLimit: 20,
                           )
-                          .projects,
-                    ),
+                          .then(
+                            (s) => s.mostViewedWindows
+                                .firstWhere(
+                                  (w) => w.label == window.label,
+                                  orElse: () => window,
+                                )
+                                .projects,
+                          ),
+                perPage: 20,
               ),
             ),
             const SizedBox(height: 20),
@@ -152,11 +162,12 @@ class _TrackerDynamicSectionsState extends State<TrackerDynamicSections> {
                     group: g,
                     onViewMore: () => _openFiltered(
                       g.label,
-                      () => _service.getProjects(
+                      (page) => _service.getProjects(
                         projectType: widget.projectType,
                         isBuiltHistory: widget.isBuiltHistory,
                         geoScope: widget.geoScope,
                         status: g.value,
+                        page: page,
                         perPage: 40,
                       ),
                     ),

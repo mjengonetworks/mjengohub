@@ -369,11 +369,13 @@ class ProjectUpdate {
   final int id;
   final int projectId;
   final int userId;
+  final String? title;
   final String? authorName;
   final String? authorAvatar;
   final String content;
   final String? externalVideoUrl;
   final bool isApproved;
+  final bool isAnonymous;
   final List<ProjectMedia> media;
   final String? createdAt;
 
@@ -381,24 +383,36 @@ class ProjectUpdate {
     required this.id,
     required this.projectId,
     required this.userId,
+    this.title,
     this.authorName,
     this.authorAvatar,
     required this.content,
     this.externalVideoUrl,
     required this.isApproved,
+    this.isAnonymous = false,
     this.media = const [],
     this.createdAt,
   });
+
+  /// The name to actually display — collapses to "Anonymous" (hiding the
+  /// real author and their avatar/profile link) when the submitter opted
+  /// into anonymous posting, even though the backend still tracks the real
+  /// [userId] for moderation.
+  String get displayAuthorName => isAnonymous ? 'Anonymous' : (authorName ?? 'Mjengo Hub');
+
+  String? get displayAuthorAvatar => isAnonymous ? null : authorAvatar;
 
   factory ProjectUpdate.fromJson(Map<String, dynamic> j) => ProjectUpdate(
     id: (j['id'] as num?)?.toInt() ?? 0,
     projectId: (j['project_id'] as num?)?.toInt() ?? 0,
     userId: (j['user_id'] as num?)?.toInt() ?? 0,
+    title: j['title'] as String?,
     authorName: j['author_name'] as String?,
     authorAvatar: j['author_avatar'] as String?,
     content: (j['content'] as String?) ?? '',
     externalVideoUrl: j['external_video_url'] as String?,
     isApproved: j['is_approved'] as bool? ?? true,
+    isAnonymous: j['is_anonymous'] as bool? ?? false,
     media:
         (j['media'] as List?)
             ?.whereType<Map<String, dynamic>>()

@@ -49,6 +49,13 @@
 	<string>Mjengo Hub uses your location to pin a project's location when submitting or editing it.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- Needed for FCM background/silent push delivery. APNs key upload in
+	     the Firebase console is still a separate, manual infra step this
+	     file can't perform. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<!-- Deep linking (Spec 2) fallback custom scheme, in addition to the
