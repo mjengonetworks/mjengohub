@@ -76,8 +76,8 @@ Color categoryMarkerColor(String sectorLabel) {
 }
 
 /// Compact bottom preview card shown when a map pin is tapped.
-void showProjectPreviewSheet(BuildContext context, Project project) {
-  showModalBottomSheet<void>(
+Future<void> showProjectPreviewSheet(BuildContext context, Project project) {
+  return showModalBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
@@ -210,11 +210,33 @@ void showProjectPreviewSheet(BuildContext context, Project project) {
   );
 }
 
+/// Marker diameter at the fully-zoomed-in (city/street) level — matches the
+/// puck size [_ProjectPin] always rendered before zoom-dependent scaling was
+/// added.
+const double kMarkerFullDiameter = 22.0;
+
+/// Diameter used for the selected/active marker, regardless of zoom — always
+/// a notch above [kMarkerFullDiameter] so the active pin stays visually on
+/// top of its neighbors.
+const double kMarkerSelectedDiameter = 26.0;
+
+/// Zoom-dependent puck sizing, mirroring the website's cluster-to-pin
+/// transition: coarse country-level zooms collapse markers to plain dots,
+/// mid zooms scale up smoothly, and city-level zooms show the full puck.
+double markerDiameterForZoom(double zoom) {
+  if (zoom < 7.0) return 8.0;
+  if (zoom <= 11.0) {
+    final t = (zoom - 7.0) / (11.0 - 7.0);
+    return 10.0 + t * (16.0 - 10.0);
+  }
+  return kMarkerFullDiameter;
+}
+
 /// Full interactive map for a project list — every project with coordinates
 /// gets a marker; tapping one opens that project's detail page directly
 /// (skipping the website's hover-popup step, which doesn't translate well to
 /// touch).
-class ProjectsMapView extends StatelessWidget {
+class ProjectsMapView extends StatefulWidget {
   final List<Project> projects;
 
   /// Base view shown when [projects] has no located pins — the map itself
@@ -230,12 +252,46 @@ class ProjectsMapView extends StatelessWidget {
   });
 
   @override
+  State<ProjectsMapView> createState() => _ProjectsMapViewState();
+}
+
+class _ProjectsMapViewState extends State<ProjectsMapView> {
+  final MapController _mapController = MapController();
+
+  /// Current *integer* zoom step — markers are only rebuilt when this
+  /// changes, not on every fractional camera update, so pans/pinches stay
+  /// smooth.
+  late int _zoomStep;
+  late double _zoom;
+  String? _selectedSlug;
+
+  @override
+  void initState() {
+    super.initState();
+    _zoom = widget.projects.where((p) => p.hasCoordinates).length == 1
+        ? 14.0
+        : 6.0;
+    _zoomStep = _zoom.floor();
+  }
+
+  void _handleMapEvent(MapEvent event) {
+    final zoom = event.camera.zoom;
+    final step = zoom.floor();
+    if (step == _zoomStep) return;
+    setState(() {
+      _zoomStep = step;
+      _zoom = zoom;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final located = projects.where((p) => p.hasCoordinates).toList();
+    final located = widget.projects.where((p) => p.hasCoordinates).toList();
     final points = located
         .map((p) => LatLng(p.latitude!, p.longitude!))
         .toList();
     final bounds = located.isNotEmpty ? LatLngBounds.fromPoints(points) : null;
+    final initialZoom = located.length == 1 ? 14.0 : 6.0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -246,6 +302,7 @@ class ProjectsMapView extends StatelessWidget {
           child: Stack(
             children: [
               FlutterMap(
+                mapController: _mapController,
                 options: MapOptions(
                   initialCameraFit: located.length > 1
                       ? CameraFit.bounds(
@@ -255,11 +312,15 @@ class ProjectsMapView extends StatelessWidget {
                       : null,
                   initialCenter: located.length == 1
                       ? points.first
-                      : defaultCenter,
-                  initialZoom: located.length == 1 ? 14 : 6,
+                      : widget.defaultCenter,
+                  initialZoom: initialZoom,
                   interactionOptions: const InteractionOptions(
-                    flags: InteractiveFlag.none,
+                    flags:
+                        InteractiveFlag.pinchZoom |
+                        InteractiveFlag.drag |
+                        InteractiveFlag.doubleTapZoom,
                   ),
+                  onMapEvent: _handleMapEvent,
                 ),
                 children: [
                   TileLayer(
@@ -279,16 +340,32 @@ class ProjectsMapView extends StatelessWidget {
                     ],
                   ),
                   MarkerLayer(
-                    markers: located
-                        .map(
-                          (p) => Marker(
-                            point: LatLng(p.latitude!, p.longitude!),
-                            width: 22,
-                            height: 22,
-                            child: _ProjectPin(project: p),
-                          ),
-                        )
-                        .toList(),
+                    markers: located.map((p) {
+                      final selected = p.slug == _selectedSlug;
+                      final diameter = selected
+                          ? kMarkerSelectedDiameter
+                          : markerDiameterForZoom(_zoom);
+                      return Marker(
+                        point: LatLng(p.latitude!, p.longitude!),
+                        width: diameter,
+                        height: diameter,
+                        child: _ProjectPin(
+                          project: p,
+                          diameter: diameter,
+                          selected: selected,
+                          onTap: () {
+                            setState(() => _selectedSlug = p.slug);
+                            showProjectPreviewSheet(context, p).whenComplete(
+                              () {
+                                if (mounted && _selectedSlug == p.slug) {
+                                  setState(() => _selectedSlug = null);
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    }).toList(),
                   ),
                   const RichAttributionWidget(
                     attributions: [
@@ -356,41 +433,69 @@ class ProjectsMapView extends StatelessWidget {
 
 class _ProjectPin extends StatelessWidget {
   final Project project;
-  const _ProjectPin({required this.project});
+
+  /// Rendered size — [kMarkerFullDiameter] unless a zoom-dependent map
+  /// passes something smaller/larger (see [markerDiameterForZoom] and
+  /// [kMarkerSelectedDiameter]).
+  final double diameter;
+
+  /// Whether this pin is the active/selected marker — forces the full puck
+  /// styling regardless of [diameter]'s zoom tier.
+  final bool selected;
+
+  /// Overrides the default tap behavior (open the preview sheet directly),
+  /// used by [ProjectsMapView] to also track selection state.
+  final VoidCallback? onTap;
+
+  const _ProjectPin({
+    required this.project,
+    this.diameter = kMarkerFullDiameter,
+    this.selected = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final color = categoryMarkerColor(project.sectorLabel);
+    final isCoarse = !selected && diameter < 10.0;
+    final isFull = selected || diameter >= kMarkerFullDiameter;
+    final borderWidth = isCoarse ? 1.0 : (isFull ? 2.0 : 1.5);
+
     return GestureDetector(
-      onTap: () => showProjectPreviewSheet(context, project),
+      onTap: onTap ?? () => showProjectPreviewSheet(context, project),
       child: Tooltip(
         message:
             '${project.title} · ${project.sectorLabel} · ${project.statusLabel}',
-        child: Container(
-          width: 22,
-          height: 22,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: diameter,
+          height: diameter,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(color: Colors.white, width: borderWidth),
+            boxShadow: isFull
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
-          child: Center(
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
+          child: isCoarse
+              ? null
+              : Center(
+                  child: Container(
+                    width: diameter * (6 / kMarkerFullDiameter),
+                    height: diameter * (6 / kMarkerFullDiameter),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
         ),
       ),
     );
