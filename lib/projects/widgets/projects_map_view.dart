@@ -194,7 +194,7 @@ Future<void> showProjectPreviewSheet(BuildContext context, Project project) {
                         ),
                       ),
                       child: Text(
-                        'View Project',
+                        'View Full Project',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -214,29 +214,22 @@ Future<void> showProjectPreviewSheet(BuildContext context, Project project) {
 
 /// Marker diameter floor used by callers that always want the full puck
 /// size regardless of zoom (e.g. [ProjectMiniMap]'s single static marker).
-const double kMarkerFullDiameter = 22.0;
+const double kMarkerFullDiameter = 40.0;
 
 /// Extra diameter added on top of the current zoom tier's size for the
 /// selected/active marker, so it stays visually on top of its neighbors at
 /// every zoom level rather than only at the fully-zoomed-in tier.
 const double kMarkerSelectedBoost = 8.0;
 
-/// Zoom-dependent puck sizing, mirroring the website's cluster-to-pin
-/// transition and commit 99150f5's three named tiers:
-/// - national view (zoom <= 8): lightweight 12–16px dots to avoid clutter.
-/// - county/regional (zoom 9–12): 24–28px compact pins.
-/// - city/street (zoom >= 13): 38–44px full pins with label chips.
+/// Zoom-dependent puck sizing — three flat tiers, no interpolation between
+/// them, mirroring the website's cluster-to-pin transition:
+/// - country/continental (zoom <= 8): 12px lightweight cluster dots.
+/// - county/regional (zoom 9–12): 24px compact pins.
+/// - street/neighborhood (zoom >= 13): 40px full pins with title chips.
 double markerDiameterForZoom(double zoom) {
-  if (zoom <= 8.0) {
-    final t = ((zoom - 3.0) / (8.0 - 3.0)).clamp(0.0, 1.0);
-    return 12.0 + t * (16.0 - 12.0);
-  }
-  if (zoom <= 12.0) {
-    final t = (zoom - 9.0) / (12.0 - 9.0);
-    return 24.0 + t.clamp(0.0, 1.0) * (28.0 - 24.0);
-  }
-  final t = ((zoom - 13.0) / (18.0 - 13.0)).clamp(0.0, 1.0);
-  return 38.0 + t * (44.0 - 38.0);
+  if (zoom <= 8.0) return 12.0;
+  if (zoom <= 12.0) return 24.0;
+  return kMarkerFullDiameter;
 }
 
 /// City/street zoom threshold at which pins grow to full size and gain a
@@ -602,8 +595,8 @@ class ProjectMiniMap extends StatelessWidget {
                 markers: [
                   Marker(
                     point: point,
-                    width: 22,
-                    height: 22,
+                    width: kMarkerFullDiameter,
+                    height: kMarkerFullDiameter,
                     child: _ProjectPin(project: project),
                   ),
                 ],

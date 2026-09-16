@@ -142,9 +142,12 @@ class _SubmitProjectScreenState extends State<SubmitProjectScreen> {
     final existing = widget.existingProject;
     if (existing == null) {
       _descriptionController = quill.QuillController.basic();
-      _tracker = widget.initialProjectType == 'private_development'
-          ? _TrackerKind.privateDevelopment
-          : _TrackerKind.infrastructure;
+      _tracker = switch (widget.initialProjectType) {
+        'private_development' => _TrackerKind.privateDevelopment,
+        'built_history' => _TrackerKind.builtHistory,
+        'africa_world' => _TrackerKind.africaWorld,
+        _ => _TrackerKind.infrastructure,
+      };
       return;
     }
 

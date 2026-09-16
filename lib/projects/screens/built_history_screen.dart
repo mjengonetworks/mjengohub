@@ -21,7 +21,7 @@ import '../../shared/widgets/responsive.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/tracker_dynamic_sections.dart';
-import '../widgets/tracker_hero_carousel.dart';
+import '../widgets/tracker_hero_section.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
@@ -57,19 +57,20 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
   String? _decade;
   String _ownership = 'all'; // 'all' | 'public' | 'private'
 
+  /// Tracker-scoped search term from the hero's "Quick Search" field.
+  String _query = '';
+
   List<Project> _projects = [];
   List<Article> _archiveArticles = [];
   bool _loading = true;
 
-  /// Top 5 loaded entries' photos rotate through the hero carousel — there's
-  /// no dedicated "featured heritage image" endpoint, same pragmatic
-  /// fallback used elsewhere for unconfirmed/uncapped totals.
-  List<String> get _heroImageUrls => _projects
-      .map((p) => p.imageUrl)
-      .whereType<String>()
-      .toSet()
-      .take(5)
-      .toList();
+  /// Top 5 featured (falling back to top loaded) entries feed the hero
+  /// carousel — there's no dedicated "featured heritage image" endpoint,
+  /// same pragmatic fallback used elsewhere for unconfirmed/uncapped totals.
+  List<Project> get _featuredProjects {
+    final featured = _projects.where((p) => p.isFeatured).toList();
+    return (featured.isNotEmpty ? featured : _projects).take(5).toList();
+  }
 
   @override
   void initState() {
@@ -98,6 +99,7 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
       isBuiltHistory: true,
       completionDecade: _decade,
       ownershipType: _ownership == 'all' ? null : _ownership,
+      q: _query.isEmpty ? null : _query,
       perPage: 40,
     );
     if (!mounted) return;
@@ -135,11 +137,18 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
               padding: const EdgeInsets.only(bottom: 32),
               children: [
                 const SizedBox(height: 12),
-                TrackerHeroCarousel(
+                TrackerHeroSection(
                   title: 'Built History & Architectural Heritage',
                   subtitle:
                       'Landmark structures and historic urban architecture',
-                  imageUrls: _heroImageUrls,
+                  featuredProjects: _featuredProjects,
+                  submitProjectType: 'built_history',
+                  searchHint: 'Search Built History entries…',
+                  onSearch: (q) {
+                    setState(() => _query = q.trim());
+                    _load();
+                  },
+                  onSubmitted: _load,
                 ),
                 const SizedBox(height: 16),
 

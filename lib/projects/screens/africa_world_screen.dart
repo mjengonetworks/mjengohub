@@ -17,7 +17,7 @@ import '../models/project_model.dart';
 import '../services/projects_service.dart';
 import '../widgets/projects_map_view.dart' show kAfricaMapCenter;
 import '../widgets/tracker_dynamic_sections.dart';
-import '../widgets/tracker_hero_carousel.dart';
+import '../widgets/tracker_hero_section.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import '../../shared/widgets/scroll_to_top_fab.dart';
 
@@ -57,6 +57,11 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
   /// so this degrades gracefully as new countries appear in the data.
   String? _country;
 
+  /// Tracker-scoped search term from the hero's "Quick Search" field —
+  /// applied server-side alongside region/country, never a cross-tracker
+  /// search.
+  String _query = '';
+
   List<Project> get _projects => _country == null
       ? _allProjects
       : _allProjects.where((p) => p.country == _country).toList();
@@ -67,15 +72,13 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
 
   static final _regionKeys = _kRegions.keys.toList();
 
-  /// Top 5 loaded entries' photos rotate through the hero carousel — there's
-  /// no dedicated "featured pan-African project" endpoint, same pragmatic
-  /// fallback used by BuiltHistoryScreen's hero carousel.
-  List<String> get _heroImageUrls => _projects
-      .map((p) => p.imageUrl)
-      .whereType<String>()
-      .toSet()
-      .take(5)
-      .toList();
+  /// Top 5 featured (falling back to top loaded) entries feed the hero
+  /// carousel — there's no dedicated "featured pan-African project"
+  /// endpoint, same pragmatic fallback used elsewhere for uncapped totals.
+  List<Project> get _featuredProjects {
+    final featured = _projects.where((p) => p.isFeatured).toList();
+    return (featured.isNotEmpty ? featured : _projects).take(5).toList();
+  }
 
   @override
   void initState() {
@@ -98,6 +101,7 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
     setState(() => _loading = true);
     final projects = await _service.getProjects(
       geoScope: 'global',
+      q: _query.isEmpty ? null : _query,
       region: _regionKeys[_tabController.index],
       perPage: 40,
     );
@@ -232,13 +236,20 @@ class _AfricaWorldScreenState extends State<AfricaWorldScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TrackerHeroCarousel(
+                  TrackerHeroSection(
                     title: 'Africa & World Mega Projects',
                     subtitle:
                         'Tracking landmark mega-developments, engineering '
                         'marvels, and iconic architectural builds across '
                         'Africa and around the globe.',
-                    imageUrls: _heroImageUrls,
+                    featuredProjects: _featuredProjects,
+                    submitProjectType: 'africa_world',
+                    searchHint: 'Search Africa & World projects…',
+                    onSearch: (q) {
+                      setState(() => _query = q.trim());
+                      _load();
+                    },
+                    onSubmitted: _load,
                   ),
                   const SizedBox(height: 16),
 

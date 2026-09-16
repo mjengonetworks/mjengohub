@@ -67,6 +67,15 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  /// Deep blue gradient for tracker hero sections — same primary/secondary
+  /// blue pair as [verifiedPillGradient], matching the website's tracker
+  /// page headers (main.css --primary-blue/--secondary-blue).
+  static const LinearGradient heroGradient = LinearGradient(
+    colors: [primaryBlue, secondaryBlue],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
 
 /// Dark-mode palette, based on the website's own footer slate treatment

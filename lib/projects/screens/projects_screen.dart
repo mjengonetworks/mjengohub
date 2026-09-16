@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../navigation/app_header.dart';
-import '../../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
@@ -16,6 +15,7 @@ import '../../shared/widgets/responsive.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
+import '../widgets/tracker_hero_section.dart';
 import '../widgets/tracker_map_grid_section.dart';
 import 'project_detail_screen.dart';
 
@@ -74,7 +74,7 @@ class ProjectsScreen extends StatelessWidget {
   /// 'private_development' (Private Projects) — see ProjectsController.
   final String projectType;
 
-  ProjectsScreen({
+  const ProjectsScreen({
     super.key,
     this.title = "Kenya's Infrastructure Projects",
     this.subtitle =
@@ -82,14 +82,6 @@ class ProjectsScreen extends StatelessWidget {
         'progress, milestones, and community ratings.',
     this.projectType = 'infrastructure',
   });
-
-  /// Backs the hero banner's "Quick Search" pill — focuses the search field
-  /// already in [_buildHeader] rather than duplicating a second search UI.
-  /// A fresh instance per pushed route (this widget isn't reused across
-  /// navigations), not disposed — same pragmatic style already used
-  /// elsewhere in this file rather than introducing a StatefulWidget just
-  /// for one FocusNode.
-  final FocusNode _searchFocusNode = FocusNode();
 
   /// Applies incoming entity-filter arguments once, without clobbering
   /// whatever else is already selected — see ProjectsController.applyFilters.
@@ -441,7 +433,6 @@ class ProjectsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             // Search bar
             TextField(
-              focusNode: _searchFocusNode,
               onSubmitted: (q) => ctrl.applyFilters(
                 status: ctrl.selectedStatus.value,
                 county: ctrl.selectedCounty.value,
@@ -486,141 +477,34 @@ class ProjectsScreen extends StatelessWidget {
     );
   }
 
-  /// Full-bleed hero banner at the top of the feed — background is the
-  /// first currently-loaded featured project's image (falls back to a flat
-  /// gradient, not a bundled asset: no `hero_bg.jpg`-style placeholder is
-  /// registered in pubspec.yaml/assets/, so referencing one would crash).
+  /// Standardized tracker hero — deep blue gradient panel with a featured-
+  /// project carousel, shared with the other three trackers via
+  /// [TrackerHeroSection]. Filtered views (a tapped client/contractor/etc.)
+  /// never show a global featured project — falls back to the already-
+  /// filtered result set's top rows so the carousel never reads as
+  /// unrelated content.
   Widget _buildHeroBanner(ProjectsController ctrl) {
     return Obx(() {
-      // Filtered views (a tapped client/contractor/etc.) must never show a
-      // global featured project's photo — it reads as unrelated content.
-      // Fall back to the already-filtered result set's top rows.
-      List<String> bgUrls;
-      if (ctrl.hasEntityFilter) {
-        bgUrls = ctrl.projects
-            .map((p) => p.imageUrl)
-            .whereType<String>()
-            .take(5)
-            .toList();
-      } else {
-        final featured = ctrl.projects.where((p) => p.isFeatured).toList();
-        final source = featured.isNotEmpty ? featured : ctrl.projects;
-        bgUrls = source
-            .map((p) => p.imageUrl)
-            .whereType<String>()
-            .take(5)
-            .toList();
-      }
+      final featured = ctrl.hasEntityFilter
+          ? ctrl.projects.take(5).toList()
+          : () {
+              final f = ctrl.projects.where((p) => p.isFeatured).toList();
+              return (f.isNotEmpty ? f : ctrl.projects).take(5).toList();
+            }();
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            height: 240,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                _HeroCarouselBackground(
-                  imageUrls: bgUrls,
-                  placeholderColor: _kDark,
-                ),
-                DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xD10F172A), Color(0xF00F172A)],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        title == 'Infrastructure Tracker'
-                            ? "Kenya's Infrastructure Projects"
-                            : title,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Track road, bridge, building, and public '
-                        'infrastructure projects: progress, milestones, '
-                        'and ratings.',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          color: const Color(0xFFCBD5E1),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () async {
-                              final submitted = await Get.toNamed(
-                                AppRoutes.submitProject,
-                                arguments: projectType,
-                              );
-                              if (submitted == true) ctrl.fetchAll();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0284C7),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              '+ Submit a Project',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          OutlinedButton(
-                            onPressed: () => FocusScope.of(
-                              Get.context!,
-                            ).requestFocus(_searchFocusNode),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(
-                                alpha: 0.12,
-                              ),
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white24),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                            child: Text(
-                              '🔍 Quick Search',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+      return TrackerHeroSection(
+        title: title,
+        subtitle: subtitle,
+        featuredProjects: featured,
+        submitProjectType: projectType,
+        searchHint: 'Search $title…',
+        onSearch: (q) => ctrl.applyFilters(
+          status: ctrl.selectedStatus.value,
+          county: ctrl.selectedCounty.value,
+          sector: ctrl.selectedSector.value,
+          q: q,
         ),
+        onSubmitted: ctrl.fetchAll,
       );
     });
   }
@@ -1283,97 +1167,6 @@ class ProjectsScreen extends StatelessWidget {
       child: Column(
         children: visible.map((p) => _ProjectListTile(project: p)).toList(),
       ),
-    );
-  }
-}
-
-/// Rotating hero background — the "standardized dynamic hero carousel"
-/// shared across every tracker screen, wired here to the top loaded
-/// featured/filtered project images with the same slim clamped indicator
-/// lines used on the homepage hero (PageDotIndicator) and by
-/// TrackerHeroCarousel. Kept local (rather than reusing TrackerHeroCarousel
-/// itself) since this hero also carries CTA buttons + a dynamic title/
-/// subtitle overlay that TrackerHeroCarousel doesn't support.
-class _HeroCarouselBackground extends StatefulWidget {
-  final List<String> imageUrls;
-  final Color placeholderColor;
-  const _HeroCarouselBackground({
-    required this.imageUrls,
-    required this.placeholderColor,
-  });
-
-  @override
-  State<_HeroCarouselBackground> createState() =>
-      _HeroCarouselBackgroundState();
-}
-
-class _HeroCarouselBackgroundState extends State<_HeroCarouselBackground> {
-  final _controller = PageController();
-  int _index = 0;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _armAutoplay();
-  }
-
-  @override
-  void didUpdateWidget(covariant _HeroCarouselBackground old) {
-    super.didUpdateWidget(old);
-    if (old.imageUrls.length != widget.imageUrls.length) {
-      _index = 0;
-      _armAutoplay();
-    }
-  }
-
-  void _armAutoplay() {
-    _timer?.cancel();
-    if (widget.imageUrls.length <= 1) return;
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!mounted || !_controller.hasClients) return;
-      final next = (_index + 1) % widget.imageUrls.length;
-      _controller.animateToPage(
-        next,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final images = widget.imageUrls.isEmpty ? [null] : widget.imageUrls;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        PageView.builder(
-          controller: _controller,
-          itemCount: images.length,
-          onPageChanged: (i) => setState(() => _index = i),
-          itemBuilder: (_, i) => NetImage(
-            url: images[i],
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            placeholderColor: widget.placeholderColor,
-            errorBuilder: (_) => Container(color: widget.placeholderColor),
-          ),
-        ),
-        if (images.length > 1)
-          Positioned(
-            top: 16,
-            right: 16,
-            child: PageDotIndicator(count: images.length, current: _index),
-          ),
-      ],
     );
   }
 }
