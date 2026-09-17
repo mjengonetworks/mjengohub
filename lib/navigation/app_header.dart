@@ -150,7 +150,7 @@ class AppHeader extends StatelessWidget {
                     ],
                     _NotificationBellButton(),
                     const SizedBox(width: 8),
-                    _ProfileAvatarButton(),
+                    _AuthAreaButton(),
                   ],
                 ),
               ],
@@ -185,7 +185,7 @@ class _AiSparkleBadge extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: const GeminiSparkleIcon(size: 18, color: Colors.white),
+      child: const GeminiSparkleIcon(size: 20, color: Colors.white),
     );
   }
 }
@@ -199,19 +199,14 @@ class _HeaderIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 38,
-      height: 38,
+      width: 34,
+      height: 34,
       alignment: Alignment.center,
-      child: Container(
-        width: 36,
-        height: 36,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.mutedCanvas,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: AppColors.primaryBlue, size: 19),
+      decoration: BoxDecoration(
+        color: AppColors.mutedCanvas,
+        borderRadius: BorderRadius.circular(12),
       ),
+      child: Icon(icon, color: AppColors.primaryBlue, size: 20),
     );
   }
 }
@@ -227,25 +222,25 @@ class _VerifiedBadgeButton extends StatelessWidget {
     try {
       auth = Get.find<MjengoAuthController>();
     } catch (_) {}
-    if (auth == null) return const SizedBox(width: 38, height: 38);
+    if (auth == null) return const SizedBox(width: 34, height: 34);
 
     return Obx(() {
       final isPrime = auth!.currentUser?.isPrime == true;
       if (!isPrime) {
         return Container(
-          width: 38,
-          height: 38,
+          width: 34,
+          height: 34,
           alignment: Alignment.center,
           child: const Icon(
             Icons.verified_outlined,
             color: AppColors.textSubtle,
-            size: 21,
+            size: 20,
           ),
         );
       }
       return Container(
-        width: 38,
-        height: 38,
+        width: 34,
+        height: 34,
         alignment: Alignment.center,
         child: Container(
           width: 18,
@@ -303,9 +298,61 @@ class _NotificationBellButton extends StatelessWidget {
   }
 }
 
-// ── Profile avatar — far right, opens the Profile tab directly ─────────────
+// ── Auth area — Sign In pill for guests, avatar (opens Profile tab) for
+// signed-in users. Below 360dp there's no room for a labeled pill next to
+// the rest of the action cluster, so guests get a bare person icon instead
+// that still routes to /login. ──────────────────────────────────────────────
+
+class _AuthAreaButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    MjengoAuthController? auth;
+    try {
+      auth = Get.find<MjengoAuthController>();
+    } catch (_) {}
+
+    if (auth == null) return const _ProfileAvatarButton(authed: false);
+
+    return Obx(() {
+      if (!auth!.isAuthenticated) {
+        final narrow = MediaQuery.sizeOf(context).width < 360;
+        if (narrow) {
+          return GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.login),
+            behavior: HitTestBehavior.opaque,
+            child: const _HeaderIconButton(icon: Icons.login_rounded),
+          );
+        }
+        return GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.login),
+          child: Container(
+            height: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              'Sign In',
+              style: GoogleFonts.montserrat(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      }
+      return const _ProfileAvatarButton(authed: true);
+    });
+  }
+}
 
 class _ProfileAvatarButton extends StatelessWidget {
+  final bool authed;
+  const _ProfileAvatarButton({required this.authed});
+
   @override
   Widget build(BuildContext context) {
     MjengoAuthController? auth;
@@ -321,14 +368,14 @@ class _ProfileAvatarButton extends StatelessWidget {
         height: 40,
         child: Center(
           child: Container(
-            width: 36,
-            height: 36,
+            width: 34,
+            height: 34,
             decoration: const BoxDecoration(
               color: AppColors.accentBlue,
               shape: BoxShape.circle,
             ),
             clipBehavior: Clip.antiAlias,
-            child: auth == null
+            child: (!authed || auth == null)
                 ? const Icon(
                     Icons.person_rounded,
                     color: Colors.white,
@@ -340,8 +387,8 @@ class _ProfileAvatarButton extends StatelessWidget {
                     final initials = user?.initials ?? '?';
                     return NetImage(
                       url: photoUrl,
-                      width: 32,
-                      height: 32,
+                      width: 30,
+                      height: 30,
                       fit: BoxFit.cover,
                       errorBuilder: (_) => Center(
                         child: Text(
