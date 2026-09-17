@@ -12,6 +12,7 @@ import '../hub/screens/hub_screen.dart';
 import '../point/routes/app_routes.dart';
 import '../profile/profile_screen.dart';
 import '../shared/theme/app_theme.dart';
+import 'app_drawer.dart';
 import 'app_header.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -52,6 +53,7 @@ class _MainNavigationState extends State<MainNavigation> {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: AppColors.canvas,
+        drawer: const AppDrawer(),
         body: NotificationListener<ScrollNotification>(
           onNotification: _onScrollNotification,
           child: Stack(

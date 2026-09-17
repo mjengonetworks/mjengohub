@@ -132,8 +132,8 @@ class TrackerProjectCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+                      horizontal: 10,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.accentBlue.withValues(alpha: 0.08),
@@ -142,7 +142,7 @@ class TrackerProjectCard extends StatelessWidget {
                     child: Text(
                       project.sectorLabel,
                       style: GoogleFonts.montserrat(
-                        fontSize: 9.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: AppColors.accentBlue,
                       ),
@@ -192,7 +192,7 @@ class TrackerProjectCard extends StatelessWidget {
   }
 
   Widget _pill(String label, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(999),
@@ -200,8 +200,8 @@ class TrackerProjectCard extends StatelessWidget {
     child: Text(
       label,
       style: GoogleFonts.montserrat(
-        fontSize: 8.5,
-        fontWeight: FontWeight.w500,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
     ),

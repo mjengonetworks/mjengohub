@@ -12,6 +12,7 @@ import '../../comments/widgets/comments_section.dart';
 import '../../navigation/main_navigation.dart';
 import '../../news/models/article_model.dart';
 import '../../news/services/news_api_service.dart';
+import '../../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../point/services/gamification_service.dart';
@@ -186,50 +187,7 @@ class ProjectDetailScreen extends StatelessWidget {
             ),
           ],
           flexibleSpace: FlexibleSpaceBar(
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                NetImage(
-                  url: project.imageUrl,
-                  fit: BoxFit.cover,
-                  placeholderColor: const Color(0xFF1E3A5F),
-                  placeholderIcon: Icons.business_rounded,
-                  placeholderIconColor: Colors.white30,
-                  placeholderIconSize: 64,
-                ),
-                // ── Project Status elevated to the very top of the hierarchy ──
-                Positioned(
-                  left: 16,
-                  bottom: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _StatusDot(status: project.status),
-                        const SizedBox(width: 7),
-                        Text(
-                          project.statusLabel.toUpperCase(),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: 0.6,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            background: _HeroGallery(project: project),
           ),
         ),
 
@@ -358,12 +316,13 @@ class ProjectDetailScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 // ═══════════════════════════════════════════════════════════
-                // TOP SECTION — strict two-tier architecture: Hero Image (in
-                // the SliverAppBar above) → Summary & Details → Renders &
-                // Architectural Concepts → Map → Overview → Documents/PDFs.
-                // The crowdsourced, dated "Documented Progress & Updates"
-                // feed is deliberately NOT part of this tier — it is its own
-                // standalone section further down.
+                // Hero Image (in the SliverAppBar above) → Summary & Details
+                // → Renders & Architectural Concepts, then below Project
+                // Overview: Block 1 Overview → Block 2 Map → Block 3 More
+                // Photos & Videos → Block 4 Documents & Attachments →
+                // Block 5 Project Progress & Milestones (its own standalone,
+                // reverse-chronological section, "Submit an Update" in the
+                // section header).
                 // ═══════════════════════════════════════════════════════════
 
                 // ── Project Summary — short admin-editable teaser, matching
@@ -435,40 +394,62 @@ class ProjectDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                 ],
 
-                // ── Map — directly below the Renders tier, above Overview ──
-                if (project.isLinear &&
-                    (project.routeData?.length ?? 0) >= 2) ...[
-                  ProjectRouteMap(project: project),
-                  const SizedBox(height: 8),
-                ] else if (project.hasCoordinates) ...[
-                  ProjectMiniMap(project: project),
-                  const SizedBox(height: 8),
-                ],
-
-                // ── Project Overview — the longform description, matching
-                // the website's "Project Overview" heading (was "About This
-                // Project"). ──────────────────────────────────────────────
+                // ── Block 1: Project Overview — the longform description,
+                // matching the website's "Project Overview" heading (was
+                // "About This Project"). ──────────────────────────────────
                 if (_isValidInfo(project.descriptionOverview) ||
                     _isValidInfo(project.description)) ...[
                   _buildDescriptionCard(project),
                   const SizedBox(height: 8),
                 ],
 
-                // ── Project Documents — official PDFs/reports/planning
-                // approvals, admin-manageable on the website. Hidden until a
-                // project actually has rows, same pattern as the entity
-                // sections below. Closes out the top two-tier section. ────
+                // ── Block 2: Map — directly beneath Overview. Keyed on the
+                // route/coordinate identity so it re-renders (and Leaflet's
+                // tile grid re-measures) if this screen instance is ever
+                // reused for a different project. ──────────────────────────
+                if (project.isLinear &&
+                    (project.routeData?.length ?? 0) >= 2) ...[
+                  ProjectRouteMap(
+                    key: ValueKey('route-map-${project.id}'),
+                    project: project,
+                  ),
+                  const SizedBox(height: 8),
+                ] else if (project.hasCoordinates) ...[
+                  ProjectMiniMap(
+                    key: ValueKey('mini-map-${project.id}'),
+                    project: project,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Block 3: More Photos & Videos of [Project Title] — real
+                // on-site, non-hero gallery photos (the hero carousel above
+                // already covers the admin-featured shots; Renders are their
+                // own tier above too) ─────────────────────────────────────
+                if (project.media.isNotEmpty) ...[
+                  _buildGalleryCard(
+                    'More Photos & Videos of ${project.title}',
+                    project.renderGallery.isNotEmpty
+                        ? project.progressGallery
+                        : project.media,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Block 4: Documents & Attachments — official PDFs/
+                // reports/planning approvals, admin-manageable on the
+                // website. Hidden until a project actually has rows, same
+                // pattern as the entity sections below. ───────────────────
                 if (project.documents.isNotEmpty) ...[
                   _DocumentsCard(project: project),
                   const SizedBox(height: 8),
                 ],
 
-                // ═══════════════════════════════════════════════════════════
-                // BOTTOM STANDALONE SECTION — Documented Progress & Updates.
-                // GET /projects/{id}/updates, reverse-chronological; separate
-                // from the fixed top-tier project record above.
-                // ═══════════════════════════════════════════════════════════
-                _ProgressUpdatesSection(project: project),
+                // ── Block 5: Project Progress & Milestones — its own
+                // standalone section: the admin milestone timeline plus the
+                // crowdsourced, dated GET /projects/{id}/updates feed,
+                // reverse-chronological, "Submit an Update" in the header.
+                _ProgressMilestonesSection(project: project),
 
                 const SizedBox(height: 8),
 
@@ -476,12 +457,6 @@ class ProjectDetailScreen extends StatelessWidget {
                 _RatingCard(ctrl: ctrl, project: project),
 
                 const SizedBox(height: 8),
-
-                // ── Milestones timeline ───────────────────────────────────
-                if (project.milestones.isNotEmpty) ...[
-                  _buildMilestonesCard(project),
-                  const SizedBox(height: 8),
-                ],
 
                 // ── Mid-content ad slot + Partner With Us — directly below
                 // Documented Progress, ahead of Discussion ────────────────
@@ -528,19 +503,6 @@ class ProjectDetailScreen extends StatelessWidget {
                   _FinanciersCard(project: project, onTapEntity: _openEntity),
                   const SizedBox(height: 8),
                 ],
-
-                // ── Featured Project Photos & Videos — real on-site progress
-                // documentation (Renders & Documents already surfaced in the
-                // top section above) ──────────────────────────────────────
-                if (project.media.isNotEmpty)
-                  _buildGalleryCard(
-                    'Featured Project Photos & Videos',
-                    project.renderGallery.isNotEmpty
-                        ? project.progressGallery
-                        : project.media,
-                  ),
-
-                const SizedBox(height: 8),
 
                 // ── Sidebar discovery lists (stacked on mobile): Related
                 // Projects → Latest Projects → Trending Projects, each real
@@ -865,136 +827,6 @@ class ProjectDetailScreen extends StatelessWidget {
     return _InfoCard(
       title: 'Project Overview',
       child: _ExpandableDescription(text: text),
-    );
-  }
-
-  Widget _buildMilestonesCard(Project project) {
-    final milestones = project.milestones;
-    return _InfoCard(
-      title: 'Milestones',
-      child: Column(
-        children: List.generate(milestones.length, (idx) {
-          final m = milestones[idx];
-          final isLast = idx == milestones.length - 1;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 24,
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: m.isAchieved
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFCBD5E1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            m.isAchieved
-                                ? Icons.check_rounded
-                                : Icons.radio_button_unchecked_rounded,
-                            size: 14,
-                            color: m.isAchieved ? Colors.white : _kSubtext,
-                          ),
-                        ),
-                        // ── Connecting track — unbroken vertical timeline
-                        // between sequential nodes, matching the website's
-                        // `.pd-timeline::before` line. Colored by whether
-                        // this node is achieved (leads into the next one).
-                        if (!isLast)
-                          Expanded(
-                            child: Container(
-                              width: 2,
-                              margin: const EdgeInsets.symmetric(vertical: 2),
-                              color: m.isAchieved
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFCBD5E1),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          m.title,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _kDark,
-                          ),
-                        ),
-                        if (m.milestoneDate != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            _fmtDate(m.milestoneDate!),
-                            style: GoogleFonts.montserrat(
-                              fontSize: 11,
-                              color: _kSubtext,
-                            ),
-                          ),
-                        ],
-                        if (m.description != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            m.description!,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 12,
-                              color: _kSubtext,
-                            ),
-                          ),
-                        ],
-                        if (m.media.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            height: 52,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: m.media.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(width: 6),
-                              itemBuilder: (_, i) => ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: m.media[i].mediaType == 'image'
-                                    ? NetImage(
-                                        url: m.media[i].url,
-                                        width: 52,
-                                        height: 52,
-                                        fit: BoxFit.cover,
-                                        placeholderColor: _kDivider,
-                                      )
-                                    : Container(
-                                        width: 52,
-                                        height: 52,
-                                        color: _kDark,
-                                        child: const Icon(
-                                          Icons.play_circle_fill_rounded,
-                                          color: Colors.white54,
-                                          size: 22,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 
@@ -1432,6 +1264,175 @@ class _ProjectActionChip extends StatelessWidget {
   }
 }
 
+/// Header image gallery — swipeable carousel of up to 5 admin-featured
+/// photos (`Project.featuredMedia`, `is_featured=True` media rows), falling
+/// back to the single legacy `featured_image` when the admin hasn't curated
+/// a Featured Section yet, matching the website's own `gallery_images`
+/// fallback (application.py's project_detail route). Locked to the parent
+/// SliverAppBar's 16:9 `expandedHeight`.
+class _HeroGallery extends StatefulWidget {
+  final Project project;
+  const _HeroGallery({required this.project});
+
+  @override
+  State<_HeroGallery> createState() => _HeroGalleryState();
+}
+
+class _HeroGalleryState extends State<_HeroGallery> {
+  final _pageController = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  List<ProjectMedia> get _slides {
+    final featured = widget.project.featuredMedia
+        .where((m) => m.mediaType == 'image')
+        .toList();
+    if (featured.isNotEmpty) return featured;
+    final url = widget.project.imageUrl;
+    if (url == null || url.isEmpty) return const [];
+    return [
+      ProjectMedia(id: -1, filePath: url, mediaType: 'image', isFeatured: true),
+    ];
+  }
+
+  static Widget _fallback() => Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Color(0xFF1E3A5F), Color(0xFF0F172A)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+    child: const Center(
+      child: Icon(
+        Icons.image_not_supported_rounded,
+        color: Colors.white30,
+        size: 48,
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final slides = _slides;
+    final project = widget.project;
+
+    if (slides.isEmpty) {
+      return _fallback();
+    }
+
+    final rawCredit = slides[_page].credit?.trim();
+    final showCredit =
+        rawCredit != null &&
+        rawCredit.isNotEmpty &&
+        rawCredit.toLowerCase() != 'personal';
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          itemCount: slides.length,
+          onPageChanged: (i) => setState(() => _page = i),
+          itemBuilder: (_, i) => NetImage(
+            url: slides[i].url,
+            fit: BoxFit.cover,
+            placeholderColor: const Color(0xFF1E3A5F),
+            placeholderIcon: Icons.business_rounded,
+            placeholderIconColor: Colors.white30,
+            placeholderIconSize: 64,
+            errorBuilder: (_) => _fallback(),
+          ),
+        ),
+        if (slides.length > 1)
+          Positioned(
+            bottom: 44,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: PageDotIndicator(count: slides.length, current: _page),
+            ),
+          ),
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: 16,
+          child: Row(
+            children: [
+              // ── Project Status elevated to the top of the hierarchy ──────
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _StatusDot(status: project.status),
+                    const SizedBox(width: 7),
+                    Text(
+                      project.statusLabel.toUpperCase(),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // ── Photo credit — only when it's a real, non-"Personal" name.
+              if (showCredit)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 11,
+                        color: Colors.white70,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        rawCredit,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatusDot extends StatelessWidget {
   final String status;
   const _StatusDot({required this.status});
@@ -1615,10 +1616,14 @@ class _RatingCard extends StatelessWidget {
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(
-                                    color: selected ? _kBlue : _kBg,
+                                    color: selected
+                                        ? const Color(0xFF1D4ED8)
+                                        : Colors.white,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: selected ? _kBlue : _kDivider,
+                                      color: selected
+                                          ? const Color(0xFF1D4ED8)
+                                          : const Color(0xFFCBD5E1),
                                     ),
                                   ),
                                   child: Center(
@@ -1626,10 +1631,10 @@ class _RatingCard extends StatelessWidget {
                                       '$rating',
                                       style: GoogleFonts.montserrat(
                                         fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w700,
                                         color: selected
                                             ? Colors.white
-                                            : _kSubtext,
+                                            : const Color(0xFF334155),
                                       ),
                                     ),
                                   ),
@@ -2456,18 +2461,22 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
   }
 }
 
-/// Renders `GET /projects/{id}/updates` chronologically. Hides itself
-/// entirely (no empty-state card) when there are no approved updates yet.
-class _ProgressUpdatesSection extends StatefulWidget {
+/// Block 5, standalone: the admin milestone timeline (synchronous,
+/// `project.milestones`) plus `GET /projects/{id}/updates` (reverse-
+/// chronological), under one "Project Progress & Milestones" header with a
+/// "Submit an Update" action. Hides entirely (no empty-state card) when
+/// there are neither milestones nor approved updates.
+class _ProgressMilestonesSection extends StatefulWidget {
   final Project project;
-  const _ProgressUpdatesSection({required this.project});
+  const _ProgressMilestonesSection({required this.project});
 
   @override
-  State<_ProgressUpdatesSection> createState() =>
-      _ProgressUpdatesSectionState();
+  State<_ProgressMilestonesSection> createState() =>
+      _ProgressMilestonesSectionState();
 }
 
-class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
+class _ProgressMilestonesSectionState
+    extends State<_ProgressMilestonesSection> {
   final _service = ProjectsService();
   List<ProjectUpdate> _updates = [];
   bool _loading = true;
@@ -2487,14 +2496,70 @@ class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
     });
   }
 
+  void _openSubmitUpdate(BuildContext context) {
+    final auth = Get.find<MjengoAuthController>();
+    final isPrivileged =
+        auth.isAuthenticated && auth.currentUser?.canManageProjects == true;
+    requireAuth(
+      context,
+      () => Get.to(
+        () => PostUpdateScreen(
+          projectId: widget.project.id,
+          projectTitle: widget.project.title,
+          isPrivileged: isPrivileged,
+        ),
+      )?.then((_) => _load()),
+      message: 'Sign in to submit project updates',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_loading || _updates.isEmpty) return const SizedBox.shrink();
+    final milestones = widget.project.milestones;
+    if (_loading && milestones.isEmpty) return const SizedBox.shrink();
+    if (!_loading && milestones.isEmpty && _updates.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return _InfoCard(
-      title: 'Documented Progress & Updates',
+      title: 'Project Progress & Milestones',
+      trailing: GestureDetector(
+        onTap: () => _openSubmitUpdate(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: _kBg,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.add_circle_outline_rounded,
+                size: 14,
+                color: _kBlue,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Submit an Update',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: _kBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       child: Column(
         children: [
+          if (milestones.isNotEmpty) _MilestonesTimeline(milestones: milestones),
+          if (milestones.isNotEmpty && (_loading || _updates.isNotEmpty))
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 1, thickness: 0.8, color: _kDivider),
+            ),
           for (int i = 0; i < _updates.length; i++) ...[
             if (i > 0)
               const Divider(height: 24, thickness: 0.8, color: _kDivider),
@@ -2503,6 +2568,152 @@ class _ProgressUpdatesSectionState extends State<_ProgressUpdatesSection> {
         ],
       ),
     );
+  }
+}
+
+/// Admin-managed milestone timeline — connected nodes, achieved (green) vs.
+/// pending (slate), each optionally carrying its own dated note and photos.
+class _MilestonesTimeline extends StatelessWidget {
+  final List<ProjectMilestone> milestones;
+  const _MilestonesTimeline({required this.milestones});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(milestones.length, (idx) {
+        final m = milestones[idx];
+        final isLast = idx == milestones.length - 1;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 24,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: m.isAchieved
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFCBD5E1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          m.isAchieved
+                              ? Icons.check_rounded
+                              : Icons.radio_button_unchecked_rounded,
+                          size: 14,
+                          color: m.isAchieved ? Colors.white : _kSubtext,
+                        ),
+                      ),
+                      // ── Connecting track — unbroken vertical timeline
+                      // between sequential nodes, matching the website's
+                      // `.pd-timeline::before` line. Colored by whether
+                      // this node is achieved (leads into the next one).
+                      if (!isLast)
+                        Expanded(
+                          child: Container(
+                            width: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 2),
+                            color: m.isAchieved
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFCBD5E1),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        m.title,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _kDark,
+                        ),
+                      ),
+                      if (m.milestoneDate != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          _fmtMilestoneDate(m.milestoneDate!),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            color: _kSubtext,
+                          ),
+                        ),
+                      ],
+                      if (m.description != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          m.description!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            color: _kSubtext,
+                          ),
+                        ),
+                      ],
+                      if (m.media.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 52,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: m.media.length,
+                            separatorBuilder: (_, _) => const SizedBox(width: 6),
+                            itemBuilder: (_, i) => ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: m.media[i].mediaType == 'image'
+                                  ? NetImage(
+                                      url: m.media[i].url,
+                                      width: 52,
+                                      height: 52,
+                                      fit: BoxFit.cover,
+                                      placeholderColor: _kDivider,
+                                    )
+                                  : Container(
+                                      width: 52,
+                                      height: 52,
+                                      color: _kDark,
+                                      child: const Icon(
+                                        Icons.play_circle_fill_rounded,
+                                        color: Colors.white54,
+                                        size: 22,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+String _fmtMilestoneDate(String s) {
+  try {
+    final d = DateTime.parse(s);
+    const months = [
+      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${d.day} ${months[d.month]} ${d.year}';
+  } catch (_) {
+    return s;
   }
 }
 
@@ -2777,7 +2988,11 @@ class _UpdateYoutubeEmbedState extends State<_UpdateYoutubeEmbed> {
 class _InfoCard extends StatelessWidget {
   final String title;
   final Widget child;
-  const _InfoCard({required this.title, required this.child});
+
+  /// Optional header-row action (e.g. a "Submit an Update" button) — rendered
+  /// at the far end of the title row instead of stacked beneath it.
+  final Widget? trailing;
+  const _InfoCard({required this.title, required this.child, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -2787,13 +3002,20 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.montserrat(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.headingSlate,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.headingSlate,
+                  ),
+                ),
+              ),
+              ?trailing,
+            ],
           ),
           const SizedBox(height: 12),
           child,
@@ -3212,24 +3434,47 @@ class _AttributionLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name =
-        project.submittedByProfile?.name ??
-        project.attribution?.submittedBy ??
-        'MjengoHub';
+    final profile = project.submittedByProfile;
+    final name = profile?.name ?? project.attribution?.submittedBy ?? 'MjengoHub';
     final updated =
         project.updatedAt ?? DateTime.tryParse(project.createdAt ?? '');
     final formattedDate = updated != null
         ? _formatFullDate(updated)
         : 'recently';
 
-    return Text(
-      'By $name • Updated $formattedDate',
+    // Only a real, id-bearing submitter (not the 'MjengoHub' fallback or a
+    // plain-text legacy `attribution.submittedBy` string) can push a real
+    // profile — int.tryParse guards against a non-numeric id shape too.
+    final userId = profile != null ? int.tryParse(profile.id) : null;
+
+    final text = Text.rich(
+      TextSpan(
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          color: const Color(0xFF64748B),
+        ),
+        children: [
+          TextSpan(
+            text: 'By $name',
+            style: userId != null
+                ? const TextStyle(
+                    color: Color(0xFF1D4ED8),
+                    fontWeight: FontWeight.w600,
+                  )
+                : null,
+          ),
+          TextSpan(text: ' • Updated $formattedDate'),
+        ],
+      ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: GoogleFonts.montserrat(
-        fontSize: 12,
-        color: const Color(0xFF64748B),
-      ),
+    );
+
+    if (userId == null) return text;
+    return GestureDetector(
+      onTap: () =>
+          Get.toNamed(AppRoutes.publicProfile, arguments: userId),
+      child: text,
     );
   }
 }

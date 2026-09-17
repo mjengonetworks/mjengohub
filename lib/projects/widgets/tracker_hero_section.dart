@@ -10,6 +10,7 @@
 // hosts this widget — [onSearch] is the caller's own filter/query call, so
 // a search here never leaks across trackers.
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../news/widgets/featured_article_card.dart' show PageDotIndicator;
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
 import '../models/project_model.dart';
 import '../screens/project_detail_screen.dart';
@@ -154,6 +156,8 @@ class _TrackerHeroSectionState extends State<TrackerHeroSection> {
               color: Colors.white70,
             ),
           ),
+          const SizedBox(height: 10),
+          const _HeroQuickLinkPills(),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -350,6 +354,102 @@ class _FeaturedSlide extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Ecosystem quick-links — Mjengo Networks / Share Barabara — mirroring the
+/// website's `.mj-hero-cta-group` pill pair (templates/homepage.html), reused
+/// here on every tracker hero. Semi-transparent glass pills (never the
+/// opaque brand-blue fill a plain badge would get) with a real backdrop blur
+/// so the gradient behind them still reads through.
+class _HeroQuickLinkPills extends StatelessWidget {
+  const _HeroQuickLinkPills();
+
+  static const String _mjengoNetworksUrl = 'https://mjengonetworks.co.ke/';
+  static const String _shareBarabaraUrl = 'https://sharebarabara.co.ke';
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _QuickLinkPill(
+            label: 'Mjengo Networks',
+            icon: Icons.hub_rounded,
+            onTap: () => LinkLauncher.openLink(context, _mjengoNetworksUrl),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _QuickLinkPill(
+            label: 'Share Barabara',
+            icon: Icons.directions_car_filled_rounded,
+            onTap: () => LinkLauncher.openLink(context, _shareBarabaraUrl),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickLinkPill extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _QuickLinkPill({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 26,
+                  height: 26,
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 14, color: AppColors.primaryBlue),
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

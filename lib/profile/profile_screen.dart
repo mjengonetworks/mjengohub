@@ -89,6 +89,16 @@ class _SettingsView extends StatelessWidget {
 
               const SizedBox(height: 10),
 
+              // ── Points-by-source stats — Reviews / Upvotes / Referrals,
+              // mirroring the website's own "Points & Referrals" card
+              // (templates/profile.html's `.pts-sources` row) ─────────────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _ReviewStatsRow(),
+              ),
+
+              const SizedBox(height: 10),
+
               // ── Referral: compact discreet row, not a hero banner ──────────
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
@@ -529,7 +539,22 @@ class _ProfileHeaderState extends State<_ProfileHeader> {
                 width: double.infinity,
                 height: _coverHeight,
                 decoration: BoxDecoration(
-                  gradient: hasCover ? null : AppColors.verifiedPillGradient,
+                  // Deep navy/slate — matches the website's own profile
+                  // hero (templates/profile.html's `.profile-hero`), a
+                  // distinct dark treatment from the public/author profile
+                  // page's lighter blue gradient.
+                  gradient: hasCover
+                      ? null
+                      : const LinearGradient(
+                          colors: [
+                            Color(0xFF0B1329),
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B),
+                          ],
+                          stops: [0.0, 0.6, 1.0],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                   image: hasCover
                       ? DecorationImage(
                           image: NetworkImage(user!.coverImageUrl!),
@@ -910,6 +935,102 @@ class _PointsSummaryCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Points-by-source breakdown — Reviews / Upvotes / Referrals, each with a
+/// 16dp monochrome outline icon, mirroring the website's `.pts-sources` row
+/// (templates/profile.html) without its two separate referral rows
+/// (sign-ups vs. gone-Prime) — combined into one "Referrals" figure here to
+/// keep this a 3-stat row.
+class _ReviewStatsRow extends StatefulWidget {
+  const _ReviewStatsRow();
+
+  @override
+  State<_ReviewStatsRow> createState() => _ReviewStatsRowState();
+}
+
+class _ReviewStatsRowState extends State<_ReviewStatsRow> {
+  final _api = GamificationService();
+  PointsSummary? _summary;
+
+  @override
+  void initState() {
+    super.initState();
+    _api.getPointsSummary().then((s) {
+      if (mounted) setState(() => _summary = s);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = _summary;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.sharpLg),
+        border: Border.all(color: AppColors.borderSlate),
+      ),
+      child: Row(
+        children: [
+          _ReviewStatCell(
+            icon: Icons.rate_review_outlined,
+            label: 'Reviews',
+            value: s?.fromReviews ?? 0,
+          ),
+          _ReviewStatCell(
+            icon: Icons.thumb_up_outlined,
+            label: 'Upvotes',
+            value: s?.fromUpvotes ?? 0,
+          ),
+          _ReviewStatCell(
+            icon: Icons.group_add_outlined,
+            label: 'Referrals',
+            value: (s?.fromReferralSignups ?? 0) + (s?.fromReferralPrime ?? 0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewStatCell extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final int value;
+  const _ReviewStatCell({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFF334155)),
+          const SizedBox(height: 6),
+          Text(
+            '$value',
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0A2540),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 10.5,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ],
       ),
     );
   }

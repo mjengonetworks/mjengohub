@@ -302,8 +302,11 @@ class _CategoryRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                for (final project in group.projects) ...[
-                  _CategoryListTile(project: project),
+                for (int i = 0; i < group.projects.length; i++) ...[
+                  _CategoryListTile(
+                    project: group.projects[i],
+                    tinted: i.isEven,
+                  ),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -363,7 +366,12 @@ class _CountBadge extends StatelessWidget {
 /// category names.
 class _CategoryListTile extends StatelessWidget {
   final Project project;
-  const _CategoryListTile({required this.project});
+
+  /// Alternating light-blue tint (#F0F7FF / #DBEAFE border) vs. clean white
+  /// — zebra-striped like the app drawer's nav list, so a long category
+  /// list stays scannable row-by-row.
+  final bool tinted;
+  const _CategoryListTile({required this.project, this.tinted = false});
 
   @override
   Widget build(BuildContext context) {
@@ -375,9 +383,11 @@ class _CategoryListTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: tinted ? const Color(0xFFF0F7FF) : Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.borderSlate),
+          border: Border.all(
+            color: tinted ? const Color(0xFFDBEAFE) : AppColors.borderSlate,
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,12 +409,12 @@ class _CategoryListTile extends StatelessWidget {
                 children: [
                   Text(
                     project.title,
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      height: 1.3,
+                      height: 1.28,
                       color: const Color(0xFF0F172A),
                     ),
                   ),

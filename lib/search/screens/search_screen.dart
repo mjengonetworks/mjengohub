@@ -87,6 +87,42 @@ extension on _SearchCategory {
   }
 }
 
+/// Splits an entity-style query like "China Road and Bridge Corporation
+/// (CRBC)" into its full-name and acronym halves. A project's `contractor`
+/// field usually stores just one half, so a single LIKE-style `q=` search
+/// against the whole combined string can miss it — this lets the caller
+/// fire one request per variant and merge the results instead.
+List<String> _entityQueryVariants(String query) {
+  final match = RegExp(
+    r'^(.*?)\s*\(([A-Za-z0-9&.\-]{2,15})\)\s*$',
+  ).firstMatch(query);
+  if (match == null) return [query];
+  final fullName = match.group(1)!.trim();
+  final acronym = match.group(2)!.trim();
+  final variants = <String>{query};
+  if (fullName.isNotEmpty) variants.add(fullName);
+  if (acronym.isNotEmpty) variants.add(acronym);
+  return variants.toList();
+}
+
+/// Runs [call] once per [_entityQueryVariants] of [query] and merges the
+/// results (deduped by project id), rather than a single verbatim search.
+Future<List<Project>> _searchProjectsMerged(
+  Future<List<Project>> Function(String q) call,
+  String query,
+) async {
+  final variants = _entityQueryVariants(query);
+  if (variants.length == 1) return call(variants.first);
+  final results = await Future.wait(variants.map(call));
+  final byId = <int, Project>{};
+  for (final list in results) {
+    for (final p in list) {
+      byId[p.id] = p;
+    }
+  }
+  return byId.values.toList();
+}
+
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
@@ -185,34 +221,39 @@ class _SearchScreenState extends State<SearchScreen> {
       futures.add(unifiedFuture);
     }
     if (_activeFilters.contains(_SearchCategory.infrastructureProjects)) {
-      infraFuture = _projectsApi.getProjects(
-        projectType: 'infrastructure',
-        q: trimmed,
-        perPage: 20,
+      infraFuture = _searchProjectsMerged(
+        (q) => _projectsApi.getProjects(
+          projectType: 'infrastructure',
+          q: q,
+          perPage: 20,
+        ),
+        trimmed,
       );
       futures.add(infraFuture);
     }
     if (_activeFilters.contains(_SearchCategory.privateDevelopments)) {
-      privateFuture = _projectsApi.getProjects(
-        projectType: 'private_development',
-        q: trimmed,
-        perPage: 20,
+      privateFuture = _searchProjectsMerged(
+        (q) => _projectsApi.getProjects(
+          projectType: 'private_development',
+          q: q,
+          perPage: 20,
+        ),
+        trimmed,
       );
       futures.add(privateFuture);
     }
     if (_activeFilters.contains(_SearchCategory.africaWorld)) {
-      africaWorldFuture = _projectsApi.getProjects(
-        geoScope: 'global',
-        q: trimmed,
-        perPage: 20,
+      africaWorldFuture = _searchProjectsMerged(
+        (q) => _projectsApi.getProjects(geoScope: 'global', q: q, perPage: 20),
+        trimmed,
       );
       futures.add(africaWorldFuture);
     }
     if (_activeFilters.contains(_SearchCategory.builtHistory)) {
-      builtHistoryFuture = _projectsApi.getProjects(
-        isBuiltHistory: true,
-        q: trimmed,
-        perPage: 20,
+      builtHistoryFuture = _searchProjectsMerged(
+        (q) =>
+            _projectsApi.getProjects(isBuiltHistory: true, q: q, perPage: 20),
+        trimmed,
       );
       futures.add(builtHistoryFuture);
     }

@@ -51,79 +51,55 @@ class AppHeader extends StatelessWidget {
         bottom: false,
         child: SizedBox(
           height: barHeight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                // ── Brand: logo only, routes home (mirrors the website's
-                // nav-brand, which is the logo image with no adjacent
-                // wordmark text) ────────────────────────────────────────────
-                SizedBox(
-                  width: isCompact ? 76 : 112,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => _goToTab(0),
-                      child: Image.asset(
-                        'assets/mjengo_hub_logo.png',
-                        height: 30,
+          child: Row(
+            children: [
+              // ── Hamburger — left-edge 4dp padding, opens AppDrawer ────────
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Builder(
+                  builder: (context) => GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => Scaffold.of(context).openDrawer(),
+                    child: const SizedBox(
+                      width: 34,
+                      height: 34,
+                      child: Icon(
+                        Icons.menu_rounded,
+                        color: Color(0xFF0F172A),
+                        size: 22,
                       ),
                     ),
                   ),
                 ),
+              ),
 
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Get.toNamed(AppRoutes.search),
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.mutedCanvas,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.divider),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.search_rounded,
-                            color: Color(0xFF64748B),
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Search Mjengo Hub',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 11.5,
-                                color: AppColors.captionSlate,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+              // ── Brand: logo only, tightly packed 3dp from the hamburger,
+              // routes home (mirrors the website's nav-brand, which is the
+              // logo image with no adjacent wordmark text) ─────────────────
+              const SizedBox(width: 3),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _goToTab(0),
+                child: Image.asset(
+                  'assets/mjengo_hub_logo.png',
+                  height: 27,
+                  fit: BoxFit.contain,
                 ),
+              ),
 
-                // ── Tight action cluster: AI search, verify, notifications,
-                // profile — kept to its own min-size Row so narrow screens
-                // never fight the Expanded search bar for space.
-                Row(
+              const Spacer(),
+
+              // ── Action cluster: AI search, search, verify, notifications,
+              // profile — kept to its own min-size Row.
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(width: 4),
-
                     // AI Search (Omnibar) — AI-augmented global search,
-                    // distinct from the plain-text search bar above (which
-                    // routes to the confirmed-live full-page SearchScreen).
-                    // See lib/search/widgets/omnibar.dart.
+                    // distinct from the plain search icon (which routes to
+                    // the confirmed-live full-page SearchScreen). See
+                    // lib/search/widgets/omnibar.dart.
                     IconButton(
                       tooltip: 'Ask AI Intelligence',
                       onPressed: () => showAiSearchSheet(context),
@@ -135,7 +111,14 @@ class AppHeader extends StatelessWidget {
                       splashRadius: 18,
                       icon: const _AiSparkleBadge(),
                     ),
+                    const SizedBox(width: 4),
 
+                    GestureDetector(
+                      onTap: () => Get.toNamed(AppRoutes.search),
+                      child: const _HeaderIconButton(
+                        icon: Icons.search_rounded,
+                      ),
+                    ),
                     const SizedBox(width: 4),
 
                     if (!isCompact) ...[
@@ -153,8 +136,8 @@ class AppHeader extends StatelessWidget {
                     _AuthAreaButton(),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -327,12 +310,15 @@ class _AuthAreaButton extends StatelessWidget {
           onTap: () => Get.toNamed(AppRoutes.login),
           child: Container(
             height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.circular(999),
             ),
+            // Text-only, no trailing chevron — MainAxisSize.min isn't needed
+            // here since this is a single Text child, not a Row, so there's
+            // no RenderFlex to overflow.
             child: Text(
               'Sign In',
               style: GoogleFonts.montserrat(
@@ -368,11 +354,11 @@ class _ProfileAvatarButton extends StatelessWidget {
         height: 40,
         child: Center(
           child: Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
               color: AppColors.accentBlue,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(6),
             ),
             clipBehavior: Clip.antiAlias,
             child: (!authed || auth == null)
@@ -387,8 +373,8 @@ class _ProfileAvatarButton extends StatelessWidget {
                     final initials = user?.initials ?? '?';
                     return NetImage(
                       url: photoUrl,
-                      width: 30,
-                      height: 30,
+                      width: 32,
+                      height: 32,
                       fit: BoxFit.cover,
                       errorBuilder: (_) => Center(
                         child: Text(
