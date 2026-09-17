@@ -279,11 +279,12 @@ class _CategoryRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
-                    '${group.displayLabel} (${group.totalCount})',
+                    group.displayLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -291,18 +292,8 @@ class _CategoryRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (group.totalCount > group.projects.length)
-                  GestureDetector(
-                    onTap: onViewMore,
-                    child: Text(
-                      'View More',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.accentBlue,
-                      ),
-                    ),
-                  ),
+                const SizedBox(width: 8),
+                _CountBadge(count: group.totalCount),
               ],
             ),
           ),
@@ -318,7 +309,49 @@ class _CategoryRow extends StatelessWidget {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: GestureDetector(
+              onTap: onViewMore,
+              child: Text(
+                'View All ${group.displayLabel} (${group.totalCount}) →',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.accentBlue,
+                ),
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Small rounded count pill next to a category/status heading — mirrors
+/// tracker_browse_sections.html's count badge (a separate pill, not text
+/// appended in parentheses to the title).
+class _CountBadge extends StatelessWidget {
+  final int count;
+  const _CountBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.mutedCanvas,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Text(
+        '$count',
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSubtle,
+        ),
       ),
     );
   }
@@ -353,8 +386,8 @@ class _CategoryListTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: NetImage(
                 url: project.imageUrl,
-                width: 90,
-                height: 68,
+                width: 54,
+                height: 54,
                 fit: BoxFit.cover,
                 placeholderColor: const Color(0xFF1E3A5F),
               ),
