@@ -178,7 +178,9 @@ class _BuiltHistoryScreenState extends State<BuiltHistoryScreen> {
                 TrackerHeroSection(
                   title: 'Built History & Architectural Heritage',
                   subtitle:
-                      'Landmark structures and historic urban architecture',
+                      'Chronicles of iconic structures, ancient marvels, '
+                      'modern heritage, and historic urban landscapes '
+                      'across centuries.',
                   featuredProjects: _featuredProjects,
                   submitProjectType: 'built_history',
                   searchHint: 'Search Built History entries…',

@@ -401,6 +401,12 @@ class ProjectUpdate {
   final String? externalVideoUrl;
   final bool isApproved;
   final bool isAnonymous;
+
+  /// Admin-only "Mark as Milestone" badge (`project_updates.is_milestone`
+  /// on the backend). Not yet included in api.py's `_update_dict` response
+  /// as of 2026-09 — this parses tolerantly so the badge lights up the
+  /// moment the backend starts sending it, without needing an app update.
+  final bool isMilestone;
   final List<ProjectMedia> media;
   final String? createdAt;
 
@@ -415,6 +421,7 @@ class ProjectUpdate {
     this.externalVideoUrl,
     required this.isApproved,
     this.isAnonymous = false,
+    this.isMilestone = false,
     this.media = const [],
     this.createdAt,
   });
@@ -439,6 +446,7 @@ class ProjectUpdate {
     externalVideoUrl: j['external_video_url'] as String?,
     isApproved: j['is_approved'] as bool? ?? true,
     isAnonymous: j['is_anonymous'] as bool? ?? false,
+    isMilestone: j['is_milestone'] as bool? ?? false,
     media:
         (j['media'] as List?)
             ?.whereType<Map<String, dynamic>>()
