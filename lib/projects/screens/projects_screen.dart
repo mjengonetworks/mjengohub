@@ -515,9 +515,7 @@ class ProjectsScreen extends StatelessWidget {
                 isScrollControlled: true,
                 backgroundColor: Colors.white,
                 shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 builder: (sheetContext) => SafeArea(
                   child: SingleChildScrollView(
@@ -1752,9 +1750,7 @@ class _ProjectListTile extends StatelessWidget {
                         if (project.county != null ||
                             project.location != null) ...[
                           Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
                             child: Text(
                               '·',
                               style: GoogleFonts.montserrat(
