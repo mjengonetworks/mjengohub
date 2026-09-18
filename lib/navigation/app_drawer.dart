@@ -122,7 +122,8 @@ class AppDrawer extends StatelessWidget {
             // the solid #1D4ED8 highlight instead of its zebra tint. ──────
             Expanded(
               child: Obx(() {
-                final currentTab = Get.find<MainNavController>().currentIndex.value;
+                final currentTab =
+                    Get.find<MainNavController>().currentIndex.value;
                 final onHome = Get.currentRoute == AppRoutes.home;
                 final currentRoute = Get.currentRoute;
                 return ListView(
@@ -151,7 +152,9 @@ class AppDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               child: (auth == null || !auth.isAuthenticated)
-                  ? _SignInFullWidthButton(onTap: () => _pushRoute(AppRoutes.login))
+                  ? _SignInFullWidthButton(
+                      onTap: () => _pushRoute(AppRoutes.login),
+                    )
                   : Obx(() {
                       final user = auth!.currentUser;
                       return Column(

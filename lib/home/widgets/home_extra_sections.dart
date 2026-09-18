@@ -1439,7 +1439,9 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Construction site incidents from across Kenya',
+            'A permanent national record of construction incidents, '
+            'structural failures, and safety compliance across Kenya. '
+            'Documenting our built history to prevent recurring tragedies.',
             style: GoogleFonts.montserrat(
               fontSize: 12,
               color: AppColors.textSubtle,
@@ -1477,7 +1479,7 @@ class _SafetyIncidentsSectionState extends State<SafetyIncidentsSection> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _ctaChip(
-            label: 'View All Incidents',
+            label: 'Access Safety Database →',
             color: AppColors.warning,
             onTap: () => Get.toNamed(AppRoutes.siteSafety),
           ),

@@ -1543,7 +1543,7 @@ class _FeaturedProjectCard extends StatelessWidget {
                     const Spacer(),
                     _ProgressBar(
                       value: project.progressPercent / 100,
-                      label: '${project.progressPercent}%',
+                      percent: project.progressPercent,
                     ),
                   ],
                 ),
@@ -1611,11 +1611,9 @@ class _ProjectListTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Status badge
+                    // Sector + client tags
                     Row(
                       children: [
-                        _StatusBadge(status: project.status),
-                        const SizedBox(width: 6),
                         _MetricTag(label: project.sectorLabel),
                         if (project.client != null) ...[
                           const SizedBox(width: 6),
@@ -1635,25 +1633,42 @@ class _ProjectListTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       project.title,
-                      maxLines: 2,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF0F172A),
                         height: 1.3,
                       ),
                     ),
-                    if (project.county != null || project.location != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        '📍 ${project.county ?? project.location}',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          color: _kSubtext,
-                        ),
-                      ),
-                    ],
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        if (project.county != null ||
+                            project.location != null) ...[
+                          const Icon(
+                            Icons.location_on,
+                            size: 14,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              project.county ?? project.location!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                color: _kSubtext,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        _StatusBadge(status: project.status),
+                      ],
+                    ),
                     const SizedBox(height: 6),
                     if (project.budgetTierBracket != null)
                       GestureDetector(
@@ -1693,7 +1708,7 @@ class _ProjectListTile extends StatelessWidget {
                     const SizedBox(height: 8),
                     _ProgressBar(
                       value: project.progressPercent / 100,
-                      label: '${project.progressPercent}% complete',
+                      percent: project.progressPercent,
                     ),
                     if (project.averageRating != null) ...[
                       const SizedBox(height: 4),
@@ -1728,41 +1743,33 @@ class _ProjectListTile extends StatelessWidget {
 
 class _ProgressBar extends StatelessWidget {
   final double value;
-  final String label;
-  const _ProgressBar({required this.value, required this.label});
+  final num percent;
+  const _ProgressBar({required this.value, required this.percent});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Progress',
-              style: GoogleFonts.montserrat(fontSize: 10, color: _kSubtext),
-            ),
-            Text(
-              label,
-              style: GoogleFonts.montserrat(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: _kBlue,
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              height: 4,
+              child: LinearProgressIndicator(
+                value: value.clamp(0.0, 1.0),
+                backgroundColor: _kDivider,
+                valueColor: const AlwaysStoppedAnimation<Color>(_kBlue),
               ),
             ),
-          ],
+          ),
         ),
-        const SizedBox(height: 3),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(2),
-          child: SizedBox(
-            height: 4,
-            child: LinearProgressIndicator(
-              value: value.clamp(0.0, 1.0),
-              backgroundColor: _kDivider,
-              valueColor: const AlwaysStoppedAnimation<Color>(_kBlue),
-            ),
+        const SizedBox(width: 8),
+        Text(
+          '$percent%',
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: _kBlue,
           ),
         ),
       ],

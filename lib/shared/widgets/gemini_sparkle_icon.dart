@@ -12,7 +12,11 @@ class GeminiSparkleIcon extends StatelessWidget {
   final double size;
   final Color color;
 
-  const GeminiSparkleIcon({super.key, this.size = 22, this.color = Colors.white});
+  const GeminiSparkleIcon({
+    super.key,
+    this.size = 22,
+    this.color = Colors.white,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -85,9 +85,7 @@ class SearchService {
           return AISearchResponse.fromJson(data);
         }
         if (res.body is Map<String, dynamic>) {
-          return AISearchResponse.fromJson(
-            res.body as Map<String, dynamic>,
-          );
+          return AISearchResponse.fromJson(res.body as Map<String, dynamic>);
         }
       }
     } catch (e) {

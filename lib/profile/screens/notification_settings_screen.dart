@@ -29,18 +29,18 @@ class _NotificationSettingsScreenState
   bool _loading = true;
   bool _saving = false;
 
-  bool get _isAuthenticated =>
-      Get.find<MjengoAuthController>().isAuthenticated;
+  bool get _isAuthenticated => Get.find<MjengoAuthController>().isAuthenticated;
 
   @override
   void initState() {
     super.initState();
     if (_isAuthenticated) {
       _svc.getPreferences().then((p) {
-        if (mounted) setState(() {
-          _preferences = p;
-          _loading = false;
-        });
+        if (mounted)
+          setState(() {
+            _preferences = p;
+            _loading = false;
+          });
       });
     } else {
       _loading = false;
@@ -85,41 +85,64 @@ class _NotificationSettingsScreenState
       padding: const EdgeInsets.symmetric(vertical: 12),
       children: [
         if (_saving)
-          const LinearProgressIndicator(minHeight: 2, color: AppColors.accentBlue),
+          const LinearProgressIndicator(
+            minHeight: 2,
+            color: AppColors.accentBlue,
+          ),
         SwitchListTile(
           title: Text(
             'Breaking News & Major Projects',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 13.5),
+            style: GoogleFonts.montserrat(
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+            ),
           ),
           subtitle: Text(
             'Major infrastructure milestones and breaking news alerts',
-            style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 11.5,
+              color: AppColors.textSubtle,
+            ),
           ),
           value: prefs.breakingNewsMajorProjects,
           activeThumbColor: AppColors.accentBlue,
-          onChanged: (v) => _update(prefs.copyWith(breakingNewsMajorProjects: v)),
+          onChanged: (v) =>
+              _update(prefs.copyWith(breakingNewsMajorProjects: v)),
         ),
         SwitchListTile(
           title: Text(
             'Documented Progress Updates',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 13.5),
+            style: GoogleFonts.montserrat(
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+            ),
           ),
           subtitle: Text(
             'New updates posted to projects you follow',
-            style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 11.5,
+              color: AppColors.textSubtle,
+            ),
           ),
           value: prefs.documentedProgressUpdates,
           activeThumbColor: AppColors.accentBlue,
-          onChanged: (v) => _update(prefs.copyWith(documentedProgressUpdates: v)),
+          onChanged: (v) =>
+              _update(prefs.copyWith(documentedProgressUpdates: v)),
         ),
         SwitchListTile(
           title: Text(
             'Site Safety Alerts',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 13.5),
+            style: GoogleFonts.montserrat(
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+            ),
           ),
           subtitle: Text(
             'Road safety and site safety incident reports',
-            style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 11.5,
+              color: AppColors.textSubtle,
+            ),
           ),
           value: prefs.siteSafetyAlerts,
           activeThumbColor: AppColors.accentBlue,
@@ -129,11 +152,17 @@ class _NotificationSettingsScreenState
         SwitchListTile(
           title: Text(
             'All push notifications',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 13.5),
+            style: GoogleFonts.montserrat(
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+            ),
           ),
           subtitle: Text(
             'Turn off to silence all push notifications regardless of category',
-            style: GoogleFonts.montserrat(fontSize: 11.5, color: AppColors.textSubtle),
+            style: GoogleFonts.montserrat(
+              fontSize: 11.5,
+              color: AppColors.textSubtle,
+            ),
           ),
           value: prefs.pushEnabled,
           activeThumbColor: AppColors.accentBlue,

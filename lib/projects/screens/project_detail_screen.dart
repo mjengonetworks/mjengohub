@@ -2554,7 +2554,8 @@ class _ProgressMilestonesSectionState
       ),
       child: Column(
         children: [
-          if (milestones.isNotEmpty) _MilestonesTimeline(milestones: milestones),
+          if (milestones.isNotEmpty)
+            _MilestonesTimeline(milestones: milestones),
           if (milestones.isNotEmpty && (_loading || _updates.isNotEmpty))
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
@@ -2667,7 +2668,8 @@ class _MilestonesTimeline extends StatelessWidget {
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: m.media.length,
-                            separatorBuilder: (_, _) => const SizedBox(width: 6),
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 6),
                             itemBuilder: (_, i) => ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: m.media[i].mediaType == 'image'
@@ -2708,8 +2710,19 @@ String _fmtMilestoneDate(String s) {
   try {
     final d = DateTime.parse(s);
     const months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${d.day} ${months[d.month]} ${d.year}';
   } catch (_) {
@@ -2738,8 +2751,18 @@ class _ProgressUpdateCard extends StatelessWidget {
     final parsed = DateTime.tryParse(datePart);
     if (parsed == null) return datePart;
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${parsed.day} ${months[parsed.month - 1]} ${parsed.year}';
   }
@@ -2779,10 +2802,7 @@ class _ProgressUpdateCard extends StatelessWidget {
             ),
             if (update.createdAt != null)
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: _kBg,
                   borderRadius: BorderRadius.circular(999),
@@ -2863,8 +2883,7 @@ class _ProgressUpdateCard extends StatelessWidget {
               physics: const ClampingScrollPhysics(),
               itemCount: update.media.length,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (_, i) =>
-                  _UpdateMediaTile(media: update.media[i]),
+              itemBuilder: (_, i) => _UpdateMediaTile(media: update.media[i]),
             ),
           ),
         ],
@@ -2930,10 +2949,7 @@ class _UpdateMediaTile extends StatelessWidget {
                 '© ${media.credit}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.montserrat(
-                  fontSize: 9,
-                  color: _kSubtext,
-                ),
+                style: GoogleFonts.montserrat(fontSize: 9, color: _kSubtext),
               ),
           ],
         ],
@@ -3435,7 +3451,8 @@ class _AttributionLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profile = project.submittedByProfile;
-    final name = profile?.name ?? project.attribution?.submittedBy ?? 'MjengoHub';
+    final name =
+        profile?.name ?? project.attribution?.submittedBy ?? 'MjengoHub';
     final updated =
         project.updatedAt ?? DateTime.tryParse(project.createdAt ?? '');
     final formattedDate = updated != null
@@ -3472,8 +3489,7 @@ class _AttributionLine extends StatelessWidget {
 
     if (userId == null) return text;
     return GestureDetector(
-      onTap: () =>
-          Get.toNamed(AppRoutes.publicProfile, arguments: userId),
+      onTap: () => Get.toNamed(AppRoutes.publicProfile, arguments: userId),
       child: text,
     );
   }

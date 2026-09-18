@@ -7,19 +7,17 @@
 // wired so it lights up the moment the backend adds the route, degrading to
 // a clear "not available yet" empty state until then, same as
 // MjengoAuthController's `auth/google` handling.
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/guest_gate_sheet.dart';
 import '../models/ai_search_models.dart';
 import '../services/search_service.dart';
-
-const _kDebounce = Duration(milliseconds: 250);
 
 const _starterChips = [
   'Nairobi Expressway',
@@ -27,6 +25,27 @@ const _starterChips = [
   'Affordable Housing Programme',
   'NCA compliance guides',
 ];
+
+/// One turn in the on-screen conversation thread: the query that was
+/// submitted (typed in the main search field, tapped from a starter chip, or
+/// typed into the follow-up field) plus its result once it lands. There is
+/// no backend conversation/session id — `GET ai-search` is a stateless
+/// single-query endpoint (see ai_search_models.dart) — so "threading" here
+/// is purely a client-side list of independent queries rendered together,
+/// not a real multi-turn context sent to the server.
+class _ChatTurn {
+  final String query;
+  final AISearchResponse? result;
+  final bool loading;
+
+  const _ChatTurn({required this.query, this.result, this.loading = true});
+
+  _ChatTurn copyWith({AISearchResponse? result, bool? loading}) => _ChatTurn(
+    query: query,
+    result: result ?? this.result,
+    loading: loading ?? this.loading,
+  );
+}
 
 /// Opens the Omnibar as a near-fullscreen modal sheet with an autofocus
 /// search field.
@@ -50,48 +69,61 @@ class _OmnibarSheet extends StatefulWidget {
 class _OmnibarSheetState extends State<_OmnibarSheet> {
   final _service = SearchService();
   final _controller = TextEditingController();
+  final _followUpController = TextEditingController();
   final _focusNode = FocusNode();
-  Timer? _debounce;
 
-  String _query = '';
-  bool _loading = false;
-  AISearchResponse? _result;
+  final List<_ChatTurn> _turns = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _controller.dispose();
+    _followUpController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _onChanged(String value) {
-    _debounce?.cancel();
-    setState(() => _query = value);
-    if (value.trim().length < kMinSearchLength) {
-      setState(() {
-        _result = null;
-        _loading = false;
-      });
+  bool get _isAuthenticated {
+    try {
+      return Get.find<MjengoAuthController>().isAuthenticated;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _submit(String rawValue) async {
+    final value = rawValue.trim();
+    if (value.length < kMinSearchLength) return;
+
+    if (!_isAuthenticated) {
+      requireAuth(
+        context,
+        () {},
+        message: 'Sign in to use Mjengo Hub AI and save your search threads',
+      );
       return;
     }
-    setState(() => _loading = true);
-    _debounce = Timer(_kDebounce, () => _run(value));
-  }
 
-  Future<void> _run(String value) async {
+    _controller.clear();
+    _followUpController.clear();
+    _focusNode.unfocus();
+
+    setState(() => _turns.add(_ChatTurn(query: value)));
+    final turnIndex = _turns.length - 1;
+
     final result = await _service.fetchAISearch(value);
-    if (!mounted || value != _controller.text) return;
-    setState(() {
-      _result = result;
-      _loading = false;
-    });
-  }
-
-  void _runChip(String value) {
-    _controller.text = value;
-    _controller.selection = TextSelection.collapsed(offset: value.length);
-    _onChanged(value);
+    if (!mounted) return;
+    setState(
+      () => _turns[turnIndex] = _turns[turnIndex].copyWith(
+        result: result,
+        loading: false,
+      ),
+    );
   }
 
   @override
@@ -137,7 +169,7 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Ask Mjengo AI',
+                    'Mjengo Hub AI',
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -164,7 +196,8 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
                   controller: _controller,
                   focusNode: _focusNode,
                   autofocus: true,
-                  onChanged: _onChanged,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: _submit,
                   style: GoogleFonts.montserrat(fontSize: 14, color: textColor),
                   decoration: InputDecoration(
                     hintText:
@@ -178,16 +211,25 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
                       color: captionColor,
                       size: 20,
                     ),
-                    suffixIcon: _controller.text.isEmpty
+                    suffixIcon: _controller.text.trim().isEmpty
                         ? null
-                        : IconButton(
-                            icon: Icon(
-                              Icons.close_rounded,
-                              size: 18,
-                              color: captionColor,
-                            ),
-                            onPressed: () => _onChanged(
-                              (_controller..clear()).text,
+                        : Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Material(
+                              color: AppColors.accentBlue,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: () => _submit(_controller.text),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(6),
+                                  child: Icon(
+                                    Icons.arrow_upward_rounded,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                     border: InputBorder.none,
@@ -198,13 +240,168 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: _query.trim().length < kMinSearchLength
-                  ? _EmptyState(onChipTap: _runChip)
-                  : _ResultsView(loading: _loading, result: _result),
+              child: _turns.isEmpty
+                  ? _EmptyState(onChipTap: _submit)
+                  : _ThreadView(turns: _turns),
             ),
+            if (_turns.isNotEmpty)
+              _FollowUpBar(
+                controller: _followUpController,
+                fieldFill: fieldFill,
+                divider: divider,
+                textColor: textColor,
+                captionColor: captionColor,
+                onSubmit: _submit,
+              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Persistent follow-up input pinned beneath the conversation thread —
+/// distinct from the main search field above (which starts a fresh thread);
+/// this one keeps appending turns to the same on-screen conversation.
+class _FollowUpBar extends StatelessWidget {
+  final TextEditingController controller;
+  final Color fieldFill;
+  final Color divider;
+  final Color textColor;
+  final Color captionColor;
+  final ValueChanged<String> onSubmit;
+
+  const _FollowUpBar({
+    required this.controller,
+    required this.fieldFill,
+    required this.divider,
+    required this.textColor,
+    required this.captionColor,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: fieldFill,
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+            border: Border.all(color: divider),
+          ),
+          child: TextField(
+            controller: controller,
+            textInputAction: TextInputAction.go,
+            onSubmitted: onSubmit,
+            style: GoogleFonts.montserrat(fontSize: 13.5, color: textColor),
+            decoration: InputDecoration(
+              hintText: 'Ask a follow-up question...',
+              hintStyle: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: captionColor,
+              ),
+              suffixIcon: IconButton(
+                icon: const Icon(
+                  Icons.arrow_upward_rounded,
+                  size: 18,
+                  color: AppColors.accentBlue,
+                ),
+                onPressed: () => onSubmit(controller.text),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 4,
+                vertical: 10,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThreadView extends StatelessWidget {
+  final List<_ChatTurn> turns;
+  const _ThreadView({required this.turns});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      children: [for (final turn in turns) _TurnView(turn: turn)],
+    );
+  }
+}
+
+class _TurnView extends StatelessWidget {
+  final _ChatTurn turn;
+  const _TurnView({required this.turn});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.75,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.accentBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.chip),
+              ),
+              child: Text(
+                turn.query,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (turn.loading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else
+            _ResultBody(result: turn.result),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResultBody extends StatelessWidget {
+  final AISearchResponse? result;
+  const _ResultBody({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    final res = result;
+    if (res == null) return const SizedBox.shrink();
+    if (res.isEmpty) return _NoResults(query: res.query);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (res.aiSummary != null) ...[
+          _AiAnswerCard(summary: res.aiSummary!),
+          const SizedBox(height: 12),
+        ],
+        for (final category in res.categories)
+          if (category.items.isNotEmpty) _CategorySection(category: category),
+      ],
     );
   }
 }
@@ -247,38 +444,6 @@ class _EmptyState extends StatelessWidget {
             },
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _ResultsView extends StatelessWidget {
-  final bool loading;
-  final AISearchResponse? result;
-  const _ResultsView({required this.loading, required this.result});
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading && result == null) {
-      return const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
-    }
-    final res = result;
-    if (res == null) return const SizedBox.shrink();
-    if (res.isEmpty) {
-      return _NoResults(query: res.query);
-    }
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      children: [
-        if (res.aiSummary != null) ...[
-          _AiAnswerCard(summary: res.aiSummary!),
-          const SizedBox(height: 18),
-        ],
-        for (final category in res.categories)
-          if (category.items.isNotEmpty)
-            _CategorySection(category: category),
       ],
     );
   }
@@ -355,7 +520,7 @@ class _AiAnswerCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Mjengo AI Answer',
+                'Mjengo Hub AI Answer',
                 style: GoogleFonts.montserrat(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
