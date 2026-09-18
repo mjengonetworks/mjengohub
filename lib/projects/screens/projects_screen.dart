@@ -504,43 +504,26 @@ class ProjectsScreen extends StatelessWidget {
                 ),
           if (ctrl != null) ...[
             const SizedBox(height: 12),
-            // Search bar
-            TextField(
-              onSubmitted: (q) => ctrl.applyFilters(
-                status: ctrl.selectedStatus.value,
-                county: ctrl.selectedCounty.value,
-                sector: ctrl.selectedSector.value,
-                q: q,
-              ),
-              style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
-              decoration: InputDecoration(
-                hintText: 'Search projects…',
-                hintStyle: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  color: _kSubtext,
+            // Search + filter bar — full-width input on its own row, then a
+            // "Search"/"Filters" button pair sharing equal width below, no
+            // outer container/shadow wrapper around the section (the input's
+            // own border is the only bordered element here).
+            _SearchFilterBar(
+              ctrl: ctrl,
+              onOpenFilters: (context) => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                 ),
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  color: _kSubtext,
-                  size: 20,
-                ),
-                filled: true,
-                fillColor: _kBg,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: _kDivider),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: _kDivider),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: _kBlue, width: 1.5),
+                builder: (sheetContext) => SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 16, bottom: 24),
+                    child: _buildFilterControls(sheetContext, ctrl),
+                  ),
                 ),
               ),
             ),
@@ -1351,6 +1334,131 @@ class ProjectsScreen extends StatelessWidget {
   }
 }
 
+// ── Search + filter bar ────────────────────────────────────────────────────
+
+/// Full-width search input on row 1; a "Search" (filled) / "Filters"
+/// (outlined, with an active-filter count badge) button pair sharing equal
+/// width on row 2. No outer bordered/shadowed container around the section
+/// — the input's own outline is the only border here.
+class _SearchFilterBar extends StatefulWidget {
+  final ProjectsController ctrl;
+  final void Function(BuildContext context) onOpenFilters;
+
+  const _SearchFilterBar({required this.ctrl, required this.onOpenFilters});
+
+  @override
+  State<_SearchFilterBar> createState() => _SearchFilterBarState();
+}
+
+class _SearchFilterBarState extends State<_SearchFilterBar> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final ctrl = widget.ctrl;
+    ctrl.applyFilters(
+      status: ctrl.selectedStatus.value,
+      county: ctrl.selectedCounty.value,
+      sector: ctrl.selectedSector.value,
+      q: _searchController.text,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _searchController,
+          onSubmitted: (_) => _submit(),
+          style: GoogleFonts.montserrat(fontSize: 13.5, color: _kDark),
+          decoration: InputDecoration(
+            hintText: 'Search projects…',
+            hintStyle: GoogleFonts.montserrat(fontSize: 13, color: _kSubtext),
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: _kSubtext,
+              size: 20,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _kDivider),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _kDivider),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _kBlue, width: 1.5),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _kBlue,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  'Search',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Obx(() {
+                final count = widget.ctrl.activeFilterCount;
+                return OutlinedButton(
+                  onPressed: () => widget.onOpenFilters(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _kBlue,
+                    side: const BorderSide(color: _kDivider),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    count > 0 ? 'Filters ($count)' : 'Filters',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 // ── Featured strip row card (compact, under the hero banner) ──────────────
 
 class _FeaturedProjectRowCard extends StatelessWidget {
@@ -1407,21 +1515,37 @@ class _FeaturedProjectRowCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Spacer(),
-                      Text(
-                        '${project.progressPercent}%',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF64748B),
+                      if (project.county != null ||
+                          project.location != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Text(
+                            '·',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
                         ),
-                      ),
+                        Flexible(
+                          child: Text(
+                            project.county ?? project.location!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     project.title,
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
@@ -1430,31 +1554,10 @@ class _FeaturedProjectRowCard extends StatelessWidget {
                       color: const Color(0xFF0F172A),
                     ),
                   ),
-                  if (project.county != null || project.location != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      '📍 ${project.county ?? project.location}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 6),
-                  SizedBox(
-                    height: 4,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: LinearProgressIndicator(
-                        value: project.progressPercent / 100,
-                        backgroundColor: const Color(0xFFE2E8F0),
-                        valueColor: const AlwaysStoppedAnimation(
-                          Color(0xFF10B981),
-                        ),
-                      ),
-                    ),
+                  _ProgressBar(
+                    value: project.progressPercent / 100,
+                    percent: project.progressPercent,
                   ),
                 ],
               ),
@@ -1645,8 +1748,22 @@ class _ProjectListTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
+                        _StatusBadge(status: project.status),
                         if (project.county != null ||
                             project.location != null) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                            ),
+                            child: Text(
+                              '·',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: _kSubtext,
+                              ),
+                            ),
+                          ),
                           const Icon(
                             Icons.location_on,
                             size: 14,
@@ -1664,9 +1781,7 @@ class _ProjectListTile extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
                         ],
-                        _StatusBadge(status: project.status),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -1754,7 +1869,7 @@ class _ProgressBar extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: SizedBox(
-              height: 4,
+              height: 6,
               child: LinearProgressIndicator(
                 value: value.clamp(0.0, 1.0),
                 backgroundColor: _kDivider,

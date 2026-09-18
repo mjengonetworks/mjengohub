@@ -309,8 +309,8 @@ class _AuthAreaButton extends StatelessWidget {
         return GestureDetector(
           onTap: () => Get.toNamed(AppRoutes.login),
           child: Container(
-            height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            constraints: const BoxConstraints(minHeight: 38),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.primaryBlue,

@@ -303,10 +303,12 @@ class _CategoryRow extends StatelessWidget {
             child: Column(
               children: [
                 for (int i = 0; i < group.projects.length; i++) ...[
-                  _CategoryListTile(
-                    project: group.projects[i],
-                    tinted: i.isEven,
-                  ),
+                  i == 0
+                      ? _CategoryHeroTile(project: group.projects[i])
+                      : _CategoryListTile(
+                          project: group.projects[i],
+                          tinted: i.isEven,
+                        ),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -381,13 +383,11 @@ class _CategoryListTile extends StatelessWidget {
         transition: Transition.cupertino,
       ),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: tinted ? const Color(0xFFF0F7FF) : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: tinted ? const Color(0xFFDBEAFE) : AppColors.borderSlate,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,8 +396,8 @@ class _CategoryListTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: NetImage(
                 url: project.imageUrl,
-                width: 54,
-                height: 54,
+                width: 80,
+                height: 80,
                 fit: BoxFit.cover,
                 placeholderColor: const Color(0xFF1E3A5F),
               ),
@@ -409,24 +409,24 @@ class _CategoryListTile extends StatelessWidget {
                 children: [
                   Text(
                     project.title,
-                    maxLines: 3,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.28,
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
                       color: const Color(0xFF0F172A),
                     ),
                   ),
+                  const SizedBox(height: 6),
                   if ((project.county ?? project.location ?? project.country) !=
-                      null) ...[
-                    const SizedBox(height: 3),
+                      null)
                     Row(
                       children: [
                         const Icon(
                           Icons.place_outlined,
-                          size: 11,
-                          color: AppColors.textSubtle,
+                          size: 12,
+                          color: Color(0xFF64748B),
                         ),
                         const SizedBox(width: 2),
                         Expanded(
@@ -437,21 +437,118 @@ class _CategoryListTile extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.montserrat(
-                              fontSize: 10.5,
-                              color: AppColors.textSubtle,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF64748B),
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ],
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     project.statusLabel,
                     style: GoogleFonts.montserrat(
-                      fontSize: 10.5,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.accentBlue,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// First item in a "Browse by Category" list — a prominent full-width hero
+/// card (banner image + stacked title/meta) so the category doesn't read as
+/// a flat list of identical rows; every item after this one falls back to
+/// [_CategoryListTile]'s compact horizontal layout.
+class _CategoryHeroTile extends StatelessWidget {
+  final Project project;
+  const _CategoryHeroTile({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => ProjectDetailScreen(slug: project.slug),
+        transition: Transition.cupertino,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: NetImage(
+                url: project.imageUrl,
+                width: double.infinity,
+                height: 160,
+                fit: BoxFit.cover,
+                placeholderColor: const Color(0xFF1E3A5F),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    project.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  if ((project.county ?? project.location ?? project.country) !=
+                      null)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 12,
+                          color: Color(0xFF64748B),
+                        ),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            project.county ??
+                                project.location ??
+                                project.country!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 2),
+                  Text(
+                    project.statusLabel,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B),
                     ),
                   ),
                 ],
