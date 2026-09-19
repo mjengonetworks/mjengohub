@@ -15,8 +15,9 @@ import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
-import '../../shared/widgets/guest_gate_sheet.dart';
+import '../models/ai_chat_thread_models.dart';
 import '../models/ai_search_models.dart';
+import '../services/ai_chat_thread_service.dart';
 import '../services/search_service.dart';
 
 const _starterChips = [
@@ -68,11 +69,26 @@ class _OmnibarSheet extends StatefulWidget {
 
 class _OmnibarSheetState extends State<_OmnibarSheet> {
   final _service = SearchService();
+  final _chatService = AiChatThreadService();
   final _controller = TextEditingController();
   final _followUpController = TextEditingController();
   final _focusNode = FocusNode();
 
   final List<_ChatTurn> _turns = [];
+
+  /// Set once a turn's response carries a `thread_id` (see
+  /// [AISearchResponse.threadId]) or a past thread is opened via "My
+  /// Chats". While set, further sends go through the persisted
+  /// `POST /api/ai/chat/followup` flow instead of `ai-search`.
+  String? _activeThreadId;
+
+  MjengoAuthController? get _auth {
+    try {
+      return Get.find<MjengoAuthController>();
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   void initState() {
@@ -88,26 +104,63 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
     super.dispose();
   }
 
-  bool get _isAuthenticated {
-    try {
-      return Get.find<MjengoAuthController>().isAuthenticated;
-    } catch (_) {
-      return false;
-    }
+  bool get _isAuthenticated => _auth?.isAuthenticated ?? false;
+
+  void _startNewChat() {
+    setState(() {
+      _turns.clear();
+      _activeThreadId = null;
+      _controller.clear();
+      _followUpController.clear();
+    });
+  }
+
+  void _openMyChats() {
+    if (!_isAuthenticated) return;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _MyChatsSheet(
+        service: _chatService,
+        onThreadSelected: _loadThread,
+      ),
+    );
+  }
+
+  Future<void> _loadThread(AiChatThread thread) async {
+    Navigator.of(context).pop(); // close the My Chats sheet
+    setState(() {
+      _turns.clear();
+      _turns.add(const _ChatTurn(query: '', loading: true));
+      _activeThreadId = thread.id;
+    });
+    final detail = await _chatService.fetchThreadDetail(thread.id);
+    if (!mounted) return;
+    setState(() {
+      _turns.clear();
+      if (detail == null) return;
+      final messages = detail.messages;
+      for (var i = 0; i < messages.length; i++) {
+        final msg = messages[i];
+        if (!msg.isUser) continue;
+        final reply = (i + 1 < messages.length && !messages[i + 1].isUser)
+            ? messages[i + 1].content
+            : null;
+        _turns.add(
+          _ChatTurn(
+            query: msg.content,
+            loading: false,
+            result: AISearchResponse(query: msg.content, aiSummary: reply),
+          ),
+        );
+      }
+    });
   }
 
   Future<void> _submit(String rawValue) async {
     final value = rawValue.trim();
-    if (value.length < kMinSearchLength) return;
-
-    if (!_isAuthenticated) {
-      requireAuth(
-        context,
-        () {},
-        message: 'Sign in to use Mjengo Hub AI and save your search threads',
-      );
-      return;
-    }
+    if (value.length < kMinSearchLength || !_isAuthenticated) return;
 
     _controller.clear();
     _followUpController.clear();
@@ -116,8 +169,34 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
     setState(() => _turns.add(_ChatTurn(query: value)));
     final turnIndex = _turns.length - 1;
 
+    final threadId = _activeThreadId;
+    if (threadId != null) {
+      final followUp = await _chatService.sendFollowUp(
+        message: value,
+        threadId: threadId,
+      );
+      if (!mounted) return;
+      if (followUp != null) {
+        if (followUp.threadId.isNotEmpty) {
+          _activeThreadId = followUp.threadId;
+        }
+        setState(
+          () => _turns[turnIndex] = _turns[turnIndex].copyWith(
+            result: AISearchResponse(query: value, aiSummary: followUp.reply),
+            loading: false,
+          ),
+        );
+        return;
+      }
+      // Follow-up endpoint not live yet — degrade to a fresh ai-search call
+      // rather than leaving the turn stuck loading.
+    }
+
     final result = await _service.fetchAISearch(value);
     if (!mounted) return;
+    if (result.threadId != null && result.threadId!.isNotEmpty) {
+      _activeThreadId = result.threadId;
+    }
     setState(
       () => _turns[turnIndex] = _turns[turnIndex].copyWith(
         result: result,
@@ -147,114 +226,135 @@ class _OmnibarSheetState extends State<_OmnibarSheet> {
           color: surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: divider,
-                borderRadius: BorderRadius.circular(2),
+        child: Obx(() {
+          final authed = _auth?.isAuthenticated ?? false;
+          return Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 18,
-                    color: AppColors.accentBlue,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 18,
+                      color: AppColors.accentBlue,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Mjengo Hub AI',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: textColor,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (authed && _turns.isNotEmpty)
+                      IconButton(
+                        tooltip: 'New Chat',
+                        icon: Icon(Icons.add_comment_outlined, color: textColor),
+                        onPressed: _startNewChat,
+                      ),
+                    IconButton(
+                      tooltip: 'My Chats',
+                      icon: Icon(Icons.history_rounded, color: textColor),
+                      onPressed: authed ? _openMyChats : null,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, color: textColor),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              if (!authed) _SignInToChatBanner(sheetContext: context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: fieldFill,
+                    borderRadius: BorderRadius.circular(AppRadius.chip),
+                    border: Border.all(color: divider),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Mjengo Hub AI',
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    enabled: authed,
+                    autofocus: authed,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: _submit,
                     style: GoogleFonts.montserrat(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
                       color: textColor,
                     ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.close_rounded, color: textColor),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: fieldFill,
-                  borderRadius: BorderRadius.circular(AppRadius.chip),
-                  border: Border.all(color: divider),
-                ),
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  autofocus: true,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: _submit,
-                  style: GoogleFonts.montserrat(fontSize: 14, color: textColor),
-                  decoration: InputDecoration(
-                    hintText:
-                        'Search projects, contractors, agencies, or articles...',
-                    hintStyle: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      color: captionColor,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: captionColor,
-                      size: 20,
-                    ),
-                    suffixIcon: _controller.text.trim().isEmpty
-                        ? null
-                        : Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Material(
-                              color: AppColors.accentBlue,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                onTap: () => _submit(_controller.text),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(6),
-                                  child: Icon(
-                                    Icons.arrow_upward_rounded,
-                                    size: 16,
-                                    color: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: authed
+                          ? 'Search projects, contractors, agencies, or articles...'
+                          : 'Sign in to chat with Mjengo Hub AI',
+                      hintStyle: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        color: captionColor,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: captionColor,
+                        size: 20,
+                      ),
+                      suffixIcon: (!authed || _controller.text.trim().isEmpty)
+                          ? null
+                          : Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: Material(
+                                color: AppColors.accentBlue,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () => _submit(_controller.text),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(6),
+                                    child: Icon(
+                                      Icons.arrow_upward_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _turns.isEmpty
-                  ? _EmptyState(onChipTap: _submit)
-                  : _ThreadView(turns: _turns),
-            ),
-            if (_turns.isNotEmpty)
-              _FollowUpBar(
-                controller: _followUpController,
-                fieldFill: fieldFill,
-                divider: divider,
-                textColor: textColor,
-                captionColor: captionColor,
-                onSubmit: _submit,
+              const SizedBox(height: 8),
+              Expanded(
+                child: _turns.isEmpty
+                    ? _EmptyState(onChipTap: authed ? _submit : (_) {})
+                    : _ThreadView(turns: _turns),
               ),
-          ],
-        ),
+              if (_turns.isNotEmpty)
+                _FollowUpBar(
+                  controller: _followUpController,
+                  fieldFill: fieldFill,
+                  divider: divider,
+                  textColor: textColor,
+                  captionColor: captionColor,
+                  enabled: authed,
+                  onSubmit: _submit,
+                ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -269,6 +369,7 @@ class _FollowUpBar extends StatelessWidget {
   final Color divider;
   final Color textColor;
   final Color captionColor;
+  final bool enabled;
   final ValueChanged<String> onSubmit;
 
   const _FollowUpBar({
@@ -278,6 +379,7 @@ class _FollowUpBar extends StatelessWidget {
     required this.textColor,
     required this.captionColor,
     required this.onSubmit,
+    this.enabled = true,
   });
 
   @override
@@ -294,23 +396,26 @@ class _FollowUpBar extends StatelessWidget {
           ),
           child: TextField(
             controller: controller,
+            enabled: enabled,
             textInputAction: TextInputAction.go,
             onSubmitted: onSubmit,
             style: GoogleFonts.montserrat(fontSize: 13.5, color: textColor),
             decoration: InputDecoration(
-              hintText: 'Ask a follow-up question...',
+              hintText: enabled ? 'Ask a follow-up question...' : 'Sign in to chat',
               hintStyle: GoogleFonts.montserrat(
                 fontSize: 13,
                 color: captionColor,
               ),
-              suffixIcon: IconButton(
-                icon: const Icon(
-                  Icons.arrow_upward_rounded,
-                  size: 18,
-                  color: AppColors.accentBlue,
-                ),
-                onPressed: () => onSubmit(controller.text),
-              ),
+              suffixIcon: !enabled
+                  ? null
+                  : IconButton(
+                      icon: const Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 18,
+                        color: AppColors.accentBlue,
+                      ),
+                      onPressed: () => onSubmit(controller.text),
+                    ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 4,
@@ -318,6 +423,225 @@ class _FollowUpBar extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Persistent inline banner shown in place of an actionable input whenever
+/// the viewer isn't signed in — replaces the old click-time "guest gate"
+/// bottom sheet with an always-visible state, per the auth-gate spec.
+class _SignInToChatBanner extends StatelessWidget {
+  final BuildContext sheetContext;
+  const _SignInToChatBanner({required this.sheetContext});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.accentBlue.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppRadius.chip),
+          border: Border.all(color: AppColors.accentBlue.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.lock_outline_rounded,
+              size: 16,
+              color: AppColors.accentBlue,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Sign in to chat with Mjengo Hub AI and save your threads.',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                Get.toNamed(AppRoutes.login);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.accentBlue,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  'Sign In',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "My Chats" thread history sheet — `GET /api/ai-chat/threads`. Not
+/// confirmed live (see ai_chat_thread_models.dart); degrades to the empty
+/// state below until the backend adds the route.
+class _MyChatsSheet extends StatefulWidget {
+  final AiChatThreadService service;
+  final ValueChanged<AiChatThread> onThreadSelected;
+
+  const _MyChatsSheet({required this.service, required this.onThreadSelected});
+
+  @override
+  State<_MyChatsSheet> createState() => _MyChatsSheetState();
+}
+
+class _MyChatsSheetState extends State<_MyChatsSheet> {
+  late Future<List<AiChatThread>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = widget.service.fetchThreads();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
+    final textColor = isDark ? AppColorsDark.headingText : AppColors.textDark;
+    final captionColor = isDark
+        ? AppColorsDark.secondaryText
+        : AppColors.captionSlate;
+    return SafeArea(
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.7,
+        ),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              child: Row(
+                children: [
+                  Text(
+                    'My Chats',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close_rounded, color: textColor),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: FutureBuilder<List<AiChatThread>>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    );
+                  }
+                  final threads = snapshot.data ?? const [];
+                  if (threads.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                      child: Text(
+                        'No previous chats found. Start a new conversation!',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: captionColor,
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    itemCount: threads.length,
+                    separatorBuilder: (_, _) => Divider(
+                      height: 1,
+                      color: AppColors.divider,
+                    ),
+                    itemBuilder: (context, i) {
+                      final thread = threads[i];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          color: AppColors.accentBlue,
+                        ),
+                        title: Text(
+                          thread.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                        subtitle: thread.updatedAt != null
+                            ? Text(
+                                thread.updatedAt!.toLocal().toString().split(
+                                  '.',
+                                )[0],
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11,
+                                  color: captionColor,
+                                ),
+                              )
+                            : null,
+                        onTap: () => widget.onThreadSelected(thread),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

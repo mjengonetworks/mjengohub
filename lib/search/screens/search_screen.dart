@@ -339,6 +339,18 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_query.length >= 2) _runSearch(_query);
   }
 
+  /// Combines Articles + News into one deduped list for the "Articles &
+  /// News" section — News is normally a subset of Articles (breaking-only),
+  /// so this just merges by id rather than double-rendering overlapping
+  /// rows when both filters are active.
+  List<Article> get _articlesAndNews {
+    final byId = <int, Article>{};
+    for (final a in [..._articles, ..._news]) {
+      byId[a.id] = a;
+    }
+    return byId.values.toList();
+  }
+
   int get _totalResults =>
       _articles.length +
       _news.length +
@@ -473,21 +485,15 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       );
     }
+    final articlesAndNews = _articlesAndNews;
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
-        // Articles / Infrastructure Projects / Private Projects: capped to 3
-        // rows with a "View All" row when there's more — sections with zero
-        // results are omitted entirely (the `isNotEmpty` guards below), never
-        // shown as an empty container.
-        if (_articles.isNotEmpty)
-          _cappedSection(
-            'Articles',
-            _articles,
-            (a) => _ArticleRow(a),
-            _viewAllArticles,
-            buttonLabel: 'Read More',
-          ),
+        // Projects always render first (Infrastructure / Private / Africa &
+        // World / Built History, each its own capped sub-section), then
+        // Articles & News directly below, then the remaining categories —
+        // sections with zero results are omitted entirely (the
+        // `isNotEmpty` guards below), never shown as an empty container.
         if (_infraProjects.isNotEmpty)
           _cappedSection(
             'Infrastructure Projects',
@@ -536,6 +542,14 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             buttonLabel: 'View More',
           ),
+        if (articlesAndNews.isNotEmpty)
+          _cappedSection(
+            'Articles & News',
+            articlesAndNews,
+            (a) => _ArticleRow(a),
+            _viewAllArticles,
+            buttonLabel: 'Read More',
+          ),
         if (_profiles.isNotEmpty)
           _cappedSection(
             'Profiles/Companies',
@@ -544,8 +558,6 @@ class _SearchScreenState extends State<SearchScreen> {
             _viewAllProfiles,
             buttonLabel: 'View More',
           ),
-        if (_news.isNotEmpty)
-          _section('News', _news.map((a) => _ArticleRow(a)).toList()),
         if (_incidents.isNotEmpty)
           _section(
             'Safety Incidents',

@@ -93,10 +93,18 @@ class AISearchResponse {
   final String? aiSummary;
   final List<AISearchCategory> categories;
 
+  /// Conversation/thread id, when the backend includes one — lets the
+  /// Omnibar switch a fresh query over to the persisted
+  /// `POST /api/ai/chat/followup` flow for its follow-ups instead of
+  /// re-hitting `ai-search` per turn. Absent on every response today since
+  /// neither route is confirmed live (see the class doc comment).
+  final String? threadId;
+
   const AISearchResponse({
     this.query = '',
     this.aiSummary,
     this.categories = const [],
+    this.threadId,
   });
 
   bool get isEmpty =>
@@ -135,6 +143,7 @@ class AISearchResponse {
           ? null
           : j['ai_summary'] as String?,
       categories: categories,
+      threadId: (j['thread_id'] ?? j['threadId'])?.toString(),
     );
   }
 }
