@@ -35,6 +35,7 @@ class TrackerProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => Get.to(
         () => ProjectDetailScreen(slug: project.slug),
@@ -43,9 +44,9 @@ class TrackerProjectCard extends StatelessWidget {
       child: Container(
         width: width,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderSlate),
+          border: Border.all(color: Theme.of(context).dividerColor),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -96,9 +97,9 @@ class TrackerProjectCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0F172A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
                       height: 1.3,
                     ),
                   ),
@@ -107,10 +108,10 @@ class TrackerProjectCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.place_outlined,
                           size: 11,
-                          color: AppColors.textSubtle,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 2),
                         Expanded(
@@ -122,7 +123,7 @@ class TrackerProjectCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.montserrat(
                               fontSize: 10.5,
-                              color: AppColors.textSubtle,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -178,7 +179,7 @@ class TrackerProjectCard extends StatelessWidget {
                       project.budgetTier,
                       style: GoogleFonts.montserrat(
                         fontSize: 10.5,
-                        color: AppColors.textSubtle,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
