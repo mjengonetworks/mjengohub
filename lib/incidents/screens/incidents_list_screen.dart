@@ -39,6 +39,22 @@ class IncidentsListScreen extends StatelessWidget {
       ? 'Learning from road accidents across Kenya'
       : 'Construction site incident database';
 
+  /// Reflects active filters (county, severity, regional scope) in the
+  /// header subtitle, falling back to the general tracker summary.
+  String _dynamicSubtitle(IncidentsController ctrl) {
+    final parts = <String>[];
+    if (ctrl.countyFilter.value.isNotEmpty) parts.add(ctrl.countyFilter.value);
+    if (ctrl.selectedSeverity.value.isNotEmpty) {
+      parts.add('${ctrl.selectedSeverity.value} severity');
+    }
+    if (ctrl.regionalScope.value.isNotEmpty &&
+        ctrl.regionalScope.value != 'Kenya') {
+      parts.add(ctrl.regionalScope.value);
+    }
+    if (parts.isEmpty) return _subtitle;
+    return 'Showing ${parts.join(' · ')} reports';
+  }
+
   @override
   Widget build(BuildContext context) {
     final tag = 'incidents_$incidentType';
@@ -78,6 +94,16 @@ class IncidentsListScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Back button + title on same row
+                  Text(
+                    _isRoad ? 'ROAD SAFETY TRACKER' : 'SITE SAFETY TRACKER',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1,
+                      color: _accent,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       GestureDetector(
@@ -108,18 +134,22 @@ class IncidentsListScreen extends StatelessWidget {
                               color: _kDark,
                             ),
                           ),
-                          Text(
-                            _subtitle,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 11,
-                              color: _kSubtext,
+                          Obx(
+                            () => Text(
+                              _dynamicSubtitle(ctrl),
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                color: _kSubtext,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  _ActiveFiltersRow(ctrl: ctrl),
+                  const SizedBox(height: 4),
 
                   // ── Search bar (matches Videos screen) ──────────────────
                   _SearchBar(ctrl: ctrl, accent: _accent),
@@ -140,6 +170,7 @@ class IncidentsListScreen extends StatelessWidget {
                     child: Obx(
                       () => ListView(
                         scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         children: [
                           for (final scope in const [
                             'Kenya',
@@ -213,8 +244,12 @@ class IncidentsListScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8, bottom: 100),
                     children: [
                       if (featured.isNotEmpty)
-                        _FeaturedSection(incidents: featured, accent: _accent),
-                      _IncidentList(incidents: all, accent: _accent),
+                        _FeaturedSection(
+                          incidents: featured,
+                          accent: _accent,
+                          ctrl: ctrl,
+                        ),
+                      _IncidentList(incidents: all, accent: _accent, ctrl: ctrl),
                     ],
                   ),
                 );
@@ -345,6 +380,107 @@ class _FilterLabel extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Chips showing which filters are currently active, with a per-chip clear
+/// (×) and an overall "Clear all" — hidden entirely when no filter is set.
+class _ActiveFiltersRow extends StatelessWidget {
+  final IncidentsController ctrl;
+  const _ActiveFiltersRow({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final chips = <Widget>[];
+      if (ctrl.selectedSeverity.value.isNotEmpty) {
+        chips.add(
+          _ClearableChip(
+            label: ctrl.selectedSeverity.value,
+            onClear: () => ctrl.applyFilters(severity: ''),
+          ),
+        );
+      }
+      if (ctrl.countyFilter.value.isNotEmpty) {
+        chips.add(
+          _ClearableChip(
+            label: ctrl.countyFilter.value,
+            onClear: () => ctrl.applyFilters(county: ''),
+          ),
+        );
+      }
+      if (ctrl.regionalScope.value.isNotEmpty &&
+          ctrl.regionalScope.value != 'Kenya') {
+        chips.add(
+          _ClearableChip(
+            label: ctrl.regionalScope.value,
+            onClear: () => ctrl.applyFilters(regionalScope: 'Kenya'),
+          ),
+        );
+      }
+      if (chips.isEmpty) return const SizedBox.shrink();
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            ...chips,
+            GestureDetector(
+              onTap: () => ctrl.applyFilters(
+                severity: '',
+                county: '',
+                regionalScope: 'Kenya',
+              ),
+              child: Text(
+                'Clear all',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: _kSubtext,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _ClearableChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onClear;
+  const _ClearableChip({required this.label, required this.onClear});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: _kBg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: _kDark,
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: onClear,
+            child: const Icon(Icons.close_rounded, size: 13, color: _kSubtext),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SeverityTabs extends StatelessWidget {
@@ -491,7 +627,12 @@ class _CrisisBanner extends StatelessWidget {
 class _FeaturedSection extends StatelessWidget {
   final List<Incident> incidents;
   final Color accent;
-  const _FeaturedSection({required this.incidents, required this.accent});
+  final IncidentsController ctrl;
+  const _FeaturedSection({
+    required this.incidents,
+    required this.accent,
+    required this.ctrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -516,7 +657,7 @@ class _FeaturedSection extends StatelessWidget {
           child: Column(
             children: [
               for (final incident in incidents) ...[
-                _FeaturedCard(incident: incident, accent: accent),
+                _FeaturedCard(incident: incident, accent: accent, ctrl: ctrl),
                 const SizedBox(height: 12),
               ],
             ],
@@ -545,7 +686,12 @@ class _FeaturedSection extends StatelessWidget {
 class _FeaturedCard extends StatelessWidget {
   final Incident incident;
   final Color accent;
-  const _FeaturedCard({required this.incident, required this.accent});
+  final IncidentsController ctrl;
+  const _FeaturedCard({
+    required this.incident,
+    required this.accent,
+    required this.ctrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -596,7 +742,11 @@ class _FeaturedCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SeverityBadge(severity: incident.severity),
+                    _SeverityBadge(
+                      severity: incident.severity,
+                      onTap: () =>
+                          ctrl.applyFilters(severity: incident.severity),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       incident.title,
@@ -610,13 +760,30 @@ class _FeaturedCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      '📍 ${incident.county ?? incident.location ?? ''}',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 10,
-                        color: _kSubtext,
+                    if (incident.county != null || incident.location != null)
+                      GestureDetector(
+                        onTap: () => ctrl.applyFilters(
+                          county: incident.county ?? incident.location,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              size: 12,
+                              color: _kSubtext,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              incident.county ?? incident.location ?? '',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 10,
+                                color: _kSubtext,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -635,7 +802,12 @@ class _FeaturedCard extends StatelessWidget {
 class _IncidentList extends StatelessWidget {
   final List<Incident> incidents;
   final Color accent;
-  const _IncidentList({required this.incidents, required this.accent});
+  final IncidentsController ctrl;
+  const _IncidentList({
+    required this.incidents,
+    required this.accent,
+    required this.ctrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -658,7 +830,7 @@ class _IncidentList extends StatelessWidget {
       separatorBuilder: (_, _) =>
           const Divider(height: 1, indent: 20, endIndent: 20, color: _kDivider),
       itemBuilder: (_, i) =>
-          _IncidentTile(incident: incidents[i], accent: accent),
+          _IncidentTile(incident: incidents[i], accent: accent, ctrl: ctrl),
     );
   }
 }
@@ -666,7 +838,12 @@ class _IncidentList extends StatelessWidget {
 class _IncidentTile extends StatelessWidget {
   final Incident incident;
   final Color accent;
-  const _IncidentTile({required this.incident, required this.accent});
+  final IncidentsController ctrl;
+  const _IncidentTile({
+    required this.incident,
+    required this.accent,
+    required this.ctrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -709,7 +886,11 @@ class _IncidentTile extends StatelessWidget {
                   // Severity + date
                   Row(
                     children: [
-                      _SeverityBadge(severity: incident.severity),
+                      _SeverityBadge(
+                        severity: incident.severity,
+                        onTap: () =>
+                            ctrl.applyFilters(severity: incident.severity),
+                      ),
                       const Spacer(),
                       Text(
                         incident.formattedDate,
@@ -738,11 +919,27 @@ class _IncidentTile extends StatelessWidget {
                   // Location
                   if (incident.county != null || incident.location != null) ...[
                     const SizedBox(height: 3),
-                    Text(
-                      '📍 ${incident.county ?? incident.location}',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11.5,
-                        color: _kSubtext,
+                    GestureDetector(
+                      onTap: () => ctrl.applyFilters(
+                        county: incident.county ?? incident.location,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.location_on_rounded,
+                            size: 13,
+                            color: _kSubtext,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            incident.county ?? incident.location ?? '',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11.5,
+                              color: _kSubtext,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -784,7 +981,8 @@ class _IncidentTile extends StatelessWidget {
 
 class _SeverityBadge extends StatelessWidget {
   final String severity;
-  const _SeverityBadge({required this.severity});
+  final VoidCallback? onTap;
+  const _SeverityBadge({required this.severity, this.onTap});
 
   Color get _color {
     switch (severity) {
@@ -803,7 +1001,7 @@ class _SeverityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final badge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: _color,
@@ -819,6 +1017,8 @@ class _SeverityBadge extends StatelessWidget {
         ),
       ),
     );
+    if (onTap == null) return badge;
+    return GestureDetector(onTap: onTap, child: badge);
   }
 }
 

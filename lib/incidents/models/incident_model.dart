@@ -11,6 +11,7 @@ class Incident {
   final String? location;
   final String? county;
   final String regionalScope;
+  final String? subtype;
   final String? imageCaption;
   final String? imageSourceCredit;
   final String? incidentDate;
@@ -38,6 +39,7 @@ class Incident {
     this.location,
     this.county,
     this.regionalScope = 'Kenya',
+    this.subtype,
     this.imageCaption,
     this.imageSourceCredit,
     this.incidentDate,
@@ -66,6 +68,7 @@ class Incident {
     county: j['county'] as String?,
     regionalScope:
         (j['regional_scope'] as String?) ?? (j['region'] as String?) ?? 'Kenya',
+    subtype: (j['subtype'] as String?) ?? (j['incident_subtype'] as String?),
     imageCaption: j['image_caption'] as String?,
     imageSourceCredit:
         (j['image_source_credit'] as String?) ??

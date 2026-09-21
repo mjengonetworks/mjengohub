@@ -237,7 +237,14 @@ class ProjectDetailScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       _AttributionLine(project: project),
                       const SizedBox(height: 8),
-                      _VoteCountRow(project: project, ctrl: ctrl),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _FollowTextButton(project: project, ctrl: ctrl),
+                          const SizedBox(width: 12),
+                          _VoteCountRow(project: project, ctrl: ctrl),
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       if (_isValidInfo(project.county) ||
                           _isValidInfo(project.location))
@@ -935,6 +942,69 @@ class _FollowButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Text follow toggle placed alongside the vote counter in the header,
+/// mirroring the website's "+ Sign in to Follow Project" / vote row.
+class _FollowTextButton extends StatelessWidget {
+  final Project project;
+  final ProjectDetailController ctrl;
+  const _FollowTextButton({required this.project, required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<MjengoAuthController>();
+    return Obx(() {
+      final current = ctrl.project.value ?? project;
+      final following = current.isFollowing;
+      return GestureDetector(
+        onTap: () {
+          if (!auth.isAuthenticated) {
+            Get.snackbar(
+              'Sign in required',
+              'Sign in to follow projects and get update notifications.',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+            return;
+          }
+          ctrl.toggleFollow();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: following ? const Color(0xFF10B981) : _kBg,
+            borderRadius: BorderRadius.circular(999),
+            border: following
+                ? null
+                : Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                following
+                    ? Icons.notifications_active_rounded
+                    : Icons.add_rounded,
+                size: 15,
+                color: following ? Colors.white : _kDark,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                following
+                    ? 'Following'
+                    : (auth.isAuthenticated ? 'Follow Project' : 'Sign in to Follow Project'),
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: following ? Colors.white : _kDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 

@@ -9,12 +9,17 @@ import '../models/incident_model.dart';
 import '../services/incidents_service.dart';
 import '../../comments/services/comments_service.dart';
 import '../../comments/widgets/comments_section.dart';
+import '../../news/models/article_model.dart';
+import '../../news/services/news_api_service.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
+import '../../projects/models/project_model.dart';
+import '../../projects/screens/project_detail_screen.dart';
+import '../../projects/services/projects_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/breadcrumb_bar.dart';
-import '../../shared/widgets/coming_soon.dart';
 import '../../shared/widgets/form_fields.dart';
+import 'incidents_list_screen.dart';
 
 const _kDark = Color(0xFF1A1A2E);
 const _kSubtext = Color(0xFF8888AA);
@@ -199,12 +204,28 @@ class IncidentDetailScreen extends StatelessWidget {
                     if (_isValidInfo(incident.county) ||
                         _isValidInfo(incident.location))
                       Flexible(
-                        child: Text(
-                          '📍 ${_isValidInfo(incident.county) ? incident.county : incident.location}',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 12,
-                            color: Colors.white70,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              size: 13,
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                _isValidInfo(incident.county)
+                                    ? incident.county!
+                                    : incident.location!,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     const Spacer(),
@@ -305,7 +326,8 @@ class IncidentDetailScreen extends StatelessWidget {
               // ── Lessons Learned ──────────────────────────────────────────
               if (_isValidInfo(incident.lessonsLearned))
                 _buildCard(
-                  title: '💡 Lessons Learned',
+                  titleIcon: Icons.lightbulb_outline_rounded,
+                  title: 'Lessons Learned',
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -331,7 +353,8 @@ class IncidentDetailScreen extends StatelessWidget {
               // ── Recommendations ──────────────────────────────────────────
               if (_isValidInfo(incident.recommendations))
                 _buildCard(
-                  title: '✅ Recommendations',
+                  titleIcon: Icons.check_circle_outline_rounded,
+                  title: 'Recommendations',
                   child: Text(
                     incident.recommendations!
                         .replaceAll(RegExp(r'<[^>]*>'), '')
@@ -401,34 +424,32 @@ class IncidentDetailScreen extends StatelessWidget {
                   ),
                 ),
 
-              // ── Suggest a correction / claim copyright (parity with
-              // templates/incident_detail.html's two sidebar cards) ────────
+              // ── Suggest a correction / claim copyright — compact,
+              // collapsed accordions right above the comments block so they
+              // take zero wasted height when closed. Stacked on mobile
+              // (single column) rather than forced side-by-side. ───────────
               Container(
                 color: _kCard,
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: _ActionChip(
-                        icon: Icons.edit_note_rounded,
-                        label: 'Suggest Edit',
-                        onTap: () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) =>
-                              _IncidentSuggestEditSheet(incident: incident),
-                        ),
-                      ),
+                    _AccordionRow(
+                      icon: Icons.edit_note_rounded,
+                      title: 'Submit Correction / Update',
+                      child: _IncidentSuggestEditForm(incident: incident),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _ActionChip(
-                        icon: Icons.copyright_rounded,
-                        label: 'Claim Copyright',
-                        onTap: () => showComingSoonSnack(
+                    const Divider(height: 1, color: _kDivider),
+                    _AccordionRow(
+                      icon: Icons.copyright_rounded,
+                      title: 'Copyright Claim',
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                        child: Text(
                           'Copyright claims aren\'t available in the app yet.',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12.5,
+                            color: _kSubtext,
+                          ),
                         ),
                       ),
                     ),
@@ -447,6 +468,10 @@ class IncidentDetailScreen extends StatelessWidget {
                 ),
               ),
 
+              // ── Discovery feed: related reports, browse by category,
+              // tracker quick-links ─────────────────────────────────────
+              _DiscoveryFeed(incident: incident),
+
               const SizedBox(height: 32),
             ],
           ),
@@ -455,7 +480,11 @@ class IncidentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCard({required String title, required Widget child}) {
+  Widget _buildCard({
+    required String title,
+    required Widget child,
+    IconData? titleIcon,
+  }) {
     return Container(
       color: _kCard,
       margin: const EdgeInsets.only(bottom: 8),
@@ -463,13 +492,21 @@ class IncidentDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.montserrat(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: _kDark,
-            ),
+          Row(
+            children: [
+              if (titleIcon != null) ...[
+                Icon(titleIcon, size: 16, color: _kDark),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                title,
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: _kDark,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           child,
@@ -552,119 +589,58 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-// ── Suggest a Correction / Claim Copyright action row ───────────────────────
+// ── Suggest a Correction / Claim Copyright accordions ───────────────────────
 
-class _ActionChip extends StatelessWidget {
+/// Collapsed-by-default `ExpansionTile` row — zero wasted height when
+/// closed, matching the compact accordion treatment on the incident detail
+/// page (mirrors templates/incident_detail.html's collapsed `<details>`).
+class _AccordionRow extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _ActionChip({
+  final String title;
+  final Widget child;
+  const _AccordionRow({
     required this.icon,
-    required this.label,
-    required this.onTap,
+    required this.title,
+    required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: _kBg,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _kDivider),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 16, color: AppColors.primaryBlue),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primaryBlue,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Bottom-sheet shell shared by both forms below — matches the rounded
-/// white-card look already used across the app's other submission sheets.
-class _IncidentSheetShell extends StatelessWidget {
-  final String title;
-  final Widget child;
-  const _IncidentSheetShell({required this.title, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          16,
-          20,
-          MediaQuery.of(context).padding.bottom + 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(
-                    color: _kDivider,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text(
-                title,
-                style: GoogleFonts.montserrat(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: _kDark,
-                ),
-              ),
-              const SizedBox(height: 16),
-              child,
-            ],
+    return Theme(
+      data: Theme.of(
+        context,
+      ).copyWith(dividerColor: Colors.transparent, splashColor: _kBg),
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20),
+        childrenPadding: EdgeInsets.zero,
+        leading: Icon(icon, size: 18, color: AppColors.primaryBlue),
+        title: Text(
+          title,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: _kDark,
           ),
         ),
+        children: [child],
       ),
     );
   }
 }
 
-/// Mirrors templates/incident_detail.html's "Suggest a Correction" card,
-/// via `POST incidents/{id}/suggest-edit`.
-class _IncidentSuggestEditSheet extends StatefulWidget {
+
+/// Inline correction form rendered inside the collapsed accordion above the
+/// comments block, via `POST incidents/{id}/suggest-edit`.
+class _IncidentSuggestEditForm extends StatefulWidget {
   final Incident incident;
-  const _IncidentSuggestEditSheet({required this.incident});
+  const _IncidentSuggestEditForm({required this.incident});
 
   @override
-  State<_IncidentSuggestEditSheet> createState() =>
-      _IncidentSuggestEditSheetState();
+  State<_IncidentSuggestEditForm> createState() =>
+      _IncidentSuggestEditFormState();
 }
 
-class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
+class _IncidentSuggestEditFormState extends State<_IncidentSuggestEditForm> {
   String _field = kIncidentSuggestEditFields.first;
   final _valueCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
@@ -704,19 +680,22 @@ class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
     );
     if (!mounted) return;
     setState(() => _submitting = false);
-    Navigator.of(context).pop();
     Get.snackbar(
       ok ? 'Thanks!' : 'Couldn\'t submit',
       ok ? 'Your correction has been sent for review.' : 'Please try again.',
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
     );
+    if (ok) {
+      _valueCtrl.clear();
+      _reasonCtrl.clear();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _IncidentSheetShell(
-      title: 'Suggest a Correction',
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -759,6 +738,487 @@ class _IncidentSuggestEditSheetState extends State<_IncidentSuggestEditSheet> {
             label: 'Submit Correction',
             busy: _submitting,
             onPressed: _submit,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Discovery feed — Related / Latest / Trending reports, browse-by-
+// category, latest articles/projects, and tracker quick-links, in that
+// order, mirroring the website's incident detail sidebar. ──────────────────
+
+class _DiscoveryFeed extends StatefulWidget {
+  final Incident incident;
+  const _DiscoveryFeed({required this.incident});
+
+  @override
+  State<_DiscoveryFeed> createState() => _DiscoveryFeedState();
+}
+
+class _DiscoveryFeedState extends State<_DiscoveryFeed> {
+  late final Future<_DiscoveryData> _future = _load();
+
+  Future<_DiscoveryData> _load() async {
+    final incident = widget.incident;
+    final results = await Future.wait([
+      IncidentsService().getIncidents(
+        type: incident.incidentType,
+        severity: incident.severity,
+        perPage: 6,
+      ),
+      IncidentsService().getIncidents(type: incident.incidentType, perPage: 8),
+      NewsApiService().getArticles(perPage: 4),
+      ProjectsService().getProjects(perPage: 4),
+    ]);
+    final related = (results[0] as List<Incident>)
+        .where((i) => i.id != incident.id)
+        .take(5)
+        .toList();
+    final latestPool = (results[1] as List<Incident>)
+        .where((i) => i.id != incident.id)
+        .toList();
+    final latest = latestPool.take(5).toList();
+    final trending = [...latestPool]
+      ..sort((a, b) => b.views.compareTo(a.views));
+    return _DiscoveryData(
+      related: related,
+      latest: latest,
+      trending: trending.take(5).toList(),
+      articles: results[2] as List<Article>,
+      projects: results[3] as List<Project>,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<_DiscoveryData>(
+      future: _future,
+      builder: (context, snap) {
+        final data = snap.data;
+        if (data == null) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (data.related.isNotEmpty)
+              _IncidentCarousel(
+                title: 'Related Reports',
+                incidents: data.related,
+              ),
+            if (data.latest.isNotEmpty)
+              _IncidentCarousel(title: 'Latest Reports', incidents: data.latest),
+            if (data.trending.isNotEmpty)
+              _IncidentCarousel(
+                title: 'Trending Reports',
+                incidents: data.trending,
+              ),
+            _BrowseByCategoryChips(incident: widget.incident),
+            if (data.articles.isNotEmpty) _LatestArticles(articles: data.articles),
+            if (data.projects.isNotEmpty) _LatestProjects(projects: data.projects),
+            const _TrackerQuickLinks(),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DiscoveryData {
+  final List<Incident> related;
+  final List<Incident> latest;
+  final List<Incident> trending;
+  final List<Article> articles;
+  final List<Project> projects;
+  const _DiscoveryData({
+    required this.related,
+    required this.latest,
+    required this.trending,
+    required this.articles,
+    required this.projects,
+  });
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  const _SectionTitle(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+      child: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: _kDark,
+        ),
+      ),
+    );
+  }
+}
+
+/// A horizontal scroll of 16:9 incident cards, used for Related/Latest/
+/// Trending Reports.
+class _IncidentCarousel extends StatelessWidget {
+  final String title;
+  final List<Incident> incidents;
+  const _IncidentCarousel({required this.title, required this.incidents});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionTitle(title),
+          SizedBox(
+            height: 160,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              itemCount: incidents.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (_, i) => _IncidentCard(incident: incidents[i]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IncidentCard extends StatelessWidget {
+  final Incident incident;
+  const _IncidentCard({required this.incident});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.off(
+        () => IncidentDetailScreen(slug: incident.slug),
+        transition: Transition.cupertino,
+      ),
+      child: SizedBox(
+        width: 150,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: NetImage(
+                  url: incident.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholderColor: _kBg,
+                  placeholderIcon: incident.isRoadSafety
+                      ? Icons.report_problem_rounded
+                      : Icons.engineering_rounded,
+                  placeholderIconColor: _kSubtext,
+                  placeholderIconSize: 22,
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              incident.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: _kDark,
+                height: 1.25,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Horizontal, swipeable severity chips — "Browse Reports by Category".
+class _BrowseByCategoryChips extends StatelessWidget {
+  final Incident incident;
+  const _BrowseByCategoryChips({required this.incident});
+
+  static const _severities = ['minor', 'moderate', 'serious', 'fatal'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle('Browse Reports by Category'),
+          SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              itemCount: _severities.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (_, i) {
+                final s = _severities[i];
+                return GestureDetector(
+                  onTap: () => Get.off(
+                    () => IncidentsListScreen(
+                      incidentType: incident.incidentType,
+                    ),
+                    transition: Transition.cupertino,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _kBg,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      s[0].toUpperCase() + s.substring(1),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _kDark,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LatestArticles extends StatelessWidget {
+  final List<Article> articles;
+  const _LatestArticles({required this.articles});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle('Latest Articles'),
+          ...articles.map(
+            (a) => ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: NetImage(url: a.imageUrl, fit: BoxFit.cover),
+                ),
+              ),
+              title: Text(
+                a.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                a.timeAgo,
+                style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
+              ),
+              onTap: () =>
+                  Get.toNamed(AppRoutes.articleDetail, arguments: a.slug),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}
+
+class _LatestProjects extends StatelessWidget {
+  final List<Project> projects;
+  const _LatestProjects({required this.projects});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _kCard,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle('Latest Projects'),
+          SizedBox(
+            height: 150,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              itemCount: projects.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (_, i) {
+                final p = projects[i];
+                return GestureDetector(
+                  onTap: () => Get.to(
+                    () => ProjectDetailScreen(slug: p.slug),
+                    transition: Transition.cupertino,
+                  ),
+                  child: SizedBox(
+                    width: 150,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: NetImage(
+                              url: p.imageUrl,
+                              fit: BoxFit.cover,
+                              placeholderColor: _kBg,
+                              placeholderIcon: Icons.apartment_rounded,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          p.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: _kDark,
+                            height: 1.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Four modern tracker quick-link cards — Infrastructure, Private Projects,
+/// Africa & World, Built History — no emoji icons, subtle gradient + 1px
+/// border, semi-bold label and a trailing arrow.
+class _TrackerQuickLinks extends StatelessWidget {
+  const _TrackerQuickLinks();
+
+  @override
+  Widget build(BuildContext context) {
+    final links = [
+      (
+        'Infrastructure',
+        Icons.foundation_rounded,
+        () => Get.toNamed(AppRoutes.projects),
+      ),
+      (
+        'Private Projects',
+        Icons.apartment_rounded,
+        () => Get.toNamed(AppRoutes.privateProjects),
+      ),
+      (
+        'Africa & World',
+        Icons.public_rounded,
+        () => Get.toNamed(AppRoutes.africaWorld),
+      ),
+      (
+        'Built History',
+        Icons.account_balance_rounded,
+        () => Get.toNamed(AppRoutes.builtHistory),
+      ),
+    ];
+    return Container(
+      color: _kCard,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Explore Other Trackers',
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: _kDark,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 2.4,
+            children: links
+                .map(
+                  (l) => GestureDetector(
+                    onTap: l.$3,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [_kBg, Colors.white],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: _kDivider),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(l.$2, size: 18, color: AppColors.primaryBlue),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              l.$1,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _kDark,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 14,
+                            color: _kSubtext,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
