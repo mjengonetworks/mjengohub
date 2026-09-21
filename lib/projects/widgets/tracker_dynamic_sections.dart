@@ -201,7 +201,7 @@ class _Heading extends StatelessWidget {
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: AppColors.textDark,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -288,7 +288,7 @@ class _CategoryRow extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -343,19 +343,20 @@ class _CountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.mutedCanvas,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Text(
         '$count',
         style: GoogleFonts.montserrat(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: AppColors.textSubtle,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );
@@ -377,6 +378,7 @@ class _CategoryListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => Get.to(
         () => ProjectDetailScreen(slug: project.slug),
@@ -385,9 +387,11 @@ class _CategoryListTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: tinted ? const Color(0xFFF0F7FF) : Colors.white,
+          color: tinted
+              ? colorScheme.primary.withValues(alpha: 0.06)
+              : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,10 +416,10 @@ class _CategoryListTile extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w700,
-                      height: 1.35,
-                      color: const Color(0xFF0F172A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -423,10 +427,10 @@ class _CategoryListTile extends StatelessWidget {
                       null)
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.place_outlined,
                           size: 12,
-                          color: Color(0xFF64748B),
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 2),
                         Expanded(
@@ -439,7 +443,7 @@ class _CategoryListTile extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF64748B),
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -451,7 +455,7 @@ class _CategoryListTile extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF64748B),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -474,6 +478,7 @@ class _CategoryHeroTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => Get.to(
         () => ProjectDetailScreen(slug: project.slug),
@@ -481,9 +486,9 @@ class _CategoryHeroTile extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -509,10 +514,10 @@ class _CategoryHeroTile extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w700,
-                      height: 1.35,
-                      color: const Color(0xFF0F172A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -520,10 +525,10 @@ class _CategoryHeroTile extends StatelessWidget {
                       null)
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.place_outlined,
                           size: 12,
-                          color: Color(0xFF64748B),
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 2),
                         Expanded(
@@ -536,7 +541,7 @@ class _CategoryHeroTile extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF64748B),
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -548,7 +553,7 @@ class _CategoryHeroTile extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF64748B),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -590,7 +595,7 @@ class _MostViewedSectionState extends State<_MostViewedSection> {
                 style: GoogleFonts.montserrat(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               _WindowToggle(
