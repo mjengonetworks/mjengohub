@@ -25,6 +25,18 @@ class PublicProfile {
   final List<Article> articles;
   final List<Project> projects;
 
+  /// Distinct article categories this user has written in, derived from
+  /// [articles] — the backend doesn't send a separate "categories written"
+  /// list, so this is computed client-side from the real article payload.
+  List<String> get categoriesWritten {
+    final seen = <String>{};
+    for (final a in articles) {
+      final name = a.category?.displayName;
+      if (name != null && name.isNotEmpty) seen.add(name);
+    }
+    return seen.toList();
+  }
+
   const PublicProfile({
     required this.id,
     required this.name,
@@ -73,5 +85,32 @@ class PublicProfile {
             .map(Project.fromJson)
             .toList() ??
         [],
+  );
+}
+
+/// One comment this user has posted, for the public "Comments" section on
+/// their profile — same shape as the signed-in-user's `MyComment`
+/// (`auth/me/comments`), reused here for the public-facing equivalent.
+class PublicComment {
+  final int id;
+  final String content;
+  final String commentableType;
+  final int commentableId;
+  final DateTime? createdAt;
+
+  const PublicComment({
+    required this.id,
+    required this.content,
+    required this.commentableType,
+    required this.commentableId,
+    this.createdAt,
+  });
+
+  factory PublicComment.fromJson(Map<String, dynamic> j) => PublicComment(
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    content: (j['content'] as String?) ?? '',
+    commentableType: (j['commentable_type'] as String?) ?? '',
+    commentableId: (j['commentable_id'] as num?)?.toInt() ?? 0,
+    createdAt: DateTime.tryParse((j['created_at'] as String?) ?? ''),
   );
 }

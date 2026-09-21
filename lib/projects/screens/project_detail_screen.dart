@@ -24,6 +24,7 @@ import '../../shared/widgets/ad_banner_slot.dart';
 import '../../shared/widgets/breadcrumb_bar.dart';
 import '../../shared/widgets/guest_gate_sheet.dart';
 import '../../shared/widgets/responsive.dart';
+import '../../shared/widgets/star_rating.dart';
 import '../controllers/projects_controller.dart';
 import '../models/project_model.dart';
 import '../services/projects_service.dart';
@@ -1566,12 +1567,8 @@ class _RatingCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.star_rounded,
-                    color: Color(0xFFF59E0B),
-                    size: 22,
-                  ),
-                  const SizedBox(width: 6),
+                  StarRating(rating: project.averageRating! / 2, size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     project.ratingDisplay!,
                     style: GoogleFonts.montserrat(
