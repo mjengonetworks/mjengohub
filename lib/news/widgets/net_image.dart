@@ -7,8 +7,8 @@ import 'net_image_html_stub.dart'
     if (dart.library.html) 'net_image_html_web.dart'
     as html_image;
 
-/// Normalizes a possibly-relative or possibly-insecure image URL into an
-/// absolute `https://mjengohub.co.ke/...` URL. Several model `imageUrl`
+/// Normalizes a possibly-relative or possibly-insecure image URL into the
+/// Cloudflare R2 public origin. Several model `imageUrl`
 /// getters across the app already prepend the production host to bare
 /// relative paths (e.g. `/static/uploads/...`), but pass an already-`http://`
 /// URL straight through unchanged -- which Flutter web silently fails to
@@ -16,14 +16,27 @@ import 'net_image_html_stub.dart'
 /// like a broken image. This is the single normalization point every
 /// [NetImage] goes through regardless of what its caller already did, so
 /// it's safe/idempotent to call even on an already-resolved URL.
+const String kMediaBaseUrl = 'https://media.mjengohub.co.ke';
+
 String? resolveImageUrl(String? raw) {
   if (raw == null) return null;
   final url = raw.trim();
   if (url.isEmpty) return null;
   if (url.startsWith('http://'))
     return 'https://${url.substring('http://'.length)}';
-  if (url.startsWith('https://')) return url;
-  return 'https://mjengohub.co.ke${url.startsWith('/') ? '' : '/'}$url';
+  if (url.startsWith('https://')) {
+    // Migrate legacy API/static URLs at the final rendering boundary too,
+    // including older cached model values.
+    final legacy = Uri.tryParse(url);
+    if (legacy != null &&
+        (legacy.host == 'mjengohub.co.ke' ||
+            legacy.host == 'www.mjengohub.co.ke') &&
+        legacy.path.startsWith('/static/')) {
+      return '$kMediaBaseUrl${legacy.path}${legacy.hasQuery ? '?${legacy.query}' : ''}';
+    }
+    return url;
+  }
+  return '$kMediaBaseUrl${url.startsWith('/') ? '' : '/'}$url';
 }
 
 /// Network image with a shimmer placeholder and graceful error fallback.

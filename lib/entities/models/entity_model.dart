@@ -16,7 +16,7 @@
 // still plain free-text strings with no entity linkage — see
 // shared/utils/slugify.dart for how a stakeholder name gets turned into a
 // best-effort slug lookup.
-const String _kBase = 'https://mjengohub.co.ke';
+const String _kBase = 'https://media.mjengohub.co.ke';
 
 class EntityProjectRef {
   final int id;

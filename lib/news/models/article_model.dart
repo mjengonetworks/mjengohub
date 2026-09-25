@@ -2,7 +2,7 @@
 
 import 'package:latlong2/latlong.dart';
 
-const String _kBaseUrl = 'https://mjengohub.co.ke';
+const String _kBaseUrlUrl = 'https://media.mjengohub.co.ke';
 
 /// A project tagged onto an article for the "View Tracker Project" card.
 /// Parsed from an optional `tagged_project` object — not sent by the
@@ -32,7 +32,7 @@ class ArticleTaggedProject {
   String? get imageUrl {
     if (image == null || image!.isEmpty) return null;
     if (image!.startsWith('http')) return image;
-    return '$_kBaseUrl$image';
+    return '$_kBaseUrlUrl${image!.startsWith('/') ? '' : '/'}$image';
   }
 }
 
@@ -54,7 +54,7 @@ class ArticleAuthor {
   String get imageUrl {
     if (image == null || image!.isEmpty) return '';
     if (image!.startsWith('http')) return image!;
-    return '$_kBaseUrl$image';
+    return '$_kBaseUrlUrl${image!.startsWith('/') ? '' : '/'}$image';
   }
 }
 
@@ -209,7 +209,7 @@ class Article {
   String? get imageUrl {
     if (featuredImage == null || featuredImage!.isEmpty) return null;
     if (featuredImage!.startsWith('http')) return featuredImage;
-    return '$_kBaseUrl$featuredImage';
+    return '$_kBaseUrlUrl${featuredImage!.startsWith('/') ? '' : '/'}$featuredImage';
   }
 
   /// Human-readable time since publication.

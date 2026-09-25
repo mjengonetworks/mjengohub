@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../controllers/incidents_controller.dart';
 import '../models/incident_model.dart';
@@ -84,7 +83,6 @@ class IncidentsListScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppHeader(),
             const SizedBox(height: 12),
 
             // ── Header ─────────────────────────────────────────────────────

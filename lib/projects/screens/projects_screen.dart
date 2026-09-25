@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../navigation/app_header.dart';
 import '../../news/widgets/net_image.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
@@ -357,7 +356,6 @@ class ProjectsScreen extends StatelessWidget {
         ),
         body: Column(
           children: [
-            const AppHeader(),
             Expanded(
               child: Obx(() {
                 if (ctrl.isLoading.value) return _buildLoading();

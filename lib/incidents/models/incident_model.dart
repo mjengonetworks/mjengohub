@@ -1,5 +1,5 @@
 // lib/incidents/models/incident_model.dart
-const String _kBase = 'https://mjengohub.co.ke';
+const String _kBase = 'https://media.mjengohub.co.ke';
 
 class Incident {
   final int id;

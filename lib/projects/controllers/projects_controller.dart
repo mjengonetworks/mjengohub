@@ -97,6 +97,9 @@ class ProjectsController extends GetxController {
   final selectedTypologies = <String>[].obs;
 
   static const sectorOptions = <String>[
+    'Affordable Housing',
+    'Roads',
+    'Special Economic Zones',
     'Transport',
     'Energy',
     'Water',

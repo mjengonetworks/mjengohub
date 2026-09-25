@@ -32,7 +32,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../entities/screens/entity_profile_screen.dart';
 import '../../incidents/models/incident_model.dart';
 import '../../incidents/services/incidents_service.dart';
-import '../../navigation/app_header.dart';
 import '../../navigation/main_navigation.dart';
 import '../../news/controllers/discover_controller.dart';
 import '../../news/models/article_model.dart';
@@ -369,7 +368,6 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AppHeader(),
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),

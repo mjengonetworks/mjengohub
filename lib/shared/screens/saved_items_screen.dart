@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/bookmarks_service.dart';
-import '../../navigation/app_header.dart';
 import '../../news/screens/article_detail_screen.dart';
 
 class SavedItemsScreen extends StatefulWidget {
@@ -38,7 +37,6 @@ class _SavedItemsScreenState extends State<SavedItemsScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          const AppHeader(),
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),

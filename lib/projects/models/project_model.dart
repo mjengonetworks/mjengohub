@@ -5,7 +5,7 @@ import '../../news/models/article_model.dart';
 import '../../auth/models/user_model.dart';
 import '../../shared/utils/text_case.dart';
 
-const String _kBase = 'https://mjengohub.co.ke';
+const String _kBase = 'https://media.mjengohub.co.ke';
 
 /// The four fixed KES budget brackets a tappable budget chip/badge (project
 /// card, detail-screen quick fact) always links to: Under 500M, 500M–2B,

@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../navigation/app_header.dart';
 import '../../point/routes/app_routes.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/responsive.dart';
@@ -79,7 +78,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const AppHeader(),
         Expanded(
           // AppBar always reserves MediaQuery.padding.top for the status bar
           // itself, regardless of what's already above it — without this,

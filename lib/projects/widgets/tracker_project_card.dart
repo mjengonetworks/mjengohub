@@ -172,6 +172,35 @@ class TrackerProjectCard extends StatelessWidget {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(99),
+                          child: LinearProgressIndicator(
+                            minHeight: 6,
+                            value: project.progressPercent.clamp(0, 100).toDouble() / 100,
+                            backgroundColor: AppColors.divider,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              project.progressPercent >= 100
+                                  ? AppColors.success
+                                  : AppColors.accentBlue,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${project.progressPercent.clamp(0, 100)}%',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                   if (project.budgetTierBracket != null ||
                       project.costUsdValue != null) ...[
                     const SizedBox(height: 4),

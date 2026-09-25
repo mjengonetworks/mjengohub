@@ -55,6 +55,8 @@ Color statusMarkerColor(String status) {
 /// opening each pin.
 Color categoryMarkerColor(String sectorLabel) {
   switch (sectorLabel) {
+    case 'Roads':
+    case 'Special Economic Zones':
     case 'Transport':
     case 'Rail':
       return const Color(0xFFEA580C); // Orange-600 — roads/highways/transport
@@ -65,6 +67,7 @@ Color categoryMarkerColor(String sectorLabel) {
         0xFF0284C7,
       ); // Sky-600 — water & sanitation/environment
     case 'Housing':
+    case 'Affordable Housing':
       return const Color(0xFF2563EB); // Blue-600 — building/residential/housing
     case 'Ports':
       return const Color(0xFF059669); // Emerald-600 — aviation/maritime/ports

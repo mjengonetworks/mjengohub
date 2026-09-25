@@ -7,13 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
-import '../videos/screens/videos_screen.dart';
-import '../hub/screens/hub_screen.dart';
+import '../projects/screens/projects_screen.dart';
+import '../projects/screens/private_projects_screen.dart';
 import '../point/routes/app_routes.dart';
 import '../profile/profile_screen.dart';
 import '../shared/theme/app_theme.dart';
-import 'app_drawer.dart';
-import 'app_header.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -53,7 +51,6 @@ class _MainNavigationState extends State<MainNavigation> {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: AppColors.canvas,
-        drawer: const AppDrawer(),
         body: NotificationListener<ScrollNotification>(
           onNotification: _onScrollNotification,
           child: Stack(
@@ -64,7 +61,6 @@ class _MainNavigationState extends State<MainNavigation> {
               Positioned.fill(
                 child: Padding(
                   padding: EdgeInsets.only(
-                    top: AppHeader.barHeight,
                     bottom: _BottomNav.barHeight + bottomInset,
                   ),
                   child: Center(
@@ -76,28 +72,13 @@ class _MainNavigationState extends State<MainNavigation> {
                           children: const [
                             HomeScreen(), // MainNavController.tabHome
                             DiscoverScreen(), // MainNavController.tabNews
-                            HubScreen(), // MainNavController.tabHub
-                            VideosScreen(), // MainNavController.tabMedia
+                            ProjectsScreen(), // MainNavController.tabTracker
+                            PrivateProjectsScreen(), // MainNavController.tabPrivate
                             ProfileScreen(), // MainNavController.tabProfile
                           ],
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Obx(
-                  () => AnimatedSlide(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
-                    offset: _navVisible.value
-                        ? Offset.zero
-                        : const Offset(0, -1),
-                    child: const AppHeader(),
                   ),
                 ),
               ),
@@ -140,7 +121,8 @@ class _BottomNav extends StatelessWidget {
   // ~20% shorter than the original 68 — compact icons/text/labels below match.
   static const double barHeight = 54;
 
-  // Order matches MainNavController.tabHome/tabNews/tabHub/tabMedia/tabProfile.
+  // Mobile-only destinations. Detail and secondary destinations remain
+  // reachable from their own native AppBars/routes.
   static const _items = [
     _NavData(
       activeIcon: Icons.home_rounded,
@@ -155,12 +137,12 @@ class _BottomNav extends StatelessWidget {
     _NavData(
       activeIcon: Icons.hub_rounded,
       inactiveIcon: Icons.hub_outlined,
-      label: 'Hub',
+      label: 'Tracker',
     ),
     _NavData(
-      activeIcon: Icons.play_circle_filled_rounded,
-      inactiveIcon: Icons.play_circle_outline_rounded,
-      label: 'Media',
+      activeIcon: Icons.apartment_rounded,
+      inactiveIcon: Icons.apartment_outlined,
+      label: 'Private',
     ),
     _NavData(
       activeIcon: Icons.person_rounded,
@@ -340,8 +322,11 @@ class MainNavController extends GetxController {
   // tabs from elsewhere in the app (Home/Hub sections, category tiles, …).
   static const int tabHome = 0;
   static const int tabNews = 1;
-  static const int tabHub = 2;
-  static const int tabMedia = 3;
+  static const int tabTracker = 2;
+  static const int tabPrivate = 3;
+  // Backwards-compatible aliases for older callers that jump to Hub/Media.
+  static const int tabHub = tabTracker;
+  static const int tabMedia = tabPrivate;
   static const int tabProfile = 4;
 
   final RxInt currentIndex = 0.obs;
