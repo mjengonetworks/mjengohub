@@ -12,6 +12,7 @@ import '../projects/screens/private_projects_screen.dart';
 import '../point/routes/app_routes.dart';
 import '../profile/profile_screen.dart';
 import '../shared/theme/app_theme.dart';
+import 'app_header.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -61,6 +62,7 @@ class _MainNavigationState extends State<MainNavigation> {
               Positioned.fill(
                 child: Padding(
                   padding: EdgeInsets.only(
+                    top: AppHeader.barHeight,
                     bottom: _BottomNav.barHeight + bottomInset,
                   ),
                   child: Center(
@@ -79,6 +81,21 @@ class _MainNavigationState extends State<MainNavigation> {
                         ),
                       ),
                     ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Obx(
+                  () => AnimatedSlide(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    offset: _navVisible.value
+                        ? Offset.zero
+                        : const Offset(0, -1),
+                    child: const AppHeader(),
                   ),
                 ),
               ),

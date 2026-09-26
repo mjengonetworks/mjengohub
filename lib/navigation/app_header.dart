@@ -53,30 +53,10 @@ class AppHeader extends StatelessWidget {
           height: barHeight,
           child: Row(
             children: [
-              // ── Hamburger — left-edge 4dp padding, opens AppDrawer ────────
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Builder(
-                  builder: (context) => GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => Scaffold.of(context).openDrawer(),
-                    child: const SizedBox(
-                      width: 34,
-                      height: 34,
-                      child: Icon(
-                        Icons.menu_rounded,
-                        color: Color(0xFF0F172A),
-                        size: 22,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Brand: logo only, tightly packed 3dp from the hamburger,
+              // ── Brand: logo only, with a small left inset,
               // routes home (mirrors the website's nav-brand, which is the
               // logo image with no adjacent wordmark text) ─────────────────
-              const SizedBox(width: 3),
+              const SizedBox(width: 8),
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _goToTab(0),
