@@ -20,7 +20,10 @@ import '../controllers/article_detail_controller.dart';
 import '../controllers/discover_controller.dart';
 import '../models/article_content_blocks.dart';
 import '../models/article_model.dart';
+import '../services/article_micro_summary_service.dart';
+import '../utils/article_url_builder.dart';
 import '../widgets/article_discovery_section.dart';
+import '../widgets/article_ai_summary_card.dart';
 import '../widgets/article_map_embed.dart';
 import '../widgets/net_image.dart';
 import '../widgets/read_also_card.dart';
@@ -123,13 +126,47 @@ class _ArticleBody extends StatefulWidget {
 
 class _ArticleBodyState extends State<_ArticleBody> {
   bool _isSaved = false;
+  bool _summaryLoading = false;
+  bool _summaryRequested = false;
+  String? _aiSummary;
+  String? _summaryError;
+  bool _summaryCached = false;
+  late final ArticleMicroSummaryService _summaryService;
   late final List<ArticleContentBlock> _blocks;
 
   @override
   void initState() {
     super.initState();
     _blocks = parseArticleHtml(widget.article.content);
+    _summaryService = ArticleMicroSummaryService();
     _checkSavedStatus();
+  }
+
+  @override
+  void dispose() {
+    _summaryService.close();
+    super.dispose();
+  }
+
+  Future<void> _requestAiSummary() async {
+    if (_summaryLoading) return;
+    setState(() {
+      _summaryLoading = true;
+      _summaryRequested = true;
+      _summaryError = null;
+    });
+    final result = await _summaryService.fetch(widget.article.id);
+    if (!mounted) return;
+    setState(() {
+      _summaryLoading = false;
+      if (result.success) {
+        _aiSummary = result.summary;
+        _summaryCached = result.cached;
+        _summaryError = null;
+      } else {
+        _summaryError = result.error;
+      }
+    });
   }
 
   Future<void> _checkSavedStatus() async {
@@ -167,7 +204,13 @@ class _ArticleBodyState extends State<_ArticleBody> {
   }
 
   void _shareArticle() {
-    final url = 'https://mjengohub.co.ke/news/${widget.article.slug}';
+    final url = ArticleCanonicalUrlBuilder.build(widget.article);
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Article link is unavailable.')),
+      );
+      return;
+    }
     SocialShareModal.show(
       context,
       title: 'Read this on Mjengo Hub: "${widget.article.title}"',
@@ -309,6 +352,25 @@ class _ArticleBodyState extends State<_ArticleBody> {
           ),
         ),
 
+        // Public micro-summary only. Authenticated article chat is not wired
+        // here because the website endpoint requires a Flask session/CSRF
+        // contract that the Flutter JWT client does not provide.
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: ArticleAiSummaryCard(
+              summary: _aiSummary,
+              loading: _summaryLoading,
+              requested: _summaryRequested,
+              error: _summaryError,
+              cached: _summaryCached,
+              signedIn: _isSignedIn,
+              onRequest: _requestAiSummary,
+              onSignIn: () => Get.toNamed(AppRoutes.login),
+            ),
+          ),
+        ),
+
         // 7: rich body blocks, with a discovery card spliced in at the
         // midpoint.
         for (int i = 0; i < _blocks.length; i++) ...[
@@ -364,6 +426,14 @@ class _ArticleBodyState extends State<_ArticleBody> {
         ),
       ],
     );
+  }
+
+  bool get _isSignedIn {
+    try {
+      return Get.find<MjengoAuthController>().isAuthenticated;
+    } catch (_) {
+      return false;
+    }
   }
 
   Widget _backButton() {
