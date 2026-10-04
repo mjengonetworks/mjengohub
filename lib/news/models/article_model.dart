@@ -99,6 +99,13 @@ class Article {
   final int id;
   final String title;
   final String slug;
+
+  /// Canonical public URL supplied by the API, when available.
+  ///
+  /// Older API responses do not include this field; in that case the shared
+  /// ArticleCanonicalUrlBuilder can safely derive the category-aware route
+  /// from [category] and [slug].
+  final String? canonicalUrl;
   final String? summary;
   final String? featuredImage;
   final String? featuredImageAlt;
@@ -130,6 +137,7 @@ class Article {
     required this.id,
     required this.title,
     required this.slug,
+    this.canonicalUrl,
     this.summary,
     this.featuredImage,
     this.featuredImageAlt,
@@ -170,6 +178,10 @@ class Article {
       id: (json['id'] as num).toInt(),
       title: (json['title'] as String?) ?? '',
       slug: (json['slug'] as String?) ?? '',
+      canonicalUrl:
+          (json['canonical_url'] as String?) ??
+          (json['canonicalUrl'] as String?) ??
+          (json['url'] as String?),
       summary: json['summary'] as String?,
       featuredImage: json['featured_image'] as String?,
       featuredImageAlt: json['featured_image_alt'] as String?,
