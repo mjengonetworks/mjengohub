@@ -53,7 +53,7 @@ Status rules:
    - Native sharing work exists in pushed history; awaiting explicit approval.
 
 13. AI summaries and social media captions
-   - Article Quick AI Summary was pushed in commit `4c992de`; awaiting approval.
+   - Article Quick AI Summary and its verified canonical URL support were pushed in commits `4c992de` and `ab703e7`; awaiting approval.
 
 16. End-of-content recommendations
    - Recommendation work exists in pushed Git history; awaiting explicit approval.
