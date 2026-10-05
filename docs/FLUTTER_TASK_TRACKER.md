@@ -38,9 +38,6 @@ Status rules:
 14. Opera-style swipe animations
    - No verified implementation has been pushed.
 
-15. Project detail view parity with mobile website
-   - Project parity work remains unpushed and is preserved in the working tree.
-
 ## Testing
 
 6. Minimalist UI restyling
@@ -57,6 +54,9 @@ Status rules:
 
 16. End-of-content recommendations
    - Recommendation work exists in pushed Git history; awaiting explicit approval.
+
+15. Project detail view parity with mobile website
+   - Project detail parity work was pushed in commit `82ca2b0`; awaiting approval.
 
 17. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
