@@ -58,6 +58,9 @@ Status rules:
 16. End-of-content recommendations
    - Recommendation work exists in pushed Git history; awaiting explicit approval.
 
+17. Incident detail view parity with mobile website
+   - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
+
 ## Completed
 
 None. No task has been explicitly approved as completed.
