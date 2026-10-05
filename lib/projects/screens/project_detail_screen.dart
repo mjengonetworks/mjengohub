@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../comments/services/comments_service.dart';
@@ -430,6 +431,20 @@ class ProjectDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                 ],
 
+                // The website places Community Discussion before the media
+                // and progress sections on the mobile detail page.
+                Container(
+                  color: _kCard,
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                  child: CommentsSection(
+                    resource: CommentResource.project,
+                    resourceId: project.id,
+                    title: 'Discussion',
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
                 // ── Block 3: More Photos & Videos of [Project Title] — real
                 // on-site, non-hero gallery photos (the hero carousel above
                 // already covers the admin-featured shots; Renders are their
@@ -473,20 +488,6 @@ class ProjectDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── Discussion — tightened top padding vs. the other cards'
-                // uniform _kCardPad ──────────────────────────────────────
-                Container(
-                  color: _kCard,
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                  child: CommentsSection(
-                    resource: CommentResource.project,
-                    resourceId: project.id,
-                    title: 'Discussion',
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
                 // ── Project Team & Stakeholders (defensive — `team_members`
                 // isn't sent by the live backend yet, so this stays hidden
                 // until it is) ────────────────────────────────────────────
@@ -512,18 +513,18 @@ class ProjectDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                 ],
 
+                // ── Related Articles & Coverage — falls back to a matching
+                // category feed when the project has no explicitly tagged
+                // articles (Spec 7) ─────────────────────────────────────────
+                RelatedArticlesSection(project: project),
+
+                const SizedBox(height: 8),
+
                 // ── Sidebar discovery lists (stacked on mobile): Related
                 // Projects → Latest Projects → Trending Projects, each real
                 // `GET projects` queries (sector-match / newest / the
                 // backend's confirmed-live `sort=trending`) ───────────────
                 _DiscoverProjectsSection(project: project),
-
-                const SizedBox(height: 8),
-
-                // ── Related Articles & Coverage — falls back to a matching
-                // category feed when the project has no explicitly tagged
-                // articles (Spec 7) ─────────────────────────────────────────
-                RelatedArticlesSection(project: project),
 
                 const SizedBox(height: 8),
 
@@ -831,10 +832,10 @@ class ProjectDetailScreen extends StatelessWidget {
     final raw = _isValidInfo(project.descriptionOverview)
         ? project.descriptionOverview!
         : project.description ?? '';
-    final text = raw.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+    final blocks = parseProjectOverviewHtml(raw);
     return _InfoCard(
       title: 'Project Overview',
-      child: _ExpandableDescription(text: text),
+      child: _ExpandableProjectOverview(blocks: blocks),
     );
   }
 
@@ -852,26 +853,7 @@ class ProjectDetailScreen extends StatelessWidget {
         itemCount: items.length.clamp(0, 9),
         itemBuilder: (_, i) {
           final m = items[i];
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: m.mediaType == 'image'
-                ? NetImage(
-                    url: m.url,
-                    fit: BoxFit.cover,
-                    placeholderColor: _kDivider,
-                    placeholderIcon: Icons.image_not_supported_rounded,
-                    placeholderIconColor: _kSubtext,
-                    placeholderIconSize: 20,
-                  )
-                : Container(
-                    color: _kDark,
-                    child: const Icon(
-                      Icons.play_circle_fill_rounded,
-                      color: Colors.white54,
-                      size: 32,
-                    ),
-                  ),
-          );
+          return ProjectMediaTile(media: m);
         },
       ),
     );
@@ -994,7 +976,9 @@ class _FollowTextButton extends StatelessWidget {
               Text(
                 following
                     ? 'Following'
-                    : (auth.isAuthenticated ? 'Follow Project' : 'Sign in to Follow Project'),
+                    : (auth.isAuthenticated
+                          ? 'Follow Project'
+                          : 'Sign in to Follow Project'),
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -2475,56 +2459,170 @@ class _CopyrightClaimSheetState extends State<_CopyrightClaimSheet> {
 
 // ── Shared layout widgets ──────────────────────────────────────────────────────
 
-/// Truncates [text] to ~300 words with a "Continue Reading" expander when
-/// longer; shows the full text as-is when already within the cap.
-class _ExpandableDescription extends StatefulWidget {
-  final String text;
-  const _ExpandableDescription({required this.text});
-
-  @override
-  State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
-}
-
-class _ExpandableDescriptionState extends State<_ExpandableDescription> {
-  static const int _kWordCap = 300;
-  bool _expanded = false;
+/// Renders the website's heading/paragraph structure without truncating the
+/// overview or discarding any of its content.
+class _ExpandableProjectOverview extends StatelessWidget {
+  final List<ProjectOverviewBlock> blocks;
+  const _ExpandableProjectOverview({required this.blocks});
 
   @override
   Widget build(BuildContext context) {
-    final words = widget.text.split(RegExp(r'\s+'));
-    final overLimit = words.length > _kWordCap;
-    final shown = (_expanded || !overLimit)
-        ? widget.text
-        : '${words.take(_kWordCap).join(' ')}…';
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          shown,
-          style: GoogleFonts.montserrat(
-            fontSize: 14.5,
-            fontWeight: FontWeight.w400,
-            color: _kDark,
-            height: 1.6,
-          ),
-        ),
-        if (overLimit) ...[
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Text(
-              _expanded ? 'Show less' : 'Continue Reading',
-              style: GoogleFonts.montserrat(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.headingSlate,
-              ),
+        for (int i = 0; i < blocks.length; i++) ...[
+          if (i > 0) const SizedBox(height: 10),
+          Text(
+            blocks[i].text,
+            style: GoogleFonts.montserrat(
+              fontSize: blocks[i].isHeading ? 13.5 : 14.5,
+              fontWeight: blocks[i].isHeading
+                  ? FontWeight.w700
+                  : FontWeight.w400,
+              color: blocks[i].isHeading ? AppColors.headingSlate : _kDark,
+              height: 1.6,
             ),
           ),
         ],
       ],
     );
+  }
+}
+
+/// Main project gallery tile. The square media frame stays unchanged while
+/// optional API-provided caption and credit appear in the available space
+/// underneath, matching the website's media presentation.
+class ProjectMediaTile extends StatelessWidget {
+  final ProjectMedia media;
+  const ProjectMediaTile({super.key, required this.media});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCaption = _isValidInfo(media.caption);
+    final hasCredit = _isValidInfo(media.credit);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AspectRatio(
+          aspectRatio: 1,
+          child: InkWell(
+            onTap: () => _showMediaInfo(context),
+            borderRadius: BorderRadius.circular(8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: media.mediaType == 'image'
+                  ? NetImage(
+                      url: media.url,
+                      fit: BoxFit.cover,
+                      placeholderColor: _kDivider,
+                      placeholderIcon: Icons.image_not_supported_rounded,
+                      placeholderIconColor: _kSubtext,
+                      placeholderIconSize: 20,
+                    )
+                  : Container(
+                      color: _kDark,
+                      child: const Icon(
+                        Icons.play_circle_fill_rounded,
+                        color: Colors.white54,
+                        size: 32,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+        if (hasCaption || hasCredit) ...[
+          const SizedBox(height: 4),
+          if (hasCaption)
+            Text(
+              media.caption!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: _kDark,
+                height: 1.3,
+              ),
+            ),
+          if (hasCredit)
+            Text(
+              '© ${media.credit}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(fontSize: 9, color: _kSubtext),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _showMediaInfo(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                media.mediaType == 'image' ? 'Project image' : 'Project media',
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _kDark,
+                ),
+              ),
+              if (_isValidInfo(media.caption)) ...[
+                const SizedBox(height: 10),
+                Text(
+                  media.caption!,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    color: _kDark,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+              if (_isValidInfo(media.credit)) ...[
+                const SizedBox(height: 6),
+                Text(
+                  '© ${media.credit}',
+                  style: GoogleFonts.montserrat(fontSize: 11, color: _kSubtext),
+                ),
+              ],
+              if (media.hasUsableUrl) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openMediaUrl(sheetContext),
+                    icon: const Icon(Icons.download_rounded, size: 17),
+                    label: const Text('Open / download media'),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMediaUrl(BuildContext context) async {
+    final uri = media.uri;
+    if (uri == null) return;
+    if (!await canLaunchUrl(uri)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('This media cannot be opened.')),
+        );
+      }
+      return;
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }
 

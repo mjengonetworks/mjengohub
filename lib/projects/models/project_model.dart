@@ -7,6 +7,86 @@ import '../../shared/utils/text_case.dart';
 
 const String _kBase = 'https://media.mjengohub.co.ke';
 
+/// A structured block from the HTML-backed Project Overview field.
+class ProjectOverviewBlock {
+  final String text;
+  final bool isHeading;
+
+  const ProjectOverviewBlock({required this.text, required this.isHeading});
+}
+
+/// Preserves the headings and paragraph boundaries used by the website's
+/// Project Overview instead of flattening rich text into one paragraph.
+List<ProjectOverviewBlock> parseProjectOverviewHtml(String? html) {
+  if (html == null || html.trim().isEmpty) return const [];
+
+  final blocks = <ProjectOverviewBlock>[];
+  final pattern = RegExp(
+    r'<(h[1-6]|p|li)\b[^>]*>([\s\S]*?)</(?:h[1-6]|p|li)>',
+    caseSensitive: false,
+  );
+  var cursor = 0;
+  for (final match in pattern.allMatches(html)) {
+    _addProjectOverviewBlock(
+      blocks,
+      _cleanProjectMarkup(html.substring(cursor, match.start)),
+    );
+    final text = _cleanProjectMarkup(match.group(2));
+    _addProjectOverviewBlock(
+      blocks,
+      text,
+      isHeading: match.group(1)!.toLowerCase().startsWith('h'),
+    );
+    cursor = match.end;
+  }
+
+  _addProjectOverviewBlock(
+    blocks,
+    _cleanProjectMarkup(html.substring(cursor)),
+  );
+
+  if (blocks.isNotEmpty) return blocks;
+  final fallback = _cleanProjectMarkup(html);
+  return fallback.isEmpty
+      ? const []
+      : [ProjectOverviewBlock(text: fallback, isHeading: false)];
+}
+
+String _cleanProjectMarkup(String? value) {
+  if (value == null) return '';
+  return value
+      .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&apos;', "'")
+      .replaceAllMapped(
+        RegExp(r'&#x([0-9a-fA-F]+);'),
+        (match) => String.fromCharCode(
+          int.parse(match.group(1)!, radix: 16),
+        ),
+      )
+      .replaceAllMapped(
+        RegExp(r'&#([0-9]+);'),
+        (match) => String.fromCharCode(int.parse(match.group(1)!)),
+      )
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
+
+void _addProjectOverviewBlock(
+  List<ProjectOverviewBlock> blocks,
+  String text, {
+  bool isHeading = false,
+}) {
+  if (text.isEmpty) return;
+  blocks.add(ProjectOverviewBlock(text: text, isHeading: isHeading));
+}
+
 /// The four fixed KES budget brackets a tappable budget chip/badge (project
 /// card, detail-screen quick fact) always links to: Under 500M, 500M–2B,
 /// 2B–10B, Above 10B. Deliberately separate from [Project.budgetTier]'s
@@ -199,6 +279,26 @@ class ProjectMedia {
     if (filePath.startsWith('http')) return filePath;
     return '$_kBase/static/$filePath';
   }
+
+  Uri? get uri {
+    final rawPath = filePath.trim();
+    if (rawPath.isEmpty) return null;
+    final rawUri = Uri.tryParse(rawPath);
+    if (rawUri != null &&
+        rawUri.hasScheme &&
+        !{'http', 'https'}.contains(rawUri.scheme.toLowerCase())) {
+      return null;
+    }
+    final parsed = Uri.tryParse(url);
+    if (parsed == null ||
+        !{'http', 'https'}.contains(parsed.scheme.toLowerCase()) ||
+        parsed.host.isEmpty) {
+      return null;
+    }
+    return parsed;
+  }
+
+  bool get hasUsableUrl => uri != null;
 }
 
 /// A single credited team member/firm on a project (contractor, architect,
