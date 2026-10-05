@@ -97,6 +97,12 @@ class IncidentDetailScreen extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, IncidentDetailController ctrl) {
     final incident = ctrl.incident.value!;
+    final galleryMedia = incident.media
+        .where((media) =>
+            media.filePath.trim().isNotEmpty &&
+            !_isFeaturedMedia(media, incident.imageUrl))
+        .take(9)
+        .toList();
     final topPad = MediaQuery.of(context).padding.top;
     final heroColor = incident.isRoadSafety
         ? const Color(0xFF7F1D1D)
@@ -119,7 +125,7 @@ class IncidentDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
+                Icons.arrow_back_rounded,
                 color: Colors.white,
                 size: 18,
               ),
@@ -264,26 +270,83 @@ class IncidentDetailScreen extends StatelessWidget {
                   ),
                 ),
 
+              // The website places the image caption and source metadata
+              // immediately before the incident narrative. Keep each field
+              // optional because older reports may not provide either one.
+              if (_isValidInfo(incident.imageCaption) ||
+                  _isValidInfo(incident.source) ||
+                  _isValidInfo(incident.imageSourceCredit))
+                Container(
+                  color: _kCard,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_isValidInfo(incident.imageCaption))
+                        Text(
+                          incident.imageCaption!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11.5,
+                            color: _kSubtext,
+                            fontStyle: FontStyle.italic,
+                            height: 1.4,
+                          ),
+                        ),
+                      if (_isValidInfo(incident.source)) ...[
+                        if (_isValidInfo(incident.imageCaption))
+                          const SizedBox(height: 8),
+                        Text(
+                          'Source: ${incident.source}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11.5,
+                            color: _kDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                      if (_isValidInfo(incident.imageSourceCredit)) ...[
+                        if (_isValidInfo(incident.imageCaption) ||
+                            _isValidInfo(incident.source))
+                          const SizedBox(height: 4),
+                        Text(
+                          'Image credit: ${incident.imageSourceCredit}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            color: _kSubtext,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
               const SizedBox(height: 8),
 
               // ── Description ─────────────────────────────────────────────
               if (_isValidInfo(incident.description))
                 _buildCard(
                   title: 'What Happened',
-                  child: Text(
-                    incident.description!
-                        .replaceAll(RegExp(r'<[^>]*>'), '')
-                        .trim(),
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13.5,
-                      color: _kDark,
-                      height: 1.65,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final paragraph in incident.paragraphs) ...[
+                        Text(
+                          paragraph,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13.5,
+                            color: _kDark,
+                            height: 1.65,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ],
                   ),
                 ),
 
               // ── Media ────────────────────────────────────────────────────
-              if (incident.media.isNotEmpty)
+              if (galleryMedia.isNotEmpty)
                 _buildCard(
                   title: 'Photos & Videos',
                   child: GridView.builder(
@@ -295,29 +358,21 @@ class IncidentDetailScreen extends StatelessWidget {
                           crossAxisSpacing: 6,
                           mainAxisSpacing: 6,
                         ),
-                    itemCount: incident.media.length.clamp(0, 9),
+                    itemCount: galleryMedia.length,
                     itemBuilder: (_, i) {
-                      final m = incident.media[i];
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: m.mediaType == 'image'
-                            ? NetImage(
-                                url: m.url,
-                                fit: BoxFit.cover,
-                                placeholderColor: _kDivider,
-                                placeholderIcon:
-                                    Icons.image_not_supported_rounded,
-                                placeholderIconColor: _kSubtext,
-                                placeholderIconSize: 20,
-                              )
-                            : Container(
-                                color: _kDark,
-                                child: const Icon(
-                                  Icons.play_circle_fill_rounded,
-                                  color: Colors.white54,
-                                  size: 32,
-                                ),
-                              ),
+                      final m = galleryMedia[i];
+                      final sameCaption = _sameInfo(
+                        m.caption,
+                        incident.imageCaption,
+                      );
+                      final sameCredit = _sameInfo(
+                        m.credit,
+                        incident.imageSourceCredit,
+                      );
+                      return IncidentMediaTile(
+                        media: m,
+                        showCaption: !sameCaption,
+                        showCredit: !sameCredit,
                       );
                     },
                   ),
@@ -527,6 +582,90 @@ class IncidentDetailScreen extends StatelessWidget {
         return const Color(0xFF22C55E);
     }
   }
+
+  bool _sameInfo(String? mediaValue, String? featuredValue) {
+    if (!_isValidInfo(mediaValue) || !_isValidInfo(featuredValue)) {
+      return false;
+    }
+    return mediaValue!.trim() == featuredValue!.trim();
+  }
+
+  bool _isFeaturedMedia(IncidentMedia media, String? featuredUrl) {
+    if (featuredUrl == null || featuredUrl.trim().isEmpty) return false;
+    return media.url.trim() == featuredUrl.trim();
+  }
+}
+
+/// A gallery tile that keeps the existing square media presentation while
+/// surfacing optional metadata supplied for that individual media item.
+class IncidentMediaTile extends StatelessWidget {
+  final IncidentMedia media;
+  final bool showCaption;
+  final bool showCredit;
+
+  const IncidentMediaTile({
+    super.key,
+    required this.media,
+    this.showCaption = true,
+    this.showCredit = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCaption = showCaption && _isValidInfo(media.caption);
+    final hasCredit = showCredit && _isValidInfo(media.credit);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AspectRatio(
+          aspectRatio: 1,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: media.mediaType == 'image'
+                ? NetImage(
+                    url: media.url,
+                    fit: BoxFit.cover,
+                    placeholderColor: _kDivider,
+                    placeholderIcon: Icons.image_not_supported_rounded,
+                    placeholderIconColor: _kSubtext,
+                    placeholderIconSize: 20,
+                  )
+                : Container(
+                    color: _kDark,
+                    child: const Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: Colors.white54,
+                      size: 32,
+                    ),
+                  ),
+          ),
+        ),
+        if (hasCaption || hasCredit) ...[
+          const SizedBox(height: 4),
+          if (hasCaption)
+            Text(
+              media.caption!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: _kDark,
+                height: 1.3,
+              ),
+            ),
+          if (hasCredit)
+            Text(
+              '© ${media.credit}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(fontSize: 9, color: _kSubtext),
+            ),
+        ],
+      ],
+    );
+  }
 }
 
 // ── Shared widgets ─────────────────────────────────────────────────────────────
@@ -627,7 +766,6 @@ class _AccordionRow extends StatelessWidget {
     );
   }
 }
-
 
 /// Inline correction form rendered inside the collapsed accordion above the
 /// comments block, via `POST incidents/{id}/suggest-edit`.
@@ -807,15 +945,20 @@ class _DiscoveryFeedState extends State<_DiscoveryFeed> {
                 incidents: data.related,
               ),
             if (data.latest.isNotEmpty)
-              _IncidentCarousel(title: 'Latest Reports', incidents: data.latest),
+              _IncidentCarousel(
+                title: 'Latest Reports',
+                incidents: data.latest,
+              ),
             if (data.trending.isNotEmpty)
               _IncidentCarousel(
                 title: 'Trending Reports',
                 incidents: data.trending,
               ),
             _BrowseByCategoryChips(incident: widget.incident),
-            if (data.articles.isNotEmpty) _LatestArticles(articles: data.articles),
-            if (data.projects.isNotEmpty) _LatestProjects(projects: data.projects),
+            if (data.articles.isNotEmpty)
+              _LatestArticles(articles: data.articles),
+            if (data.projects.isNotEmpty)
+              _LatestProjects(projects: data.projects),
             const _TrackerQuickLinks(),
           ],
         );

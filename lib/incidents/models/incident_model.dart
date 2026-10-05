@@ -154,25 +154,37 @@ class IncidentMedia {
   final String filePath;
   final String mediaType;
   final String? caption;
+  final String? credit;
 
   const IncidentMedia({
     required this.id,
     required this.filePath,
     required this.mediaType,
     this.caption,
+    this.credit,
   });
 
   factory IncidentMedia.fromJson(Map<String, dynamic> j) => IncidentMedia(
     id: (j['id'] as num).toInt(),
-    filePath: (j['file_path'] as String?) ?? '',
-    mediaType: (j['media_type'] as String?) ?? 'image',
-    caption: j['caption'] as String?,
+    filePath: _mediaString(j['file_path']) ?? '',
+    mediaType: _mediaString(j['media_type']) ?? 'image',
+    caption: _mediaString(j['caption']),
+    credit:
+        _mediaString(j['credit']) ??
+        _mediaString(j['image_credit']) ??
+        _mediaString(j['source_credit']),
   );
 
   String get url {
     if (filePath.startsWith('http')) return filePath;
     return '$_kBase/static/$filePath';
   }
+}
+
+String? _mediaString(dynamic value) {
+  if (value is! String) return null;
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
 }
 
 class IncidentUpdate {
