@@ -327,7 +327,7 @@ class _ProfileAvatarButton extends StatelessWidget {
     } catch (_) {}
 
     return GestureDetector(
-      onTap: () => AppHeader._goToTab(4),
+      onTap: () => AppHeader._goToTab(MainNavController.tabProfile),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 40,

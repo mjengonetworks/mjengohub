@@ -1729,9 +1729,8 @@ class _CategoryPillsBarState extends State<CategoryPillsBar> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Media / YouTube — Spec 10 sections 11-12. There is no separate MediaScreen
-//  in this app; both slots point at the Videos tab, the closest existing
-//  equivalent (VideosService/VideosScreen).
+//  Media / YouTube — the Feed is now the primary Media & Feed destination;
+//  the established /media video directory remains a separate destination.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class MediaPreviewBanner extends StatelessWidget {
@@ -1773,7 +1772,7 @@ class MediaPreviewBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Media Hub',
+                      'Media & Feed',
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -1782,7 +1781,7 @@ class MediaPreviewBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Photos, videos and site coverage in one place',
+                      'Stories, updates and site coverage in one place',
                       style: GoogleFonts.montserrat(
                         fontSize: 11.5,
                         color: AppColors.captionSlate,
@@ -1836,8 +1835,7 @@ class _YoutubeCarouselSectionState extends State<YoutubeCarouselSection> {
       children: [
         shared.SectionHeader(
           title: 'Mjengo Hub on YouTube',
-          onSeeAll: () => Get.find<MainNavController>().currentIndex.value =
-              MainNavController.tabMedia,
+          onSeeAll: () => Get.toNamed(AppRoutes.mediaDirectory),
         ),
         const SizedBox(height: 12),
         Padding(

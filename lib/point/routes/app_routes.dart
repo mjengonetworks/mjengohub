@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../auth/screens/login_screen.dart';
 import '../../auth/screens/reset_password_screen.dart';
+import '../../feed/screens/feed_screen.dart';
 import '../../onboarding/onboarding_screen.dart';
 import '../../splash/splash_screen.dart';
 import '../../navigation/main_navigation.dart';
@@ -29,6 +30,8 @@ import '../../profile/screens/public_profile_screen.dart';
 import '../../projects/screens/built_history_screen.dart';
 import '../../projects/screens/africa_world_screen.dart';
 import '../../merch/screens/merch_screen.dart';
+import '../../videos/controllers/videos_controller.dart';
+import '../../videos/screens/videos_screen.dart';
 import '../../profile/privacy_policy_screen.dart';
 import '../../profile/terms_conditions_screen.dart';
 import '../../profile/cookie_policy_screen.dart';
@@ -45,6 +48,8 @@ class AppRoutes {
   static const String resetPassword = '/reset-password';
   static const String home = '/home';
   static const String articleDetail = '/article';
+  static const String feed = '/feed';
+  static const String mediaDirectory = '/media';
 
   // New sections
   static const String projects = '/projects';
@@ -89,6 +94,16 @@ class AppRoutes {
     GetPage(name: signup, page: () => const LoginScreen(startOnSignUp: true)),
     GetPage(name: resetPassword, page: () => const ResetPasswordScreen()),
     GetPage(name: home, page: () => const MainNavigation()),
+    GetPage(name: feed, page: () => const FeedScreen()),
+    GetPage(
+      name: mediaDirectory,
+      page: () {
+        if (!Get.isRegistered<VideosController>()) {
+          Get.put(VideosController());
+        }
+        return const VideosScreen();
+      },
+    ),
     GetPage(name: articleDetail, page: () => const ArticleDetailScreen()),
 
     // Projects

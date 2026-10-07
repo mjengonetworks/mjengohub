@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../feed/screens/feed_screen.dart';
 import '../home/home_screen.dart';
 import '../news/screens/discover_screen.dart';
 import '../projects/screens/projects_screen.dart';
@@ -75,6 +76,7 @@ class _MainNavigationState extends State<MainNavigation> {
                             HomeScreen(), // MainNavController.tabHome
                             DiscoverScreen(), // MainNavController.tabNews
                             ProjectsScreen(), // MainNavController.tabTracker
+                            FeedScreen(), // MainNavController.tabFeed
                             PrivateProjectsScreen(), // MainNavController.tabPrivate
                             ProfileScreen(), // MainNavController.tabProfile
                           ],
@@ -155,6 +157,11 @@ class _BottomNav extends StatelessWidget {
       activeIcon: Icons.hub_rounded,
       inactiveIcon: Icons.hub_outlined,
       label: 'Tracker',
+    ),
+    _NavData(
+      activeIcon: Icons.dynamic_feed_rounded,
+      inactiveIcon: Icons.dynamic_feed_outlined,
+      label: 'Feed',
     ),
     _NavData(
       activeIcon: Icons.apartment_rounded,
@@ -340,11 +347,12 @@ class MainNavController extends GetxController {
   static const int tabHome = 0;
   static const int tabNews = 1;
   static const int tabTracker = 2;
-  static const int tabPrivate = 3;
+  static const int tabFeed = 3;
+  static const int tabPrivate = 4;
   // Backwards-compatible aliases for older callers that jump to Hub/Media.
   static const int tabHub = tabTracker;
-  static const int tabMedia = tabPrivate;
-  static const int tabProfile = 4;
+  static const int tabMedia = tabFeed;
+  static const int tabProfile = 5;
 
   final RxInt currentIndex = 0.obs;
 }
