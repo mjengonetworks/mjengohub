@@ -63,6 +63,7 @@ Status rules:
 
 17.1. Native Feed API and timeline
    - Backend Feed API was pushed in `b743c32` and the Flutter native timeline was pushed in `13f6e6b`; awaiting approval.
+   - Live verification on 2026-10-07 returned HTTP 200 from `https://mjengohub.co.ke/api/v1/feed?page=1&per_page=15`, with real editorial records, normalized author/source/media data, safe HTTPS canonical URLs, and working pagination. The running production commit could not be attributed to `b743c32`; repository deployment evidence and production release access remain unavailable.
 
 18. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
