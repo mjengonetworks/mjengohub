@@ -68,6 +68,9 @@ Status rules:
 20. Native Feed composer and publishing
    - Authenticated text publishing was pushed in backend commit `18794bb` and Flutter commit `a068435`; awaiting approval. Media upload remains deferred pending a mobile-compatible upload contract.
 
+20.1. Native Feed media attachments
+   - Secure multipart image attachments were pushed in backend commit `7743ffa` and Flutter commit `faf9a9d`; awaiting approval. PNG/JPEG/GIF/WebP images are supported, up to four attachments and 8 MB per image. Video remains deferred because the mobile contract does not yet have equivalent content-level validation.
+
 18. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
 
