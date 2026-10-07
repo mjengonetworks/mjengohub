@@ -123,6 +123,7 @@ class FeedItem {
   final int? id;
   final int? feedPostId;
   final String postType;
+  final String? status;
   final FeedAuthor author;
   final DateTime? publishedAt;
   final String? text;
@@ -138,6 +139,7 @@ class FeedItem {
     this.id,
     this.feedPostId,
     this.postType = 'community',
+    this.status,
     this.author = const FeedAuthor(),
     this.publishedAt,
     this.text,
@@ -157,6 +159,7 @@ class FeedItem {
       id: _int(value['id']),
       feedPostId: _int(value['feed_post_id']),
       postType: _string(value['post_type']) ?? 'community',
+      status: _string(value['status']),
       author: FeedAuthor.fromJson(value['author']),
       publishedAt: _date(value['published_at']),
       text: _string(value['text']),
@@ -173,6 +176,41 @@ class FeedItem {
       engagement: value['engagement'] is Map
           ? FeedEngagement.fromJson(value['engagement'])
           : null,
+    );
+  }
+}
+
+class FeedPublishResult {
+  final FeedItem item;
+  final String status;
+  final String? message;
+
+  const FeedPublishResult({
+    required this.item,
+    required this.status,
+    this.message,
+  });
+
+  bool get isPublished => status == 'published';
+  bool get isPending => status == 'moderation';
+
+  factory FeedPublishResult.fromResponse(dynamic body) {
+    if (body is! Map) {
+      throw const FormatException('Invalid Feed publish response.');
+    }
+    final raw = body['data'];
+    if (raw is! Map) {
+      throw const FormatException('Feed publish response has no post.');
+    }
+    final item = FeedItem.fromJson(raw);
+    final status = item.status ?? _string(raw['status']);
+    if (status == null) {
+      throw const FormatException('Feed publish response has no status.');
+    }
+    return FeedPublishResult(
+      item: item,
+      status: status,
+      message: _string(body['message']),
     );
   }
 }

@@ -198,7 +198,7 @@ class MjengoAuthController extends GetxController {
           duration: const Duration(seconds: 3),
         );
 
-        Get.offAllNamed('/home');
+        _finishAuthenticationNavigation();
         return true;
       } else {
         _setError(_extractError(response.body));
@@ -244,7 +244,7 @@ class MjengoAuthController extends GetxController {
         _user.value = _parseUser(userData);
         _isAuthenticated.value = true;
 
-        Get.offAllNamed('/home');
+        _finishAuthenticationNavigation();
         return true;
       } else if (response.statusCode == 401) {
         _setError('Invalid email or password');
@@ -352,7 +352,7 @@ class MjengoAuthController extends GetxController {
       await _api.saveUserCache(userData);
       _user.value = _parseUser(userData);
       _isAuthenticated.value = true;
-      Get.offAllNamed('/home');
+      _finishAuthenticationNavigation();
     } else if (response.statusCode == 403) {
       _setError('Your account has been deactivated');
     } else if (response.statusCode == 404) {
@@ -498,6 +498,16 @@ class MjengoAuthController extends GetxController {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   void clearError() => _setError('');
+
+  void _finishAuthenticationNavigation() {
+    final args = Get.arguments;
+    final returnTo = args is Map ? args['returnTo'] : null;
+    if (returnTo == '/feed') {
+      Get.offAllNamed('/feed');
+      return;
+    }
+    Get.offAllNamed('/home');
+  }
 
   void _setLoading(bool v) => _isLoading.value = v;
   void _setError(String v) => _errorMessage.value = v;

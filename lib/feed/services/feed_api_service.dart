@@ -33,4 +33,31 @@ class FeedApiService {
     }
     return FeedPage.fromResponse(body);
   }
+
+  Future<FeedPublishResult> createPost({
+    required String content,
+    int? pageId,
+  }) async {
+    final payload = <String, dynamic>{
+      'content': content,
+      if (pageId != null) 'page_id': pageId,
+    };
+    final response = await _api.postRequest('feed/posts', payload);
+    final body = response.body;
+    if (response.statusCode != 201 || body is! Map || body['success'] != true) {
+      final message = body is Map
+          ? body['error'] ?? body['message']
+          : response.statusText;
+      throw FeedApiException(
+        message is String && message.isNotEmpty
+            ? message
+            : 'Could not publish your Feed post.',
+      );
+    }
+    try {
+      return FeedPublishResult.fromResponse(body);
+    } on FormatException catch (error) {
+      throw FeedApiException(error.message);
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 
 import 'package:mjengo_hub_app/feed/controllers/feed_controller.dart';
 import 'package:mjengo_hub_app/feed/models/feed_contract.dart';
@@ -10,13 +11,26 @@ import 'package:mjengo_hub_app/feed/screens/feed_screen.dart';
 class _FakeFeedService extends FeedApiService {
   final FeedPage page;
   final bool fail;
+  final FeedPublishResult? publishResult;
 
-  _FakeFeedService(this.page, {this.fail = false});
+  _FakeFeedService(this.page, {this.fail = false, this.publishResult});
 
   @override
   Future<FeedPage> getFeed({int page = 1, int perPage = 15}) async {
     if (fail) throw const FeedApiException('Feed is unavailable.');
     return this.page;
+  }
+
+  @override
+  Future<FeedPublishResult> createPost({
+    required String content,
+    int? pageId,
+  }) async {
+    return publishResult ??
+        FeedPublishResult(
+          item: FeedItem(text: content, status: 'published'),
+          status: 'published',
+        );
   }
 }
 
@@ -34,7 +48,7 @@ void main() {
     expect(FeedTab.forYou.hasNativeApi, isTrue);
     expect(FeedTab.following.hasNativeApi, isFalse);
     expect(FeedContract.hasNativeReadApi, isTrue);
-    expect(FeedContract.hasNativePublishApi, isFalse);
+    expect(FeedContract.hasNativePublishApi, isTrue);
   });
 
   test('parses normalized Feed records and nullable pagination safely', () {
@@ -108,9 +122,51 @@ void main() {
     expect(failed.errorMessage.value, 'Feed is unavailable.');
   });
 
-  testWidgets('renders the honest native Feed foundation state', (
-    tester,
-  ) async {
+  test('parses published and moderation publish responses', () {
+    final published = FeedPublishResult.fromResponse({
+      'success': true,
+      'message': 'Post published.',
+      'data': {
+        'id': 10,
+        'status': 'published',
+        'post_type': 'community',
+        'author': {'display_name': 'Member'},
+      },
+    });
+    final pending = FeedPublishResult.fromResponse({
+      'success': true,
+      'message': 'Post submitted for moderation.',
+      'data': {
+        'id': 11,
+        'status': 'moderation',
+        'post_type': 'community',
+        'author': {'display_name': 'Member'},
+      },
+    });
+
+    expect(published.isPublished, isTrue);
+    expect(pending.isPending, isTrue);
+  });
+
+  test('controller publishes and keeps server-returned status', () async {
+    final controller = FeedController(
+      service: _FakeFeedService(
+        const FeedPage(),
+        publishResult: const FeedPublishResult(
+          item: FeedItem(id: 12, text: 'Awaiting review', status: 'moderation'),
+          status: 'moderation',
+        ),
+      ),
+      loadOnInit: false,
+    );
+    final result = await controller.publishPost('Awaiting review');
+
+    expect(result.status, 'moderation');
+    expect(result.item.id, 12);
+    expect(controller.items, isEmpty);
+  });
+
+  testWidgets('renders the native Feed composer at 360px', (tester) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {
@@ -124,7 +180,15 @@ void main() {
     );
     await controller.load();
     await tester.pumpWidget(
-      MaterialApp(home: FeedScreen(controller: controller)),
+      GetMaterialApp(
+        getPages: [
+          GetPage(
+            name: '/login',
+            page: () => const Scaffold(body: Text('Sign In')),
+          ),
+        ],
+        home: FeedScreen(controller: controller),
+      ),
     );
 
     expect(find.text('Media & Feed'), findsOneWidget);
@@ -135,5 +199,9 @@ void main() {
     expect(find.text('No Feed posts yet'), findsOneWidget);
     expect(find.text('Open Feed on website'), findsOneWidget);
     expect(find.text('Open Media Directory'), findsOneWidget);
+
+    await tester.tap(find.text("What's happening in the built environment?"));
+    await tester.pumpAndSettle();
+    expect(find.text('Sign In'), findsOneWidget);
   });
 }

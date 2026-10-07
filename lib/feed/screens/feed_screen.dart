@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../auth/controllers/mjengo_auth_controller.dart';
 import '../../point/routes/app_routes.dart';
 import '../../news/widgets/net_image.dart';
 import '../../shared/services/link_launcher.dart';
@@ -10,11 +11,9 @@ import '../../shared/theme/app_theme.dart';
 import '../controllers/feed_controller.dart';
 import '../models/feed_contract.dart';
 import '../models/feed_model.dart';
+import 'feed_composer_screen.dart';
 
-/// Native Media & Feed foundation.
-///
-/// The read-only timeline uses the mobile Feed API. Publishing and engagement
-/// remain inactive until their mobile-compatible contracts are deployed.
+/// Native Media & Feed timeline and authenticated text composer.
 class FeedScreen extends StatefulWidget {
   final FeedController? controller;
 
@@ -98,7 +97,7 @@ class _FeedScreenState extends State<FeedScreen> {
               onSelected: _selectTab,
             ),
             const SizedBox(height: 12),
-            const _ComposerPlaceholder(),
+            _ComposerCard(onOpen: _openComposer),
             const SizedBox(height: 12),
             if (_selectedTab.hasNativeApi)
               _NativeTimeline(
@@ -117,6 +116,21 @@ class _FeedScreenState extends State<FeedScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _openComposer() {
+    MjengoAuthController? auth;
+    try {
+      auth = Get.find<MjengoAuthController>();
+    } catch (_) {}
+    if (!(auth?.isAuthenticated ?? false)) {
+      Get.toNamed(AppRoutes.login, arguments: {'returnTo': AppRoutes.feed});
+      return;
+    }
+    Get.to(
+      () => FeedComposerScreen(controller: _controller),
+      transition: Transition.cupertino,
     );
   }
 }
@@ -203,42 +217,48 @@ class _SecondaryNavigation extends StatelessWidget {
   }
 }
 
-class _ComposerPlaceholder extends StatelessWidget {
-  const _ComposerPlaceholder();
+class _ComposerCard extends StatelessWidget {
+  final VoidCallback onOpen;
+
+  const _ComposerCard({required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: AppColors.divider),
-        borderRadius: BorderRadius.circular(AppRadius.sharp),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.edit_note_rounded,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
-            size: 22,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              "What's happening in the built environment?",
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.62),
+    return InkWell(
+      onTap: onOpen,
+      borderRadius: BorderRadius.circular(AppRadius.sharp),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border.all(color: AppColors.divider),
+          borderRadius: BorderRadius.circular(AppRadius.sharp),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.edit_note_rounded,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                "What's happening in the built environment?",
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.62),
+                ),
               ),
             ),
-          ),
-          const Icon(
-            Icons.lock_outline_rounded,
-            color: AppColors.captionSlate,
-            size: 16,
-          ),
-        ],
+            const Icon(
+              Icons.edit_rounded,
+              color: AppColors.captionSlate,
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }

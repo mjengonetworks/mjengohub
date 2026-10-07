@@ -1,8 +1,7 @@
 // lib/feed/models/feed_contract.dart
 //
-// The current website Feed is server-rendered at /feed. There is no
-// /api/v1/feed JSON contract yet, so the native surface must not invent a
-// second timeline or silently compose one from unrelated API resources.
+// Native Feed reads and authenticated text publishing use the deployed mobile
+// API. Engagement, following and other social actions remain separate.
 
 enum FeedTab {
   forYou('For You'),
@@ -24,7 +23,7 @@ class FeedContract {
 
   static const websiteUrl = 'https://mjengohub.co.ke/feed';
   static const nativeReadEndpoint = <String>['feed'];
-  static const nativePublishEndpoint = <String>[];
+  static const nativePublishEndpoint = <String>['feed/posts'];
 
   static bool get hasNativeReadApi => nativeReadEndpoint.isNotEmpty;
   static bool get hasNativePublishApi => nativePublishEndpoint.isNotEmpty;

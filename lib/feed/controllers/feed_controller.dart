@@ -61,4 +61,11 @@ class FeedController extends GetxController {
       isLoadingMore.value = false;
     }
   }
+
+  Future<FeedPublishResult> publishPost(String content) =>
+      _service.createPost(content: content);
+
+  void insertPublished(FeedItem item) {
+    items.insert(0, item);
+  }
 }
