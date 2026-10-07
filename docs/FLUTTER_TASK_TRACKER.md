@@ -58,7 +58,10 @@ Status rules:
 15. Project detail view parity with mobile website
    - Project detail parity work was pushed in commit `82ca2b0`; awaiting approval.
 
-17. Incident detail view parity with mobile website
+17. Media & Feed foundation
+   - Native Media & Feed foundation was pushed in commit `793b3e0`; awaiting approval.
+
+18. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
 
 ## Completed
