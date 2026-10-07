@@ -61,6 +61,9 @@ Status rules:
 17. Media & Feed foundation
    - Native Media & Feed foundation was pushed in commit `793b3e0`; awaiting approval.
 
+17.1. Native Feed API and timeline
+   - Backend Feed API was pushed in `b743c32` and the Flutter native timeline was pushed in `13f6e6b`; awaiting approval.
+
 18. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
 
