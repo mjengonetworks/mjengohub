@@ -215,6 +215,13 @@ class FeedPublishResult {
   }
 }
 
+class FeedUploadAttachment {
+  final String filename;
+  final List<int> bytes;
+
+  const FeedUploadAttachment({required this.filename, required this.bytes});
+}
+
 class FeedPage {
   final List<FeedItem> items;
   final int page;

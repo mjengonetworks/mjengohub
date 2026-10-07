@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:mjengo_hub_app/feed/controllers/feed_controller.dart';
 import 'package:mjengo_hub_app/feed/models/feed_contract.dart';
 import 'package:mjengo_hub_app/feed/models/feed_model.dart';
 import 'package:mjengo_hub_app/feed/services/feed_api_service.dart';
 import 'package:mjengo_hub_app/feed/screens/feed_screen.dart';
+import 'package:mjengo_hub_app/feed/screens/feed_composer_screen.dart';
+import 'package:mjengo_hub_app/services/base_service.dart';
 
 class _FakeFeedService extends FeedApiService {
   final FeedPage page;
@@ -25,12 +28,40 @@ class _FakeFeedService extends FeedApiService {
   Future<FeedPublishResult> createPost({
     required String content,
     int? pageId,
+    List<FeedUploadAttachment> attachments = const [],
   }) async {
     return publishResult ??
         FeedPublishResult(
           item: FeedItem(text: content, status: 'published'),
           status: 'published',
         );
+  }
+}
+
+class _FakeBaseService extends BaseService {
+  Map<String, String>? fields;
+  List<http.MultipartFile>? files;
+
+  @override
+  Future<Response> postMultipart(
+    String endpoint, {
+    required List<http.MultipartFile> files,
+    Map<String, String>? fields,
+  }) async {
+    this.files = files;
+    this.fields = fields;
+    return Response(
+      statusCode: 201,
+      body: {
+        'success': true,
+        'data': {
+          'id': 20,
+          'status': 'published',
+          'post_type': 'community',
+          'author': {'display_name': 'Member'},
+        },
+      },
+    );
   }
 }
 
@@ -166,6 +197,33 @@ void main() {
     expect(controller.items, isEmpty);
   });
 
+  test('multipart publish input preserves attachment bytes and filename', () {
+    const attachment = FeedUploadAttachment(
+      filename: 'site.jpg',
+      bytes: [1, 2, 3],
+    );
+    expect(attachment.filename, 'site.jpg');
+    expect(attachment.bytes, [1, 2, 3]);
+  });
+
+  test('Feed API builds multipart media requests', () async {
+    final fake = _FakeBaseService();
+    Get.put<BaseService>(fake);
+    addTearDown(Get.delete<BaseService>);
+
+    final result = await FeedApiService().createPost(
+      content: 'Image update',
+      attachments: const [
+        FeedUploadAttachment(filename: 'site.jpg', bytes: [1, 2, 3]),
+      ],
+    );
+
+    expect(result.isPublished, isTrue);
+    expect(fake.fields?['content'], 'Image update');
+    expect(fake.files?.single.field, 'media');
+    expect(fake.files?.single.filename, 'site.jpg');
+  });
+
   testWidgets('renders the native Feed composer at 360px', (tester) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
@@ -203,5 +261,34 @@ void main() {
     await tester.tap(find.text("What's happening in the built environment?"));
     await tester.pumpAndSettle();
     expect(find.text('Sign In'), findsOneWidget);
+  });
+
+  testWidgets('composer previews and removes selected media', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final controller = FeedController(
+      service: _FakeFeedService(const FeedPage()),
+      loadOnInit: false,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FeedComposerScreen(
+          controller: controller,
+          initialAttachments: const [
+            FeedUploadAttachment(filename: 'site.jpg', bytes: [1, 2, 3]),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('1/4 images'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pump();
+    expect(find.text('0/4 images'), findsOneWidget);
   });
 }

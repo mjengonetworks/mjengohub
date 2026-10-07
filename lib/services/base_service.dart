@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -365,6 +367,43 @@ class BaseService extends GetConnect {
     } catch (e) {
       print('uploadFile error: $e');
       return 500;
+    }
+  }
+
+  Future<Response> postMultipart(
+    String endpoint, {
+    required List<http.MultipartFile> files,
+    Map<String, String>? fields,
+  }) async {
+    _setup();
+    try {
+      final token = await _getToken();
+      final uri = Uri.parse(
+        '$_apiBase${endpoint.replaceAll(RegExp(r'^/+'), '')}',
+      );
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Accept'] = 'application/json';
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      if (fields != null) request.fields.addAll(fields);
+      request.files.addAll(files);
+      final raw = await request.send().then(http.Response.fromStream);
+      dynamic body = raw.body;
+      try {
+        body = jsonDecode(raw.body);
+      } catch (_) {}
+      return Response(
+        statusCode: raw.statusCode,
+        statusText: raw.reasonPhrase,
+        headers: raw.headers,
+        body: body,
+      );
+    } catch (error) {
+      print('Multipart POST request error: $error');
+      return Response(
+        statusText: 'Network error: $error',
+        statusCode: 500,
+        body: {'error': 'NETWORK_ERROR', 'message': error.toString()},
+      );
     }
   }
 

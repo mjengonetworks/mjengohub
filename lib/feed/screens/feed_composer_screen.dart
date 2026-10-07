@@ -1,13 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/feed_controller.dart';
+import '../models/feed_model.dart';
 import '../../shared/theme/app_theme.dart';
 
 class FeedComposerScreen extends StatefulWidget {
   final FeedController controller;
+  final List<FeedUploadAttachment> initialAttachments;
 
-  const FeedComposerScreen({super.key, required this.controller});
+  const FeedComposerScreen({
+    super.key,
+    required this.controller,
+    this.initialAttachments = const [],
+  });
 
   @override
   State<FeedComposerScreen> createState() => _FeedComposerScreenState();
@@ -16,6 +25,8 @@ class FeedComposerScreen extends StatefulWidget {
 class _FeedComposerScreenState extends State<FeedComposerScreen> {
   final _textController = TextEditingController();
   final _focusNode = FocusNode();
+  final _picker = ImagePicker();
+  final _attachments = <FeedUploadAttachment>[];
   String? _error;
   bool _submitting = false;
   bool _submittedForModeration = false;
@@ -23,6 +34,7 @@ class _FeedComposerScreenState extends State<FeedComposerScreen> {
   @override
   void initState() {
     super.initState();
+    _attachments.addAll(widget.initialAttachments.take(4));
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focusNode.requestFocus(),
     );
@@ -46,7 +58,10 @@ class _FeedComposerScreenState extends State<FeedComposerScreen> {
       _error = null;
     });
     try {
-      final result = await widget.controller.publishPost(content);
+      final result = await widget.controller.publishPost(
+        content,
+        attachments: List.unmodifiable(_attachments),
+      );
       if (!mounted) return;
       if (result.isPublished) {
         widget.controller.insertPublished(result.item);
@@ -66,6 +81,39 @@ class _FeedComposerScreenState extends State<FeedComposerScreen> {
             : 'Could not publish your post. Please try again.';
       });
     }
+  }
+
+  Future<void> _pickMedia() async {
+    if (_attachments.length >= 4) return;
+    try {
+      final picked = await _picker.pickMultiImage(imageQuality: 90);
+      final remaining = 4 - _attachments.length;
+      final selected = picked.take(remaining);
+      final additions = <FeedUploadAttachment>[];
+      for (final file in selected) {
+        additions.add(
+          FeedUploadAttachment(
+            filename: file.name,
+            bytes: await file.readAsBytes(),
+          ),
+        );
+      }
+      if (!mounted) return;
+      setState(() {
+        _attachments.addAll(additions);
+        _error = null;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'Could not select those images. Please try again.',
+        );
+      }
+    }
+  }
+
+  void _removeMedia(int index) {
+    setState(() => _attachments.removeAt(index));
   }
 
   @override
@@ -110,6 +158,48 @@ class _FeedComposerScreenState extends State<FeedComposerScreen> {
               ),
               const SizedBox(height: 10),
             ],
+            Row(
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _submitting || _submittedForModeration
+                      ? null
+                      : _pickMedia,
+                  icon: const Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 17,
+                  ),
+                  label: Text(
+                    'Add media',
+                    style: GoogleFonts.montserrat(fontSize: 11.5),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Text(
+                  '${_attachments.length}/4 images',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10.5,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.62),
+                  ),
+                ),
+              ],
+            ),
+            if (_attachments.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (var index = 0; index < _attachments.length; index++)
+                    _AttachmentPreview(
+                      attachment: _attachments[index],
+                      onRemove: _submitting || _submittedForModeration
+                          ? null
+                          : () => _removeMedia(index),
+                    ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 10),
             TextField(
               controller: _textController,
               focusNode: _focusNode,
@@ -141,7 +231,7 @@ class _FeedComposerScreenState extends State<FeedComposerScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Text posts only. Media attachments will be supported after the mobile upload contract is available.',
+              'Images use the existing Feed media storage and validation path. Video attachments are not available in the mobile composer yet.',
               style: GoogleFonts.montserrat(
                 fontSize: 10.5,
                 height: 1.35,
@@ -220,6 +310,59 @@ class _ComposerNotice extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AttachmentPreview extends StatelessWidget {
+  final FeedUploadAttachment attachment;
+  final VoidCallback? onRemove;
+
+  const _AttachmentPreview({required this.attachment, this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          width: 142,
+          height: 112,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(color: AppColors.divider),
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sharp),
+            child: Image.memory(
+              Uint8List.fromList(attachment.bytes),
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const Icon(
+                Icons.broken_image_outlined,
+                color: AppColors.captionSlate,
+              ),
+            ),
+          ),
+        ),
+        if (onRemove != null)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Material(
+              color: Colors.black54,
+              shape: const CircleBorder(),
+              child: InkWell(
+                onTap: onRemove,
+                customBorder: const CircleBorder(),
+                child: const Padding(
+                  padding: EdgeInsets.all(3),
+                  child: Icon(Icons.close, size: 15, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

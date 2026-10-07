@@ -538,7 +538,7 @@ class _FeedMediaTile extends StatelessWidget {
                       alignment: Alignment.center,
                       child: const Icon(Icons.image_not_supported_outlined),
                     )
-                  : NetImage(url: media.url, fit: BoxFit.cover),
+                  : NetImage(url: media.url, fit: BoxFit.contain),
             ),
           ),
           if (media.caption != null || media.credit != null)

@@ -62,8 +62,10 @@ class FeedController extends GetxController {
     }
   }
 
-  Future<FeedPublishResult> publishPost(String content) =>
-      _service.createPost(content: content);
+  Future<FeedPublishResult> publishPost(
+    String content, {
+    List<FeedUploadAttachment> attachments = const [],
+  }) => _service.createPost(content: content, attachments: attachments);
 
   void insertPublished(FeedItem item) {
     items.insert(0, item);
