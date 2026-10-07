@@ -16,16 +16,14 @@ enum FeedTab {
   final String label;
   const FeedTab(this.label);
 
-  /// These tabs exist on the website, but none has a mobile-compatible
-  /// Feed JSON endpoint at this stage.
-  bool get hasNativeApi => false;
+  bool get hasNativeApi => this == FeedTab.forYou;
 }
 
 class FeedContract {
   FeedContract._();
 
   static const websiteUrl = 'https://mjengohub.co.ke/feed';
-  static const nativeReadEndpoint = <String>[];
+  static const nativeReadEndpoint = <String>['feed'];
   static const nativePublishEndpoint = <String>[];
 
   static bool get hasNativeReadApi => nativeReadEndpoint.isNotEmpty;

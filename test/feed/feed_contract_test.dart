@@ -1,8 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:mjengo_hub_app/feed/controllers/feed_controller.dart';
 import 'package:mjengo_hub_app/feed/models/feed_contract.dart';
+import 'package:mjengo_hub_app/feed/models/feed_model.dart';
+import 'package:mjengo_hub_app/feed/services/feed_api_service.dart';
 import 'package:mjengo_hub_app/feed/screens/feed_screen.dart';
+
+class _FakeFeedService extends FeedApiService {
+  final FeedPage page;
+  final bool fail;
+
+  _FakeFeedService(this.page, {this.fail = false});
+
+  @override
+  Future<FeedPage> getFeed({int page = 1, int perPage = 15}) async {
+    if (fail) throw const FeedApiException('Feed is unavailable.');
+    return this.page;
+  }
+}
 
 void main() {
   test('exposes the website Feed tabs without claiming native support', () {
@@ -15,9 +31,81 @@ void main() {
       'Messages',
       'Calls',
     ]);
-    expect(FeedTab.values.every((tab) => !tab.hasNativeApi), isTrue);
-    expect(FeedContract.hasNativeReadApi, isFalse);
+    expect(FeedTab.forYou.hasNativeApi, isTrue);
+    expect(FeedTab.following.hasNativeApi, isFalse);
+    expect(FeedContract.hasNativeReadApi, isTrue);
     expect(FeedContract.hasNativePublishApi, isFalse);
+  });
+
+  test('parses normalized Feed records and nullable pagination safely', () {
+    final page = FeedPage.fromResponse({
+      'success': true,
+      'data': [
+        {
+          'id': 8,
+          'feed_post_id': 8,
+          'post_type': 'editorial',
+          'author': {
+            'id': 2,
+            'display_name': 'Mjengo Hub',
+            'is_editorial': true,
+          },
+          'published_at': '2026-10-07T09:30:00Z',
+          'text': 'A verified Feed post.',
+          'media': [
+            {'media_type': 'image', 'url': 'https://media.example/image.jpg'},
+          ],
+          'source': {
+            'type': 'article',
+            'id': 4,
+            'article_slug': 'verified-story',
+          },
+          'comment_count': 3,
+        },
+      ],
+      'pagination': {
+        'page': 2,
+        'per_page': 15,
+        'has_next': true,
+        'next_page': 3,
+      },
+    });
+
+    expect(page.items.single.source?.articleSlug, 'verified-story');
+    expect(
+      page.items.single.media.single.url,
+      'https://media.example/image.jpg',
+    );
+    expect(page.items.single.commentCount, 3);
+    expect(page.page, 2);
+    expect(page.hasNext, isTrue);
+    expect(page.nextPage, 3);
+  });
+
+  test('controller supports loading, pagination and error state', () async {
+    final controller = FeedController(
+      service: _FakeFeedService(
+        const FeedPage(
+          items: [FeedItem(id: 1, text: 'First')],
+          page: 1,
+          hasNext: true,
+        ),
+        fail: false,
+      ),
+      loadOnInit: false,
+    );
+    await controller.load();
+
+    expect(controller.items.single.text, 'First');
+    expect(controller.hasNext.value, isTrue);
+
+    final failed = FeedController(
+      service: _FakeFeedService(const FeedPage(), fail: true),
+      loadOnInit: false,
+    );
+    await failed.load();
+    expect(failed.items, isEmpty);
+    expect(failed.errorMessage.value, 'Feed is unavailable.');
   });
 
   testWidgets('renders the honest native Feed foundation state', (
@@ -30,17 +118,21 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    await tester.pumpWidget(const MaterialApp(home: FeedScreen()));
+    final controller = FeedController(
+      service: _FakeFeedService(const FeedPage(), fail: false),
+      loadOnInit: false,
+    );
+    await controller.load();
+    await tester.pumpWidget(
+      MaterialApp(home: FeedScreen(controller: controller)),
+    );
 
     expect(find.text('Media & Feed'), findsOneWidget);
     expect(
       find.text("What's happening in the built environment?"),
       findsOneWidget,
     );
-    expect(
-      find.text('The native timeline is not connected yet.'),
-      findsOneWidget,
-    );
+    expect(find.text('No Feed posts yet'), findsOneWidget);
     expect(find.text('Open Feed on website'), findsOneWidget);
     expect(find.text('Open Media Directory'), findsOneWidget);
   });

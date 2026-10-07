@@ -4,18 +4,21 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../point/routes/app_routes.dart';
+import '../../news/widgets/net_image.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/theme/app_theme.dart';
+import '../controllers/feed_controller.dart';
 import '../models/feed_contract.dart';
+import '../models/feed_model.dart';
 
 /// Native Media & Feed foundation.
 ///
-/// The website's /feed page is currently HTML/session based. Until a
-/// mobile-compatible JSON read/write contract is deployed, this screen keeps
-/// the native information architecture visible and routes the real Feed to
-/// the website instead of fabricating timeline records.
+/// The read-only timeline uses the mobile Feed API. Publishing and engagement
+/// remain inactive until their mobile-compatible contracts are deployed.
 class FeedScreen extends StatefulWidget {
-  const FeedScreen({super.key});
+  final FeedController? controller;
+
+  const FeedScreen({super.key, this.controller});
 
   @override
   State<FeedScreen> createState() => _FeedScreenState();
@@ -23,6 +26,33 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
   FeedTab _selectedTab = FeedTab.forYou;
+  late final FeedController _controller;
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        widget.controller ??
+        (Get.isRegistered<FeedController>()
+            ? Get.find<FeedController>()
+            : Get.put(FeedController(), permanent: true));
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 280) {
+      _controller.loadMore();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
 
   void _selectTab(FeedTab tab) {
     setState(() => _selectedTab = tab);
@@ -38,8 +68,9 @@ class _FeedScreenState extends State<FeedScreen> {
       color: theme.scaffoldBackgroundColor,
       child: RefreshIndicator(
         color: AppColors.accentBlue,
-        onRefresh: () async {},
+        onRefresh: _controller.refreshFeed,
         child: ListView(
+          controller: _scrollController,
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
           children: [
             Text(
@@ -69,10 +100,16 @@ class _FeedScreenState extends State<FeedScreen> {
             const SizedBox(height: 12),
             const _ComposerPlaceholder(),
             const SizedBox(height: 12),
-            _TimelineUnavailable(
-              selectedTab: _selectedTab,
-              onOpenWebsite: _openWebsiteFeed,
-            ),
+            if (_selectedTab.hasNativeApi)
+              _NativeTimeline(
+                controller: _controller,
+                onOpenWebsite: _openWebsiteFeed,
+              )
+            else
+              _TimelineUnavailable(
+                selectedTab: _selectedTab,
+                onOpenWebsite: _openWebsiteFeed,
+              ),
             const SizedBox(height: 12),
             _MediaDirectoryCard(
               onOpen: () => Get.toNamed(AppRoutes.mediaDirectory),
@@ -205,6 +242,390 @@ class _ComposerPlaceholder extends StatelessWidget {
       ),
     );
   }
+}
+
+class _NativeTimeline extends StatelessWidget {
+  final FeedController controller;
+  final VoidCallback onOpenWebsite;
+
+  const _NativeTimeline({
+    required this.controller,
+    required this.onOpenWebsite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.items.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 30),
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      }
+      if (controller.errorMessage.value != null && controller.items.isEmpty) {
+        return _FeedStateCard(
+          icon: Icons.cloud_off_rounded,
+          title: 'Could not load the Feed',
+          message: controller.errorMessage.value!,
+          actionLabel: 'Retry',
+          onAction: controller.load,
+        );
+      }
+      if (controller.items.isEmpty) {
+        return _FeedStateCard(
+          icon: Icons.dynamic_feed_outlined,
+          title: 'No Feed posts yet',
+          message: 'There are no eligible public Feed records on this page.',
+          actionLabel: 'Open Feed on website',
+          onAction: onOpenWebsite,
+        );
+      }
+      return Column(
+        children: [
+          for (final item in controller.items) ...[
+            _FeedCard(item: item),
+            const SizedBox(height: 10),
+          ],
+          if (controller.errorMessage.value != null)
+            _InlineFeedError(
+              message: controller.errorMessage.value!,
+              onRetry: controller.loadMore,
+            ),
+          if (controller.isLoadingMore.value)
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+        ],
+      );
+    });
+  }
+}
+
+class _FeedCard extends StatelessWidget {
+  final FeedItem item;
+  const _FeedCard({required this.item});
+
+  Future<void> _openSource(BuildContext context) async {
+    final source = item.source;
+    if (source == null) return;
+    if (source.articleSlug != null) {
+      Get.toNamed(AppRoutes.articleDetail, arguments: source.articleSlug);
+      return;
+    }
+    if (source.projectSlug != null) {
+      Get.toNamed(AppRoutes.projectDetail, arguments: source.projectSlug);
+      return;
+    }
+    if (source.incidentSlug != null) {
+      Get.toNamed(AppRoutes.incidentDetail, arguments: source.incidentSlug);
+      return;
+    }
+    final raw = source.canonicalUrl ?? item.canonicalUrl;
+    final uri = raw == null ? null : Uri.tryParse(raw);
+    if (uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty) {
+      await LinkLauncher.openLink(context, raw!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final authorName =
+        item.author.displayName ??
+        (item.author.isEditorial ? 'Mjengo Hub' : 'Community member');
+    final source = item.source;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              NetImage(
+                url: item.author.avatarUrl,
+                width: 34,
+                height: 34,
+                fit: BoxFit.cover,
+                borderRadius: BorderRadius.circular(17),
+                errorBuilder: (_) => _InitialAvatar(name: authorName),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      authorName,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      _feedTime(item.publishedAt),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.62,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (item.text != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              item.text!,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                height: 1.5,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
+          if (item.media.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 170,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: item.media.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (_, index) =>
+                    _FeedMediaTile(media: item.media[index]),
+              ),
+            ),
+          ],
+          if (source != null &&
+              (source.title != null || source.summary != null)) ...[
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () => _openSource(context),
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  border: Border.all(color: AppColors.divider),
+                  borderRadius: BorderRadius.circular(AppRadius.sharp),
+                ),
+                child: Row(
+                  children: [
+                    if (source.imageUrl != null)
+                      NetImage(
+                        url: source.imageUrl,
+                        width: 46,
+                        height: 46,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(AppRadius.sharp),
+                      )
+                    else
+                      const Icon(
+                        Icons.link_rounded,
+                        color: AppColors.accentBlue,
+                      ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            source.title ?? 'View linked source',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          if (source.summary != null)
+                            Text(
+                              source.summary!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 10,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.68,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (item.commentCount != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  Icons.mode_comment_outlined,
+                  size: 15,
+                  color: AppColors.captionSlate,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  '${item.commentCount} comments',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10.5,
+                    color: AppColors.captionSlate,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedMediaTile extends StatelessWidget {
+  final FeedMedia media;
+  const _FeedMediaTile({required this.media});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 170,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              child: media.url == null
+                  ? Container(
+                      color: AppColors.mutedCanvas,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.image_not_supported_outlined),
+                    )
+                  : NetImage(url: media.url, fit: BoxFit.cover),
+            ),
+          ),
+          if (media.caption != null || media.credit != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(
+                [
+                  if (media.caption != null) media.caption!,
+                  if (media.credit != null) '© ${media.credit}',
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.montserrat(
+                  fontSize: 9,
+                  color: AppColors.captionSlate,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedStateCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  const _FeedStateCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(AppRadius.sharp),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.accentBlue, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(fontSize: 11.5),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(onPressed: onAction, child: Text(actionLabel)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineFeedError extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _InlineFeedError({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(child: Text(message, style: const TextStyle(fontSize: 11))),
+      TextButton(onPressed: onRetry, child: const Text('Retry')),
+    ],
+  );
+}
+
+class _InitialAvatar extends StatelessWidget {
+  final String name;
+  const _InitialAvatar({required this.name});
+
+  @override
+  Widget build(BuildContext context) => CircleAvatar(
+    radius: 17,
+    backgroundColor: AppColors.accentBlue,
+    child: Text(
+      name.isEmpty ? '?' : name.substring(0, 1).toUpperCase(),
+      style: const TextStyle(color: Colors.white, fontSize: 12),
+    ),
+  );
+}
+
+String _feedTime(DateTime? value) {
+  if (value == null) return 'Time unavailable';
+  final delta = DateTime.now().difference(value.toLocal());
+  if (delta.inMinutes < 1) return 'Just now';
+  if (delta.inHours < 1) return '${delta.inMinutes}m ago';
+  if (delta.inDays < 1) return '${delta.inHours}h ago';
+  if (delta.inDays < 7) return '${delta.inDays}d ago';
+  return '${value.day}/${value.month}/${value.year}';
 }
 
 class _TimelineUnavailable extends StatelessWidget {
