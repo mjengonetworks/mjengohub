@@ -105,18 +105,45 @@ class FeedSource {
 class FeedEngagement {
   final int? upvoteCount;
   final int? downvoteCount;
+  final int? score;
+  final String? voteType;
   final int? shareCount;
 
-  const FeedEngagement({this.upvoteCount, this.downvoteCount, this.shareCount});
+  const FeedEngagement({
+    this.upvoteCount,
+    this.downvoteCount,
+    this.score,
+    this.voteType,
+    this.shareCount,
+  });
 
   factory FeedEngagement.fromJson(dynamic value) {
     if (value is! Map) return const FeedEngagement();
     return FeedEngagement(
       upvoteCount: _int(value['upvote_count']),
       downvoteCount: _int(value['downvote_count']),
+      score: _int(value['score']),
+      voteType: _string(value['vote_type']),
       shareCount: _int(value['share_count']),
     );
   }
+
+  int get netScore => score ?? (upvoteCount ?? 0) - (downvoteCount ?? 0);
+
+  FeedEngagement copyWith({
+    int? upvoteCount,
+    int? downvoteCount,
+    int? score,
+    String? voteType,
+    bool clearVoteType = false,
+    int? shareCount,
+  }) => FeedEngagement(
+    upvoteCount: upvoteCount ?? this.upvoteCount,
+    downvoteCount: downvoteCount ?? this.downvoteCount,
+    score: score ?? this.score,
+    voteType: clearVoteType ? null : voteType ?? this.voteType,
+    shareCount: shareCount ?? this.shareCount,
+  );
 }
 
 class FeedItem {
@@ -178,6 +205,24 @@ class FeedItem {
           : null,
     );
   }
+
+  FeedItem copyWith({FeedEngagement? engagement, int? commentCount}) =>
+      FeedItem(
+        id: id,
+        feedPostId: feedPostId,
+        postType: postType,
+        status: status,
+        author: author,
+        publishedAt: publishedAt,
+        text: text,
+        media: media,
+        sourceType: sourceType,
+        sourceId: sourceId,
+        source: source,
+        canonicalUrl: canonicalUrl,
+        commentCount: commentCount ?? this.commentCount,
+        engagement: engagement ?? this.engagement,
+      );
 }
 
 class FeedPublishResult {

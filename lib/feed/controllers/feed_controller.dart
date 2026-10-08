@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../models/feed_model.dart';
 import '../services/feed_api_service.dart';
+import '../services/feed_vote_service.dart';
 
 class FeedController extends GetxController {
   final FeedApiService _service;
@@ -66,6 +67,28 @@ class FeedController extends GetxController {
     String content, {
     List<FeedUploadAttachment> attachments = const [],
   }) => _service.createPost(content: content, attachments: attachments);
+
+  Future<FeedVoteResult> vote(FeedItem item, String voteType) async {
+    final id = item.id ?? item.feedPostId;
+    if (id == null) {
+      throw const FeedVoteException('This Feed item cannot be voted on.');
+    }
+    final result = await _service.vote(id, voteType);
+    final index = items.indexWhere(
+      (current) => (current.id ?? current.feedPostId) == id,
+    );
+    if (index >= 0) {
+      items[index] = items[index].copyWith(
+        engagement: FeedEngagement(
+          upvoteCount: result.upvotes,
+          downvoteCount: result.downvotes,
+          score: result.score,
+          voteType: result.voteType,
+        ),
+      );
+    }
+    return result;
+  }
 
   void insertPublished(FeedItem item) {
     items.insert(0, item);

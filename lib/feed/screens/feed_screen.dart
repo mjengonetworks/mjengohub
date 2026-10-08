@@ -11,6 +11,7 @@ import '../../shared/theme/app_theme.dart';
 import '../controllers/feed_controller.dart';
 import '../models/feed_contract.dart';
 import '../models/feed_model.dart';
+import '../widgets/feed_vote_bar.dart';
 import 'feed_composer_screen.dart';
 
 /// Native Media & Feed timeline and authenticated text composer.
@@ -303,7 +304,7 @@ class _NativeTimeline extends StatelessWidget {
       return Column(
         children: [
           for (final item in controller.items) ...[
-            _FeedCard(item: item),
+            _FeedCard(item: item, controller: controller),
             const SizedBox(height: 10),
           ],
           if (controller.errorMessage.value != null)
@@ -324,7 +325,32 @@ class _NativeTimeline extends StatelessWidget {
 
 class _FeedCard extends StatelessWidget {
   final FeedItem item;
-  const _FeedCard({required this.item});
+  final FeedController controller;
+  const _FeedCard({required this.item, required this.controller});
+
+  bool get _signedIn {
+    try {
+      return Get.find<MjengoAuthController>().isAuthenticated;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _vote(BuildContext context, String type) async {
+    if (!_signedIn) {
+      Get.toNamed(AppRoutes.login, arguments: {'returnTo': AppRoutes.feed});
+      return;
+    }
+    try {
+      await controller.vote(item, type);
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      }
+    }
+  }
 
   Future<void> _openSource(BuildContext context) async {
     final source = item.source;
@@ -492,6 +518,17 @@ class _FeedCard extends StatelessWidget {
               ),
             ),
           ],
+          const SizedBox(height: 8),
+          FeedVoteBar(
+            score: item.engagement?.netScore ?? 0,
+            voteType: item.engagement?.voteType,
+            authenticated: _signedIn,
+            onVote: (type) => _vote(context, type),
+            onRequireAuth: () => Get.toNamed(
+              AppRoutes.login,
+              arguments: {'returnTo': AppRoutes.feed},
+            ),
+          ),
           if (item.commentCount != null) ...[
             const SizedBox(height: 10),
             InkWell(

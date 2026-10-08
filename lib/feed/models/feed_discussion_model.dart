@@ -9,6 +9,9 @@ class FeedComment {
   final int? rootId;
   final int? replyCount;
   final String? status;
+  final int upvotes;
+  final int downvotes;
+  final String? voteType;
   final List<FeedComment> replies;
 
   const FeedComment({
@@ -20,6 +23,9 @@ class FeedComment {
     this.rootId,
     this.replyCount,
     this.status,
+    this.upvotes = 0,
+    this.downvotes = 0,
+    this.voteType,
     this.replies = const [],
   });
 
@@ -37,6 +43,25 @@ class FeedComment {
       rootId: _int(value['root_id']),
       replyCount: _int(value['reply_count'] ?? value['comment_count']),
       status: _string(value['status']),
+      upvotes:
+          _int(
+            value['engagement'] is Map
+                ? value['engagement']['upvote_count']
+                : value['upvotes'],
+          ) ??
+          0,
+      downvotes:
+          _int(
+            value['engagement'] is Map
+                ? value['engagement']['downvote_count']
+                : value['downvotes'],
+          ) ??
+          0,
+      voteType: _string(
+        value['engagement'] is Map
+            ? value['engagement']['vote_type']
+            : value['vote_type'],
+      ),
       replies: rawReplies is List
           ? rawReplies.map(FeedComment.fromJson).toList()
           : const [],
@@ -44,6 +69,27 @@ class FeedComment {
   }
 
   bool get isPending => status == 'moderation';
+  int get netScore => upvotes - downvotes;
+
+  FeedComment copyWith({
+    int? upvotes,
+    int? downvotes,
+    String? voteType,
+    List<FeedComment>? replies,
+  }) => FeedComment(
+    id: id,
+    content: content,
+    author: author,
+    createdAt: createdAt,
+    parentId: parentId,
+    rootId: rootId,
+    replyCount: replyCount,
+    status: status,
+    upvotes: upvotes ?? this.upvotes,
+    downvotes: downvotes ?? this.downvotes,
+    voteType: voteType ?? this.voteType,
+    replies: replies ?? this.replies,
+  );
 }
 
 class FeedDiscussionPage {

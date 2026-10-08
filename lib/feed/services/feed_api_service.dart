@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../../services/base_service.dart';
 import '../models/feed_model.dart';
+import 'feed_vote_service.dart';
 
 class FeedApiException implements Exception {
   final String message;
@@ -42,7 +43,7 @@ class FeedApiService {
   }) async {
     final payload = <String, dynamic>{
       'content': content,
-      if (pageId != null) 'page_id': pageId,
+      ...?pageId == null ? null : {'page_id': pageId},
     };
     final response = attachments.isEmpty
         ? await _api.postRequest('feed/posts', payload)
@@ -76,4 +77,7 @@ class FeedApiService {
       throw FeedApiException(error.message);
     }
   }
+
+  Future<FeedVoteResult> vote(int postId, String voteType) =>
+      FeedVoteService().vote(postId, voteType);
 }

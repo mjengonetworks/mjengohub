@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../models/feed_discussion_model.dart';
 import '../services/feed_discussion_service.dart';
+import '../services/feed_vote_service.dart';
 
 class FeedDiscussionController extends GetxController {
   final int postId;
@@ -83,4 +84,25 @@ class FeedDiscussionController extends GetxController {
       rethrow;
     }
   }
+
+  Future<FeedVoteResult> vote(FeedComment comment, String voteType) async {
+    final result = await FeedVoteService().vote(comment.id, voteType);
+    comments.assignAll(_replaceVote(comments, comment.id, result));
+    return result;
+  }
+
+  List<FeedComment> _replaceVote(
+    Iterable<FeedComment> source,
+    int id,
+    FeedVoteResult result,
+  ) => source.map((comment) {
+    final children = _replaceVote(comment.replies, id, result);
+    if (comment.id != id) return comment.copyWith(replies: children);
+    return comment.copyWith(
+      upvotes: result.upvotes,
+      downvotes: result.downvotes,
+      voteType: result.voteType,
+      replies: children,
+    );
+  }).toList();
 }

@@ -9,6 +9,7 @@ import '../../shared/theme/app_theme.dart';
 import '../controllers/feed_discussion_controller.dart';
 import '../models/feed_discussion_model.dart';
 import '../models/feed_model.dart';
+import '../widgets/feed_vote_bar.dart';
 
 class FeedDiscussionScreen extends StatefulWidget {
   final FeedItem post;
@@ -89,6 +90,19 @@ class _FeedDiscussionScreenState extends State<FeedDiscussionScreen> {
     }
   }
 
+  Future<void> _voteComment(FeedComment comment, String type) async {
+    if (!_signedIn) return _requireSignIn();
+    try {
+      await _controller.vote(comment, type);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -139,6 +153,9 @@ class _FeedDiscussionScreenState extends State<FeedDiscussionScreen> {
                           _replyingTo = value.id;
                           _replyingName = value.author.displayName;
                         }),
+                        onVote: _voteComment,
+                        authenticated: _signedIn,
+                        onRequireAuth: _requireSignIn,
                       ),
                     if (_controller.hasNext.value)
                       TextButton(
@@ -207,10 +224,16 @@ class _CommentNode extends StatefulWidget {
   final FeedComment comment;
   final int depth;
   final ValueChanged<FeedComment> onReply;
+  final Future<void> Function(FeedComment, String) onVote;
+  final bool authenticated;
+  final VoidCallback onRequireAuth;
   const _CommentNode({
     required this.comment,
     required this.depth,
     required this.onReply,
+    required this.onVote,
+    required this.authenticated,
+    required this.onRequireAuth,
   });
 
   @override
@@ -271,6 +294,13 @@ class _CommentNodeState extends State<_CommentNode> {
               comment.content,
               style: GoogleFonts.montserrat(fontSize: 12.5, height: 1.4),
             ),
+            FeedVoteBar(
+              score: comment.netScore,
+              voteType: comment.voteType,
+              authenticated: widget.authenticated,
+              onVote: (type) => widget.onVote(comment, type),
+              onRequireAuth: widget.onRequireAuth,
+            ),
             Row(
               children: [
                 TextButton(
@@ -294,6 +324,9 @@ class _CommentNodeState extends State<_CommentNode> {
                   comment: reply,
                   depth: widget.depth + 1,
                   onReply: widget.onReply,
+                  onVote: widget.onVote,
+                  authenticated: widget.authenticated,
+                  onRequireAuth: widget.onRequireAuth,
                 ),
           ],
         ),
