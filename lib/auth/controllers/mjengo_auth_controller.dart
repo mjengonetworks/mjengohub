@@ -502,8 +502,9 @@ class MjengoAuthController extends GetxController {
   void _finishAuthenticationNavigation() {
     final args = Get.arguments;
     final returnTo = args is Map ? args['returnTo'] : null;
-    if (returnTo == '/feed') {
-      Get.offAllNamed('/feed');
+    final returnArguments = args is Map ? args['returnArguments'] : null;
+    if (returnTo == '/feed' || returnTo == '/feed/discussion') {
+      Get.offAllNamed(returnTo as String, arguments: returnArguments);
       return;
     }
     Get.offAllNamed('/home');

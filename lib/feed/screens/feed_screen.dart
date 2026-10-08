@@ -494,22 +494,29 @@ class _FeedCard extends StatelessWidget {
           ],
           if (item.commentCount != null) ...[
             const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(
-                  Icons.mode_comment_outlined,
-                  size: 15,
-                  color: AppColors.captionSlate,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  '${item.commentCount} comments',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 10.5,
+            InkWell(
+              onTap: () => Get.toNamed(
+                AppRoutes.feedDiscussion,
+                arguments: {'post': item},
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.sharp),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.mode_comment_outlined,
+                    size: 15,
                     color: AppColors.captionSlate,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 5),
+                  Text(
+                    '${item.commentCount} comments',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10.5,
+                      color: AppColors.captionSlate,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

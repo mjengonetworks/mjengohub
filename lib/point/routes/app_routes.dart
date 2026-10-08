@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/screens/reset_password_screen.dart';
 import '../../feed/screens/feed_screen.dart';
+import '../../feed/screens/feed_discussion_screen.dart';
+import '../../feed/models/feed_model.dart';
 import '../../onboarding/onboarding_screen.dart';
 import '../../splash/splash_screen.dart';
 import '../../navigation/main_navigation.dart';
@@ -49,6 +51,7 @@ class AppRoutes {
   static const String home = '/home';
   static const String articleDetail = '/article';
   static const String feed = '/feed';
+  static const String feedDiscussion = '/feed/discussion';
   static const String mediaDirectory = '/media';
 
   // New sections
@@ -95,6 +98,16 @@ class AppRoutes {
     GetPage(name: resetPassword, page: () => const ResetPasswordScreen()),
     GetPage(name: home, page: () => const MainNavigation()),
     GetPage(name: feed, page: () => const FeedScreen()),
+    GetPage(
+      name: feedDiscussion,
+      page: () {
+        final args = Get.arguments;
+        final post = args is Map ? args['post'] : null;
+        return FeedDiscussionScreen(
+          post: post is FeedItem ? post : const FeedItem(),
+        );
+      },
+    ),
     GetPage(
       name: mediaDirectory,
       page: () {
