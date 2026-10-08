@@ -71,6 +71,9 @@ Status rules:
 20.1. Native Feed media attachments
    - Secure multipart image attachments were pushed in backend commit `7743ffa` and Flutter commit `faf9a9d`; awaiting approval. PNG/JPEG/GIF/WebP images are supported, up to four attachments and 8 MB per image. Video remains deferred because the mobile contract does not yet have equivalent content-level validation.
 
+23. Native Feed discussions, comments and replies
+   - Feed discussion API was pushed in backend commit `8b7eae1` and native Flutter discussion UI/API integration was pushed in commit `21477ec`; awaiting approval. Nested FeedPost comments/replies, pagination, authenticated text submission, moderation feedback and sign-in return routing are supported. Voting and reporting remain deferred; no mobile reporting contract exists.
+
 18. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
 
