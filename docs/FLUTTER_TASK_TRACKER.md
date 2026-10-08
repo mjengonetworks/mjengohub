@@ -74,6 +74,9 @@ Status rules:
 23. Native Feed discussions, comments and replies
    - Feed discussion API was pushed in backend commit `8b7eae1` and native Flutter discussion UI/API integration was pushed in commit `21477ec`; awaiting approval. Nested FeedPost comments/replies, pagination, authenticated text submission, moderation feedback and sign-in return routing are supported. Voting and reporting remain deferred; no mobile reporting contract exists.
 
+21. Reddit-style Feed voting
+   - Mobile Feed voting API was pushed in backend commit `a2c39c5` and native Flutter voting controls/state were pushed in commit `c0aa0d1`; awaiting approval. Upvote, downvote, toggle removal, direction switching, authoritative scores and selected-user vote state are supported for Feed posts and nested replies.
+
 18. Incident detail view parity with mobile website
    - Incident detail parity work was pushed in commit `3258124`; awaiting approval.
 
