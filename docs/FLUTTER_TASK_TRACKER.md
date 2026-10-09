@@ -38,6 +38,9 @@ Status rules:
 14. Opera-style swipe animations
    - No verified implementation has been pushed.
 
+27.1. Feed reporting and moderation
+   - Pending backend contract. `FeedPostReport` supports browser post reports, but there is no staff queue/review workflow for those records. Feed comments and nested replies are `FeedPost` rows without a compatible `CommentReport` bridge or JWT reporting endpoint. No Flutter reporting implementation was started.
+
 ## Testing
 
 6. Minimalist UI restyling
