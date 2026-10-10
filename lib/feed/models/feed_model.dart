@@ -206,6 +206,12 @@ class FeedItem {
     );
   }
 
+  // Canonical editorial IDs must never be sent to a FeedPost endpoint.
+  int? get reportPostId {
+    final target = feedPostId ?? (postType == 'community' ? id : null);
+    return target != null && target > 0 ? target : null;
+  }
+
   FeedItem copyWith({FeedEngagement? engagement, int? commentCount}) =>
       FeedItem(
         id: id,

@@ -39,7 +39,7 @@ Status rules:
    - No verified implementation has been pushed.
 
 27.1. Feed reporting and moderation
-   - Pending backend contract. `FeedPostReport` supports browser post reports, but there is no staff queue/review workflow for those records. Feed comments and nested replies are `FeedPost` rows without a compatible `CommentReport` bridge or JWT reporting endpoint. No Flutter reporting implementation was started.
+   - Backend prerequisite 27.1A was pushed in website commits `d6803a8` and `56203e6` and is Testing. Flutter reporting integration is implemented locally; task remains Pending until its push succeeds. Production deployment and owner approval remain unverified.
 
 ## Testing
 
@@ -75,7 +75,7 @@ Status rules:
    - Secure multipart image attachments were pushed in backend commit `7743ffa` and Flutter commit `faf9a9d`; awaiting approval. PNG/JPEG/GIF/WebP images are supported, up to four attachments and 8 MB per image. Video remains deferred because the mobile contract does not yet have equivalent content-level validation.
 
 23. Native Feed discussions, comments and replies
-   - Feed discussion API was pushed in backend commit `8b7eae1` and native Flutter discussion UI/API integration was pushed in commit `21477ec`; awaiting approval. Nested FeedPost comments/replies, pagination, authenticated text submission, moderation feedback and sign-in return routing are supported. Voting and reporting remain deferred; no mobile reporting contract exists.
+   - Feed discussion API was pushed in backend commit `8b7eae1` and native Flutter discussion UI/API integration was pushed in commit `21477ec`; awaiting approval. Nested FeedPost comments/replies, pagination, authenticated text submission, moderation feedback and sign-in return routing are supported. Voting and reporting use separate follow-up contracts; see tasks 21 and 27.1.
 
 21. Reddit-style Feed voting
    - Mobile Feed voting API was pushed in backend commit `a2c39c5` and native Flutter voting controls/state were pushed in commit `c0aa0d1`; awaiting approval. Upvote, downvote, toggle removal, direction switching, authoritative scores and selected-user vote state are supported for Feed posts and nested replies.
