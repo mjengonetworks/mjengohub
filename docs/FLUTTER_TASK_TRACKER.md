@@ -38,10 +38,12 @@ Status rules:
 14. Opera-style swipe animations
    - No verified implementation has been pushed.
 
-27.1. Feed reporting and moderation
-   - Backend prerequisite 27.1A was pushed in website commits `d6803a8` and `56203e6` and is Testing. Flutter reporting integration is implemented locally; task remains Pending until its push succeeds. Production deployment and owner approval remain unverified.
 
 ## Testing
+
+27.1. Feed reporting and moderation
+   - Backend prerequisite 27.1A was pushed in website commits `d6803a8` and `56203e6`. Native Flutter reporting was pushed to `origin/main` in `9140b89`; awaiting approval. Posts, comments and nested replies use valid FeedPost IDs, seven validated reasons and optional explanations. Duplicate reports, authentication expiry, rate limiting, validation and unavailable targets have explicit feedback. Canonical editorial items without FeedPost IDs do not expose unsupported reporting.
+   - Verification: 26 Feed tests passed, including 13 reporting service/widget cases; `flutter analyze lib/feed test/feed --no-pub` and `git diff --check` passed. Production backend deployment and live mobile verification remain pending. No task has been marked Completed.
 
 6. Minimalist UI restyling
    - Related UI and navigation changes exist in pushed Git history; awaiting explicit approval.
