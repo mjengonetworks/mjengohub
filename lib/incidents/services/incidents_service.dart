@@ -117,8 +117,8 @@ class IncidentsService {
     String? county,
     required String incidentDate,
     required String severity,
-    int casualties = 0,
-    int injuries = 0,
+    int? casualties,
+    int? injuries,
     String? lessonsLearned,
   }) async {
     try {
@@ -130,8 +130,8 @@ class IncidentsService {
         if (county != null && county.isNotEmpty) 'county': county,
         'incident_date': incidentDate,
         'severity': severity,
-        'casualties': casualties,
-        'injuries': injuries,
+        'casualties': ?casualties,
+        'injuries': ?injuries,
         if (lessonsLearned != null && lessonsLearned.isNotEmpty)
           'lessons_learned': lessonsLearned,
       });

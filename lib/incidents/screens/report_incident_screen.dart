@@ -32,8 +32,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   final _locationCtrl = TextEditingController();
   final _countyCtrl = TextEditingController();
   final _lessonsCtrl = TextEditingController();
-  final _casualtiesCtrl = TextEditingController(text: '0');
-  final _injuriesCtrl = TextEditingController(text: '0');
+  // Blank means unknown. Do not silently submit an unverified zero.
+  final _casualtiesCtrl = TextEditingController();
+  final _injuriesCtrl = TextEditingController();
 
   String _severity = 'moderate';
   DateTime? _incidentDate;
@@ -99,8 +100,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         county: _countyCtrl.text.trim(),
         incidentDate: dateStr,
         severity: _severity,
-        casualties: int.tryParse(_casualtiesCtrl.text) ?? 0,
-        injuries: int.tryParse(_injuriesCtrl.text) ?? 0,
+        casualties: int.tryParse(_casualtiesCtrl.text.trim()),
+        injuries: int.tryParse(_injuriesCtrl.text.trim()),
         lessonsLearned: _lessonsCtrl.text.trim(),
       );
       if (incidentId != null) {

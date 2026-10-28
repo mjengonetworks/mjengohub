@@ -20,6 +20,33 @@ void main() {
     expect(incident.source, 'SGA');
   });
 
+  test(
+    'keeps unknown casualties and injuries distinct from confirmed zero',
+    () {
+      final unknown = Incident.fromJson({
+        'id': 9,
+        'incident_type': 'site_safety',
+        'title': 'Incident with unconfirmed impact',
+        'slug': 'incident-with-unconfirmed-impact',
+        'severity': 'serious',
+      });
+      final confirmedZero = Incident.fromJson({
+        'id': 10,
+        'incident_type': 'site_safety',
+        'title': 'Incident with no reported impact',
+        'slug': 'incident-with-no-reported-impact',
+        'severity': 'moderate',
+        'casualties': 0,
+        'injuries': 0,
+      });
+
+      expect(unknown.casualties, isNull);
+      expect(unknown.injuries, isNull);
+      expect(confirmedZero.casualties, 0);
+      expect(confirmedZero.injuries, 0);
+    },
+  );
+
   test('preserves HTML paragraph boundaries in incident descriptions', () {
     final incident = Incident.fromJson({
       'id': 8,
