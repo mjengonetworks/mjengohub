@@ -12,6 +12,7 @@ import '../controllers/feed_controller.dart';
 import '../models/feed_contract.dart';
 import '../models/feed_model.dart';
 import '../widgets/feed_vote_bar.dart';
+import '../widgets/feed_report_button.dart';
 import 'feed_composer_screen.dart';
 
 /// Native Media & Feed timeline and authenticated text composer.
@@ -428,6 +429,15 @@ class _FeedCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (item.reportPostId != null)
+                FeedReportButton(
+                  postId: item.reportPostId!,
+                  authenticated: _signedIn,
+                  onRequireAuth: () => Get.toNamed(
+                    AppRoutes.login,
+                    arguments: {'returnTo': AppRoutes.feed},
+                  ),
+                ),
             ],
           ),
           if (item.text != null) ...[

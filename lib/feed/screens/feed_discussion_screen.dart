@@ -10,6 +10,7 @@ import '../controllers/feed_discussion_controller.dart';
 import '../models/feed_discussion_model.dart';
 import '../models/feed_model.dart';
 import '../widgets/feed_vote_bar.dart';
+import '../widgets/feed_report_button.dart';
 
 class FeedDiscussionScreen extends StatefulWidget {
   final FeedItem post;
@@ -54,8 +55,8 @@ class _FeedDiscussionScreenState extends State<FeedDiscussionScreen> {
     }
   }
 
-  void _requireSignIn() {
-    if (_signedIn) return;
+  void _requireSignIn({bool force = false}) {
+    if (_signedIn && !force) return;
     Get.toNamed(
       AppRoutes.login,
       arguments: {
@@ -136,7 +137,11 @@ class _FeedDiscussionScreenState extends State<FeedDiscussionScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 18),
                   children: [
-                    _RootCard(post: widget.post),
+                    _RootCard(
+                      post: widget.post,
+                      authenticated: _signedIn,
+                      onRequireAuth: () => _requireSignIn(force: true),
+                    ),
                     const SizedBox(height: 12),
                     if (_controller.comments.isEmpty)
                       const Padding(
@@ -155,7 +160,7 @@ class _FeedDiscussionScreenState extends State<FeedDiscussionScreen> {
                         }),
                         onVote: _voteComment,
                         authenticated: _signedIn,
-                        onRequireAuth: _requireSignIn,
+                        onRequireAuth: () => _requireSignIn(force: true),
                       ),
                     if (_controller.hasNext.value)
                       TextButton(
@@ -203,7 +208,13 @@ class _FeedDiscussionScreenState extends State<FeedDiscussionScreen> {
 
 class _RootCard extends StatelessWidget {
   final FeedItem post;
-  const _RootCard({required this.post});
+  final bool authenticated;
+  final VoidCallback onRequireAuth;
+  const _RootCard({
+    required this.post,
+    required this.authenticated,
+    required this.onRequireAuth,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
@@ -213,9 +224,23 @@ class _RootCard extends StatelessWidget {
       border: Border.all(color: AppColors.divider),
       borderRadius: BorderRadius.circular(AppRadius.sharp),
     ),
-    child: Text(
-      post.text ?? 'Feed post',
-      style: GoogleFonts.montserrat(fontSize: 13, height: 1.45),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          post.text ?? 'Feed post',
+          style: GoogleFonts.montserrat(fontSize: 13, height: 1.45),
+        ),
+        if (post.reportPostId != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: FeedReportButton(
+              postId: post.reportPostId!,
+              authenticated: authenticated,
+              onRequireAuth: onRequireAuth,
+            ),
+          ),
+      ],
     ),
   );
 }
@@ -301,8 +326,14 @@ class _CommentNodeState extends State<_CommentNode> {
               onVote: (type) => widget.onVote(comment, type),
               onRequireAuth: widget.onRequireAuth,
             ),
-            Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                FeedReportButton(
+                  postId: comment.id,
+                  authenticated: widget.authenticated,
+                  onRequireAuth: widget.onRequireAuth,
+                ),
                 TextButton(
                   onPressed: () => widget.onReply(comment),
                   child: const Text('Reply'),
